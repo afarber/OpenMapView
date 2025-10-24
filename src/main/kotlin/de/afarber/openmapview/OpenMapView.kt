@@ -3,6 +3,7 @@ package de.afarber.openmapview
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.widget.FrameLayout
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -14,10 +15,47 @@ class OpenMapView @JvmOverloads constructor(
 ) : FrameLayout(context, attrs, defStyleAttr), DefaultLifecycleObserver {
 
     private val controller = MapController(context)
+    private var lastTouchX = 0f
+    private var lastTouchY = 0f
+
+    init {
+        setWillNotDraw(false)
+        controller.setOnTileLoadedCallback { invalidate() }
+    }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         controller.draw(canvas)
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        controller.setViewSize(w, h)
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                lastTouchX = event.x
+                lastTouchY = event.y
+                return true
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val dx = event.x - lastTouchX
+                val dy = event.y - lastTouchY
+                controller.updatePanOffset(dx, dy)
+                lastTouchX = event.x
+                lastTouchY = event.y
+                invalidate()
+                return true
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                controller.commitPan()
+                invalidate()
+                return true
+            }
+        }
+        return super.onTouchEvent(event)
     }
 
     fun setCenter(latLng: LatLng) = controller.setCenter(latLng)
