@@ -42,28 +42,3 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.9.3")
 }
 
-apply(plugin = "com.diffplug.spotless")
-
-spotless {
-    kotlin {
-        target("src/**/*.kt")
-        ktlint("1.3.1")
-        trimTrailingWhitespace()
-        endWithNewline()
-        indentWithSpaces(4)
-        licenseHeaderFile(rootProject.file("spotless.license.kt"), "(package|import)")
-    }
-    kotlinGradle {
-        target("*.kts")
-        ktlint("1.3.1")
-    }
-}
-
-tasks.withType<Test> {
-    testLogging {
-        events("passed", "skipped", "failed")
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-        showStandardStreams = true
-    }
-}
-
