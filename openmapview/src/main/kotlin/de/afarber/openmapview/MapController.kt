@@ -27,6 +27,11 @@ class MapController(
     private var panOffsetX = 0f
     private var panOffsetY = 0f
 
+    companion object {
+        private const val MIN_ZOOM = 2.0
+        private const val MAX_ZOOM = 19.0
+    }
+
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val tileDownloader = TileDownloader()
     private val tileCache = TileCache()
@@ -55,10 +60,34 @@ class MapController(
         }
 
     fun setZoom(z: Double) {
-        zoom = z
+        zoom = z.coerceIn(MIN_ZOOM, MAX_ZOOM)
     }
 
     fun getZoom(): Double = zoom
+
+    fun zoom(
+        scaleFactor: Float,
+        focusX: Float,
+        focusY: Float,
+    ) {
+        val oldZoom = zoom
+        val newZoom = (zoom * scaleFactor).coerceIn(MIN_ZOOM, MAX_ZOOM)
+
+        if (oldZoom == newZoom) return // Already at limit
+
+        zoom = newZoom
+
+        // Adjust center to zoom towards focus point
+        val zoomRatio = (newZoom / oldZoom).toFloat()
+        val centerPixelX = viewWidth / 2f + panOffsetX
+        val centerPixelY = viewHeight / 2f + panOffsetY
+
+        val dx = (focusX - centerPixelX) * (1 - zoomRatio)
+        val dy = (focusY - centerPixelY) * (1 - zoomRatio)
+
+        panOffsetX += dx
+        panOffsetY += dy
+    }
 
     fun setCenter(latLng: LatLng) {
         center = latLng

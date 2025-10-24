@@ -11,6 +11,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.ScaleGestureDetector
 import android.widget.FrameLayout
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -26,6 +27,21 @@ class OpenMapView
         private val controller = MapController(context)
         private var lastTouchX = 0f
         private var lastTouchY = 0f
+
+        private val scaleGestureDetector =
+            ScaleGestureDetector(
+                context,
+                object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                    override fun onScale(detector: ScaleGestureDetector): Boolean {
+                        val scaleFactor = detector.scaleFactor
+                        val focusX = detector.focusX
+                        val focusY = detector.focusY
+                        controller.zoom(scaleFactor, focusX, focusY)
+                        invalidate()
+                        return true
+                    }
+                },
+            )
 
         init {
             setWillNotDraw(false)
@@ -48,28 +64,34 @@ class OpenMapView
         }
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    lastTouchX = event.x
-                    lastTouchY = event.y
-                    return true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = event.x - lastTouchX
-                    val dy = event.y - lastTouchY
-                    controller.updatePanOffset(dx, dy)
-                    lastTouchX = event.x
-                    lastTouchY = event.y
-                    invalidate()
-                    return true
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    controller.commitPan()
-                    invalidate()
-                    return true
+            // Let scale detector handle pinch gestures
+            scaleGestureDetector.onTouchEvent(event)
+
+            // Handle panning only if not scaling
+            if (!scaleGestureDetector.isInProgress) {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        lastTouchX = event.x
+                        lastTouchY = event.y
+                        return true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        val dx = event.x - lastTouchX
+                        val dy = event.y - lastTouchY
+                        controller.updatePanOffset(dx, dy)
+                        lastTouchX = event.x
+                        lastTouchY = event.y
+                        invalidate()
+                        return true
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        controller.commitPan()
+                        invalidate()
+                        return true
+                    }
                 }
             }
-            return super.onTouchEvent(event)
+            return true
         }
 
         fun setCenter(latLng: LatLng) = controller.setCenter(latLng)
