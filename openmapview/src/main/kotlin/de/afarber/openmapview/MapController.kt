@@ -99,8 +99,7 @@ class MapController(
         panOffsetY = 0f
     }
 
-    fun draw(canvas: Canvas?) {
-        canvas ?: return
+    fun draw(canvas: Canvas) {
         if (viewWidth <= 0 || viewHeight <= 0) return
 
         // Get visible tiles

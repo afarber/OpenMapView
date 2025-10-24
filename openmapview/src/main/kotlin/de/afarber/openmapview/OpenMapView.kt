@@ -32,8 +32,8 @@ class OpenMapView
             controller.setOnTileLoadedCallback { invalidate() }
         }
 
-        override fun onDraw(canvas: Canvas?) {
-            super.onDraw(canvas)
+        override fun dispatchDraw(canvas: Canvas) {
+            super.dispatchDraw(canvas)
             controller.draw(canvas)
         }
 
