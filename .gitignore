@@ -10,8 +10,9 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
+# Package Files, except for gradle wrapper
 *.jar
+!gradle-wrapper.jar
 *.war
 *.nar
 *.ear

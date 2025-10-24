@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.diffplug.spotless")
 }
 
 android {
@@ -52,8 +54,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-viewbinding:1.7.5")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
 }
-
-apply(plugin = "com.diffplug.spotless")
 
 spotless {
     kotlin {

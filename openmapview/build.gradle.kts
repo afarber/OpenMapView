@@ -1,6 +1,9 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+    id("com.diffplug.spotless")
+    id("maven-publish")
+    id("signing")
 }
 
 android {
@@ -9,9 +12,6 @@ android {
 
     defaultConfig {
         minSdk = 23
-        targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -39,8 +39,6 @@ dependencies {
     implementation("io.ktor:ktor-client-android:2.3.7")
 }
 
-apply(plugin = "com.diffplug.spotless")
-
 spotless {
     kotlin {
         target("src/**/*.kt")
@@ -63,8 +61,6 @@ tasks.withType<Test> {
         showStandardStreams = true
     }
 }
-
-apply(plugin = "maven-publish")
 
 publishing {
     publications {
@@ -106,6 +102,7 @@ publishing {
 
     repositories {
         // Uncomment this to also publish to GitHub Packages
+
         /*
         maven {
             name = "GitHubPackages"
@@ -115,7 +112,7 @@ publishing {
                 password = System.getenv("GITHUB_TOKEN")
             }
         }
-        */
+         */
 
         // Maven Central (via OSSRH)
         maven {
@@ -129,14 +126,10 @@ publishing {
     }
 }
 
-apply(plugin = "signing")
-
 signing {
     useInMemoryPgpKeys(
         System.getenv("SIGNING_KEY"),
-        System.getenv("SIGNING_PASSWORD")
+        System.getenv("SIGNING_PASSWORD"),
     )
     sign(publishing.publications)
 }
-
-
