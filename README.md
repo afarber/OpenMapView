@@ -9,6 +9,9 @@ A modern, Kotlin-first MapView replacement for Android — powered by [OpenStree
 - Extensible marker, overlay, and gesture handling
 - MIT licensed (use freely in commercial apps)
 
+[![Spotless](https://github.com/afarber/OpenMapView/actions/workflows/spotless.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/spotless.yml)
+
+
 ## Getting Started
 
 ```kotlin
