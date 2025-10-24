@@ -1,2 +1,25 @@
 # OpenMapView
-A modern, Kotlin-first, MIT-licensed MapView replacement for Android — powered by OpenStreetMap. Drop-in compatible with Google MapView (non-deprecated methods only). Built for performance, offline support, and full control.
+
+A modern, Kotlin-first MapView replacement for Android — powered by [OpenStreetMap](https://www.openstreetmap.org/).
+
+## Features
+- Drop-in compatible with `Google MapView` (non-deprecated methods only)
+- Lightweight, pure Kotlin implementation
+- OSM tiles via standard APIs
+- Extensible marker, overlay, and gesture handling
+- MIT licensed (use freely in commercial apps)
+
+## Getting Started
+
+```kotlin
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val mapView = findViewById<OpenMapView>(R.id.mapView)
+        mapView.setTileSource(TileSource.STANDARD)
+        mapView.setZoom(14.0)
+        mapView.setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
+    }
+}
