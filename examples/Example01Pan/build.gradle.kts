@@ -58,7 +58,11 @@ dependencies {
 spotless {
     kotlin {
         target("src/**/*.kt")
-        ktlint("1.3.1")
+        ktlint("1.3.1").editorConfigOverride(
+            mapOf(
+                "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
+            ),
+        )
         trimTrailingWhitespace()
         endWithNewline()
         indentWithSpaces(4)
