@@ -32,6 +32,10 @@ class MapController(
         private const val MAX_ZOOM = 19.0
     }
 
+    private val markers = mutableListOf<Marker>()
+    private val defaultMarkerIcon by lazy { MarkerIconFactory.getDefaultIcon() }
+    var onMarkerClickListener: ((Marker) -> Boolean)? = null
+
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val tileDownloader = TileDownloader()
     private val tileCache = TileCache()
@@ -170,6 +174,34 @@ class MapController(
                 }
             }
         }
+
+        // Draw markers on top of tiles
+        drawMarkers(canvas, centerPixelX, centerPixelY)
+    }
+
+    private fun drawMarkers(
+        canvas: Canvas,
+        centerPixelX: Double,
+        centerPixelY: Double,
+    ) {
+        for (marker in markers) {
+            // Convert marker position to pixel coordinates
+            val (markerPixelX, markerPixelY) = Projection.latLngToPixel(marker.position, zoom.toInt())
+
+            // Calculate screen position
+            val screenX = (markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+            // Get marker icon
+            val icon = marker.icon ?: defaultMarkerIcon
+
+            // Apply anchor point
+            val anchorX = icon.width * marker.anchor.first
+            val anchorY = icon.height * marker.anchor.second
+
+            // Draw the marker
+            canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, null)
+        }
     }
 
     private fun downloadTile(tile: TileCoordinate) {
@@ -189,6 +221,48 @@ class MapController(
         }
     }
 
+    fun addMarker(marker: Marker): Marker {
+        markers.add(marker)
+        return marker
+    }
+
+    fun removeMarker(marker: Marker): Boolean = markers.remove(marker)
+
+    fun clearMarkers() {
+        markers.clear()
+    }
+
+    fun getMarkers(): List<Marker> = markers.toList()
+
+    fun handleMarkerTouch(
+        x: Float,
+        y: Float,
+    ): Marker? {
+        val (centerPixelX, centerPixelY) = Projection.latLngToPixel(center, zoom.toInt())
+
+        // Check markers in reverse order (top to bottom) for correct z-ordering
+        for (marker in markers.reversed()) {
+            val (markerPixelX, markerPixelY) = Projection.latLngToPixel(marker.position, zoom.toInt())
+
+            val screenX = (markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+            val icon = marker.icon ?: defaultMarkerIcon
+            val anchorX = icon.width * marker.anchor.first
+            val anchorY = icon.height * marker.anchor.second
+
+            val markerLeft = screenX - anchorX
+            val markerTop = screenY - anchorY
+            val markerRight = markerLeft + icon.width
+            val markerBottom = markerTop + icon.height
+
+            if (x >= markerLeft && x <= markerRight && y >= markerTop && y <= markerBottom) {
+                return marker
+            }
+        }
+        return null
+    }
+
     fun onResume() {}
 
     fun onPause() {}
@@ -197,5 +271,6 @@ class MapController(
         scope.cancel()
         tileDownloader.close()
         tileCache.clear()
+        MarkerIconFactory.clearCache()
     }
 }

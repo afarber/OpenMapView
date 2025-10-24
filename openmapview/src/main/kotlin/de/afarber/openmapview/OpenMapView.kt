@@ -85,6 +85,24 @@ class OpenMapView
                         return true
                     }
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        // Check if touch is on a marker (only if there was minimal movement)
+                        val dx = event.x - lastTouchX
+                        val dy = event.y - lastTouchY
+                        val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
+
+                        if (movementDistance < 10) {
+                            // Minimal movement, check for marker touch
+                            val touchedMarker = controller.handleMarkerTouch(event.x, event.y)
+                            if (touchedMarker != null) {
+                                val consumed = controller.onMarkerClickListener?.invoke(touchedMarker) ?: false
+                                if (consumed) {
+                                    controller.commitPan()
+                                    invalidate()
+                                    return true
+                                }
+                            }
+                        }
+
                         controller.commitPan()
                         invalidate()
                         return true
@@ -99,6 +117,29 @@ class OpenMapView
         fun setZoom(zoom: Double) = controller.setZoom(zoom)
 
         fun getZoom(): Double = controller.getZoom()
+
+        fun addMarker(marker: Marker): Marker {
+            val result = controller.addMarker(marker)
+            invalidate()
+            return result
+        }
+
+        fun removeMarker(marker: Marker): Boolean {
+            val result = controller.removeMarker(marker)
+            if (result) invalidate()
+            return result
+        }
+
+        fun clearMarkers() {
+            controller.clearMarkers()
+            invalidate()
+        }
+
+        fun getMarkers(): List<Marker> = controller.getMarkers()
+
+        fun setOnMarkerClickListener(listener: (Marker) -> Boolean) {
+            controller.onMarkerClickListener = listener
+        }
 
         override fun onResume(owner: LifecycleOwner) = controller.onResume()
 
