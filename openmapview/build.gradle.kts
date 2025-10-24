@@ -56,3 +56,87 @@ spotless {
     }
 }
 
+tasks.withType<Test> {
+    testLogging {
+        events("passed", "skipped", "failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showStandardStreams = true
+    }
+}
+
+apply(plugin = "maven-publish")
+
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "de.afarber"
+            artifactId = "openmapview"
+            version = "0.1.0"
+
+            afterEvaluate {
+                from(components["release"])
+            }
+
+            pom {
+                name.set("OpenMapView")
+                description.set("A modern, Kotlin-first MapView replacement for Android powered by OpenStreetMap.")
+                url.set("https://github.com/afarber/OpenMapView")
+
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("afarber")
+                        name.set("Alexander Farber")
+                        url.set("https://afarber.de")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/afarber/OpenMapView.git")
+                    developerConnection.set("scm:git:ssh://github.com/afarber/OpenMapView.git")
+                    url.set("https://github.com/afarber/OpenMapView")
+                }
+            }
+        }
+    }
+
+    repositories {
+        // Uncomment this to also publish to GitHub Packages
+        /*
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/afarber/OpenMapView")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+        */
+
+        // Maven Central (via OSSRH)
+        maven {
+            name = "MavenCentral"
+            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+
+apply(plugin = "signing")
+
+signing {
+    useInMemoryPgpKeys(
+        System.getenv("SIGNING_KEY"),
+        System.getenv("SIGNING_PASSWORD")
+    )
+    sign(publishing.publications)
+}
+
+
