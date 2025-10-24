@@ -71,7 +71,7 @@ publishing {
         create<MavenPublication>("release") {
             groupId = "de.afarber"
             artifactId = "openmapview"
-            version = "0.1.0"
+            version = rootProject.ext["libVersion"] as String
 
             afterEvaluate {
                 from(components["release"])
