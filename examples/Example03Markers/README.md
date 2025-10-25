@@ -101,6 +101,8 @@ This example displays 5 markers:
 | West     | 51.4680°N, 7.2380°E | West Location      |
 | East     | 51.4640°N, 7.2600°E | East Location      |
 
+**Note on marker positioning:** While the 4 outer markers are placed on N, S, W, E sides of the central marker (by adjusting latitude/longitude), they do not appear strictly above, below, left, right on the screen. This is due to the Web Mercator projection used by OpenStreetMap, which distorts distances and angles, especially at higher latitudes. The further from the equator, the more pronounced this distortion becomes.
+
 ## Custom Marker Icons
 
 To use custom marker icons instead of the default red teardrop:
