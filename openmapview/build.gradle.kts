@@ -50,6 +50,9 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("io.mockk:mockk:1.13.8")
+    // Robolectric enables Android framework classes (Bitmap, Canvas, etc.) to work in JVM unit tests
+    // without requiring an emulator or device. It provides shadow implementations of Android APIs.
+    testImplementation("org.robolectric:robolectric:4.14")
 }
 
 spotless {

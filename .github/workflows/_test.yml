@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: '**/build/test-results/test/*.xml'
+          path: '**/build/test-results/test*UnitTest/*.xml'
           retention-days: 30
 
       - name: Upload test reports
@@ -47,5 +47,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: '**/build/reports/tests/test/**'
+          path: '**/build/reports/tests/test*UnitTest/**'
           retention-days: 30

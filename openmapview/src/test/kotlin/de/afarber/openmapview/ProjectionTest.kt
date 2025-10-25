@@ -59,9 +59,10 @@ class ProjectionTest {
         // Bochum at zoom 14
         val tile = Projection.latLngToTile(LatLng(51.4661, 7.2491), 14)
         assertEquals(14, tile.zoom)
-        // Expected tile coordinates for Bochum at zoom 14
-        assert(tile.x in 8500..8550)
-        assert(tile.y in 5400..5450)
+        // Bochum is at tile (8521, 5451) at zoom 14
+        // Calculated using Web Mercator projection formulas
+        assertEquals(8521, tile.x)
+        assertEquals(5451, tile.y)
     }
 
     @Test
@@ -84,11 +85,14 @@ class ProjectionTest {
     @Test
     fun testLongitudeWrapping() {
         // Test that longitude wrapping works correctly
+        // At zoom 1, the map is 512 pixels wide (2 tiles * 256)
         val positive = Projection.latLngToPixel(LatLng(0.0, 180.0), 1)
         val negative = Projection.latLngToPixel(LatLng(0.0, -180.0), 1)
 
-        // 180 and -180 should be at the same x coordinate (edge of map)
-        assertEquals(positive.first, negative.first, epsilon)
+        // +180° should be at right edge (512), -180° at left edge (0)
+        // They represent the same meridian but wrap around
+        assertEquals(512.0, positive.first, epsilon)
+        assertEquals(0.0, negative.first, epsilon)
     }
 
     @Test

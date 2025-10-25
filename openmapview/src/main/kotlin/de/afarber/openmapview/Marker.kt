@@ -32,5 +32,13 @@ data class Marker(
      * Unique identifier for this marker instance.
      * Used internally for touch detection and callbacks.
      */
-    internal val id: String = "marker_${System.nanoTime()}_${hashCode()}"
+    internal val id: String = "marker_${System.nanoTime()}_${System.identityHashCode(this)}"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Marker) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
 }

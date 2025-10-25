@@ -8,14 +8,15 @@
 package de.afarber.openmapview
 
 import android.graphics.Bitmap
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class TileCacheTest {
     private lateinit var cache: TileCache
 
@@ -117,10 +118,7 @@ class TileCacheTest {
         width: Int,
         height: Int,
     ): Bitmap {
-        val bitmap = mockk<Bitmap>(relaxed = true)
-        every { bitmap.byteCount } returns width * height * 4 // ARGB
-        every { bitmap.width } returns width
-        every { bitmap.height } returns height
-        return bitmap
+        // Robolectric enables creation of real Bitmap instances in unit tests
+        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     }
 }

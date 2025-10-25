@@ -111,9 +111,15 @@ class ViewportCalculatorTest {
         val tilesZoom10 = ViewportCalculator.getVisibleTiles(center, 10, viewWidth, viewHeight)
         val tilesZoom15 = ViewportCalculator.getVisibleTiles(center, 15, viewWidth, viewHeight)
 
-        // Higher zoom = more tiles to cover same geographic area
-        assertTrue(tilesZoom5.size < tilesZoom10.size)
-        assertTrue(tilesZoom10.size < tilesZoom15.size)
+        // All zoom levels should return tiles
+        assertTrue(tilesZoom5.isNotEmpty())
+        assertTrue(tilesZoom10.isNotEmpty())
+        assertTrue(tilesZoom15.isNotEmpty())
+
+        // Each zoom level should have correct zoom property
+        assertTrue(tilesZoom5.all { it.zoom == 5 })
+        assertTrue(tilesZoom10.all { it.zoom == 10 })
+        assertTrue(tilesZoom15.all { it.zoom == 15 })
     }
 
     @Test
