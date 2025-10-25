@@ -163,15 +163,15 @@ fun onDestroy() {
     scope.cancel()                     // Cancel all coroutines (tile downloads)
     tileDownloader.close()             // Close HTTP client
     tileCache.clear()                  // Clear cached bitmaps
-    MarkerIconFactory.clearCache()     // Clear default marker icon
+    MarkerIconFactory.clearCache()     // Clear marker icon cache
 }
 ```
 
 **Current implementation:** Full cleanup!
 - Cancels all running tile downloads
 - Closes Ktor HTTP client
-- Clears bitmap memory cache
-- Releases marker icon bitmap
+- Clears bitmap memory cache (LRU cache for tiles)
+- Clears marker icon cache (up to 10 colored marker icons)
 
 ## Best Practices
 
@@ -205,6 +205,8 @@ OpenMapView(context).apply {
 | **Flexibility** | High | Medium | High |
 | **Works with Compose** | No | No | Yes |
 | **Works with XML** | Yes | Yes | Yes |
+| **Marker Support** | Yes | Yes | Yes (with colors) |
+| **Touch Gestures** | Pan, Zoom, Tilt | Pan, Zoom, Tilt | Pan, Zoom |
 
 ## Testing Lifecycle
 
@@ -243,6 +245,31 @@ If you forget to register the lifecycle observer:
 - Check Android Profiler in Android Studio
 - Look for memory not being released
 - Check for ongoing network activity after app closes
+
+## Example Apps
+
+All three example apps demonstrate proper lifecycle management:
+
+### Example01Pan
+Basic panning with lifecycle observer registration.
+
+### Example02Zoom
+Zoom controls (pinch, buttons) with lifecycle observer registration.
+
+### Example03Markers
+Markers with colors and click handling with lifecycle observer registration.
+
+Each example shows the same pattern:
+```kotlin
+AndroidView(
+    factory = { context ->
+        OpenMapView(context).apply {
+            lifecycleOwner.lifecycle.addObserver(this)  // Always register!
+            // ... configure map
+        }
+    }
+)
+```
 
 ## Summary
 

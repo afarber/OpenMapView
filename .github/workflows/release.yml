@@ -1,18 +1,40 @@
-name: Publish to Maven Central
+name: Release to Maven Central
 
 on:
   push:
     tags:
-      - "v*.*.*"  # e.g. v0.1.0
+      - "v*.*.*"
 
 jobs:
+  format:
+    name: Check Formatting
+    uses: ./.github/workflows/_format.yml
+
+  test:
+    name: Unit Tests
+    needs: format
+    uses: ./.github/workflows/_test.yml
+
+  build-library:
+    name: Build Library
+    needs: [format, test]
+    uses: ./.github/workflows/_build-library.yml
+
+  build-examples:
+    name: Build Examples
+    needs: [format, test]
+    uses: ./.github/workflows/_build-examples.yml
+
   publish:
-    name: Publish Library
+    name: Publish to Maven Central
     runs-on: ubuntu-latest
+    needs: [format, test, build-library, build-examples]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -33,11 +55,6 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
 
-      - name: Determine version
-        run: |
-          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
-          echo "Detected version: $VERSION"
-
       - name: Validate tag format
         run: |
           TAG=${GITHUB_REF#refs/tags/}
@@ -45,6 +62,9 @@ jobs:
             echo "Invalid tag format. Use vMAJOR.MINOR.PATCH (e.g., v1.2.3)"
             exit 1
           fi
+          VERSION=$(echo $TAG | sed 's/^v//')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TAG=$TAG" >> $GITHUB_ENV
 
       - name: Publish to Maven Central
         env:
@@ -53,4 +73,51 @@ jobs:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         run: ./gradlew :openmapview:publishReleasePublicationToMavenCentralRepository
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 ${{ env.TAG }}^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            echo "First release"
+            CHANGELOG="Initial release of OpenMapView"
+          else
+            echo "Generating changelog from $PREV_TAG to ${{ env.TAG }}"
+            CHANGELOG=$(git log ${PREV_TAG}..${{ env.TAG }} --pretty=format:"- %s (%h)" --no-merges)
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG }}
+          release_name: Release ${{ env.VERSION }}
+          body: |
+            # OpenMapView ${{ env.VERSION }}
+
+            ## Changes
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## Maven Central
+            ```gradle
+            dependencies {
+                implementation("de.afarber:openmapview:${{ env.VERSION }}")
+            }
+            ```
+
+            **Note:** It may take 2-4 hours for the release to sync to Maven Central.
+
+            ## Installation
+            Add to your `build.gradle.kts`:
+            ```kotlin
+            dependencies {
+                implementation("de.afarber:openmapview:${{ env.VERSION }}")
+            }
+            ```
+          draft: false
+          prerelease: false
 

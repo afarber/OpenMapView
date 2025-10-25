@@ -1,14 +1,11 @@
-name: Spotless Code Format Check
+name: Build Examples
 
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  workflow_call:
 
 jobs:
-  spotless-check:
-    name: Verify Kotlin Code Formatting
+  build-examples:
+    name: Build Example Apps
     runs-on: ubuntu-latest
 
     steps:
@@ -34,6 +31,18 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
 
-      - name: Run Spotless check
-        run: ./gradlew spotlessCheck
+      - name: Build Example01Pan
+        run: ./gradlew :examples:Example01Pan:assembleDebug
 
+      - name: Build Example02Zoom
+        run: ./gradlew :examples:Example02Zoom:assembleDebug
+
+      - name: Build Example03Markers
+        run: ./gradlew :examples:Example03Markers:assembleDebug
+
+      - name: Upload example APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: example-apks
+          path: examples/**/build/outputs/apk/debug/*.apk
+          retention-days: 30
