@@ -47,6 +47,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("io.ktor:ktor-client-android:2.3.7")
+    implementation("com.jakewharton:disklrucache:2.0.2")
 
     // Unit testing
     testImplementation("junit:junit:4.13.2")

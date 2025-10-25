@@ -8,6 +8,7 @@
 package de.afarber.openmapview
 
 import android.graphics.Bitmap
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -15,6 +16,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 
 @RunWith(RobolectricTestRunner::class)
 class TileCacheTest {
@@ -22,7 +24,12 @@ class TileCacheTest {
 
     @Before
     fun setUp() {
-        cache = TileCache()
+        cache = TileCache(RuntimeEnvironment.getApplication())
+    }
+
+    @After
+    fun tearDown() {
+        cache.close()
     }
 
     @Test
@@ -55,6 +62,7 @@ class TileCacheTest {
         cache.put(tile2, bitmap2)
 
         cache.clear()
+        cache.close()
 
         assertNull(cache.get(tile1))
         assertNull(cache.get(tile2))

@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.statement.readBytes
 
 class TileDownloader {
@@ -25,8 +26,20 @@ class TileDownloader {
 
     suspend fun downloadTile(url: String): Bitmap? =
         try {
-            val bytes = client.get(url).readBytes()
-            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            val response =
+                client.get(url) {
+                    header("User-Agent", "OpenMapView/0.1.0 (https://github.com/afarber/OpenMapView)")
+                }
+            val bytes = response.readBytes()
+            // Decode with RGB_565 to reduce memory usage (2 bytes per pixel vs 4 bytes for ARGB_8888)
+            val options =
+                BitmapFactory.Options().apply {
+                    inPreferredConfig = Bitmap.Config.RGB_565
+                    inScaled = false
+                    inDither = false
+                    inPreferQualityOverSpeed = false
+                }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
         } catch (e: Exception) {
             null
         }

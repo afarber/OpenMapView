@@ -27,9 +27,12 @@ class MapController(
     private var panOffsetX = 0f
     private var panOffsetY = 0f
 
+    private var lastDrawnTiles = mutableSetOf<TileCoordinate>()
+
     companion object {
         private const val MIN_ZOOM = 2.0
         private const val MAX_ZOOM = 19.0
+        private const val TILE_SIZE = 256f
     }
 
     private val markers = mutableListOf<Marker>()
@@ -38,7 +41,7 @@ class MapController(
 
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val tileDownloader = TileDownloader()
-    private val tileCache = TileCache()
+    private val tileCache = TileCache(context)
     private var tileSource = TileSource.STANDARD
     private val downloadingTiles = mutableSetOf<TileCoordinate>()
     private var onTileLoadedCallback: (() -> Unit)? = null
@@ -133,9 +136,10 @@ class MapController(
     }
 
     fun draw(canvas: Canvas) {
-        if (viewWidth <= 0 || viewHeight <= 0) return
+        if (viewWidth <= 0 || viewHeight <= 0) {
+            return
+        }
 
-        // Get visible tiles
         val visibleTiles =
             ViewportCalculator.getVisibleTiles(
                 center,
@@ -146,28 +150,21 @@ class MapController(
                 panOffsetY,
             )
 
-        // Calculate center pixel position
         val (centerPixelX, centerPixelY) = Projection.latLngToPixel(center, zoom.toInt())
 
-        // Draw each tile
         for (tile in visibleTiles) {
             val (tilePixelX, tilePixelY) = Projection.tileToPixel(tile)
 
-            // Calculate screen position
             val screenX = (tilePixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
             val screenY = (tilePixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
-            // Check if tile is in cache
             val cachedBitmap = tileCache.get(tile)
             if (cachedBitmap != null) {
-                // Draw cached bitmap
                 canvas.drawBitmap(cachedBitmap, screenX, screenY, null)
             } else {
-                // Draw placeholder
-                canvas.drawRect(screenX, screenY, screenX + 256, screenY + 256, tilePlaceholderPaint)
-                canvas.drawRect(screenX, screenY, screenX + 256, screenY + 256, tileBorderPaint)
+                canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tilePlaceholderPaint)
+                canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tileBorderPaint)
 
-                // Start downloading if not already in progress
                 if (!downloadingTiles.contains(tile)) {
                     downloadingTiles.add(tile)
                     downloadTile(tile)
@@ -175,8 +172,42 @@ class MapController(
             }
         }
 
-        // Draw markers on top of tiles
+        // Prefetch adjacent tiles only when viewport changes to avoid excessive downloads
+        if (lastDrawnTiles != visibleTiles.toSet()) {
+            prefetchAdjacentTiles(visibleTiles)
+            lastDrawnTiles = visibleTiles.toMutableSet()
+        }
+
         drawMarkers(canvas, centerPixelX, centerPixelY)
+    }
+
+    /**
+     * Prefetch tiles adjacent to the visible viewport for smoother panning.
+     *
+     * Downloads a 2-tile buffer (512px) around the visible area. These low-priority
+     * downloads run in the background and don't trigger redraws to avoid performance impact.
+     * Only prefetches when the viewport changes to prevent excessive downloads during
+     * continuous panning.
+     */
+    private fun prefetchAdjacentTiles(visibleTiles: List<TileCoordinate>) {
+        // Calculate tiles in a buffer zone: add 2 tiles (512px) in each direction
+        val prefetchTiles =
+            ViewportCalculator.getVisibleTiles(
+                center,
+                zoom.toInt(),
+                viewWidth + 512,
+                viewHeight + 512,
+                panOffsetX,
+                panOffsetY,
+            )
+
+        // Download tiles that are adjacent but not yet visible
+        for (tile in prefetchTiles) {
+            if (!visibleTiles.contains(tile) && !downloadingTiles.contains(tile) && tileCache.get(tile) == null) {
+                downloadingTiles.add(tile)
+                downloadTile(tile, lowPriority = true)
+            }
+        }
     }
 
     private fun drawMarkers(
@@ -204,16 +235,22 @@ class MapController(
         }
     }
 
-    private fun downloadTile(tile: TileCoordinate) {
+    private fun downloadTile(
+        tile: TileCoordinate,
+        lowPriority: Boolean = false,
+    ) {
         scope.launch(Dispatchers.IO) {
             val url = tileSource.getTileUrl(tile)
             val bitmap = tileDownloader.downloadTile(url)
             if (bitmap != null) {
                 tileCache.put(tile, bitmap)
                 downloadingTiles.remove(tile)
-                // Trigger redraw on main thread
-                launch(Dispatchers.Main) {
-                    onTileLoadedCallback?.invoke()
+                // Only trigger redraw for visible tiles to avoid excessive invalidations
+                // during prefetching
+                if (!lowPriority) {
+                    launch(Dispatchers.Main) {
+                        onTileLoadedCallback?.invoke()
+                    }
                 }
             } else {
                 downloadingTiles.remove(tile)
@@ -275,9 +312,9 @@ class MapController(
 
     fun onDestroy() {
         // Clean up resources to prevent memory leaks
-        scope.cancel() // Cancel all coroutines (tile downloads)
-        tileDownloader.close() // Close HTTP client
-        tileCache.clear() // Clear cached bitmaps
-        MarkerIconFactory.clearCache() // Clear default marker icon
+        scope.cancel()
+        tileDownloader.close()
+        tileCache.close()
+        MarkerIconFactory.clearCache()
     }
 }

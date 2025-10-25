@@ -45,7 +45,9 @@ class OpenMapView
 
         init {
             setWillNotDraw(false)
-            controller.setOnTileLoadedCallback { invalidate() }
+            controller.setOnTileLoadedCallback {
+                invalidate()
+            }
         }
 
         override fun dispatchDraw(canvas: Canvas) {
@@ -61,6 +63,7 @@ class OpenMapView
         ) {
             super.onSizeChanged(w, h, oldw, oldh)
             controller.setViewSize(w, h)
+            invalidate()
         }
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -112,9 +115,15 @@ class OpenMapView
             return true
         }
 
-        fun setCenter(latLng: LatLng) = controller.setCenter(latLng)
+        fun setCenter(latLng: LatLng) {
+            controller.setCenter(latLng)
+            invalidate()
+        }
 
-        fun setZoom(zoom: Double) = controller.setZoom(zoom)
+        fun setZoom(zoom: Double) {
+            controller.setZoom(zoom)
+            invalidate()
+        }
 
         fun getZoom(): Double = controller.getZoom()
 
@@ -141,9 +150,15 @@ class OpenMapView
             controller.onMarkerClickListener = listener
         }
 
-        override fun onResume(owner: LifecycleOwner) = controller.onResume()
+        override fun onResume(owner: LifecycleOwner) {
+            controller.onResume()
+        }
 
-        override fun onPause(owner: LifecycleOwner) = controller.onPause()
+        override fun onPause(owner: LifecycleOwner) {
+            controller.onPause()
+        }
 
-        override fun onDestroy(owner: LifecycleOwner) = controller.onDestroy()
+        override fun onDestroy(owner: LifecycleOwner) {
+            controller.onDestroy()
+        }
     }
