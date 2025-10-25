@@ -7,7 +7,8 @@
 A modern, Kotlin-first MapView replacement for Android — powered by [OpenStreetMap](https://www.openstreetmap.org/).
 
 ## Features
-- Drop-in compatible with `Google MapView` (non-deprecated methods only)
+
+- Drop-in compatible with Google `MapView` (non-deprecated methods only)
 - Lightweight, pure Kotlin implementation
 - OSM tiles via standard APIs
 - Extensible marker, overlay, and gesture handling
@@ -23,29 +24,17 @@ Explore the example applications to see OpenMapView in action:
 
 Demonstrates basic map tile rendering and touch pan gestures.
 
-**Features:** Map tiles, touch panning, smooth updates
-
-[View Details](examples/Example01Pan/README.md)
-
 ### [Example02Zoom](examples/Example02Zoom) - Zoom Controls and Gestures
 
 ![Example02Zoom](examples/Example02Zoom/screenshot.gif)
 
 Shows zoom functionality with FAB controls and pinch-to-zoom gestures.
 
-**Features:** Programmatic zoom, pinch gestures, zoom level display, zoom limits
-
-[View Details](examples/Example02Zoom/README.md)
-
 ### [Example03Markers](examples/Example03Markers) - Marker Overlays
 
 ![Example03Markers](examples/Example03Markers/screenshot.gif)
 
 Demonstrates marker system with custom icons and click handling.
-
-**Features:** Multiple markers, click detection, toast notifications, custom icons support
-
-[View Details](examples/Example03Markers/README.md)
 
 ## Getting Started
 
@@ -62,7 +51,7 @@ fun MapViewScreen() {
                 // Register lifecycle observer for proper cleanup
                 lifecycleOwner.lifecycle.addObserver(this)
 
-                setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
+                setCenter(LatLng(51.4661, 7.2491))
                 setZoom(14.0)
 
                 // Add markers (optional)
@@ -91,4 +80,3 @@ class MainActivity : AppCompatActivity() {
     }
 }
 ```
-
