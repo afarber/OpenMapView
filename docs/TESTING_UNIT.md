@@ -20,6 +20,8 @@ openmapview/src/test/kotlin/de/afarber/openmapview/
 | **Kotlin Test** | (inherited) | Kotlin-specific test utilities |
 | **MockK** | 1.13.8 | Mocking framework for Kotlin |
 | **Robolectric** | 4.14 | Android framework shadow implementations |
+| **Ktor Client Mock** | 2.3.7 | HTTP client mocking for network tests |
+| **Coroutines Test** | 1.9.0 | Testing coroutines and async code |
 
 ## Running Tests
 
@@ -48,7 +50,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (43 tests)
+### Current Test Coverage (72 tests)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
@@ -56,6 +58,8 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **MarkerTest** | 8 | Marker creation, equality, and properties |
 | **ProjectionTest** | 12 | Web Mercator projection calculations |
 | **TileCacheTest** | 6 | LRU bitmap caching |
+| **TileDownloaderTest** | 2 | HTTP tile downloading with mocked Ktor client |
+| **MapControllerTest** | 28 | Zoom, pan, marker management, touch detection |
 | **ViewportCalculatorTest** | 10 | Visible tile calculation |
 
 ### Example Test
@@ -102,8 +106,8 @@ class MyTest {
 
 Use the `@RunWith(RobolectricTestRunner::class)` annotation when testing:
 
-- Bitmap operations (`BitmapDescriptorFactoryTest`, `TileCacheTest`)
-- Canvas drawing (`MarkerIconFactory`)
+- Bitmap operations (`BitmapDescriptorFactoryTest`, `TileCacheTest`, `TileDownloaderTest`)
+- Canvas drawing (`MarkerIconFactory`, `MapControllerTest`)
 - View classes (if testing custom views)
 - Android API calls (Context, Resources, etc.)
 
@@ -112,6 +116,20 @@ Do not use Robolectric for:
 - Pure Kotlin logic (`ProjectionTest` - math calculations)
 - Data classes (`Marker`, `LatLng`, `TileCoordinate`)
 - Business logic without Android dependencies
+
+### Testing Async Code with Coroutines
+
+Use `kotlinx-coroutines-test` for testing suspend functions:
+
+```kotlin
+@Test
+fun testAsyncOperation() = runTest {
+    val result = myRepository.fetchData()
+    assertNotNull(result)
+}
+```
+
+The `runTest` function creates a test coroutine scope that automatically advances time.
 
 ### Configuration
 
@@ -136,26 +154,52 @@ dependencies {
 - `isReturnDefaultValues = true` - Android methods return default values instead of throwing exceptions
 - `isIncludeAndroidResources = true` - Makes Android resources available to tests
 
-## MockK: Mocking Framework
+## MockK and Ktor MockEngine: Mocking Frameworks
+
+### MockK for Application Classes
 
 MockK is used for mocking Kotlin classes and interfaces. While Robolectric handles Android framework classes, MockK is used for application-level mocking.
 
-### Current Usage
-
-The project uses MockK minimally since Robolectric provides real Android implementations. MockK is available for mocking dependencies like:
+**Current Usage:**
 
 ```kotlin
-// Example: Mocking a repository
-val mockRepository = mockk<TileRepository>()
-every { mockRepository.getTile(any()) } returns mockBitmap
+@Test
+fun testDraw_ValidViewport() {
+    val canvas = mockk<Canvas>(relaxed = true)
+    controller.draw(canvas)
+    verify(atLeast = 1) { canvas.drawRect(any(), any(), any(), any(), any()) }
+}
 ```
 
-### MockK vs Robolectric
+### Ktor MockEngine for HTTP Tests
+
+Use `io.ktor:ktor-client-mock` to test network code without making real HTTP calls:
+
+```kotlin
+@Test
+fun testDownloadTile_Success() = runTest {
+    val mockBitmapBytes = createMockPngBytes()
+    val mockEngine = MockEngine { request ->
+        respond(
+            content = ByteReadChannel(mockBitmapBytes),
+            status = HttpStatusCode.OK,
+            headers = headersOf(HttpHeaders.ContentType, "image/png")
+        )
+    }
+
+    val client = HttpClient(mockEngine)
+    // Test with mocked client
+}
+```
+
+### Comparison Table
 
 | Use Case | Tool | Example |
 |----------|------|---------|
 | Mock `Bitmap` operations | Robolectric (preferred) | Use real `Bitmap.createBitmap()` |
-| Mock `UserRepository` | MockK | Use `mockk<UserRepository>()` |
+| Mock `Canvas` drawing | MockK | `mockk<Canvas>(relaxed = true)` |
+| Mock HTTP requests | Ktor MockEngine | `MockEngine { respond(...) }` |
+| Mock `UserRepository` | MockK | `mockk<UserRepository>()` |
 | Test projection math | Neither | Pure unit tests |
 
 ## Test Reports
@@ -325,19 +369,24 @@ Check Robolectric version compatibility with CI's JDK version. The project uses:
 
 ## Test Coverage Goals
 
-Current coverage focuses on:
+Current coverage includes:
 - Core projection math (Web Mercator)
 - Tile coordinate calculations
 - Marker API and bitmap generation
 - Tile caching logic
 - Viewport calculation
+- MapController rendering logic
+- Touch gesture handling (marker hit detection)
+- Zoom level validation and bounds
+- Network tile downloading (with mocking)
+- Pan offset calculations
 
 Future coverage should include:
-- MapController rendering logic
-- Touch gesture handling
-- Zoom level validation
-- Network tile downloading (with mocking)
-- Error handling and edge cases
+- Disk cache implementation tests
+- Tile pre-fetching tests
+- Performance benchmarks
+- Memory usage tests
+- Error recovery scenarios
 
 ## References
 

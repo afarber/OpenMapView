@@ -2,13 +2,13 @@
 
 [Back to README](../README.md)
 
-This document explains instrumented testing for OpenMapView. Currently, the project does not have instrumented tests, but this guide describes when and how to add them.
+This document explains instrumented testing for OpenMapView, including setup and the existing test suite.
 
 ## Overview
 
 **Instrumented tests** (also called **instrumentation tests** or **on-device tests**) run on an Android emulator or physical device. They provide access to real Android framework APIs and hardware.
 
-**Current Status:** OpenMapView has **no instrumented tests** yet. All testing is done via [unit tests with Robolectric](TESTING_UNIT.md).
+**Current Status:** OpenMapView has **9 instrumented tests** (2 for TileDownloader, 7 for MapController) that test real rendering, network operations, and Canvas drawing. Unit tests with Robolectric (72 tests) cover logic and calculations.
 
 ## Unit Tests vs Instrumented Tests
 
@@ -49,60 +49,84 @@ Continue using unit tests (with Robolectric) for:
 mkdir -p openmapview/src/androidTest/kotlin/de/afarber/openmapview
 ```
 
-### 2. Add Dependencies
+### 2. Dependencies (Already Configured)
 
-Update `openmapview/build.gradle.kts`:
+The project has instrumented testing dependencies configured in `openmapview/build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    // Existing dependencies...
-
-    // Instrumented testing
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.test:runner:1.5.2")
-    androidTestImplementation("androidx.test:rules:1.5.0")
+    // Instrumentation testing
+    androidTestImplementation("androidx.test:core-ktx:1.6.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test:rules:1.6.1")
+    androidTestImplementation("androidx.test.ext:junit-ktx:1.2.1")
+    androidTestImplementation("junit:junit:4.13.2")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 }
 ```
 
-### 3. Example Instrumented Test
+### 3. Current Instrumented Tests
 
-Create `openmapview/src/androidTest/kotlin/de/afarber/openmapview/OpenMapViewInstrumentedTest.kt`:
+The project has instrumented tests in `openmapview/src/androidTest/kotlin/de/afarber/openmapview/`:
 
+**TileDownloaderInstrumentationTest.kt** (2 tests):
 ```kotlin
-package de.afarber.openmapview
-
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Test
-import org.junit.runner.RunWith
-
 @RunWith(AndroidJUnit4::class)
-class OpenMapViewInstrumentedTest {
+class TileDownloaderInstrumentationTest {
     @Test
-    fun testOpenMapViewCreation() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val mapView = OpenMapView(context)
+    fun testDownloadRealOsmTile() = runTest {
+        val downloader = TileDownloader()
+        val tileUrl = TileSource.STANDARD.getTileUrl(TileCoordinate(x = 0, y = 0, zoom = 0))
+        val result = downloader.downloadTile(tileUrl)
 
-        assertNotNull(mapView)
-        assertEquals(0, mapView.childCount) // FrameLayout with no children initially
+        assertNotNull("Should successfully download a real OSM tile", result)
+        result?.let {
+            assert(it.width > 0) { "Downloaded bitmap should have width > 0" }
+            assert(it.height > 0) { "Downloaded bitmap should have height > 0" }
+        }
+        downloader.close()
+    }
+}
+```
+
+**MapControllerInstrumentationTest.kt** (7 tests):
+```kotlin
+@RunWith(AndroidJUnit4::class)
+class MapControllerInstrumentationTest {
+    private lateinit var controller: MapController
+
+    @Before
+    fun setUp() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        controller = MapController(context)
+        controller.setViewSize(1080, 1920)
     }
 
     @Test
-    fun testBitmapRendering() {
-        // Test actual bitmap rendering with real Android framework
-        val bitmap = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+    fun testDraw_WithRealCanvas() {
+        val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        controller.setCenter(LatLng(51.4661, 7.2491))
+        controller.setZoom(14.0)
+        controller.draw(canvas)
 
         assertNotNull(bitmap)
-        assertEquals(48, bitmap.width)
-        assertEquals(72, bitmap.height)
+        assertTrue(bitmap.width == 1080)
+        assertTrue(bitmap.height == 1920)
+    }
 
-        // Verify actual pixel colors (not possible with Robolectric)
-        val centerPixel = bitmap.getPixel(24, 36)
-        // Assert red-ish color (exact value depends on marker design)
+    @Test
+    fun testDraw_WithMarkers() {
+        val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        controller.setCenter(LatLng(51.4661, 7.2491))
+        controller.setZoom(14.0)
+        controller.addMarker(Marker(LatLng(51.4661, 7.2491)))
+        controller.draw(canvas)
+
+        assertNotNull(bitmap)
     }
 }
 ```
@@ -136,24 +160,28 @@ adb devices
 
 ## Test Categories for OpenMapView
 
-### Recommended Instrumented Tests
+### Current Instrumented Tests
 
-1. **Rendering Tests**
-   - Verify tile rendering produces non-null bitmaps
-   - Check marker icon pixel colors
-   - Test canvas drawing operations
+1. **Rendering Tests** (Implemented)
+   - Real Canvas drawing with actual Bitmap
+   - Marker rendering with real Android graphics
+   - Zoom and pan rendering validation
 
-2. **Touch Gesture Tests**
+2. **Network Tests** (Implemented)
+   - Real OSM tile downloads
+   - Network error handling
+
+3. **Lifecycle Tests** (Implemented)
+   - MapController lifecycle integration
+
+### Future Instrumented Tests
+
+1. **Touch Gesture Tests**
    - Pan gesture recognition
    - Pinch-to-zoom gesture
    - Double-tap zoom
 
-3. **Integration Tests**
-   - Full map initialization
-   - Tile downloading and caching
-   - Marker addition and rendering
-
-4. **Performance Tests**
+2. **Performance Tests**
    - Measure frame rate during panning
    - Memory usage with many markers
    - Tile cache eviction behavior
@@ -210,15 +238,15 @@ jobs:
 
 ## Test Structure
 
-Typical instrumented test structure:
+Current instrumented test structure:
 
 ```
 openmapview/src/androidTest/kotlin/de/afarber/openmapview/
-├── OpenMapViewTest.kt           # View creation and basic functionality
-├── MapControllerRenderTest.kt   # Rendering verification
-├── GestureHandlingTest.kt       # Touch gestures
-└── MarkerIntegrationTest.kt     # Marker display and interaction
+├── TileDownloaderInstrumentationTest.kt    # Real OSM tile downloads (2 tests)
+└── MapControllerInstrumentationTest.kt     # Canvas rendering and markers (7 tests)
 ```
+
+Total: 9 instrumented tests covering real Android framework behavior.
 
 ## Espresso UI Testing
 
@@ -255,16 +283,17 @@ class MapInteractionTest {
 | **Instrumented** | Real Android, hardware access, accurate | Slow, requires device, CI complexity |
 | **Hybrid** | Best of both worlds | More test code to maintain |
 
-**Current OpenMapView approach:** Pure unit tests with Robolectric provide sufficient coverage for the current feature set.
+**Current OpenMapView approach:** Hybrid approach with 72 unit tests (Robolectric) for logic and 9 instrumented tests for real Android framework validation.
 
-## Future Considerations
+## Expanding Instrumented Tests
 
-Add instrumented tests when:
+Consider adding more instrumented tests when:
 
 - Users report device-specific rendering issues
-- Adding complex gesture handling
-- Implementing hardware-dependent features
+- Adding complex gesture handling (currently tested via unit tests)
+- Implementing hardware-dependent features (GPS, sensors)
 - Validating performance on low-end devices
+- Testing pixel-perfect rendering accuracy
 
 ## References
 
