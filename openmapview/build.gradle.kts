@@ -56,6 +56,7 @@ dependencies {
     // Robolectric enables Android framework classes (Bitmap, Canvas, etc.) to work in JVM unit tests
     // without requiring an emulator or device. It provides shadow implementations of Android APIs.
     testImplementation("org.robolectric:robolectric:4.14")
+    testImplementation("androidx.test:core-ktx:1.6.1")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
     testImplementation("io.ktor:ktor-client-mock:2.3.7")
 
