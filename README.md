@@ -1,7 +1,5 @@
 [![Build Status](https://github.com/afarber/OpenMapView/actions/workflows/ci.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/ci.yml)
 
-[![Spotless](https://github.com/afarber/OpenMapView/actions/workflows/spotless.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/spotless.yml)
-
 # OpenMapView
 
 A modern, Kotlin-first MapView replacement for Android — powered by [OpenStreetMap](https://www.openstreetmap.org/).
@@ -35,6 +33,12 @@ Shows zoom functionality with FAB controls and pinch-to-zoom gestures.
 ![Example03Markers](examples/Example03Markers/screenshot.gif)
 
 Demonstrates marker system with custom icons and click handling.
+
+## Documentation
+
+- [Lifecycle Management](docs/LIFECYCLE.md) - How OpenMapView handles Android lifecycle events
+- [Maven Central Setup](docs/MAVEN_CENTRAL_SETUP.md) - Publishing configuration and release process
+- [GitHub Workflows](docs/GITHUB_WORKFLOWS.md) - CI/CD pipeline and workflow architecture
 
 ## Getting Started
 

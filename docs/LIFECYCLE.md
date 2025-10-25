@@ -1,5 +1,7 @@
 # OpenMapView Lifecycle Management
 
+[Back to README](../README.md)
+
 This document explains how OpenMapView handles Android lifecycle events and compares it with Google's MapView approach.
 
 ## Why Lifecycle Management Matters

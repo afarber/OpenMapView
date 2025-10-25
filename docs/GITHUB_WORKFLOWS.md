@@ -1,5 +1,7 @@
 # GitHub Actions Workflows Guide
 
+[Back to README](../README.md)
+
 This document explains the GitHub Actions workflows used in the OpenMapView project.
 
 ## Architecture Overview
@@ -131,19 +133,19 @@ build-library              build-examples
 
 ## Required GitHub Secrets
 
-For the release workflow to function, you must configure these secrets in your GitHub repository:
+For the release workflow to function, the project owner must configure these secrets in the GitHub repository:
 
 **Location**: Settings -> Secrets and variables -> Actions -> Repository secrets
 
 ### 1. OSSRH_USERNAME
-- **Description**: Your Sonatype JIRA username
+- **Description**: Sonatype JIRA username
 - **Used for**: Authenticating to Maven Central OSSRH
-- **How to get**: Created when you register at https://issues.sonatype.org
+- **How to get**: Created when registering at https://issues.sonatype.org
 
 ### 2. OSSRH_PASSWORD
-- **Description**: Your Sonatype JIRA password
+- **Description**: Sonatype JIRA password
 - **Used for**: Authenticating to Maven Central OSSRH
-- **How to get**: Set when you register at https://issues.sonatype.org
+- **How to get**: Set when registering at https://issues.sonatype.org
 
 ### 3. SIGNING_KEY
 - **Description**: Base64-encoded GPG private key
@@ -156,10 +158,10 @@ For the release workflow to function, you must configure these secrets in your G
 - **Security**: Never commit this or share it publicly
 
 ### 4. SIGNING_PASSWORD
-- **Description**: Passphrase for your GPG key
+- **Description**: Passphrase for the GPG key
 - **Used for**: Unlocking the GPG private key for signing
-- **How to get**: The passphrase you set when creating your GPG key
-- **Note**: If you didn't set a passphrase, use an empty string
+- **How to get**: The passphrase set when creating the GPG key
+- **Note**: If no passphrase was set, use an empty string
 
 ### Automatic Secrets
 
@@ -172,7 +174,7 @@ These secrets are automatically provided by GitHub Actions:
 
 ### Running CI Checks Locally
 
-Before pushing, you can run the same checks locally:
+Before pushing, developers can run the same checks locally:
 
 ```bash
 # Format check

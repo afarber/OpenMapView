@@ -1,10 +1,12 @@
 # Maven Central Publishing Setup Guide
 
+[Back to README](../README.md)
+
 This guide documents the Maven Central publishing setup for OpenMapView.
 
 ## Current Status
 
-✅ **Setup Complete** - OpenMapView is configured to publish to Maven Central.
+**Setup Complete** - OpenMapView is configured to publish to Maven Central.
 
 - **Namespace**: `de.afarber` (verified with Sonatype)
 - **Group ID**: `de.afarber`
