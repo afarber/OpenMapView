@@ -7,6 +7,8 @@
 
 package de.afarber.openmapview.example03markers
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -111,6 +113,12 @@ fun MapViewScreen() {
                     }
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                     true // Consume the click event
+                }
+
+                // Set attribution click listener to open OSM copyright page
+                setOnAttributionClickListener {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
+                    context.startActivity(intent)
                 }
             }
         },

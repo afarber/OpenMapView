@@ -50,16 +50,18 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (72 tests)
+### Current Test Coverage (76 tests)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
+| **AttributionOverlayTest** | 4 | Attribution rendering and touch detection |
 | **BitmapDescriptorFactoryTest** | 7 | Marker icon generation with colors |
+| **DiskTileCacheTest** | - | Persistent disk cache with DiskLruCache |
+| **MapControllerTest** | 28 | Zoom, pan, marker management, touch detection |
 | **MarkerTest** | 8 | Marker creation, equality, and properties |
 | **ProjectionTest** | 12 | Web Mercator projection calculations |
-| **TileCacheTest** | 6 | LRU bitmap caching |
+| **TileCacheTest** | 6 | Memory LRU cache behavior |
 | **TileDownloaderTest** | 2 | HTTP tile downloading with mocked Ktor client |
-| **MapControllerTest** | 28 | Zoom, pan, marker management, touch detection |
 | **ViewportCalculatorTest** | 10 | Visible tile calculation |
 
 ### Example Test
@@ -373,20 +375,22 @@ Current coverage includes:
 - Core projection math (Web Mercator)
 - Tile coordinate calculations
 - Marker API and bitmap generation
-- Tile caching logic
+- Memory cache (LRU) behavior
+- Disk cache (persistent storage)
 - Viewport calculation
 - MapController rendering logic
-- Touch gesture handling (marker hit detection)
+- Touch gesture handling (marker and attribution hit detection)
 - Zoom level validation and bounds
 - Network tile downloading (with mocking)
 - Pan offset calculations
+- Attribution overlay rendering and interaction
 
 Future coverage should include:
-- Disk cache implementation tests
 - Tile pre-fetching tests
 - Performance benchmarks
 - Memory usage tests
 - Error recovery scenarios
+- Cache promotion tests (disk to memory)
 
 ## References
 

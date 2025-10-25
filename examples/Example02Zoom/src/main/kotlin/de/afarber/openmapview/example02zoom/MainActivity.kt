@@ -7,6 +7,8 @@
 
 package de.afarber.openmapview.example02zoom
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.LatLng
@@ -51,20 +54,27 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MapViewScreen() {
+    val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var zoomLevel by remember { mutableStateOf(14.0) }
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
-            factory = { context ->
-                OpenMapView(context).apply {
+            factory = { ctx ->
+                OpenMapView(ctx).apply {
                     // Register lifecycle observer for proper cleanup
                     lifecycleOwner.lifecycle.addObserver(this)
 
                     setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
                     setZoom(14.0)
                     mapView = this
+
+                    // Set attribution click listener to open OSM copyright page
+                    setOnAttributionClickListener {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
+                        context.startActivity(intent)
+                    }
                 }
             },
             modifier = Modifier.fillMaxSize(),

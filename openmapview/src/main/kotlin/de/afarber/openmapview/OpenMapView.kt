@@ -25,6 +25,7 @@ class OpenMapView
     ) : FrameLayout(context, attrs, defStyleAttr),
         DefaultLifecycleObserver {
         private val controller = MapController(context)
+        private val attributionOverlay = AttributionOverlay(context)
         private var lastTouchX = 0f
         private var lastTouchY = 0f
 
@@ -53,6 +54,7 @@ class OpenMapView
         override fun dispatchDraw(canvas: Canvas) {
             super.dispatchDraw(canvas)
             controller.draw(canvas)
+            attributionOverlay.draw(canvas, width, height)
         }
 
         override fun onSizeChanged(
@@ -94,7 +96,14 @@ class OpenMapView
                         val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
 
                         if (movementDistance < 10) {
-                            // Minimal movement, check for marker touch
+                            // Check attribution overlay first
+                            if (attributionOverlay.handleTouch(event.x, event.y, width, height)) {
+                                controller.commitPan()
+                                invalidate()
+                                return true
+                            }
+
+                            // Check for marker touch
                             val touchedMarker = controller.handleMarkerTouch(event.x, event.y)
                             if (touchedMarker != null) {
                                 val consumed = controller.onMarkerClickListener?.invoke(touchedMarker) ?: false
@@ -148,6 +157,10 @@ class OpenMapView
 
         fun setOnMarkerClickListener(listener: (Marker) -> Boolean) {
             controller.onMarkerClickListener = listener
+        }
+
+        fun setOnAttributionClickListener(listener: () -> Unit) {
+            attributionOverlay.onAttributionClickListener = listener
         }
 
         override fun onResume(owner: LifecycleOwner) {
