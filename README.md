@@ -39,6 +39,8 @@ Demonstrates marker system with custom icons and click handling.
 - [Lifecycle Management](docs/LIFECYCLE.md) - How OpenMapView handles Android lifecycle events
 - [Maven Central Setup](docs/MAVEN_CENTRAL_SETUP.md) - Publishing configuration and release process
 - [GitHub Workflows](docs/GITHUB_WORKFLOWS.md) - CI/CD pipeline and workflow architecture
+- [Unit Testing](docs/TESTING_UNIT.md) - JVM unit tests with Robolectric for Android framework APIs
+- [Instrumented Testing](docs/TESTING_INSTRUMENTED.md) - On-device testing guide (not yet implemented)
 
 ## Getting Started
 
