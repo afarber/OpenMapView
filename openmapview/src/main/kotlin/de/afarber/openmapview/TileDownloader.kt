@@ -9,6 +9,7 @@ package de.afarber.openmapview
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
@@ -16,6 +17,10 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.readBytes
 
 class TileDownloader {
+    companion object {
+        private val TAG = TileDownloader::class.java.simpleName
+    }
+
     private val client =
         HttpClient(Android) {
             engine {
@@ -41,6 +46,7 @@ class TileDownloader {
                 }
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
         } catch (e: Exception) {
+            Log.w(TAG, "Failed to download tile from $url", e)
             null
         }
 

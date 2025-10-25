@@ -10,6 +10,7 @@ package de.afarber.openmapview
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import com.jakewharton.disklrucache.DiskLruCache
 import java.io.File
 import java.io.IOException
@@ -28,6 +29,7 @@ class DiskTileCache(
     private val diskCache: DiskLruCache?
 
     companion object {
+        private val TAG = DiskTileCache::class.java.simpleName
         private const val DISK_CACHE_VERSION = 1
         private const val VALUE_COUNT = 1
     }
@@ -38,6 +40,7 @@ class DiskTileCache(
             try {
                 DiskLruCache.open(cacheDir, DISK_CACHE_VERSION, VALUE_COUNT, maxSize)
             } catch (e: IOException) {
+                Log.e(TAG, "Failed to initialize disk cache at $cacheDir", e)
                 null
             }
     }
@@ -50,6 +53,7 @@ class DiskTileCache(
                 BitmapFactory.decodeStream(inputStream)
             }
         } catch (e: IOException) {
+            Log.w(TAG, "Failed to read tile $key from disk cache", e)
             null
         }
     }
@@ -66,11 +70,12 @@ class DiskTileCache(
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
                     editor.commit()
                 } catch (e: IOException) {
+                    Log.w(TAG, "Failed to write tile $key to disk cache", e)
                     editor.abort()
                 }
             }
         } catch (e: IOException) {
-            // Ignore disk cache errors
+            Log.w(TAG, "Failed to edit tile $key in disk cache", e)
         }
     }
 
@@ -78,7 +83,7 @@ class DiskTileCache(
         try {
             diskCache?.delete()
         } catch (e: IOException) {
-            // Ignore
+            Log.w(TAG, "Failed to clear disk cache", e)
         }
     }
 
@@ -86,7 +91,7 @@ class DiskTileCache(
         try {
             diskCache?.close()
         } catch (e: IOException) {
-            // Ignore
+            Log.w(TAG, "Failed to close disk cache", e)
         }
     }
 

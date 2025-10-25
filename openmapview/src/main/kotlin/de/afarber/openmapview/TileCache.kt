@@ -9,6 +9,7 @@ package de.afarber.openmapview
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import android.util.LruCache
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,10 @@ import kotlinx.coroutines.launch
 class TileCache(
     context: Context? = null,
 ) {
+    companion object {
+        private val TAG = TileCache::class.java.simpleName
+    }
+
     // Use 1/8 of available heap memory for tile cache
     private val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
     private val cacheSize = maxMemory / 8
@@ -50,7 +55,7 @@ class TileCache(
                         try {
                             diskCache?.put(key, oldValue)
                         } catch (e: Exception) {
-                            // Ignore errors when disk cache is closed
+                            Log.w(TAG, "Failed to write evicted tile to disk cache", e)
                         }
                     }
                 }
@@ -87,7 +92,7 @@ class TileCache(
         try {
             diskCache?.clear()
         } catch (e: Exception) {
-            // Ignore errors during clear
+            Log.w(TAG, "Failed to clear disk cache", e)
         }
     }
 
@@ -96,7 +101,7 @@ class TileCache(
             diskCache?.close()
             diskCache = null
         } catch (e: Exception) {
-            // Ignore errors during close
+            Log.w(TAG, "Failed to close disk cache", e)
         }
     }
 }
