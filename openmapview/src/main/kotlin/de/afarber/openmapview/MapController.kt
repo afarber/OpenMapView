@@ -263,14 +263,21 @@ class MapController(
         return null
     }
 
-    fun onResume() {}
+    fun onResume() {
+        // Called when app comes to foreground
+        // Could be used to resume tile downloads if paused
+    }
 
-    fun onPause() {}
+    fun onPause() {
+        // Called when app goes to background
+        // Could be used to pause tile downloads to save battery
+    }
 
     fun onDestroy() {
-        scope.cancel()
-        tileDownloader.close()
-        tileCache.clear()
-        MarkerIconFactory.clearCache()
+        // Clean up resources to prevent memory leaks
+        scope.cancel() // Cancel all coroutines (tile downloads)
+        tileDownloader.close() // Close HTTP client
+        tileCache.clear() // Clear cached bitmaps
+        MarkerIconFactory.clearCache() // Clear default marker icon
     }
 }

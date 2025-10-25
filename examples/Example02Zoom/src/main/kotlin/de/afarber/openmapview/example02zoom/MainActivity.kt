@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MapViewScreen() {
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var zoomLevel by remember { mutableStateOf(14.0) }
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
 
@@ -58,6 +59,9 @@ fun MapViewScreen() {
         AndroidView(
             factory = { context ->
                 OpenMapView(context).apply {
+                    // Register lifecycle observer for proper cleanup
+                    lifecycleOwner.lifecycle.addObserver(this)
+
                     setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
                     setZoom(14.0)
                     mapView = this

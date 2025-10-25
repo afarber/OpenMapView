@@ -37,9 +37,14 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MapViewScreen() {
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+
     AndroidView(
         factory = { context ->
             OpenMapView(context).apply {
+                // Register lifecycle observer for proper cleanup
+                lifecycleOwner.lifecycle.addObserver(this)
+
                 setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
                 setZoom(14.0)
             }

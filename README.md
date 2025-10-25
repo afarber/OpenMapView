@@ -13,7 +13,71 @@ A modern, Kotlin-first MapView replacement for Android — powered by [OpenStree
 - Extensible marker, overlay, and gesture handling
 - MIT licensed (use freely in commercial apps)
 
+## Examples
+
+Explore the example applications to see OpenMapView in action:
+
+### [Example01Pan](examples/Example01Pan) - Basic Map Panning
+
+![Example01Pan](examples/Example01Pan/screenshot.gif)
+
+Demonstrates basic map tile rendering and touch pan gestures.
+
+**Features:** Map tiles, touch panning, smooth updates
+
+[View Details](examples/Example01Pan/README.md)
+
+### [Example02Zoom](examples/Example02Zoom) - Zoom Controls and Gestures
+
+![Example02Zoom](examples/Example02Zoom/screenshot.gif)
+
+Shows zoom functionality with FAB controls and pinch-to-zoom gestures.
+
+**Features:** Programmatic zoom, pinch gestures, zoom level display, zoom limits
+
+[View Details](examples/Example02Zoom/README.md)
+
+### [Example03Markers](examples/Example03Markers) - Marker Overlays
+
+![Example03Markers](examples/Example03Markers/screenshot.gif)
+
+Demonstrates marker system with custom icons and click handling.
+
+**Features:** Multiple markers, click detection, toast notifications, custom icons support
+
+[View Details](examples/Example03Markers/README.md)
+
 ## Getting Started
+
+### With Jetpack Compose
+
+```kotlin
+@Composable
+fun MapViewScreen() {
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+
+    AndroidView(
+        factory = { context ->
+            OpenMapView(context).apply {
+                // Register lifecycle observer for proper cleanup
+                lifecycleOwner.lifecycle.addObserver(this)
+
+                setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
+                setZoom(14.0)
+
+                // Add markers (optional)
+                addMarker(Marker(
+                    position = LatLng(51.4661, 7.2491),
+                    title = "Bochum City Center"
+                ))
+            }
+        },
+        modifier = Modifier.fillMaxSize()
+    )
+}
+```
+
+### With XML Layouts
 
 ```kotlin
 class MainActivity : AppCompatActivity() {
@@ -22,9 +86,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val mapView = findViewById<OpenMapView>(R.id.mapView)
-        mapView.setTileSource(TileSource.STANDARD)
         mapView.setZoom(14.0)
-        mapView.setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
+        mapView.setCenter(LatLng(51.4661, 7.2491))
     }
 }
+```
 
