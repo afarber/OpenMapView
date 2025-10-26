@@ -3,6 +3,9 @@ name: Build Examples
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   build-examples:
     name: Build Example Apps

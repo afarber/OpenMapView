@@ -6,6 +6,9 @@ on:
     - cron: '45 9 * * *'
   workflow_dispatch:  # Allow manual triggering
 
+permissions:
+  contents: read
+
 jobs:
   instrumented-test:
     name: Run Instrumentation Tests

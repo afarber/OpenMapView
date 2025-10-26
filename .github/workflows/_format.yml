@@ -3,6 +3,9 @@ name: Format Check
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   format:
     name: Check Code Formatting

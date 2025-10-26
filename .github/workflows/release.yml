@@ -5,6 +5,9 @@ on:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: write  # Needed to create GitHub releases
+
 jobs:
   format:
     name: Check Formatting

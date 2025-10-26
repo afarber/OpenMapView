@@ -3,6 +3,9 @@ name: Build Library
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   build-library:
     name: Build OpenMapView AAR
