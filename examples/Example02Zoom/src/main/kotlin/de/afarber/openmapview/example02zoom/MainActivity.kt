@@ -84,7 +84,7 @@ fun MapViewScreen() {
         Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp),
+                .padding(bottom = 16.dp),
         ) {
             // Zoom level display
             Surface(

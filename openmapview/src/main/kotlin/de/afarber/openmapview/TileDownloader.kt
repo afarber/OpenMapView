@@ -44,7 +44,7 @@ class TileDownloader {
                 }
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to download tile from $url", e)
+            Log.e(TAG, "Failed to download tile from $url: ${e.javaClass.simpleName}: ${e.message}", e)
             null
         }
 
