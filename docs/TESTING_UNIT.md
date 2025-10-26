@@ -369,9 +369,47 @@ Check Robolectric version compatibility with CI's JDK version. The project uses:
 - JDK 17
 - Both are compatible
 
-## Test Coverage Goals
+## Test Coverage
 
-Current coverage includes:
+### Overview
+
+OpenMapView enforces a minimum test coverage of 50% using JaCoCo. Coverage is measured automatically on every CI run and displayed via a badge in the README.
+
+[![codecov](https://codecov.io/gh/afarber/OpenMapView/branch/main/graph/badge.svg)](https://codecov.io/gh/afarber/OpenMapView)
+
+### Generating Coverage Reports
+
+Run tests and generate coverage:
+
+```bash
+./gradlew :openmapview:testDebugUnitTest jacocoTestReport
+```
+
+View HTML coverage report:
+
+```
+openmapview/build/reports/jacoco/jacocoTestReport/html/index.html
+```
+
+Check coverage meets minimum threshold:
+
+```bash
+./scripts/check-coverage.sh
+```
+
+### Coverage Configuration
+
+JaCoCo is configured in `openmapview/build.gradle.kts` with the following exclusions:
+
+- Generated code (R.class, BuildConfig)
+- Test files
+- Android framework classes
+
+The minimum coverage threshold is set to 50% and enforced in CI.
+
+### Current Coverage Areas
+
+The test suite currently covers:
 - Core projection math (Web Mercator)
 - Tile coordinate calculations
 - Marker API and bitmap generation
@@ -385,12 +423,34 @@ Current coverage includes:
 - Pan offset calculations
 - Attribution overlay rendering and interaction
 
-Future coverage should include:
-- Tile pre-fetching tests
-- Performance benchmarks
-- Memory usage tests
-- Error recovery scenarios
-- Cache promotion tests (disk to memory)
+### Coverage in CI
+
+The `.github/workflows/_coverage.yml` workflow:
+1. Runs all unit tests
+2. Generates JaCoCo coverage report
+3. Uploads coverage to Codecov
+4. Checks coverage meets 50% minimum
+5. Uploads HTML and XML reports as artifacts
+
+Coverage results are available:
+- On Codecov: https://codecov.io/gh/afarber/OpenMapView
+- As CI artifacts (HTML report)
+- In PR status checks (pass/fail)
+
+### Improving Coverage
+
+Focus testing efforts on:
+- Public API methods
+- Core business logic
+- Edge cases and error handling
+- Critical code paths
+
+Less critical:
+- Private internal utilities
+- Simple getters/setters
+- Generated code
+
+See [Contributing Guide](CONTRIBUTING.md#test-coverage) for coverage requirements when submitting PRs.
 
 ## References
 
