@@ -159,6 +159,44 @@ class OpenMapView
             controller.onMarkerClickListener = listener
         }
 
+        fun addPolyline(polyline: Polyline): Polyline {
+            val result = controller.addPolyline(polyline)
+            invalidate()
+            return result
+        }
+
+        fun removePolyline(polyline: Polyline): Boolean {
+            val result = controller.removePolyline(polyline)
+            if (result) invalidate()
+            return result
+        }
+
+        fun clearPolylines() {
+            controller.clearPolylines()
+            invalidate()
+        }
+
+        fun getPolylines(): List<Polyline> = controller.getPolylines()
+
+        fun addPolygon(polygon: Polygon): Polygon {
+            val result = controller.addPolygon(polygon)
+            invalidate()
+            return result
+        }
+
+        fun removePolygon(polygon: Polygon): Boolean {
+            val result = controller.removePolygon(polygon)
+            if (result) invalidate()
+            return result
+        }
+
+        fun clearPolygons() {
+            controller.clearPolygons()
+            invalidate()
+        }
+
+        fun getPolygons(): List<Polygon> = controller.getPolygons()
+
         fun setOnAttributionClickListener(listener: () -> Unit) {
             attributionOverlay.onAttributionClickListener = listener
         }

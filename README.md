@@ -101,6 +101,12 @@ Shows zoom functionality with FAB controls and pinch-to-zoom gestures.
 
 Demonstrates marker system with custom icons and click handling.
 
+### [Example04Polylines](examples/Example04Polylines) - Polylines and Polygons
+
+![Example04Polylines](examples/Example04Polylines/screenshot.gif)
+
+Shows how to draw vector shapes including polylines, filled polygons, and polygons with holes.
+
 ## Documentation
 
 - [Contributing Guide](docs/CONTRIBUTING.md) - Code quality requirements, formatting, git hooks, and PR process

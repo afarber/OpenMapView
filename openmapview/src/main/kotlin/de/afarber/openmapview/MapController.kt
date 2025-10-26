@@ -39,6 +39,9 @@ class MapController(
     private val defaultMarkerIcon by lazy { MarkerIconFactory.getDefaultIcon() }
     var onMarkerClickListener: ((Marker) -> Boolean)? = null
 
+    private val polylines = mutableListOf<Polyline>()
+    private val polygons = mutableListOf<Polygon>()
+
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val tileDownloader = TileDownloader()
     private val tileCache = TileCache(context)
@@ -178,6 +181,8 @@ class MapController(
             lastDrawnTiles = visibleTiles.toMutableSet()
         }
 
+        drawPolygons(canvas, centerPixelX, centerPixelY)
+        drawPolylines(canvas, centerPixelX, centerPixelY)
         drawMarkers(canvas, centerPixelX, centerPixelY)
     }
 
@@ -207,6 +212,109 @@ class MapController(
                 downloadingTiles.add(tile)
                 downloadTile(tile, lowPriority = true)
             }
+        }
+    }
+
+    private fun drawPolylines(
+        canvas: Canvas,
+        centerPixelX: Double,
+        centerPixelY: Double,
+    ) {
+        val paint = Paint()
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.strokeJoin = Paint.Join.ROUND
+        paint.isAntiAlias = true
+
+        for (polyline in polylines) {
+            if (polyline.points.size < 2) continue
+
+            paint.color = polyline.strokeColor
+            paint.strokeWidth = polyline.strokeWidth
+
+            val path = android.graphics.Path()
+            var isFirst = true
+
+            for (point in polyline.points) {
+                val (pixelX, pixelY) = Projection.latLngToPixel(point, zoom.toInt())
+                val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                if (isFirst) {
+                    path.moveTo(screenX, screenY)
+                    isFirst = false
+                } else {
+                    path.lineTo(screenX, screenY)
+                }
+            }
+
+            canvas.drawPath(path, paint)
+        }
+    }
+
+    private fun drawPolygons(
+        canvas: Canvas,
+        centerPixelX: Double,
+        centerPixelY: Double,
+    ) {
+        val fillPaint = Paint()
+        fillPaint.style = Paint.Style.FILL
+        fillPaint.isAntiAlias = true
+
+        val strokePaint = Paint()
+        strokePaint.style = Paint.Style.STROKE
+        strokePaint.strokeCap = Paint.Cap.ROUND
+        strokePaint.strokeJoin = Paint.Join.ROUND
+        strokePaint.isAntiAlias = true
+
+        for (polygon in polygons) {
+            if (polygon.points.size < 3) continue
+
+            fillPaint.color = polygon.fillColor
+            strokePaint.color = polygon.strokeColor
+            strokePaint.strokeWidth = polygon.strokeWidth
+
+            val path = android.graphics.Path()
+            path.fillType = android.graphics.Path.FillType.EVEN_ODD
+
+            // Draw main polygon outline
+            var isFirst = true
+            for (point in polygon.points) {
+                val (pixelX, pixelY) = Projection.latLngToPixel(point, zoom.toInt())
+                val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                if (isFirst) {
+                    path.moveTo(screenX, screenY)
+                    isFirst = false
+                } else {
+                    path.lineTo(screenX, screenY)
+                }
+            }
+            path.close()
+
+            // Draw holes
+            for (hole in polygon.holes) {
+                if (hole.size < 3) continue
+                isFirst = true
+                for (point in hole) {
+                    val (pixelX, pixelY) = Projection.latLngToPixel(point, zoom.toInt())
+                    val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                    val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                    if (isFirst) {
+                        path.moveTo(screenX, screenY)
+                        isFirst = false
+                    } else {
+                        path.lineTo(screenX, screenY)
+                    }
+                }
+                path.close()
+            }
+
+            // Draw fill first, then stroke
+            canvas.drawPath(path, fillPaint)
+            canvas.drawPath(path, strokePaint)
         }
     }
 
@@ -270,6 +378,32 @@ class MapController(
     }
 
     fun getMarkers(): List<Marker> = markers.toList()
+
+    fun addPolyline(polyline: Polyline): Polyline {
+        polylines.add(polyline)
+        return polyline
+    }
+
+    fun removePolyline(polyline: Polyline): Boolean = polylines.remove(polyline)
+
+    fun clearPolylines() {
+        polylines.clear()
+    }
+
+    fun getPolylines(): List<Polyline> = polylines.toList()
+
+    fun addPolygon(polygon: Polygon): Polygon {
+        polygons.add(polygon)
+        return polygon
+    }
+
+    fun removePolygon(polygon: Polygon): Boolean = polygons.remove(polygon)
+
+    fun clearPolygons() {
+        polygons.clear()
+    }
+
+    fun getPolygons(): List<Polygon> = polygons.toList()
 
     fun handleMarkerTouch(
         x: Float,
