@@ -14,18 +14,22 @@ jobs:
     name: Check Formatting
     uses: ./.github/workflows/_format.yml
 
+  copyright:
+    name: Check Copyright Headers
+    uses: ./.github/workflows/_copyright.yml
+
   test:
     name: Unit Tests
-    needs: format
+    needs: [format, copyright]
     uses: ./.github/workflows/_test.yml
 
   build-library:
     name: Build Library
-    needs: [format, test]
+    needs: [format, copyright, test]
     uses: ./.github/workflows/_build-library.yml
 
   build-examples:
     name: Build Examples
-    needs: [format, test]
+    needs: [format, copyright, test]
     uses: ./.github/workflows/_build-examples.yml
 

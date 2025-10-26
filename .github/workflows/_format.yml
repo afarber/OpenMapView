@@ -35,4 +35,4 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run Spotless check
-        run: ./gradlew spotlessCheck
+        run: ./scripts/check-format.sh

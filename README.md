@@ -38,6 +38,7 @@ Demonstrates marker system with custom icons and click handling.
 
 ## Documentation
 
+- [Contributing Guide](docs/CONTRIBUTING.md) - Code quality requirements, formatting, git hooks, and PR process
 - [Lifecycle Management](docs/LIFECYCLE.md) - How OpenMapView handles Android lifecycle events
 - [Maven Central Setup](docs/MAVEN_CENTRAL_SETUP.md) - Publishing configuration and release process
 - [GitHub Workflows](docs/GITHUB_WORKFLOWS.md) - CI/CD pipeline and workflow architecture
