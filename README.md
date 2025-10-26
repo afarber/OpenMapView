@@ -1,4 +1,6 @@
-[![Build Status](https://github.com/afarber/OpenMapView/actions/workflows/ci.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/ci.yml)
+[![CI](https://github.com/afarber/OpenMapView/actions/workflows/ci.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/ci.yml)
+[![Daily Tests](https://github.com/afarber/OpenMapView/actions/workflows/daily.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/daily.yml)
+[![Release](https://github.com/afarber/OpenMapView/actions/workflows/release.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/release.yml)
 
 # OpenMapView
 
@@ -40,7 +42,7 @@ Demonstrates marker system with custom icons and click handling.
 - [Maven Central Setup](docs/MAVEN_CENTRAL_SETUP.md) - Publishing configuration and release process
 - [GitHub Workflows](docs/GITHUB_WORKFLOWS.md) - CI/CD pipeline and workflow architecture
 - [Unit Testing](docs/TESTING_UNIT.md) - JVM unit tests with Robolectric for Android framework APIs
-- [Instrumented Testing](docs/TESTING_INSTRUMENTED.md) - On-device testing guide (not yet implemented)
+- [Instrumented Testing](docs/TESTING_INSTRUMENTED.md) - On-device (phone and auto) testing with Android emulator
 
 ## Getting Started
 
