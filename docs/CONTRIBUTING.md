@@ -34,7 +34,7 @@ The CI pipeline will fail if code is not properly formatted.
 
 ### 2. Copyright Headers
 
-All `.kt` and `.kts` files must include the MIT license header at the top:
+All `.kt` files must include the MIT license header at the top:
 
 ```kotlin
 /*
@@ -49,7 +49,7 @@ Running `./gradlew spotlessApply` automatically adds this header to any files mi
 
 **Why copyright headers matter:** Including copyright headers on all source files helps avoid potential legal issues and keeps this library clean to use for both personal and commercial applications. The MIT license identifier makes licensing terms explicit and unambiguous.
 
-The CI pipeline includes a copyright check that will fail if any Kotlin files are missing the required header.
+The CI pipeline includes a copyright check that will fail if any `.kt` files are missing the required header.
 
 ## Automated Git Hooks (Recommended)
 

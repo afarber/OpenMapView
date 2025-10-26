@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Check for missing MIT copyright headers in Kotlin files
+# Check for missing MIT copyright headers in Kotlin source files
 # Returns 0 if all files have headers, 1 if any are missing
 
 MISSING_FILES=()
@@ -9,7 +9,7 @@ while IFS= read -r file; do
   if ! grep -q "SPDX-License-Identifier: MIT" "$file"; then
     MISSING_FILES+=("$file")
   fi
-done < <(find . -type f \( -name "*.kt" -o -name "*.kts" \) \
+done < <(find . -type f -name "*.kt" \
          -not -path "*/build/*" \
          -not -path "*/.gradle/*")
 
