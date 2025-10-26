@@ -22,11 +22,24 @@ The workflows are designed using a **modular, reusable component architecture** 
 
 Located in `.github/workflows/`:
 
+#### `_copyright.yml`
+- **Purpose**: Verify MIT license headers in all `.kt` files
+- **Runs**: `./scripts/check-copyright.sh`
+- **Usage**: Called by CI and Release workflows
+- **Fast**: ~30 seconds
+
 #### `_format.yml`
 - **Purpose**: Verify code formatting with Spotless
 - **Runs**: `./gradlew spotlessCheck`
 - **Usage**: Called by CI and Release workflows
 - **Fast**: ~30 seconds
+
+#### `_coverage.yml`
+- **Purpose**: Check test coverage meets minimum threshold
+- **Runs**: `./scripts/check-coverage.sh` (minimum 20% coverage)
+- **Artifacts**: Uploads coverage reports to Codecov and as artifacts
+- **Usage**: Called by CI workflow
+- **Duration**: ~1-2 minutes
 
 #### `_test.yml`
 - **Purpose**: Run unit tests
@@ -49,6 +62,13 @@ Located in `.github/workflows/`:
 - **Usage**: Called by CI and Release workflows
 - **Duration**: ~3-4 minutes
 
+#### `_instrumentation.yml`
+- **Purpose**: Run instrumentation tests on Android emulators
+- **Runs**: Tests on both phone (Nexus 6) and automotive (automotive_1024p_landscape) profiles
+- **Artifacts**: Uploads test results and reports for both device types
+- **Usage**: Called by daily.yml and ci.yml (PR only)
+- **Duration**: ~10-15 minutes (may vary due to emulator startup and potential flakiness)
+
 ### Main Workflows
 
 #### `ci.yml` - Continuous Integration
@@ -61,28 +81,47 @@ Located in `.github/workflows/`:
 format (Check formatting)
    |
    v
-test (Run unit tests)
+copyright (Check headers)
    |
    v
    +----------------+----------------+
    |                                 |
    v                                 v
+test (Unit tests)          coverage (Test coverage)
+   |                                 |
+   +----------------+----------------+
+                    |
+   +----------------+----------------+
+   |                                 |
+   v                                 v
 build-library              build-examples
 (Build AAR)                (Build 3 APKs)
+
+For Pull Requests only:
+   v
+instrumented-test (Phone + Automotive)
+(Runs in parallel, not blocking)
 ```
 
 **Jobs**:
 1. **format** - Runs Spotless formatting check
-2. **test** - Runs unit tests (depends on format)
-3. **build-library** - Builds library AAR (depends on format + test, runs in parallel with build-examples)
-4. **build-examples** - Builds example APKs (depends on format + test, runs in parallel with build-library)
+2. **copyright** - Verifies MIT license headers
+3. **test** - Runs unit tests (depends on format + copyright)
+4. **coverage** - Checks test coverage meets 20% minimum (depends on format + copyright)
+5. **build-library** - Builds library AAR (depends on format + copyright + test + coverage, runs in parallel with build-examples)
+6. **build-examples** - Builds example APKs (depends on format + copyright + test + coverage, runs in parallel with build-library)
+7. **instrumented-test** - Runs instrumentation tests on phone and automotive emulators (PR only, runs independently)
 
-**Total Duration**: ~3-4 minutes (with parallel builds)
+**Total Duration**:
+- **Maintainer pushes to main**: ~3-4 minutes (no instrumentation tests)
+- **External PRs**: ~10-15 minutes (includes instrumentation tests on phone + automotive)
 
 **Benefits**:
 - Catches formatting issues early (before expensive builds)
 - Parallel builds save time
 - PR checks ensure code quality before merge
+- Instrumentation tests only run on PRs, reducing CI time for maintainer's direct commits
+- External contributors' PRs are thoroughly tested on both phone and automotive platforms
 
 #### `release.yml` - Maven Central Release
 **Trigger**: Push of version tag matching `v*.*.*` pattern (e.g., `v0.2.0`)
@@ -130,6 +169,38 @@ build-library              build-examples
 **Total Duration**: ~5-7 minutes (including publish)
 
 **Secrets Required**: See "Required GitHub Secrets" section below
+
+#### `daily.yml` - Daily Instrumentation Tests
+**Trigger**: Scheduled daily at 09:45 UTC, or manual trigger via workflow_dispatch
+
+**Purpose**: Run comprehensive instrumentation tests on both phone and automotive platforms daily to catch potential issues early
+
+**Execution Flow**:
+```
+Scheduled trigger (09:45 UTC daily)
+   |
+   v
+instrumented-test (calls _instrumentation.yml)
+   |
+   v
+   +------------------+------------------+
+   |                                     |
+   v                                     v
+Phone Tests                   Automotive Tests
+(Nexus 6 profile)            (automotive_1024p_landscape)
+```
+
+**Jobs**:
+1. **instrumented-test** - Calls the reusable `_instrumentation.yml` workflow
+
+**Total Duration**: ~10-15 minutes (may vary due to emulator startup and flakiness)
+
+**Benefits**:
+- Catches device-specific regressions early
+- Tests on both phone and automotive form factors
+- Runs independently from main CI pipeline
+- Manual trigger available for on-demand testing
+- Acceptable flakiness since it doesn't block development workflow
 
 ## Required GitHub Secrets
 
@@ -266,9 +337,17 @@ GitHub triggers ci.yml workflow
 format job: Check Spotless formatting (30 sec) - PASS
    |
    v
-test job: Run unit tests (1 min) - PASS
+copyright job: Check license headers (30 sec) - PASS
    |
    v
+   +-------------+--------------+
+   |                            |
+   v                            v
+test job: Unit tests       coverage job: Test coverage
+   (1 min) - PASS               (1 min) - PASS (>20%)
+   |                            |
+   +-------------+--------------+
+                 |
    +-------------+--------------+
    |                            |
    v                            v
@@ -278,7 +357,14 @@ build-library: Build AAR  build-examples: Build 3 APKs
    +-------------+--------------+
                  |
                  v
-All checks pass -> PR is ready to merge
+All core checks pass (3-4 min)
+
+Meanwhile (in parallel, PR only):
+instrumented-test: Phone + Automotive tests
+   (10-15 min) - PASS (may be flaky)
+   |
+   v
+All checks complete -> PR is ready to merge
 ```
 
 ### Example: Release to Maven Central
@@ -331,15 +417,22 @@ To upgrade Java version or change Gradle cache settings:
 - Automatically applies to CI and Release workflows
 
 ### 4. Composability
-Easy to add new workflows:
+The reusable `_instrumentation.yml` workflow demonstrates this principle:
 ```yaml
-# Future: instrumentation-tests.yml
+# Used by both daily.yml and ci.yml
 jobs:
   instrumentation-tests:
-    uses: ./.github/workflows/_instrumentation-tests.yml
+    uses: ./.github/workflows/_instrumentation.yml
 ```
+This single workflow definition powers both daily scheduled tests and PR validation tests.
 
-### 5. Clear Separation of Concerns
+### 5. Flexible Testing Strategy
+- **Maintainer commits to main**: Fast feedback (~3-4 min) without instrumentation delays
+- **External PRs**: Comprehensive testing (~10-15 min) including phone and automotive instrumentation tests
+- **Daily scheduled runs**: Proactive regression detection on both platforms
+- **Test flakiness handled gracefully**: Instrumentation tests run independently and don't block merges
+
+### 6. Clear Separation of Concerns
 - Format checks catch simple issues fast
 - Tests verify correctness
 - Builds ensure compilation works

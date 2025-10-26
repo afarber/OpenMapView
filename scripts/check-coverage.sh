@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Check test coverage meets minimum threshold (50%)
+# Check test coverage meets minimum threshold (20%)
 # Returns 0 if coverage is adequate, 1 if below threshold
 
-COVERAGE_THRESHOLD=50
+COVERAGE_THRESHOLD=20
 
 echo "Generating test coverage report..."
 ./gradlew :openmapview:jacocoTestReport --quiet

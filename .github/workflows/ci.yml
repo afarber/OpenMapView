@@ -38,3 +38,8 @@ jobs:
     needs: [format, copyright, test, coverage]
     uses: ./.github/workflows/_build-examples.yml
 
+  instrumented-test:
+    name: Instrumentation Tests (PR only)
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/_instrumentation.yml
+

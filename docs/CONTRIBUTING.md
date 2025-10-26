@@ -102,7 +102,7 @@ Run unit tests:
 
 ### Test Coverage
 
-The project enforces a minimum test coverage of 50% for all code. Coverage is measured using JaCoCo.
+The project enforces a minimum test coverage of 20% for all code. Coverage is measured using JaCoCo.
 
 Generate coverage report:
 
@@ -121,7 +121,7 @@ Check coverage meets minimum threshold:
 ./scripts/check-coverage.sh
 ```
 
-The CI pipeline will fail if coverage drops below 50%. Focus on testing:
+The CI pipeline will fail if coverage drops below 20%. Focus on testing:
 - Core business logic
 - Public API methods
 - Edge cases and error handling
@@ -159,7 +159,7 @@ The CI pipeline runs automatically on all pull requests and includes:
 1. **Format Check** - Verifies Spotless formatting
 2. **Copyright Check** - Verifies MIT license headers
 3. **Unit Tests** - Runs all JVM unit tests
-4. **Test Coverage** - Ensures minimum 50% code coverage
+4. **Test Coverage** - Ensures minimum 20% code coverage
 5. **Build Library** - Builds the OpenMapView AAR
 6. **Build Examples** - Builds all example applications
 
