@@ -23,13 +23,18 @@ jobs:
     needs: [format, copyright]
     uses: ./.github/workflows/_test.yml
 
+  coverage:
+    name: Test Coverage
+    needs: [format, copyright]
+    uses: ./.github/workflows/_coverage.yml
+
   build-library:
     name: Build Library
-    needs: [format, copyright, test]
+    needs: [format, copyright, test, coverage]
     uses: ./.github/workflows/_build-library.yml
 
   build-examples:
     name: Build Examples
-    needs: [format, copyright, test]
+    needs: [format, copyright, test, coverage]
     uses: ./.github/workflows/_build-examples.yml
 

@@ -100,6 +100,37 @@ Run unit tests:
 ./gradlew :openmapview:test
 ```
 
+### Test Coverage
+
+The project enforces a minimum test coverage of 50% for all code. Coverage is measured using JaCoCo.
+
+Generate coverage report:
+
+```bash
+./gradlew :openmapview:jacocoTestReport
+```
+
+View the HTML coverage report at:
+```
+openmapview/build/reports/jacoco/jacocoTestReport/html/index.html
+```
+
+Check coverage meets minimum threshold:
+
+```bash
+./scripts/check-coverage.sh
+```
+
+The CI pipeline will fail if coverage drops below 50%. Focus on testing:
+- Core business logic
+- Public API methods
+- Edge cases and error handling
+
+Coverage excludes:
+- Generated code (R.class, BuildConfig)
+- Test files
+- Android framework classes
+
 ### Instrumentation Tests
 
 For features requiring real Android framework APIs or rendering, add instrumentation tests.
@@ -128,8 +159,9 @@ The CI pipeline runs automatically on all pull requests and includes:
 1. **Format Check** - Verifies Spotless formatting
 2. **Copyright Check** - Verifies MIT license headers
 3. **Unit Tests** - Runs all JVM unit tests
-4. **Build Library** - Builds the OpenMapView AAR
-5. **Build Examples** - Builds all example applications
+4. **Test Coverage** - Ensures minimum 50% code coverage
+5. **Build Library** - Builds the OpenMapView AAR
+6. **Build Examples** - Builds all example applications
 
 All checks must pass before merging.
 
@@ -144,6 +176,12 @@ All checks must pass before merging.
 
 # Run unit tests
 ./gradlew :openmapview:test
+
+# Generate coverage report
+./gradlew :openmapview:jacocoTestReport
+
+# Check coverage threshold
+./scripts/check-coverage.sh
 
 # Build library
 ./gradlew :openmapview:assembleRelease
