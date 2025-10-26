@@ -3,12 +3,15 @@
 [![Release](https://github.com/afarber/OpenMapView/actions/workflows/release.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/afarber/OpenMapView/branch/main/graph/badge.svg)](https://codecov.io/gh/afarber/OpenMapView)
 [![Maven Central](https://img.shields.io/maven-central/v/de.afarber/openmapview.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/de.afarber/openmapview)
+[![JitPack](https://jitpack.io/v/afarber/OpenMapView.svg)](https://jitpack.io/#afarber/OpenMapView)
 
 # OpenMapView
 
 A modern, Kotlin-first MapView replacement for Android — powered by [OpenStreetMap](https://www.openstreetmap.org/).
 
 ## Installation
+
+### Maven Central (Recommended)
 
 Add the dependency to the module `build.gradle.kts`:
 
@@ -23,6 +26,48 @@ Or for Groovy `build.gradle`:
 ```groovy
 dependencies {
     implementation 'de.afarber:openmapview:0.1.0'
+}
+```
+
+### JitPack (Alternative)
+
+JitPack provides instant access to GitHub releases and supports development snapshots.
+
+Add the JitPack repository in `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+Then add the dependency:
+
+```kotlin
+dependencies {
+    implementation("com.github.afarber:OpenMapView:0.1.0")
+}
+```
+
+For Groovy `settings.gradle`:
+
+```groovy
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+```groovy
+dependencies {
+    implementation 'com.github.afarber:OpenMapView:0.1.0'
 }
 ```
 
@@ -60,7 +105,9 @@ Demonstrates marker system with custom icons and click handling.
 
 - [Contributing Guide](docs/CONTRIBUTING.md) - Code quality requirements, formatting, git hooks, and PR process
 - [Lifecycle Management](docs/LIFECYCLE.md) - How OpenMapView handles Android lifecycle events
-- [Maven Central Setup](docs/MAVEN_CENTRAL_SETUP.md) - Publishing configuration and release process
+- [Publishing Guide](docs/PUBLISHING.md) - Publishing to Maven Central and JitPack
+- [Maven Central Setup](docs/MAVEN_CENTRAL_SETUP.md) - Detailed Maven Central configuration
+- [JitPack Setup](docs/JITPACK_SETUP.md) - Detailed JitPack configuration
 - [GitHub Workflows](docs/GITHUB_WORKFLOWS.md) - CI/CD pipeline and workflow architecture
 - [Unit Testing](docs/TESTING_UNIT.md) - JVM unit tests with Robolectric for Android framework APIs
 - [Instrumented Testing](docs/TESTING_INSTRUMENTED.md) - On-device (phone and auto) testing with Android emulator
