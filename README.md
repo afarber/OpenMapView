@@ -2,10 +2,29 @@
 [![Daily Tests](https://github.com/afarber/OpenMapView/actions/workflows/daily.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/daily.yml)
 [![Release](https://github.com/afarber/OpenMapView/actions/workflows/release.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/afarber/OpenMapView/branch/main/graph/badge.svg)](https://codecov.io/gh/afarber/OpenMapView)
+[![Maven Central](https://img.shields.io/maven-central/v/de.afarber/openmapview.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/de.afarber/openmapview)
 
 # OpenMapView
 
 A modern, Kotlin-first MapView replacement for Android — powered by [OpenStreetMap](https://www.openstreetmap.org/).
+
+## Installation
+
+Add the dependency to the module `build.gradle.kts`:
+
+```kotlin
+dependencies {
+    implementation("de.afarber:openmapview:0.1.0")
+}
+```
+
+Or for Groovy `build.gradle`:
+
+```groovy
+dependencies {
+    implementation 'de.afarber:openmapview:0.1.0'
+}
+```
 
 ## Features
 

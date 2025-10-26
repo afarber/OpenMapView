@@ -49,7 +49,7 @@ The following secrets are configured in GitHub Actions:
 
 ### Creating a New Release
 
-To publish a new version to Maven Central:
+To publish a new version to Maven Central, the project maintainer should:
 
 ```bash
 # 1. Ensure all changes are committed
@@ -62,7 +62,7 @@ git push origin v0.2.0
 
 ### Automated Workflow
 
-When you push a version tag, GitHub Actions automatically:
+When a version tag is pushed, GitHub Actions automatically:
 
 1. **Validates** - Checks formatting with Spotless
 2. **Tests** - Runs unit tests
@@ -161,13 +161,13 @@ The publishing configuration is defined in:
 **Solution:** Verify GitHub Secrets are correctly configured:
 - Check `OSSRH_USERNAME` and `OSSRH_PASSWORD` contain Central Portal user tokens
 - Generate new tokens at https://central.sonatype.com/account (click "Generate User Token")
-- The tokens should be different from your old OSSRH/JIRA credentials
+- The tokens should be different from old OSSRH/JIRA credentials
 
 ### Issue: "Failed to verify signature"
 **Solution:** Verify GPG key configuration:
 - Confirm public key `8334881A009EB69E5B5BDBF189999F05686CE169` is published to keyservers
 - Check `SIGNING_KEY` secret contains the full base64 private key
-- Verify `SIGNING_PASSWORD` matches your GPG key passphrase
+- Verify `SIGNING_PASSWORD` matches the GPG key passphrase
 
 ### Issue: Need to manage published artifacts
 **Solution:**
@@ -177,7 +177,7 @@ The publishing configuration is defined in:
 
 ### Issue: Version conflict
 **Solution:**
-- You cannot republish the same version
+- Maven Central does not allow republishing the same version
 - Delete the tag and create a new one with an incremented version:
   ```bash
   git tag -d v0.1.0
@@ -229,8 +229,10 @@ The project currently uses the OSSRH Staging API compatibility layer, which prov
 
 ### Generating Central Portal User Tokens
 
+To generate new user tokens for the project:
+
 1. Log in to https://central.sonatype.com/
-2. Navigate to your account settings at https://central.sonatype.com/account
+2. Navigate to account settings at https://central.sonatype.com/account
 3. Click "Generate User Token"
 4. Copy the username and password tokens
 5. Update GitHub Secrets:
@@ -254,7 +256,7 @@ repositories {
 }
 ```
 
-This is the official endpoint for the Central Portal and works with the user tokens generated from your Central Portal account.
+This is the official endpoint for the Central Portal and works with the user tokens generated from the Central Portal account.
 
 ## Resources
 
@@ -274,9 +276,9 @@ git push origin v0.2.0
 # Check workflow status
 # Go to: https://github.com/afarber/OpenMapView/actions
 
-# Verify publication (after 2-4 hours)
+# Verify publication (after 10-30 minutes)
 # Go to: https://central.sonatype.com/artifact/de.afarber/openmapview
 
-# Users can then install with:
+# Users can install with:
 # implementation("de.afarber:openmapview:0.2.0")
 ```
