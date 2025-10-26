@@ -72,21 +72,22 @@ When a version tag is pushed, GitHub Actions automatically:
 
 ### Publishing with Central Portal
 
-The project uses the OSSRH Staging API compatibility layer provided by Central Portal. This allows using existing Gradle publishing configuration with minimal changes.
+The project uses the **`com.gradleup.nmcp` plugin** to publish to the Central Portal. This plugin is specifically designed for the new Central Portal API and provides reliable publishing.
 
 **Publishing Flow:**
 
 1. Push a version tag (e.g., `v0.1.0`)
 2. GitHub Actions workflow automatically builds and publishes to Central Portal
-3. Artifacts are validated and published to Maven Central
-4. Wait 10-30 minutes for sync to Maven Central
+3. The nmcp plugin creates a deployment bundle and uploads it via the Central Portal API
+4. With `publicationType = "AUTOMATIC"`, artifacts are automatically validated and published
+5. Wait 10-30 minutes for the release to appear on Maven Central
 
 **Important Notes:**
 
 - The old OSSRH web UI (s01.oss.sonatype.org) is no longer available
 - All management is now done through the Central Portal at https://central.sonatype.com/
-- This project uses the Central Portal OSSRH Staging API endpoint: `https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/`
-- The old endpoint (`https://s01.oss.sonatype.org/...`) may not work reliably with Central Portal tokens
+- This project uses the `com.gradleup.nmcp` plugin version 0.1.2
+- The plugin is configured in the root `build.gradle.kts` with automatic publishing enabled
 
 ## Verifying Publication
 
@@ -120,7 +121,8 @@ Examples:
 ## Build Configuration
 
 The publishing configuration is defined in:
-- `openmapview/build.gradle.kts` - Maven publication setup
+- `build.gradle.kts` (root) - nmcp plugin configuration for Central Portal publishing
+- `openmapview/build.gradle.kts` - Maven publication setup (POM metadata, signing)
 - `.github/workflows/release.yml` - Release automation
 
 ### POM Metadata
@@ -219,13 +221,14 @@ maven {
 
 As of June 30, 2025, the legacy OSSRH service (oss.sonatype.org and s01.oss.sonatype.org) has reached end-of-life. All publishing now goes through the new Central Portal at https://central.sonatype.com/.
 
-### OSSRH Staging API Compatibility Layer
+### Publishing Plugin
 
-The project currently uses the OSSRH Staging API compatibility layer, which provides a smooth transition path:
+The project uses the **com.gradleup.nmcp** (New Maven Central Publishing) plugin:
 
-- **Current endpoint**: `https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/`
-- **Status**: This endpoint is maintained as a compatibility layer that forwards requests to Central Portal
-- **Authentication**: Requires Central Portal user tokens (not old OSSRH/JIRA credentials)
+- **Plugin**: `com.gradleup.nmcp` version 0.1.2
+- **Purpose**: Specifically designed for the Central Portal API
+- **Configuration**: Root `build.gradle.kts` file
+- **Publishing Type**: AUTOMATIC (artifacts are automatically published after validation)
 
 ### Generating Central Portal User Tokens
 
@@ -241,22 +244,23 @@ To generate new user tokens for the project:
 
 ### Current Configuration
 
-The project is configured to use the Central Portal OSSRH Staging API endpoint:
+The project is configured in the root `build.gradle.kts`:
 
 ```kotlin
-repositories {
-    maven {
-        name = "MavenCentral"
-        url = uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
-        credentials {
-            username = System.getenv("OSSRH_USERNAME")
-            password = System.getenv("OSSRH_PASSWORD")
-        }
+plugins {
+    id("com.gradleup.nmcp") version "0.1.2"
+}
+
+nmcp {
+    publishAllProjectsProbablyBreakingProjectIsolation {
+        username = System.getenv("OSSRH_USERNAME") ?: ""
+        password = System.getenv("OSSRH_PASSWORD") ?: ""
+        publicationType = "AUTOMATIC"
     }
 }
 ```
 
-This is the official endpoint for the Central Portal and works with the user tokens generated from the Central Portal account.
+The GitHub Actions workflow uses: `./gradlew publishAggregationToCentralPortal`
 
 ## Resources
 

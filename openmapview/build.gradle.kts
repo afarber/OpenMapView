@@ -208,30 +208,8 @@ publishing {
         }
     }
 
-    repositories {
-        // Uncomment this to also publish to GitHub Packages
-
-        /*
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/afarber/OpenMapView")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-         */
-
-        // Maven Central (via Central Portal OSSRH Staging API)
-        maven {
-            name = "MavenCentral"
-            url = uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
-            credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
-            }
-        }
-    }
+    // Note: Repository configuration is handled by the nmcp plugin in root build.gradle.kts
+    // The nmcp plugin uploads publications to Central Portal using their API
 }
 
 signing {

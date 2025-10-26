@@ -75,7 +75,7 @@ jobs:
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-        run: ./gradlew :openmapview:publishReleasePublicationToMavenCentralRepository
+        run: ./gradlew publishAggregationToCentralPortal
 
       - name: Generate changelog
         id: changelog
@@ -112,7 +112,7 @@ jobs:
             }
             ```
 
-            **Note:** It may take 2-4 hours for the release to sync to Maven Central.
+            **Note:** It may take 10-30 minutes for the release to appear on Maven Central.
 
             ## Installation
             Add to your `build.gradle.kts`:

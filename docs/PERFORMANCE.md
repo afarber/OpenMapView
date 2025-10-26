@@ -1,5 +1,7 @@
 # Performance Optimization
 
+[Back to README](../README.md)
+
 This document describes the performance optimization strategies implemented in OpenMapView to provide smooth map interaction while minimizing memory usage and network requests.
 
 ## Overview
