@@ -41,8 +41,6 @@ class TileDownloader {
                 BitmapFactory.Options().apply {
                     inPreferredConfig = Bitmap.Config.RGB_565
                     inScaled = false
-                    inDither = false
-                    inPreferQualityOverSpeed = false
                 }
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
         } catch (e: Exception) {
