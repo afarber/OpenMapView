@@ -6,12 +6,14 @@ This guide documents the Maven Central publishing setup for OpenMapView.
 
 ## Current Status
 
-**Setup Complete** - OpenMapView is configured to publish to Maven Central.
+**Setup Complete** - OpenMapView is configured to publish to Maven Central via the Central Portal.
 
 - **Namespace**: `de.afarber` (verified with Sonatype)
 - **Group ID**: `de.afarber`
 - **Artifact ID**: `openmapview`
 - **Maintainer**: Alexander Farber (farber72@outlook.de)
+
+**Note:** As of June 30, 2025, OSSRH has reached end-of-life and has been shut down. All publishing now goes through the new Central Portal (central.sonatype.com).
 
 ## Publishing Configuration
 
@@ -36,10 +38,12 @@ The public key has been published to keyservers and is used to sign all publishe
 
 The following secrets are configured in GitHub Actions:
 
-1. **OSSRH_USERNAME** - Sonatype JIRA username
-2. **OSSRH_PASSWORD** - Sonatype JIRA password
+1. **OSSRH_USERNAME** - Central Portal username (user token generated at central.sonatype.com/account)
+2. **OSSRH_PASSWORD** - Central Portal password (user token generated at central.sonatype.com/account)
 3. **SIGNING_KEY** - Base64-encoded GPG private key
 4. **SIGNING_PASSWORD** - GPG key passphrase
+
+**Note:** The credential names remain `OSSRH_USERNAME` and `OSSRH_PASSWORD` for backward compatibility, but they now contain Central Portal user tokens, not the old OSSRH/JIRA credentials.
 
 ## Release Process
 
@@ -66,23 +70,23 @@ When you push a version tag, GitHub Actions automatically:
 4. **Publishes** - Uploads artifacts to Maven Central
 5. **Releases** - Creates GitHub Release with changelog
 
-### First Release (Manual Steps)
+### Publishing with Central Portal
 
-For the first release only, you need to manually release the staging repository:
+The project uses the OSSRH Staging API compatibility layer provided by Central Portal. This allows using existing Gradle publishing configuration with minimal changes.
+
+**Publishing Flow:**
 
 1. Push a version tag (e.g., `v0.1.0`)
-2. Wait for GitHub Actions workflow to complete
-3. Log in to https://s01.oss.sonatype.org/
-4. Navigate to **Staging Repositories**
-5. Find your repository (e.g., `deafarber-1001`)
-6. Click **Close** to validate artifacts
-7. Wait for validation to complete (1-5 minutes)
-8. Click **Release** to publish to Maven Central
-9. Wait 2-4 hours for sync to central.maven.org
+2. GitHub Actions workflow automatically builds and publishes to Central Portal
+3. Artifacts are validated and published to Maven Central
+4. Wait 10-30 minutes for sync to Maven Central
 
-### Subsequent Releases (Automatic)
+**Important Notes:**
 
-After the first successful release, Sonatype enables automatic release for the `de.afarber` namespace. Future releases publish automatically without manual intervention.
+- The old OSSRH web UI (s01.oss.sonatype.org) is no longer available
+- All management is now done through the Central Portal at https://central.sonatype.com/
+- This project uses the Central Portal OSSRH Staging API endpoint: `https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/`
+- The old endpoint (`https://s01.oss.sonatype.org/...`) may not work reliably with Central Portal tokens
 
 ## Verifying Publication
 
@@ -97,7 +101,7 @@ https://search.maven.org/artifact/de.afarber/openmapview
 ### Direct Repository URL
 https://repo1.maven.org/maven2/de/afarber/openmapview/
 
-**Note:** Allow 2-4 hours for new releases to sync to Maven Central.
+**Note:** With the new Central Portal, artifacts typically appear in Maven Central within 10-30 minutes after publishing (faster than the old 2-4 hour sync time).
 
 ## Version Numbering
 
@@ -155,8 +159,9 @@ The publishing configuration is defined in:
 
 ### Issue: Workflow fails with "401 Unauthorized"
 **Solution:** Verify GitHub Secrets are correctly configured:
-- Check `OSSRH_USERNAME` and `OSSRH_PASSWORD`
-- Ensure credentials match your Sonatype JIRA account
+- Check `OSSRH_USERNAME` and `OSSRH_PASSWORD` contain Central Portal user tokens
+- Generate new tokens at https://central.sonatype.com/account (click "Generate User Token")
+- The tokens should be different from your old OSSRH/JIRA credentials
 
 ### Issue: "Failed to verify signature"
 **Solution:** Verify GPG key configuration:
@@ -164,11 +169,11 @@ The publishing configuration is defined in:
 - Check `SIGNING_KEY` secret contains the full base64 private key
 - Verify `SIGNING_PASSWORD` matches your GPG key passphrase
 
-### Issue: Staging repository not found
+### Issue: Need to manage published artifacts
 **Solution:**
-- Ensure you're logged into https://s01.oss.sonatype.org/ (not the old oss.sonatype.org)
-- Wait a few minutes after workflow completion
-- Check GitHub Actions logs for publish errors
+- Log in to the Central Portal at https://central.sonatype.com/
+- Navigate to the "Publishing" section to view deployments
+- The old OSSRH web UI (s01.oss.sonatype.org) is no longer available
 
 ### Issue: Version conflict
 **Solution:**
@@ -208,12 +213,56 @@ maven {
 
 **Note:** Users need authentication to download from GitHub Packages, even for public repositories. Maven Central is recommended for public distribution.
 
+## Migration from OSSRH to Central Portal
+
+### Background
+
+As of June 30, 2025, the legacy OSSRH service (oss.sonatype.org and s01.oss.sonatype.org) has reached end-of-life. All publishing now goes through the new Central Portal at https://central.sonatype.com/.
+
+### OSSRH Staging API Compatibility Layer
+
+The project currently uses the OSSRH Staging API compatibility layer, which provides a smooth transition path:
+
+- **Current endpoint**: `https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/`
+- **Status**: This endpoint is maintained as a compatibility layer that forwards requests to Central Portal
+- **Authentication**: Requires Central Portal user tokens (not old OSSRH/JIRA credentials)
+
+### Generating Central Portal User Tokens
+
+1. Log in to https://central.sonatype.com/
+2. Navigate to your account settings at https://central.sonatype.com/account
+3. Click "Generate User Token"
+4. Copy the username and password tokens
+5. Update GitHub Secrets:
+   - `OSSRH_USERNAME` = Central Portal username token
+   - `OSSRH_PASSWORD` = Central Portal password token
+
+### Current Configuration
+
+The project is configured to use the Central Portal OSSRH Staging API endpoint:
+
+```kotlin
+repositories {
+    maven {
+        name = "MavenCentral"
+        url = uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
+        credentials {
+            username = System.getenv("OSSRH_USERNAME")
+            password = System.getenv("OSSRH_PASSWORD")
+        }
+    }
+}
+```
+
+This is the official endpoint for the Central Portal and works with the user tokens generated from your Central Portal account.
+
 ## Resources
 
-- **Sonatype OSSRH Guide**: https://central.sonatype.org/publish/
-- **Sonatype Portal**: https://s01.oss.sonatype.org/
+- **Central Portal**: https://central.sonatype.com/
+- **Central Portal Publishing Guide**: https://central.sonatype.org/publish/publish-portal-gradle/
+- **OSSRH EOL Information**: https://central.sonatype.org/pages/ossrh-eol/
 - **Maven Central Repository**: https://repo1.maven.org/maven2/
-- **Maven Central Search**: https://central.sonatype.com/
+- **Maven Central Search**: https://search.maven.org/
 
 ## Quick Reference
 
