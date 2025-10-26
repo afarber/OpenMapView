@@ -197,6 +197,12 @@ class OpenMapView
 
         fun getPolygons(): List<Polygon> = controller.getPolygons()
 
+        fun addGeoJson(geoJsonString: String): GeoJsonResult {
+            val result = controller.addGeoJson(geoJsonString)
+            invalidate()
+            return result
+        }
+
         fun setOnAttributionClickListener(listener: () -> Unit) {
             attributionOverlay.onAttributionClickListener = listener
         }

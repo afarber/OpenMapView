@@ -405,6 +405,14 @@ class MapController(
 
     fun getPolygons(): List<Polygon> = polygons.toList()
 
+    fun addGeoJson(geoJsonString: String): GeoJsonResult {
+        val result = GeoJsonParser.parse(geoJsonString)
+        result.markers.forEach { addMarker(it) }
+        result.polylines.forEach { addPolyline(it) }
+        result.polygons.forEach { addPolygon(it) }
+        return result
+    }
+
     fun handleMarkerTouch(
         x: Float,
         y: Float,
