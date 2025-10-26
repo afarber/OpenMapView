@@ -1,0 +1,5 @@
+# Ensure shell scripts always use LF line endings
+*.sh text eol=lf
+
+# Ensure Gradle wrapper script uses LF line endings
+gradlew text eol=lf
