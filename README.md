@@ -106,8 +106,6 @@ Demonstrates marker system with custom icons and click handling.
 - [Contributing Guide](docs/CONTRIBUTING.md) - Code quality requirements, formatting, git hooks, and PR process
 - [Lifecycle Management](docs/LIFECYCLE.md) - How OpenMapView handles Android lifecycle events
 - [Publishing Guide](docs/PUBLISHING.md) - Publishing to Maven Central and JitPack
-- [Maven Central Setup](docs/MAVEN_CENTRAL_SETUP.md) - Detailed Maven Central configuration
-- [JitPack Setup](docs/JITPACK_SETUP.md) - Detailed JitPack configuration
 - [GitHub Workflows](docs/GITHUB_WORKFLOWS.md) - CI/CD pipeline and workflow architecture
 - [Unit Testing](docs/TESTING_UNIT.md) - JVM unit tests with Robolectric for Android framework APIs
 - [Instrumented Testing](docs/TESTING_INSTRUMENTED.md) - On-device (phone and auto) testing with Android emulator

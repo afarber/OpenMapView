@@ -2,40 +2,37 @@
 
 [Back to README](../README.md)
 
-This guide provides an overview of publishing OpenMapView to public package repositories.
+This guide documents the publishing configuration for OpenMapView to Maven Central and JitPack.
 
 ## Overview
 
 OpenMapView is published to two package repositories:
 
-1. **Maven Central** - Primary distribution channel (recommended for production)
-2. **JitPack** - Alternative channel with instant publishing and snapshot support
+- **Maven Central**: `de.afarber:openmapview:VERSION`
+- **JitPack**: `com.github.afarber:OpenMapView:VERSION`
 
-## Quick Comparison
-
-| Feature | Maven Central | JitPack |
-|---------|---------------|---------|
-| **User Setup** | None (default repository) | Add JitPack repository |
-| **Coordinates** | `de.afarber:openmapview:0.1.0` | `com.github.afarber:OpenMapView:0.1.0` |
-| **Publishing Speed** | 10-30 minutes | Instant (on-demand build) |
-| **Snapshot Support** | No | Yes (branches/commits) |
-| **Discoverability** | High | Lower |
-| **Best For** | Production releases | Development/testing |
-| **Setup Complexity** | Moderate (GPG, tokens) | Minimal (automatic) |
+Both repositories are automatically updated when pushing a version tag.
 
 ## Maven Central
 
-### Installation (Users)
+### Configuration
 
-Users can add the dependency without any additional repository configuration:
+- **Namespace**: `de.afarber` (verified with Sonatype)
+- **Group ID**: `de.afarber`
+- **Artifact ID**: `openmapview`
+- **Publishing Plugin**: `com.gradleup.nmcp` v0.1.2
+- **GPG Signing Key**: `8334881A009EB69E5B5BDBF189999F05686CE169` (Ed25519, expires 2028-10-24)
 
-```kotlin
-dependencies {
-    implementation("de.afarber:openmapview:0.1.0")
-}
-```
+### GitHub Secrets
 
-### Publishing Process (Maintainers)
+Required secrets configured in GitHub Actions:
+
+- **OSSRH_USERNAME** - Central Portal user token (generated at central.sonatype.com/account)
+- **OSSRH_PASSWORD** - Central Portal user token
+- **SIGNING_KEY** - Base64-encoded GPG private key
+- **SIGNING_PASSWORD** - GPG key passphrase
+
+### Publishing Process
 
 1. Create and push a version tag:
    ```bash
@@ -44,49 +41,71 @@ dependencies {
    ```
 
 2. GitHub Actions automatically:
-   - Runs tests and builds
+   - Validates formatting with Spotless
+   - Runs unit tests
+   - Builds library AAR and example APKs
    - Signs artifacts with GPG
    - Publishes to Maven Central via Central Portal API
    - Creates GitHub Release
 
 3. Artifacts appear on Maven Central within 10-30 minutes
 
-### Configuration
+### Verification
 
-- **Namespace**: `de.afarber` (verified with Sonatype)
-- **Publishing Plugin**: `com.gradleup.nmcp` v0.1.2
-- **Credentials**: Stored in GitHub Secrets (`OSSRH_USERNAME`, `OSSRH_PASSWORD`)
-- **Signing**: GPG key `8334881A009EB69E5B5BDBF189999F05686CE169`
+- Central Portal: https://central.sonatype.com/artifact/de.afarber/openmapview
+- Maven Search: https://search.maven.org/artifact/de.afarber/openmapview
+- Direct Repository: https://repo1.maven.org/maven2/de/afarber/openmapview/
 
-See [MAVEN_CENTRAL_SETUP.md](MAVEN_CENTRAL_SETUP.md) for complete Maven Central configuration details.
+### POM Metadata
+
+```xml
+<groupId>de.afarber</groupId>
+<artifactId>openmapview</artifactId>
+<name>OpenMapView</name>
+<description>A modern, Kotlin-first MapView replacement for Android powered by OpenStreetMap.</description>
+<url>https://github.com/afarber/OpenMapView</url>
+
+<licenses>
+  <license>
+    <name>MIT License</name>
+    <url>https://opensource.org/licenses/MIT</url>
+  </license>
+</licenses>
+
+<developers>
+  <developer>
+    <id>afarber</id>
+    <name>Alexander Farber</name>
+    <email>farber72@outlook.de</email>
+    <url>https://afarber.de</url>
+  </developer>
+</developers>
+
+<scm>
+  <connection>scm:git:https://github.com/afarber/OpenMapView.git</connection>
+  <developerConnection>scm:git:ssh://github.com/afarber/OpenMapView.git</developerConnection>
+  <url>https://github.com/afarber/OpenMapView</url>
+</scm>
+```
+
+### Build Configuration
+
+Publishing configuration is defined in:
+- `build.gradle.kts` (root) - nmcp plugin configuration
+- `openmapview/build.gradle.kts` - Maven publication setup (POM metadata, signing)
+- `.github/workflows/release.yml` - Release automation
 
 ## JitPack
 
-### Installation (Users)
+### Configuration
 
-Users need to add the JitPack repository:
+- **Repository**: `com.github.afarber:OpenMapView`
+- **Build Environment**: Java 17 (specified in `jitpack.yml`)
+- **Build Plugin**: Uses existing `maven-publish` configuration
 
-**settings.gradle.kts:**
-```kotlin
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url = uri("https://jitpack.io") }
-    }
-}
-```
+### Publishing Process
 
-**Dependency:**
-```kotlin
-dependencies {
-    implementation("com.github.afarber:OpenMapView:0.1.0")
-}
-```
-
-### Publishing Process (Maintainers)
-
-JitPack automatically builds from GitHub releases - no manual publishing required:
+JitPack builds automatically from GitHub releases on first request:
 
 1. Create and push a version tag:
    ```bash
@@ -96,26 +115,20 @@ JitPack automatically builds from GitHub releases - no manual publishing require
 
 2. JitPack automatically:
    - Detects the new tag
-   - Builds artifacts on first user request
+   - Builds artifacts when first requested
    - Caches for subsequent requests
 
-3. Available immediately via `https://jitpack.io/#afarber/OpenMapView`
+3. Available immediately at https://jitpack.io/#afarber/OpenMapView
 
-### Configuration
+### Verification
 
-- **Repository**: `com.github.afarber:OpenMapView`
-- **Build Config**: `jitpack.yml` (specifies Java 17)
-- **No Credentials Required**: Builds directly from public GitHub repo
+- JitPack Page: https://jitpack.io/#afarber/OpenMapView
+- Build Logs: Available on JitPack page for each version
+- API Status: https://jitpack.io/api/builds/com.github.afarber/OpenMapView/VERSION
 
-See [JITPACK_SETUP.md](JITPACK_SETUP.md) for complete JitPack configuration details.
+### Development Snapshots
 
-## Development Snapshots
-
-### Maven Central
-Maven Central does not support snapshot versions. Use JitPack for testing unreleased code.
-
-### JitPack
-JitPack supports snapshots from branches and specific commits:
+JitPack supports building from branches and commits:
 
 ```kotlin
 // Latest commit from main branch
@@ -128,29 +141,13 @@ implementation("com.github.afarber:OpenMapView:abc1234")
 implementation("com.github.afarber:OpenMapView:feature-branch-SNAPSHOT")
 ```
 
-## Release Checklist
-
-When creating a new release:
-
-- [ ] Ensure all tests pass locally
-- [ ] Update version number expectations if needed
-- [ ] Run code formatting: `./gradlew spotlessApply`
-- [ ] Verify local build: `./gradlew build`
-- [ ] Create and push version tag (e.g., `v0.2.0`)
-- [ ] Monitor GitHub Actions release workflow
-- [ ] Verify Maven Central publication (10-30 minutes)
-- [ ] Verify JitPack build status (https://jitpack.io/#afarber/OpenMapView)
-- [ ] Update README.md version numbers if needed
-- [ ] Announce release (GitHub Releases, social media, etc.)
-
 ## Version Numbering
 
 OpenMapView uses Semantic Versioning (SemVer):
 
 - **vMAJOR.MINOR.PATCH** (e.g., `v0.2.0`)
-- MAJOR: Breaking API changes
-- MINOR: New features, backward compatible
-- PATCH: Bug fixes, backward compatible
+- Version is automatically detected from Git tags
+- Tags must match the pattern `v*.*.*` to trigger release workflow
 
 Examples:
 - `v0.1.0` - Initial release
@@ -158,19 +155,93 @@ Examples:
 - `v0.2.1` - Bug fixes
 - `v1.0.0` - First stable release
 
-## Verifying Publications
+## Release Checklist
 
-### Maven Central
+When creating a new release:
 
-- Central Portal: https://central.sonatype.com/artifact/de.afarber/openmapview
-- Maven Search: https://search.maven.org/artifact/de.afarber/openmapview
-- Direct Repository: https://repo1.maven.org/maven2/de/afarber/openmapview/
+- [ ] Ensure all tests pass: `./gradlew test`
+- [ ] Run code formatting: `./gradlew spotlessApply`
+- [ ] Verify local build: `./gradlew build`
+- [ ] Test Maven publication: `./gradlew publishToMavenLocal`
+- [ ] Create and push version tag (e.g., `v0.2.0`)
+- [ ] Monitor GitHub Actions release workflow
+- [ ] Verify Maven Central publication (10-30 minutes)
+- [ ] Verify JitPack build status
 
-### JitPack
+## Troubleshooting
 
-- JitPack Page: https://jitpack.io/#afarber/OpenMapView
-- Build Logs: Available on JitPack page for each version
-- Badge: [![JitPack](https://jitpack.io/v/afarber/OpenMapView.svg)](https://jitpack.io/#afarber/OpenMapView)
+### Maven Central Issues
+
+**Issue: Workflow fails with "401 Unauthorized"**
+
+Solution: Verify GitHub Secrets are correctly configured:
+- Generate new tokens at https://central.sonatype.com/account
+- Update `OSSRH_USERNAME` and `OSSRH_PASSWORD` secrets
+
+**Issue: "Failed to verify signature"**
+
+Solution: Verify GPG key configuration:
+- Confirm public key `8334881A009EB69E5B5BDBF189999F05686CE169` is published to keyservers
+- Check `SIGNING_KEY` secret contains the full base64 private key
+- Verify `SIGNING_PASSWORD` matches the GPG key passphrase
+
+**Issue: Version conflict**
+
+Solution: Maven Central does not allow republishing the same version:
+```bash
+git tag -d v0.1.0
+git push origin :refs/tags/v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
+```
+
+### JitPack Issues
+
+**Issue: Build fails on JitPack**
+
+Solution: Check build logs at https://jitpack.io/#afarber/OpenMapView
+
+Common causes:
+- Missing `jitpack.yml` with correct JDK version
+- Build configuration errors in `build.gradle.kts`
+- Missing dependencies or plugins
+
+**Issue: Build succeeds but artifact is empty**
+
+Solution: Verify `maven-publish` plugin is correctly configured:
+```bash
+./gradlew publishToMavenLocal
+ls ~/.m2/repository/de/afarber/openmapview/
+```
+
+**Issue: Artifact not found**
+
+Solution:
+- Ensure repository is public on GitHub
+- Verify tag/release exists: `git tag -l`
+- Check artifact coordinates are correct (case-sensitive)
+
+### General Build Issues
+
+**Issue: Gradle build fails**
+
+```bash
+# Clean and rebuild
+./gradlew clean build
+
+# Update dependencies
+./gradlew --refresh-dependencies
+```
+
+**Issue: Spotless formatting fails**
+
+```bash
+# Auto-fix formatting
+./gradlew spotlessApply
+
+# Check formatting
+./gradlew spotlessCheck
+```
 
 ## Testing Local Publication
 
@@ -187,75 +258,21 @@ ls ~/.m2/repository/de/afarber/openmapview/
 ls openmapview/build/outputs/aar/
 ```
 
-## Badges
+## Workflow Files
 
-Add badges to README.md to show publication status:
+The release process is orchestrated by reusable GitHub Actions workflows:
 
-```markdown
-[![Maven Central](https://img.shields.io/maven-central/v/de.afarber/openmapview.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/de.afarber/openmapview)
-[![JitPack](https://jitpack.io/v/afarber/OpenMapView.svg)](https://jitpack.io/#afarber/OpenMapView)
-```
-
-## Recommendations
-
-### For Production Apps
-Use **Maven Central** for stable, production releases:
-- Better discoverability
-- Standard repository (no extra configuration)
-- Preferred by most Android developers
-- More professional appearance
-
-### For Development and Testing
-Use **JitPack** for:
-- Testing unreleased features from branches
-- Quick iterations during development
-- Projects that need bleeding-edge updates
-- Contributing to the library (test your changes)
-
-### For Library Contributors
-If contributing a feature:
-1. Fork the repository
-2. Create a feature branch
-3. Test your changes using JitPack snapshots
-4. Submit a pull request
-5. Changes will be available via Maven Central after the next release
-
-## Troubleshooting
-
-### Maven Central Issues
-See [MAVEN_CENTRAL_SETUP.md](MAVEN_CENTRAL_SETUP.md#troubleshooting)
-
-### JitPack Issues
-See [JITPACK_SETUP.md](JITPACK_SETUP.md#troubleshooting)
-
-### General Build Issues
-
-**Issue: Gradle build fails**
-```bash
-# Clean and rebuild
-./gradlew clean build
-
-# Check Gradle wrapper version
-./gradlew --version
-
-# Update dependencies
-./gradlew --refresh-dependencies
-```
-
-**Issue: Spotless formatting fails**
-```bash
-# Auto-fix formatting issues
-./gradlew spotlessApply
-
-# Check what would be changed
-./gradlew spotlessCheck
-```
+- `.github/workflows/release.yml` - Main release workflow
+- `.github/workflows/_format.yml` - Code formatting check
+- `.github/workflows/_test.yml` - Unit tests
+- `.github/workflows/_build-library.yml` - Build AAR
+- `.github/workflows/_build-examples.yml` - Build example APKs
 
 ## Resources
 
 ### Maven Central
 - Central Portal: https://central.sonatype.com/
-- Documentation: https://central.sonatype.org/publish/publish-portal-gradle/
+- Publishing Guide: https://central.sonatype.org/publish/publish-portal-gradle/
 - Maven Repository: https://repo1.maven.org/maven2/
 
 ### JitPack
@@ -270,7 +287,78 @@ See [JITPACK_SETUP.md](JITPACK_SETUP.md#troubleshooting)
 
 ## Related Documentation
 
-- [Maven Central Setup](MAVEN_CENTRAL_SETUP.md) - Detailed Maven Central configuration
-- [JitPack Setup](JITPACK_SETUP.md) - Detailed JitPack configuration
 - [GitHub Workflows](GITHUB_WORKFLOWS.md) - CI/CD pipeline details
-- [Contributing Guide](CONTRIBUTING.md) - How to contribute to the project
+- [Contributing Guide](CONTRIBUTING.md) - Contribution guidelines
+- [Testing Guide](TESTING.md) - Testing documentation
+
+## Migration Notes
+
+### Central Portal Migration
+
+As of June 30, 2025, the legacy OSSRH service (oss.sonatype.org and s01.oss.sonatype.org) has reached end-of-life. All publishing now goes through the Central Portal at https://central.sonatype.com/.
+
+The project uses the `com.gradleup.nmcp` plugin v0.1.2 for Central Portal publishing:
+
+```kotlin
+nmcp {
+    publishAllProjectsProbablyBreakingProjectIsolation {
+        username = System.getenv("OSSRH_USERNAME") ?: ""
+        password = System.getenv("OSSRH_PASSWORD") ?: ""
+        publicationType = "AUTOMATIC"
+    }
+}
+```
+
+GitHub Actions workflow uses: `./gradlew publishAggregationToCentralPortal`
+
+## Quick Reference
+
+```bash
+# Create a release
+git tag v0.2.0
+git push origin v0.2.0
+
+# Check workflow status
+# Visit: https://github.com/afarber/OpenMapView/actions
+
+# Verify Maven Central publication (after 10-30 minutes)
+# Visit: https://central.sonatype.com/artifact/de.afarber/openmapview
+
+# Verify JitPack build
+# Visit: https://jitpack.io/#afarber/OpenMapView
+
+# Test local build
+./gradlew publishToMavenLocal
+```
+
+## Installation Examples
+
+### Maven Central
+
+No repository configuration required:
+
+```kotlin
+dependencies {
+    implementation("de.afarber:openmapview:0.1.0")
+}
+```
+
+### JitPack
+
+Requires repository configuration in `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+```kotlin
+dependencies {
+    implementation("com.github.afarber:OpenMapView:0.1.0")
+}
+```
