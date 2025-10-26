@@ -12,6 +12,7 @@ import android.graphics.Canvas
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -303,5 +304,182 @@ class MapControllerTest {
     fun testOnPause() {
         controller.onPause()
         // Should not crash
+    }
+
+    @Test
+    fun testAddPolyline() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+
+        val result = controller.addPolyline(polyline)
+
+        assertEquals(polyline, result)
+        assertEquals(1, controller.getPolylines().size)
+        assertEquals(polyline, controller.getPolylines()[0])
+    }
+
+    @Test
+    fun testRemovePolyline() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+        controller.addPolyline(polyline)
+
+        val result = controller.removePolyline(polyline)
+
+        assertTrue(result)
+        assertEquals(0, controller.getPolylines().size)
+    }
+
+    @Test
+    fun testRemoveNonExistentPolyline() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+
+        val result = controller.removePolyline(polyline)
+
+        assertFalse(result)
+    }
+
+    @Test
+    fun testClearPolylines() {
+        val polyline1 = Polyline(listOf(LatLng(51.4661, 7.2491), LatLng(51.4700, 7.2550)))
+        val polyline2 = Polyline(listOf(LatLng(51.4620, 7.2430), LatLng(51.4640, 7.2460)))
+        controller.addPolyline(polyline1)
+        controller.addPolyline(polyline2)
+
+        controller.clearPolylines()
+
+        assertEquals(0, controller.getPolylines().size)
+    }
+
+    @Test
+    fun testGetPolylines_ReturnsImmutableCopy() {
+        val polyline = Polyline(listOf(LatLng(51.4661, 7.2491), LatLng(51.4700, 7.2550)))
+        controller.addPolyline(polyline)
+
+        val polylines = controller.getPolylines()
+        assertEquals(1, polylines.size)
+
+        // Original list should remain unchanged even if returned list is modified
+        // (though returned list is immutable)
+    }
+
+    @Test
+    fun testAddMultiplePolylines() {
+        val polyline1 = Polyline(listOf(LatLng(51.4661, 7.2491), LatLng(51.4700, 7.2550)))
+        val polyline2 = Polyline(listOf(LatLng(51.4620, 7.2430), LatLng(51.4640, 7.2460)))
+        val polyline3 = Polyline(listOf(LatLng(51.4680, 7.2520), LatLng(51.4690, 7.2530)))
+
+        controller.addPolyline(polyline1)
+        controller.addPolyline(polyline2)
+        controller.addPolyline(polyline3)
+
+        val polylines = controller.getPolylines()
+        assertEquals(3, polylines.size)
+        assertEquals(polyline1, polylines[0])
+        assertEquals(polyline2, polylines[1])
+        assertEquals(polyline3, polylines[2])
+    }
+
+    @Test
+    fun testAddPolygon() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+                LatLng(51.4620, 7.2430),
+            )
+        val polygon = Polygon(points = points)
+
+        val result = controller.addPolygon(polygon)
+
+        assertEquals(polygon, result)
+        assertEquals(1, controller.getPolygons().size)
+        assertEquals(polygon, controller.getPolygons()[0])
+    }
+
+    @Test
+    fun testRemovePolygon() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+                LatLng(51.4620, 7.2430),
+            )
+        val polygon = Polygon(points = points)
+        controller.addPolygon(polygon)
+
+        val result = controller.removePolygon(polygon)
+
+        assertTrue(result)
+        assertEquals(0, controller.getPolygons().size)
+    }
+
+    @Test
+    fun testRemoveNonExistentPolygon() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+                LatLng(51.4620, 7.2430),
+            )
+        val polygon = Polygon(points = points)
+
+        val result = controller.removePolygon(polygon)
+
+        assertFalse(result)
+    }
+
+    @Test
+    fun testClearPolygons() {
+        val polygon1 = Polygon(listOf(LatLng(51.4661, 7.2491), LatLng(51.4700, 7.2550), LatLng(51.4620, 7.2430)))
+        val polygon2 = Polygon(listOf(LatLng(51.4640, 7.2420), LatLng(51.4660, 7.2440), LatLng(51.4650, 7.2450)))
+        controller.addPolygon(polygon1)
+        controller.addPolygon(polygon2)
+
+        controller.clearPolygons()
+
+        assertEquals(0, controller.getPolygons().size)
+    }
+
+    @Test
+    fun testGetPolygons_ReturnsImmutableCopy() {
+        val polygon = Polygon(listOf(LatLng(51.4661, 7.2491), LatLng(51.4700, 7.2550), LatLng(51.4620, 7.2430)))
+        controller.addPolygon(polygon)
+
+        val polygons = controller.getPolygons()
+        assertEquals(1, polygons.size)
+
+        // Original list should remain unchanged even if returned list is modified
+        // (though returned list is immutable)
+    }
+
+    @Test
+    fun testAddMultiplePolygons() {
+        val polygon1 = Polygon(listOf(LatLng(51.4661, 7.2491), LatLng(51.4700, 7.2550), LatLng(51.4620, 7.2430)))
+        val polygon2 = Polygon(listOf(LatLng(51.4640, 7.2420), LatLng(51.4660, 7.2440), LatLng(51.4650, 7.2450)))
+        val polygon3 = Polygon(listOf(LatLng(51.4680, 7.2520), LatLng(51.4690, 7.2530), LatLng(51.4685, 7.2540)))
+
+        controller.addPolygon(polygon1)
+        controller.addPolygon(polygon2)
+        controller.addPolygon(polygon3)
+
+        val polygons = controller.getPolygons()
+        assertEquals(3, polygons.size)
+        assertEquals(polygon1, polygons[0])
+        assertEquals(polygon2, polygons[1])
+        assertEquals(polygon3, polygons[2])
     }
 }

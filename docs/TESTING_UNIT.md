@@ -50,15 +50,17 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (76 tests)
+### Current Test Coverage (107 tests)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
 | **AttributionOverlayTest** | 4 | Attribution rendering and touch detection |
 | **BitmapDescriptorFactoryTest** | 7 | Marker icon generation with colors |
-| **DiskTileCacheTest** | - | Persistent disk cache with DiskLruCache |
-| **MapControllerTest** | 28 | Zoom, pan, marker management, touch detection |
+| **DiskTileCacheTest** | 4 | Persistent disk cache with DiskLruCache |
+| **MapControllerTest** | 40 | Zoom, pan, marker/polyline/polygon management, touch detection |
 | **MarkerTest** | 8 | Marker creation, equality, and properties |
+| **PolygonTest** | 12 | Polygon creation, validation, holes, and styling |
+| **PolylineTest** | 10 | Polyline creation, validation, and styling |
 | **ProjectionTest** | 12 | Web Mercator projection calculations |
 | **TileCacheTest** | 6 | Memory LRU cache behavior |
 | **TileDownloaderTest** | 2 | HTTP tile downloading with mocked Ktor client |
@@ -413,6 +415,8 @@ The test suite currently covers:
 - Core projection math (Web Mercator)
 - Tile coordinate calculations
 - Marker API and bitmap generation
+- Polyline and polygon data classes with validation
+- Vector shape management (add, remove, clear operations)
 - Memory cache (LRU) behavior
 - Disk cache (persistent storage)
 - Viewport calculation
