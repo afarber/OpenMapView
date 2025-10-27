@@ -17,6 +17,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
+/**
+ * Core controller managing map state, rendering, and interactions.
+ *
+ * Handles map positioning (zoom, center), tile management, marker rendering,
+ * shape drawing, camera animations, and touch event processing.
+ *
+ * This class is used internally by [OpenMapView] and is not part of the public API.
+ */
 class MapController(
     private val context: Context,
 ) {
@@ -72,12 +80,32 @@ class MapController(
             color = Color.LTGRAY
         }
 
+    /**
+     * Sets the zoom level, clamping to valid range.
+     *
+     * @param z The desired zoom level (will be clamped to 2.0-19.0)
+     */
     fun setZoom(z: Double) {
         zoom = z.coerceIn(MIN_ZOOM, MAX_ZOOM)
     }
 
+    /**
+     * Returns the current zoom level.
+     *
+     * @return The current zoom level
+     */
     fun getZoom(): Double = zoom
 
+    /**
+     * Applies a zoom gesture centered on a specific screen point.
+     *
+     * Adjusts the zoom level and map center so that the content under
+     * the focus point remains stationary during the zoom.
+     *
+     * @param scaleFactor The zoom scale factor (>1 zooms in, <1 zooms out)
+     * @param focusX The screen X coordinate of the zoom center
+     * @param focusY The screen Y coordinate of the zoom center
+     */
     fun zoom(
         scaleFactor: Float,
         focusX: Float,
@@ -102,24 +130,57 @@ class MapController(
         panOffsetY += dy
     }
 
+    /**
+     * Sets the map center to the specified location.
+     *
+     * @param latLng The new center location
+     */
     fun setCenter(latLng: LatLng) {
         center = latLng
     }
 
+    /**
+     * Returns the current map center.
+     *
+     * @return The current center location
+     */
     fun getCenter(): LatLng = center
 
+    /**
+     * Returns the current camera position.
+     *
+     * @return A CameraPosition containing current target and zoom
+     */
     fun getCameraPosition(): CameraPosition =
         CameraPosition(
             target = center,
             zoom = zoom,
         )
 
+    /**
+     * Moves the camera instantly to a new position.
+     *
+     * Stops any ongoing animation and commits any pending pan offsets
+     * before applying the camera update.
+     *
+     * @param cameraUpdate The camera update to apply
+     */
     fun moveCamera(cameraUpdate: CameraUpdate) {
         stopAnimation()
         commitPan()
         applyCameraUpdate(cameraUpdate)
     }
 
+    /**
+     * Animates the camera to a new position.
+     *
+     * Stops any ongoing animation and commits any pending pan offsets before starting.
+     * The animation runs on the main thread and triggers redraws at ~60fps.
+     *
+     * @param cameraUpdate The camera update to animate to
+     * @param durationMs Duration of the animation in milliseconds (default 250ms)
+     * @param listener Optional listener for animation completion callbacks
+     */
     fun animateCamera(
         cameraUpdate: CameraUpdate,
         durationMs: Int = 250,
@@ -184,6 +245,12 @@ class MapController(
             }
     }
 
+    /**
+     * Stops any ongoing camera animation.
+     *
+     * If an animation is running, it will be cancelled and the listener's
+     * onCancel() callback will be invoked. The camera remains at its current position.
+     */
     fun stopAnimation() {
         animationJob?.cancel()
         animationJob = null
@@ -243,6 +310,14 @@ class MapController(
         progress: Float,
     ): Double = start + (end - start) * progress
 
+    /**
+     * Sets the view dimensions for rendering calculations.
+     *
+     * Called automatically when the view is resized.
+     *
+     * @param width The view width in pixels
+     * @param height The view height in pixels
+     */
     fun setViewSize(
         width: Int,
         height: Int,
@@ -251,10 +326,23 @@ class MapController(
         viewHeight = height
     }
 
+    /**
+     * Sets a callback to be invoked when tiles finish loading.
+     *
+     * @param callback The callback to invoke when tiles are loaded
+     */
     fun setOnTileLoadedCallback(callback: () -> Unit) {
         onTileLoadedCallback = callback
     }
 
+    /**
+     * Updates the temporary pan offset during a drag gesture.
+     *
+     * The offset accumulates until committed via [commitPan].
+     *
+     * @param dx The horizontal movement in pixels
+     * @param dy The vertical movement in pixels
+     */
     fun updatePanOffset(
         dx: Float,
         dy: Float,
@@ -263,6 +351,12 @@ class MapController(
         panOffsetY -= dy
     }
 
+    /**
+     * Commits accumulated pan offsets to the map center.
+     *
+     * Converts the temporary pan offset to a new center location and resets the offset.
+     * Called when a pan gesture ends or before camera operations.
+     */
     fun commitPan() {
         if (panOffsetX == 0f && panOffsetY == 0f) return
 
@@ -278,6 +372,14 @@ class MapController(
         panOffsetY = 0f
     }
 
+    /**
+     * Renders the map to the provided canvas.
+     *
+     * Draws visible tiles, prefetches adjacent tiles, and renders polygons,
+     * polylines, and markers in correct z-order.
+     *
+     * @param canvas The canvas to draw on
+     */
     fun draw(canvas: Canvas) {
         if (viewWidth <= 0 || viewHeight <= 0) {
             return
@@ -506,45 +608,111 @@ class MapController(
         }
     }
 
+    /**
+     * Adds a marker to the map.
+     *
+     * @param marker The marker to add
+     * @return The added marker instance
+     */
     fun addMarker(marker: Marker): Marker {
         markers.add(marker)
         return marker
     }
 
+    /**
+     * Removes a marker from the map.
+     *
+     * @param marker The marker to remove
+     * @return true if removed, false if not found
+     */
     fun removeMarker(marker: Marker): Boolean = markers.remove(marker)
 
+    /**
+     * Removes all markers from the map.
+     */
     fun clearMarkers() {
         markers.clear()
     }
 
+    /**
+     * Returns a copy of all markers on the map.
+     *
+     * @return A list of all markers
+     */
     fun getMarkers(): List<Marker> = markers.toList()
 
+    /**
+     * Adds a polyline to the map.
+     *
+     * @param polyline The polyline to add
+     * @return The added polyline instance
+     */
     fun addPolyline(polyline: Polyline): Polyline {
         polylines.add(polyline)
         return polyline
     }
 
+    /**
+     * Removes a polyline from the map.
+     *
+     * @param polyline The polyline to remove
+     * @return true if removed, false if not found
+     */
     fun removePolyline(polyline: Polyline): Boolean = polylines.remove(polyline)
 
+    /**
+     * Removes all polylines from the map.
+     */
     fun clearPolylines() {
         polylines.clear()
     }
 
+    /**
+     * Returns a copy of all polylines on the map.
+     *
+     * @return A list of all polylines
+     */
     fun getPolylines(): List<Polyline> = polylines.toList()
 
+    /**
+     * Adds a polygon to the map.
+     *
+     * @param polygon The polygon to add
+     * @return The added polygon instance
+     */
     fun addPolygon(polygon: Polygon): Polygon {
         polygons.add(polygon)
         return polygon
     }
 
+    /**
+     * Removes a polygon from the map.
+     *
+     * @param polygon The polygon to remove
+     * @return true if removed, false if not found
+     */
     fun removePolygon(polygon: Polygon): Boolean = polygons.remove(polygon)
 
+    /**
+     * Removes all polygons from the map.
+     */
     fun clearPolygons() {
         polygons.clear()
     }
 
+    /**
+     * Returns a copy of all polygons on the map.
+     *
+     * @return A list of all polygons
+     */
     fun getPolygons(): List<Polygon> = polygons.toList()
 
+    /**
+     * Parses GeoJSON and adds all features to the map.
+     *
+     * @param geoJsonString The GeoJSON string to parse
+     * @return A GeoJsonResult containing all added features
+     */
     fun addGeoJson(geoJsonString: String): GeoJsonResult {
         val result = GeoJsonParser.parse(geoJsonString)
         result.markers.forEach { addMarker(it) }
@@ -553,6 +721,15 @@ class MapController(
         return result
     }
 
+    /**
+     * Finds the topmost marker at the specified screen coordinates.
+     *
+     * Checks markers in reverse order (top to bottom) for correct z-ordering.
+     *
+     * @param x The screen X coordinate
+     * @param y The screen Y coordinate
+     * @return The touched marker, or null if no marker was found
+     */
     fun handleMarkerTouch(
         x: Float,
         y: Float,
@@ -582,16 +759,32 @@ class MapController(
         return null
     }
 
+    /**
+     * Called when the app comes to the foreground.
+     *
+     * Reserved for future use (e.g., resuming tile downloads).
+     */
     fun onResume() {
         // Called when app comes to foreground
         // Could be used to resume tile downloads if paused
     }
 
+    /**
+     * Called when the app goes to the background.
+     *
+     * Reserved for future use (e.g., pausing tile downloads to save battery).
+     */
     fun onPause() {
         // Called when app goes to background
         // Could be used to pause tile downloads to save battery
     }
 
+    /**
+     * Cleans up resources to prevent memory leaks.
+     *
+     * Cancels coroutines, closes network connections, disk caches, and clears icon caches.
+     * Called automatically when the view is destroyed.
+     */
     fun onDestroy() {
         // Clean up resources to prevent memory leaks
         scope.cancel()

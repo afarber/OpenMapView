@@ -11,12 +11,27 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
+/**
+ * Utility for calculating which map tiles are visible in the viewport.
+ *
+ * Determines tile coordinates based on map center, zoom level, and view dimensions.
+ * Includes buffering for smooth panning experience.
+ */
 object ViewportCalculator {
     private const val TILE_SIZE = 256
 
     /**
      * Calculates which tiles are visible in the current viewport.
+     *
      * Includes a 1-tile buffer around the edges for smooth panning.
+     *
+     * @param center The map center location
+     * @param zoom The current zoom level
+     * @param viewWidth The viewport width in pixels
+     * @param viewHeight The viewport height in pixels
+     * @param panOffsetX The horizontal pan offset in pixels (default 0)
+     * @param panOffsetY The vertical pan offset in pixels (default 0)
+     * @return A list of tile coordinates that should be rendered
      */
     fun getVisibleTiles(
         center: LatLng,
