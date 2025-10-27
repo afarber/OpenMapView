@@ -136,6 +136,37 @@ class OpenMapView
 
         fun getZoom(): Double = controller.getZoom()
 
+        fun getCameraPosition(): CameraPosition = controller.getCameraPosition()
+
+        fun moveCamera(cameraUpdate: CameraUpdate) {
+            controller.moveCamera(cameraUpdate)
+            invalidate()
+        }
+
+        fun animateCamera(cameraUpdate: CameraUpdate) {
+            controller.animateCamera(cameraUpdate)
+        }
+
+        fun animateCamera(
+            cameraUpdate: CameraUpdate,
+            durationMs: Int,
+        ) {
+            controller.animateCamera(cameraUpdate, durationMs)
+        }
+
+        fun animateCamera(
+            cameraUpdate: CameraUpdate,
+            durationMs: Int,
+            listener: OnCameraAnimationListener?,
+        ) {
+            controller.animateCamera(cameraUpdate, durationMs, listener)
+        }
+
+        fun stopAnimation() {
+            controller.stopAnimation()
+            invalidate()
+        }
+
         fun addMarker(marker: Marker): Marker {
             val result = controller.addMarker(marker)
             invalidate()

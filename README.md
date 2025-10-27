@@ -24,6 +24,7 @@ The library is available on [Maven Central](https://central.sonatype.com/artifac
 - Drop-in compatible with Google `MapView` (non-deprecated methods only)
 - Lightweight, pure Kotlin implementation
 - OSM tiles via standard APIs
+- Smooth camera animations with customizable durations
 - Extensible marker, overlay, and gesture handling
 - MIT licensed (use freely in commercial apps)
 
@@ -54,6 +55,12 @@ Demonstrates marker system with custom icons and click handling.
 ![Example04Polylines](examples/Example04Polylines/screenshot.gif)
 
 Shows how to draw vector shapes including polylines, filled polygons, and polygons with holes.
+
+### [Example05Camera](examples/Example05Camera) - Camera Animations
+
+![Example05Camera](examples/Example05Camera/screenshot.gif)
+
+Demonstrates smooth camera animations with customizable durations and completion callbacks.
 
 ## Documentation
 

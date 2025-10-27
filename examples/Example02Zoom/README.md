@@ -102,8 +102,10 @@ OpenMapView uses:
 
 ## Next Steps
 
-- Try **Example01Pan** for basic panning without zoom controls
-- Try **Example03Markers** for marker overlays with zoom support
+- Try [Example01Pan](../Example01Pan) for basic panning without zoom controls
+- Try [Example03Markers](../Example03Markers) for marker overlays
+- Try [Example04Polylines](../Example04Polylines) for vector shapes
+- Try [Example05Camera](../Example05Camera) for camera animations
 
 ## Map Location
 

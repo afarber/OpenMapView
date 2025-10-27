@@ -42,6 +42,9 @@ class MapController(
     private val polylines = mutableListOf<Polyline>()
     private val polygons = mutableListOf<Polygon>()
 
+    private var animationJob: Job? = null
+    private var animationListener: OnCameraAnimationListener? = null
+
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val tileDownloader = TileDownloader()
     private val tileCache = TileCache(context)
@@ -102,6 +105,143 @@ class MapController(
     fun setCenter(latLng: LatLng) {
         center = latLng
     }
+
+    fun getCenter(): LatLng = center
+
+    fun getCameraPosition(): CameraPosition =
+        CameraPosition(
+            target = center,
+            zoom = zoom,
+        )
+
+    fun moveCamera(cameraUpdate: CameraUpdate) {
+        stopAnimation()
+        commitPan()
+        applyCameraUpdate(cameraUpdate)
+    }
+
+    fun animateCamera(
+        cameraUpdate: CameraUpdate,
+        durationMs: Int = 250,
+        listener: OnCameraAnimationListener? = null,
+    ) {
+        stopAnimation()
+        commitPan()
+
+        val startPosition = getCameraPosition()
+        val targetPosition = calculateTargetPosition(cameraUpdate, startPosition)
+
+        animationListener = listener
+        animationJob =
+            scope.launch {
+                try {
+                    val startTime = System.currentTimeMillis()
+                    val endTime = startTime + durationMs
+
+                    while (System.currentTimeMillis() < endTime) {
+                        val currentTime = System.currentTimeMillis()
+                        val progress = ((currentTime - startTime).toFloat() / durationMs).coerceIn(0f, 1f)
+
+                        val interpolatedLat =
+                            interpolate(
+                                startPosition.target.latitude,
+                                targetPosition.target.latitude,
+                                progress,
+                            )
+                        val interpolatedLng =
+                            interpolate(
+                                startPosition.target.longitude,
+                                targetPosition.target.longitude,
+                                progress,
+                            )
+                        val interpolatedZoom =
+                            interpolate(
+                                startPosition.zoom,
+                                targetPosition.zoom,
+                                progress,
+                            )
+
+                        center = LatLng(interpolatedLat, interpolatedLng)
+                        zoom = interpolatedZoom
+
+                        onTileLoadedCallback?.invoke()
+
+                        kotlinx.coroutines.delay(16)
+                    }
+
+                    center = targetPosition.target
+                    zoom = targetPosition.zoom
+                    onTileLoadedCallback?.invoke()
+
+                    animationListener?.onFinish()
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    animationListener?.onCancel()
+                    throw e
+                } finally {
+                    animationJob = null
+                    animationListener = null
+                }
+            }
+    }
+
+    fun stopAnimation() {
+        animationJob?.cancel()
+        animationJob = null
+        animationListener = null
+    }
+
+    private fun applyCameraUpdate(cameraUpdate: CameraUpdate) {
+        val targetPosition = calculateTargetPosition(cameraUpdate, getCameraPosition())
+        center = targetPosition.target
+        zoom = targetPosition.zoom
+    }
+
+    private fun calculateTargetPosition(
+        cameraUpdate: CameraUpdate,
+        currentPosition: CameraPosition,
+    ): CameraPosition =
+        when (cameraUpdate) {
+            is CameraUpdate.NewLatLng ->
+                CameraPosition(
+                    target = cameraUpdate.target,
+                    zoom = currentPosition.zoom,
+                )
+            is CameraUpdate.NewLatLngZoom ->
+                CameraPosition(
+                    target = cameraUpdate.target,
+                    zoom = cameraUpdate.zoom.coerceIn(MIN_ZOOM, MAX_ZOOM),
+                )
+            is CameraUpdate.NewCameraPosition ->
+                cameraUpdate.position.copy(
+                    zoom = cameraUpdate.position.zoom.coerceIn(MIN_ZOOM, MAX_ZOOM),
+                )
+            is CameraUpdate.ZoomIn ->
+                CameraPosition(
+                    target = currentPosition.target,
+                    zoom = (currentPosition.zoom + 1.0).coerceIn(MIN_ZOOM, MAX_ZOOM),
+                )
+            is CameraUpdate.ZoomOut ->
+                CameraPosition(
+                    target = currentPosition.target,
+                    zoom = (currentPosition.zoom - 1.0).coerceIn(MIN_ZOOM, MAX_ZOOM),
+                )
+            is CameraUpdate.ZoomTo ->
+                CameraPosition(
+                    target = currentPosition.target,
+                    zoom = cameraUpdate.zoom.coerceIn(MIN_ZOOM, MAX_ZOOM),
+                )
+            is CameraUpdate.ZoomBy ->
+                CameraPosition(
+                    target = currentPosition.target,
+                    zoom = (currentPosition.zoom + cameraUpdate.amount).coerceIn(MIN_ZOOM, MAX_ZOOM),
+                )
+        }
+
+    private fun interpolate(
+        start: Double,
+        end: Double,
+        progress: Float,
+    ): Double = start + (end - start) * progress
 
     fun setViewSize(
         width: Int,

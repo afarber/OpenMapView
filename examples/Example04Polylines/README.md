@@ -228,9 +228,10 @@ clearPolygons()
 
 ## Next Steps
 
-- Try **Example01Pan** for basic map panning
-- Try **Example02Zoom** for zoom controls
-- Try **Example03Markers** for marker overlays
+- Try [Example01Pan](../Example01Pan) for basic map panning
+- Try [Example02Zoom](../Example02Zoom) for zoom controls
+- Try [Example03Markers](../Example03Markers) for marker overlays
+- Try [Example05Camera](../Example05Camera) for camera animations
 - Add your own geographic data (routes, boundaries, zones)
 - Experiment with different colors and transparency levels
 

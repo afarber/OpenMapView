@@ -66,8 +66,10 @@ fun MapViewScreen() {
 
 ## Next Steps
 
-- Try **Example02Zoom** for zoom controls and pinch-to-zoom gestures
-- Try **Example03Markers** for marker overlays and click handling
+- Try [Example02Zoom](../Example02Zoom) for zoom controls and pinch-to-zoom gestures
+- Try [Example03Markers](../Example03Markers) for marker overlays
+- Try [Example04Polylines](../Example04Polylines) for vector shapes
+- Try [Example05Camera](../Example05Camera) for camera animations
 
 ## Map Location
 
