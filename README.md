@@ -39,39 +39,14 @@ The documentation is automatically generated from KDoc comments and updated with
 
 Explore the example applications to see OpenMapView in action:
 
-### [Example01Pan](examples/Example01Pan) - Basic Map Panning
+- [Example01Pan](examples/Example01Pan) - Basic map panning with touch gestures
+- [Example02Zoom](examples/Example02Zoom) - Zoom controls and pinch-to-zoom
+- [Example03Markers](examples/Example03Markers) - Marker overlays with custom icons
+- [Example04Polylines](examples/Example04Polylines) - Polylines, polygons, and polygons with holes
+- [Example05Camera](examples/Example05Camera) - Camera animations with callbacks
+- [Example06Clicks](examples/Example06Clicks) - Map click and long-click listeners
 
-![Example01Pan](examples/Example01Pan/screenshot.gif)
-
-Demonstrates basic map tile rendering and touch pan gestures.
-
-### [Example02Zoom](examples/Example02Zoom) - Zoom Controls and Gestures
-
-![Example02Zoom](examples/Example02Zoom/screenshot.gif)
-
-Shows zoom functionality with FAB controls and pinch-to-zoom gestures.
-
-### [Example03Markers](examples/Example03Markers) - Marker Overlays
-
-![Example03Markers](examples/Example03Markers/screenshot.gif)
-
-Demonstrates marker system with custom icons and click handling.
-
-### [Example04Polylines](examples/Example04Polylines) - Polylines and Polygons
-
-![Example04Polylines](examples/Example04Polylines/screenshot.gif)
-
-Shows how to draw vector shapes including polylines, filled polygons, and polygons with holes.
-
-### [Example05Camera](examples/Example05Camera) - Camera Animations
-
-![Example05Camera](examples/Example05Camera/screenshot.gif)
-
-Demonstrates smooth camera animations with customizable durations and completion callbacks.
-
-### [Example06Clicks](examples/Example06Clicks) - Map Click Listeners
-
-Demonstrates map click and long-click listeners with coordinate display via Toast messages.
+![Example05Camera Demo](examples/Example05Camera/screenshot.gif)
 
 ## Documentation
 
