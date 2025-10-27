@@ -18,6 +18,7 @@ import android.graphics.Color
  * @property strokeWidth Width of the outline in pixels (default: 10f)
  * @property fillColor Fill color for the polygon interior (default: semi-transparent gray)
  * @property holes List of hole definitions, where each hole is a list of LatLng points
+ * @property visible Whether the polygon is visible. Default is true
  * @property tag Optional user data associated with the polygon
  */
 data class Polygon(
@@ -26,6 +27,7 @@ data class Polygon(
     val strokeWidth: Float = 10f,
     val fillColor: Int = Color.argb(128, 128, 128, 128),
     val holes: List<List<LatLng>> = emptyList(),
+    val visible: Boolean = true,
     val tag: Any? = null,
 ) {
     /**

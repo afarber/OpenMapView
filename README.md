@@ -72,6 +72,7 @@ Demonstrates smooth camera animations with customizable durations and completion
 ## Documentation
 
 - [Public API Compatibility](docs/PUBLIC_API.md) - Google MapView API implementation status and compatibility matrix
+- [Architecture](docs/ARCHITECTURE.md) - Architectural design and comparison with Google Maps SDK
 - [Contributing Guide](docs/CONTRIBUTING.md) - Code quality requirements, formatting, git hooks, and PR process
 - [Lifecycle Management](docs/LIFECYCLE.md) - How OpenMapView handles Android lifecycle events
 - [Publishing Guide](docs/PUBLISHING.md) - Publishing to Maven Central and JitPack

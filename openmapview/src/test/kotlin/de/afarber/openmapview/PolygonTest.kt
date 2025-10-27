@@ -259,4 +259,28 @@ class PolygonTest {
         assertEquals(1f, thinBorder.strokeWidth, 0.001f)
         assertEquals(15f, thickBorder.strokeWidth, 0.001f)
     }
+
+    @Test
+    fun testPolygonVisibility_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+                LatLng(51.4620, 7.2430),
+            )
+        val polygon = Polygon(points = points)
+        assertEquals(true, polygon.visible)
+    }
+
+    @Test
+    fun testPolygonVisibility_SetToFalse() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+                LatLng(51.4620, 7.2430),
+            )
+        val polygon = Polygon(points = points, visible = false)
+        assertEquals(false, polygon.visible)
+    }
 }

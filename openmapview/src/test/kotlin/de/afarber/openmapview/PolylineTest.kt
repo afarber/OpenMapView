@@ -168,4 +168,26 @@ class PolylineTest {
         assertEquals(Color.BLUE, blueLine.strokeColor)
         assertEquals(Color.argb(128, 255, 0, 0), customLine.strokeColor)
     }
+
+    @Test
+    fun testPolylineVisibility_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+        assertEquals(true, polyline.visible)
+    }
+
+    @Test
+    fun testPolylineVisibility_SetToFalse() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points, visible = false)
+        assertEquals(false, polyline.visible)
+    }
 }

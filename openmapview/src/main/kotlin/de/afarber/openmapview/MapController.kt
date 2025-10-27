@@ -515,7 +515,7 @@ class MapController(
         paint.isAntiAlias = true
 
         for (polyline in polylines) {
-            if (polyline.points.size < 2) continue
+            if (!polyline.visible || polyline.points.size < 2) continue
 
             paint.color = polyline.strokeColor
             paint.strokeWidth = polyline.strokeWidth
@@ -556,7 +556,7 @@ class MapController(
         strokePaint.isAntiAlias = true
 
         for (polygon in polygons) {
-            if (polygon.points.size < 3) continue
+            if (!polygon.visible || polygon.points.size < 3) continue
 
             fillPaint.color = polygon.fillColor
             strokePaint.color = polygon.strokeColor
