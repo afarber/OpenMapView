@@ -9,9 +9,7 @@ A modern, Kotlin-first MapView replacement for Android — powered by [OpenStree
 
 ## Installation
 
-### Maven Central (Recommended)
-
-Add the dependency to the module `build.gradle.kts`:
+Add to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
@@ -19,55 +17,7 @@ dependencies {
 }
 ```
 
-Or for Groovy `build.gradle`:
-
-```groovy
-dependencies {
-    implementation 'de.afarber:openmapview:0.2.0'
-}
-```
-
-### JitPack (Alternative)
-
-JitPack provides instant access to GitHub releases and supports development snapshots.
-
-Add the JitPack repository in `settings.gradle.kts`:
-
-```kotlin
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url = uri("https://jitpack.io") }
-    }
-}
-```
-
-Then add the dependency:
-
-```kotlin
-dependencies {
-    implementation("com.github.afarber:OpenMapView:0.2.0")
-}
-```
-
-For Groovy `settings.gradle`:
-
-```groovy
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
-    }
-}
-```
-
-```groovy
-dependencies {
-    implementation 'com.github.afarber:OpenMapView:0.2.0'
-}
-```
+The library is available on [Maven Central](https://central.sonatype.com/artifact/de.afarber/openmapview). Alternative distribution via [JitPack](https://jitpack.io/#afarber/OpenMapView) is also supported.
 
 ## Features
 
