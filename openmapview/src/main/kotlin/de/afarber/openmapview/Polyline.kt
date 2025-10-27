@@ -16,6 +16,7 @@ import android.graphics.Color
  * @property strokeColor Color of the line stroke (default: black)
  * @property strokeWidth Width of the line in pixels (default: 10f)
  * @property visible Whether the polyline is visible. Default is true
+ * @property clickable Whether the polyline is clickable. Default is false
  * @property tag Optional user data associated with the polyline
  */
 data class Polyline(
@@ -23,6 +24,7 @@ data class Polyline(
     val strokeColor: Int = Color.BLACK,
     val strokeWidth: Float = 10f,
     val visible: Boolean = true,
+    val clickable: Boolean = false,
     val tag: Any? = null,
 ) {
     /**

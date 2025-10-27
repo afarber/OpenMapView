@@ -283,4 +283,28 @@ class PolygonTest {
         val polygon = Polygon(points = points, visible = false)
         assertEquals(false, polygon.visible)
     }
+
+    @Test
+    fun testPolygonClickable_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+                LatLng(51.4620, 7.2430),
+            )
+        val polygon = Polygon(points = points)
+        assertEquals(false, polygon.clickable)
+    }
+
+    @Test
+    fun testPolygonClickable_SetToTrue() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+                LatLng(51.4620, 7.2430),
+            )
+        val polygon = Polygon(points = points, clickable = true)
+        assertEquals(true, polygon.clickable)
+    }
 }

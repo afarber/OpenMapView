@@ -190,4 +190,26 @@ class PolylineTest {
         val polyline = Polyline(points = points, visible = false)
         assertEquals(false, polyline.visible)
     }
+
+    @Test
+    fun testPolylineClickable_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+        assertEquals(false, polyline.clickable)
+    }
+
+    @Test
+    fun testPolylineClickable_SetToTrue() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points, clickable = true)
+        assertEquals(true, polyline.clickable)
+    }
 }

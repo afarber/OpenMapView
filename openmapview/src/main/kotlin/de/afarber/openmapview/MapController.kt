@@ -861,6 +861,181 @@ class MapController(
         return null
     }
 
+    var onPolylineClickListener: OnPolylineClickListener? = null
+    var onPolygonClickListener: OnPolygonClickListener? = null
+
+    /**
+     * Checks if a touch at screen coordinates hits a clickable polyline.
+     *
+     * Uses point-to-line-segment distance calculation with a touch tolerance.
+     *
+     * @param x The x coordinate in screen pixels
+     * @param y The y coordinate in screen pixels
+     * @return The clicked polyline or null if none was hit
+     */
+    fun handlePolylineTouch(
+        x: Float,
+        y: Float,
+    ): Polyline? {
+        val touchTolerance = 20f
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+
+        // Check polylines in reverse order (top to bottom) for correct z-ordering
+        for (polyline in polylines.reversed()) {
+            if (!polyline.clickable) continue
+
+            // Convert all points to screen coordinates
+            val screenPoints =
+                polyline.points.map { latLng ->
+                    val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom.toInt())
+                    val sx = (px - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                    val sy = (py - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+                    Pair(sx, sy)
+                }
+
+            // Check each line segment
+            for (i in 0 until screenPoints.size - 1) {
+                val p1 = screenPoints[i]
+                val p2 = screenPoints[i + 1]
+
+                val distance = distanceToLineSegment(x, y, p1.first, p1.second, p2.first, p2.second)
+                if (distance <= touchTolerance + polyline.strokeWidth / 2) {
+                    return polyline
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * Checks if a touch at screen coordinates hits a clickable polygon.
+     *
+     * Uses point-in-polygon ray casting algorithm.
+     *
+     * @param x The x coordinate in screen pixels
+     * @param y The y coordinate in screen pixels
+     * @return The clicked polygon or null if none was hit
+     */
+    fun handlePolygonTouch(
+        x: Float,
+        y: Float,
+    ): Polygon? {
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+
+        // Check polygons in reverse order (top to bottom) for correct z-ordering
+        for (polygon in polygons.reversed()) {
+            if (!polygon.clickable) continue
+
+            // Convert all points to screen coordinates
+            val screenPoints =
+                polygon.points.map { latLng ->
+                    val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom.toInt())
+                    val sx = (px - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                    val sy = (py - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+                    Pair(sx, sy)
+                }
+
+            // Check if point is inside the main polygon
+            if (isPointInPolygon(x, y, screenPoints)) {
+                // Check if point is inside any holes
+                var inHole = false
+                for (hole in polygon.holes) {
+                    val holeScreenPoints =
+                        hole.map { latLng ->
+                            val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom.toInt())
+                            val sx = (px - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                            val sy = (py - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+                            Pair(sx, sy)
+                        }
+                    if (isPointInPolygon(x, y, holeScreenPoints)) {
+                        inHole = true
+                        break
+                    }
+                }
+
+                if (!inHole) {
+                    return polygon
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * Calculates the shortest distance from a point to a line segment.
+     *
+     * @param px Point x coordinate
+     * @param py Point y coordinate
+     * @param x1 Line segment start x
+     * @param y1 Line segment start y
+     * @param x2 Line segment end x
+     * @param y2 Line segment end y
+     * @return The distance in pixels
+     */
+    private fun distanceToLineSegment(
+        px: Float,
+        py: Float,
+        x1: Float,
+        y1: Float,
+        x2: Float,
+        y2: Float,
+    ): Float {
+        val dx = x2 - x1
+        val dy = y2 - y1
+        val lengthSquared = dx * dx + dy * dy
+
+        if (lengthSquared == 0f) {
+            // Line segment is a point
+            val dpx = px - x1
+            val dpy = py - y1
+            return kotlin.math.sqrt(dpx * dpx + dpy * dpy)
+        }
+
+        // Calculate projection parameter t
+        val t = ((px - x1) * dx + (py - y1) * dy) / lengthSquared
+        val clampedT = t.coerceIn(0f, 1f)
+
+        // Find closest point on line segment
+        val closestX = x1 + clampedT * dx
+        val closestY = y1 + clampedT * dy
+
+        // Calculate distance
+        val distX = px - closestX
+        val distY = py - closestY
+        return kotlin.math.sqrt(distX * distX + distY * distY)
+    }
+
+    /**
+     * Determines if a point is inside a polygon using ray casting algorithm.
+     *
+     * @param x Point x coordinate
+     * @param y Point y coordinate
+     * @param points Polygon vertices in screen coordinates
+     * @return True if point is inside polygon
+     */
+    private fun isPointInPolygon(
+        x: Float,
+        y: Float,
+        points: List<Pair<Float, Float>>,
+    ): Boolean {
+        var inside = false
+        var j = points.size - 1
+
+        for (i in points.indices) {
+            val xi = points[i].first
+            val yi = points[i].second
+            val xj = points[j].first
+            val yj = points[j].second
+
+            val intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+            if (intersect) inside = !inside
+
+            j = i
+        }
+
+        return inside
+    }
+
     /**
      * Called when the app comes to the foreground.
      *

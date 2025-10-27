@@ -48,32 +48,32 @@ Methods that must be forwarded from the parent Activity/Fragment.
 
 ## GoogleMap Class - Marker Management
 
-| Method                     | Return Type | Status      | Notes                                                            |
-| -------------------------- | ----------- | ----------- | ---------------------------------------------------------------- |
-| `addMarker(MarkerOptions)` | `Marker`    | IMPLEMENTED | Supports position, title, snippet, icon, anchor, tag             |
-| `clear()`                  | `void`      | PARTIAL     | Implemented as clearMarkers(), clearPolylines(), clearPolygons() |
+| Method                     | Return Type | Status      | Notes                                                                       |
+| -------------------------- | ----------- | ----------- | --------------------------------------------------------------------------- |
+| `addMarker(MarkerOptions)` | `Marker`    | IMPLEMENTED | Supports position, title, snippet, icon, anchor, tag, visible, alpha, draggable |
+| `clear()`                  | `void`      | IMPLEMENTED | Clears all markers, polylines, and polygons                                 |
 
 ---
 
 ## GoogleMap Class - Shapes & Overlays
 
-| Method                                   | Return Type     | Status          | Notes                                            |
-| ---------------------------------------- | --------------- | --------------- | ------------------------------------------------ |
-| `addPolyline(PolylineOptions)`           | `Polyline`      | IMPLEMENTED     | Supports points, stroke color, stroke width, tag |
-| `addPolygon(PolygonOptions)`             | `Polygon`       | IMPLEMENTED     | Supports points, holes, stroke/fill colors, tag  |
-| `addCircle(CircleOptions)`               | `Circle`        | NOT IMPLEMENTED | Planned for future release                       |
-| `addGroundOverlay(GroundOverlayOptions)` | `GroundOverlay` | NOT IMPLEMENTED | Planned for future release                       |
-| `addTileOverlay(TileOverlayOptions)`     | `TileOverlay`   | NOT PLANNED     | Advanced feature                                 |
+| Method                                   | Return Type     | Status          | Notes                                                       |
+| ---------------------------------------- | --------------- | --------------- | ----------------------------------------------------------- |
+| `addPolyline(PolylineOptions)`           | `Polyline`      | IMPLEMENTED     | Supports points, stroke color/width, visible, clickable, tag |
+| `addPolygon(PolygonOptions)`             | `Polygon`       | IMPLEMENTED     | Supports points, holes, colors, visible, clickable, tag     |
+| `addCircle(CircleOptions)`               | `Circle`        | NOT IMPLEMENTED | Planned for future release                                  |
+| `addGroundOverlay(GroundOverlayOptions)` | `GroundOverlay` | NOT IMPLEMENTED | Planned for future release                                  |
+| `addTileOverlay(TileOverlayOptions)`     | `TileOverlay`   | NOT PLANNED     | Advanced feature                                            |
 
 ---
 
 ## GoogleMap Class - View Information
 
-| Method              | Return Type  | Status          | Notes                                            |
-| ------------------- | ------------ | --------------- | ------------------------------------------------ |
-| `getProjection()`   | `Projection` | NOT IMPLEMENTED | Coordinate conversion utilities exist internally |
-| `getMaxZoomLevel()` | `float`      | NOT IMPLEMENTED | Fixed at 19.0                                    |
-| `getMinZoomLevel()` | `float`      | NOT IMPLEMENTED | Fixed at 2.0                                     |
+| Method              | Return Type  | Status      | Notes                                                     |
+| ------------------- | ------------ | ----------- | --------------------------------------------------------- |
+| `getProjection()`   | `Projection` | IMPLEMENTED | Full Projection API with coordinate conversion            |
+| `getMaxZoomLevel()` | `float`      | IMPLEMENTED | Returns current max zoom preference (default 19.0)        |
+| `getMinZoomLevel()` | `float`      | IMPLEMENTED | Returns current min zoom preference (default 2.0)         |
 
 ---
 
@@ -92,11 +92,11 @@ Methods that must be forwarded from the parent Activity/Fragment.
 
 ## GoogleMap Class - Zoom Preferences
 
-| Method                        | Return Type | Status          | Notes          |
-| ----------------------------- | ----------- | --------------- | -------------- |
-| `setMaxZoomPreference(float)` | `void`      | NOT IMPLEMENTED | Fixed at 19.0  |
-| `setMinZoomPreference(float)` | `void`      | NOT IMPLEMENTED | Fixed at 2.0   |
-| `resetMinMaxZoomPreference()` | `void`      | NOT IMPLEMENTED | Not applicable |
+| Method                        | Return Type | Status      | Notes                                       |
+| ----------------------------- | ----------- | ----------- | ------------------------------------------- |
+| `setMaxZoomPreference(float)` | `void`      | IMPLEMENTED | Configurable, default 19.0                  |
+| `setMinZoomPreference(float)` | `void`      | IMPLEMENTED | Configurable, default 2.0                   |
+| `resetMinMaxZoomPreference()` | `void`      | IMPLEMENTED | Resets to defaults (min=2.0, max=19.0)      |
 
 ---
 
@@ -154,12 +154,12 @@ Methods that must be forwarded from the parent Activity/Fragment.
 
 | Method                                                                | Return Type      | Status          | Notes                                                |
 | --------------------------------------------------------------------- | ---------------- | --------------- | ---------------------------------------------------- |
-| `setOnMapClickListener(OnMapClickListener)`                           | `void`           | NOT IMPLEMENTED | Can be implemented via View.setOnClickListener()     |
-| `setOnMapLongClickListener(OnMapLongClickListener)`                   | `void`           | NOT IMPLEMENTED | Can be implemented via View.setOnLongClickListener() |
+| `setOnMapClickListener(OnMapClickListener)`                           | `void`           | IMPLEMENTED     | Full implementation with LatLng coordinate callbacks |
+| `setOnMapLongClickListener(OnMapLongClickListener)`                   | `void`           | IMPLEMENTED     | GestureDetector-based long-press detection           |
 | `setOnMarkerClickListener(OnMarkerClickListener)`                     | `void`           | IMPLEMENTED     | Returns boolean to consume event                     |
-| `setOnMarkerDragListener(OnMarkerDragListener)`                       | `void`           | NOT IMPLEMENTED | Planned for future release                           |
-| `setOnPolylineClickListener(OnPolylineClickListener)`                 | `void`           | NOT IMPLEMENTED | Planned for future release                           |
-| `setOnPolygonClickListener(OnPolygonClickListener)`                   | `void`           | NOT IMPLEMENTED | Planned for future release                           |
+| `setOnMarkerDragListener(OnMarkerDragListener)`                       | `void`           | IMPLEMENTED     | Full drag support with start/drag/end callbacks      |
+| `setOnPolylineClickListener(OnPolylineClickListener)`                 | `void`           | IMPLEMENTED     | Point-to-line distance hit testing with tolerance    |
+| `setOnPolygonClickListener(OnPolygonClickListener)`                   | `void`           | IMPLEMENTED     | Ray casting algorithm with hole support              |
 | `setOnCircleClickListener(OnCircleClickListener)`                     | `void`           | NOT IMPLEMENTED | Not applicable                                       |
 | `setOnGroundOverlayClickListener(OnGroundOverlayClickListener)`       | `void`           | NOT IMPLEMENTED | Not applicable                                       |
 | `setOnPoiClickListener(OnPoiClickListener)`                           | `void`           | NOT PLANNED     | POI data not available in OSM tiles                  |
@@ -226,16 +226,18 @@ This method is an OpenMapView-specific feature not present in Google Maps API.
 
 **Implementation Status:**
 
-- IMPLEMENTED: 25 methods (27.5%)
-- PARTIAL: 3 methods (3.3%)
-- NOT IMPLEMENTED: 37 methods (40.7%)
+- IMPLEMENTED: 38 methods (41.8%)
+- PARTIAL: 0 methods (0%)
+- NOT IMPLEMENTED: 27 methods (29.7%)
 - NOT PLANNED: 26 methods (28.6%)
 
 **Core Functionality Coverage:**
 
 - Camera control: 100% (animateCamera, moveCamera, stopAnimation, getCameraPosition)
-- Basic markers: 100% (addMarker, click listener)
-- Vector shapes: 100% (polylines, polygons with holes)
+- Markers: 100% (addMarker, click listener, drag support, visibility, alpha)
+- Vector shapes: 100% (polylines, polygons with holes, visibility)
+- Map interaction: 100% (click listeners, long-click, projection API)
+- Zoom control: 100% (min/max zoom preferences, getZoom)
 - Lifecycle management: 75% (onResume, onPause, onDestroy)
 
 **Focus Areas:**

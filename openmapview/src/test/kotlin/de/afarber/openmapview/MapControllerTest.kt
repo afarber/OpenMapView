@@ -568,4 +568,202 @@ class MapControllerTest {
         controller.setZoom(10.0)
         assertEquals(10.0, controller.getZoom(), 0.001)
     }
+
+    @Test
+    fun testPolylineClick_NonClickablePolyline() {
+        controller.setViewSize(800, 600)
+        controller.setCenter(LatLng(51.5, 0.0))
+        controller.setZoom(10.0)
+
+        val polyline =
+            Polyline(
+                points =
+                    listOf(
+                        LatLng(51.5, 0.0),
+                        LatLng(51.51, 0.01),
+                    ),
+                clickable = false,
+            )
+        controller.addPolyline(polyline)
+
+        val touched = controller.handlePolylineTouch(400f, 300f)
+        assertNull(touched)
+    }
+
+    @Test
+    fun testPolylineClick_ClickablePolyline_Hit() {
+        controller.setViewSize(800, 600)
+        controller.setCenter(LatLng(51.5, 0.0))
+        controller.setZoom(10.0)
+
+        val polyline =
+            Polyline(
+                points =
+                    listOf(
+                        LatLng(51.5, 0.0),
+                        LatLng(51.51, 0.01),
+                    ),
+                clickable = true,
+            )
+        controller.addPolyline(polyline)
+
+        val touched = controller.handlePolylineTouch(400f, 300f)
+        assertNotNull(touched)
+        assertEquals(polyline.id, touched?.id)
+    }
+
+    @Test
+    fun testPolylineClick_ClickablePolyline_Miss() {
+        controller.setViewSize(800, 600)
+        controller.setCenter(LatLng(51.5, 0.0))
+        controller.setZoom(10.0)
+
+        val polyline =
+            Polyline(
+                points =
+                    listOf(
+                        LatLng(51.5, 0.0),
+                        LatLng(51.51, 0.01),
+                    ),
+                clickable = true,
+            )
+        controller.addPolyline(polyline)
+
+        val touched = controller.handlePolylineTouch(100f, 100f)
+        assertNull(touched)
+    }
+
+    @Test
+    fun testPolygonClick_NonClickablePolygon() {
+        controller.setViewSize(800, 600)
+        controller.setCenter(LatLng(51.5, 0.0))
+        controller.setZoom(10.0)
+
+        val polygon =
+            Polygon(
+                points =
+                    listOf(
+                        LatLng(51.5, 0.0),
+                        LatLng(51.51, 0.0),
+                        LatLng(51.51, 0.01),
+                    ),
+                clickable = false,
+            )
+        controller.addPolygon(polygon)
+
+        val touched = controller.handlePolygonTouch(400f, 300f)
+        assertNull(touched)
+    }
+
+    @Test
+    fun testPolygonClick_ClickablePolygon_Hit() {
+        controller.setViewSize(800, 600)
+        controller.setCenter(LatLng(51.5, 0.0))
+        controller.setZoom(10.0)
+
+        val polygon =
+            Polygon(
+                points =
+                    listOf(
+                        LatLng(51.49, -0.01),
+                        LatLng(51.51, -0.01),
+                        LatLng(51.51, 0.01),
+                        LatLng(51.49, 0.01),
+                    ),
+                clickable = true,
+            )
+        controller.addPolygon(polygon)
+
+        val touched = controller.handlePolygonTouch(400f, 300f)
+        assertNotNull(touched)
+        assertEquals(polygon.id, touched?.id)
+    }
+
+    @Test
+    fun testPolygonClick_ClickablePolygon_Miss() {
+        controller.setViewSize(800, 600)
+        controller.setCenter(LatLng(51.5, 0.0))
+        controller.setZoom(10.0)
+
+        val polygon =
+            Polygon(
+                points =
+                    listOf(
+                        LatLng(51.5, 0.0),
+                        LatLng(51.51, 0.0),
+                        LatLng(51.51, 0.01),
+                    ),
+                clickable = true,
+            )
+        controller.addPolygon(polygon)
+
+        val touched = controller.handlePolygonTouch(100f, 100f)
+        assertNull(touched)
+    }
+
+    @Test
+    fun testPolygonClick_PolygonWithHole_HitOutside() {
+        controller.setViewSize(800, 600)
+        controller.setCenter(LatLng(51.4818, 7.2162))
+        controller.setZoom(14.0)
+
+        val polygon =
+            Polygon(
+                points =
+                    listOf(
+                        LatLng(51.475, 7.210),
+                        LatLng(51.488, 7.210),
+                        LatLng(51.488, 7.223),
+                        LatLng(51.475, 7.223),
+                    ),
+                holes =
+                    listOf(
+                        listOf(
+                            LatLng(51.479, 7.2145),
+                            LatLng(51.484, 7.2145),
+                            LatLng(51.484, 7.2185),
+                            LatLng(51.479, 7.2185),
+                        ),
+                    ),
+                clickable = true,
+            )
+        controller.addPolygon(polygon)
+
+        val touched = controller.handlePolygonTouch(350f, 250f)
+        assertNotNull(touched)
+    }
+
+    @Test
+    fun testPolylineClick_MultiplePolylines_ReturnsTopmost() {
+        controller.setViewSize(800, 600)
+        controller.setCenter(LatLng(51.5, 0.0))
+        controller.setZoom(10.0)
+
+        val polyline1 =
+            Polyline(
+                points =
+                    listOf(
+                        LatLng(51.5, 0.0),
+                        LatLng(51.51, 0.01),
+                    ),
+                clickable = true,
+                tag = "first",
+            )
+        val polyline2 =
+            Polyline(
+                points =
+                    listOf(
+                        LatLng(51.5, 0.0),
+                        LatLng(51.51, 0.01),
+                    ),
+                clickable = true,
+                tag = "second",
+            )
+        controller.addPolyline(polyline1)
+        controller.addPolyline(polyline2)
+
+        val touched = controller.handlePolylineTouch(400f, 300f)
+        assertNotNull(touched)
+        assertEquals("second", touched?.tag)
+    }
 }

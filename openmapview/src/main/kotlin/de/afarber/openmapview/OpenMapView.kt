@@ -200,6 +200,24 @@ class OpenMapView
                                 }
                             }
 
+                            // Check for polyline touch
+                            val touchedPolyline = controller.handlePolylineTouch(event.x, event.y)
+                            if (touchedPolyline != null) {
+                                controller.onPolylineClickListener?.onPolylineClick(touchedPolyline)
+                                controller.commitPan()
+                                invalidate()
+                                return true
+                            }
+
+                            // Check for polygon touch
+                            val touchedPolygon = controller.handlePolygonTouch(event.x, event.y)
+                            if (touchedPolygon != null) {
+                                controller.onPolygonClickListener?.onPolygonClick(touchedPolygon)
+                                controller.commitPan()
+                                invalidate()
+                                return true
+                            }
+
                             // Fire map click event if nothing else was clicked
                             val latLng = controller.screenToLatLng(event.x, event.y)
                             onMapClickListener?.onMapClick(latLng)
@@ -480,6 +498,44 @@ class OpenMapView
          */
         fun setOnMarkerDragListener(listener: OnMarkerDragListener?) {
             onMarkerDragListener = listener
+        }
+
+        /**
+         * Sets a listener to handle polyline click events.
+         *
+         * Called when a clickable polyline is clicked. The polyline must have
+         * its clickable property set to true to receive click events.
+         *
+         * Example:
+         * ```kotlin
+         * mapView.setOnPolylineClickListener { polyline ->
+         *     Toast.makeText(context, "Polyline clicked: ${polyline.tag}", Toast.LENGTH_SHORT).show()
+         * }
+         * ```
+         *
+         * @param listener The listener to receive polyline click events, or null to clear the listener
+         */
+        fun setOnPolylineClickListener(listener: OnPolylineClickListener?) {
+            controller.onPolylineClickListener = listener
+        }
+
+        /**
+         * Sets a listener to handle polygon click events.
+         *
+         * Called when a clickable polygon is clicked. The polygon must have
+         * its clickable property set to true to receive click events.
+         *
+         * Example:
+         * ```kotlin
+         * mapView.setOnPolygonClickListener { polygon ->
+         *     Toast.makeText(context, "Polygon clicked: ${polygon.tag}", Toast.LENGTH_SHORT).show()
+         * }
+         * ```
+         *
+         * @param listener The listener to receive polygon click events, or null to clear the listener
+         */
+        fun setOnPolygonClickListener(listener: OnPolygonClickListener?) {
+            controller.onPolygonClickListener = listener
         }
 
         /**
