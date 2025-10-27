@@ -163,10 +163,10 @@ Methods that must be forwarded from the parent Activity/Fragment.
 | `setOnCircleClickListener(OnCircleClickListener)`                     | `void`           | NOT IMPLEMENTED | Not applicable                                       |
 | `setOnGroundOverlayClickListener(OnGroundOverlayClickListener)`       | `void`           | NOT IMPLEMENTED | Not applicable                                       |
 | `setOnPoiClickListener(OnPoiClickListener)`                           | `void`           | NOT PLANNED     | POI data not available in OSM tiles                  |
-| `setOnCameraMoveStartedListener(OnCameraMoveStartedListener)`         | `void`           | NOT IMPLEMENTED | Planned for future release                           |
-| `setOnCameraMoveListener(OnCameraMoveListener)`                       | `void`           | NOT IMPLEMENTED | Planned for future release                           |
-| `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           | NOT IMPLEMENTED | Planned for future release                           |
-| `setOnCameraMoveCanceledListener(OnCameraMoveCanceledListener)`       | `void`           | NOT IMPLEMENTED | Planned for future release                           |
+| `setOnCameraMoveStartedListener(OnCameraMoveStartedListener)`         | `void`           | IMPLEMENTED     | Tracks gesture, API, and developer-initiated moves   |
+| `setOnCameraMoveListener(OnCameraMoveListener)`                       | `void`           | IMPLEMENTED     | Called repeatedly during camera movement             |
+| `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           | IMPLEMENTED     | Called when camera stops moving                      |
+| `setOnCameraMoveCanceledListener(OnCameraMoveCanceledListener)`       | `void`           | IMPLEMENTED     | Called when animation is interrupted                 |
 | `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | NOT IMPLEMENTED | Tiles load asynchronously, callback could be added   |
 | `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | NOT IMPLEMENTED | Info windows not yet implemented                     |
 | `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           | NOT IMPLEMENTED | Not applicable                                       |

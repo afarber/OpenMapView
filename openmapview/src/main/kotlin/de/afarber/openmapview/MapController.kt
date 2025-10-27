@@ -56,6 +56,14 @@ class MapController(
     private var animationJob: Job? = null
     private var animationListener: OnCameraAnimationListener? = null
 
+    var onCameraMoveStartedListener: OnCameraMoveStartedListener? = null
+    var onCameraMoveListener: OnCameraMoveListener? = null
+    var onCameraIdleListener: OnCameraIdleListener? = null
+    var onCameraMoveCanceledListener: OnCameraMoveCanceledListener? = null
+
+    internal var isCameraMoving = false
+    internal var currentMoveReason: Int? = null
+
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val tileDownloader = TileDownloader()
     private val tileCache = TileCache(context)
@@ -257,7 +265,20 @@ class MapController(
     fun moveCamera(cameraUpdate: CameraUpdate) {
         stopAnimation()
         commitPan()
+
+        // Fire camera move started event
+        if (!isCameraMoving) {
+            isCameraMoving = true
+            currentMoveReason = OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION
+            onCameraMoveStartedListener?.onCameraMoveStarted(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION)
+        }
+
         applyCameraUpdate(cameraUpdate)
+
+        // Fire camera idle event immediately since moveCamera is instant
+        isCameraMoving = false
+        currentMoveReason = null
+        onCameraIdleListener?.onCameraIdle()
     }
 
     /**
@@ -280,6 +301,13 @@ class MapController(
 
         val startPosition = getCameraPosition()
         val targetPosition = calculateTargetPosition(cameraUpdate, startPosition)
+
+        // Fire camera move started event
+        if (!isCameraMoving) {
+            isCameraMoving = true
+            currentMoveReason = OnCameraMoveStartedListener.REASON_API_ANIMATION
+            onCameraMoveStartedListener?.onCameraMoveStarted(OnCameraMoveStartedListener.REASON_API_ANIMATION)
+        }
 
         animationListener = listener
         animationJob =
@@ -314,6 +342,8 @@ class MapController(
                         center = LatLng(interpolatedLat, interpolatedLng)
                         zoom = interpolatedZoom
 
+                        // Fire camera move event during animation
+                        onCameraMoveListener?.onCameraMove()
                         onTileLoadedCallback?.invoke()
 
                         kotlinx.coroutines.delay(16)
@@ -324,6 +354,11 @@ class MapController(
                     onTileLoadedCallback?.invoke()
 
                     animationListener?.onFinish()
+
+                    // Fire camera idle event after animation completes
+                    isCameraMoving = false
+                    currentMoveReason = null
+                    onCameraIdleListener?.onCameraIdle()
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     animationListener?.onCancel()
                     throw e
@@ -341,9 +376,18 @@ class MapController(
      * onCancel() callback will be invoked. The camera remains at its current position.
      */
     fun stopAnimation() {
-        animationJob?.cancel()
-        animationJob = null
-        animationListener = null
+        if (animationJob != null) {
+            animationJob?.cancel()
+            animationJob = null
+            animationListener = null
+
+            // Fire camera move canceled event
+            if (isCameraMoving) {
+                onCameraMoveCanceledListener?.onCameraMoveCanceled()
+                isCameraMoving = false
+                currentMoveReason = null
+            }
+        }
     }
 
     private fun applyCameraUpdate(cameraUpdate: CameraUpdate) {
@@ -459,6 +503,13 @@ class MapController(
         // Reset pan offset
         panOffsetX = 0f
         panOffsetY = 0f
+
+        // Fire camera idle event after pan gesture completes
+        if (isCameraMoving && currentMoveReason == OnCameraMoveStartedListener.REASON_GESTURE) {
+            isCameraMoving = false
+            currentMoveReason = null
+            onCameraIdleListener?.onCameraIdle()
+        }
     }
 
     /**

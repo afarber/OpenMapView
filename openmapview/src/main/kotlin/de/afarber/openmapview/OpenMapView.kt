@@ -155,7 +155,22 @@ class OpenMapView
 
                         // Pan the map if not dragging a marker
                         if (!isDragging) {
+                            // Fire camera move started event on first pan movement
+                            if (movementDistance > 0 && !controller.isCameraMoving) {
+                                controller.isCameraMoving = true
+                                controller.currentMoveReason = de.afarber.openmapview.OnCameraMoveStartedListener.REASON_GESTURE
+                                controller.onCameraMoveStartedListener?.onCameraMoveStarted(
+                                    de.afarber.openmapview.OnCameraMoveStartedListener.REASON_GESTURE,
+                                )
+                            }
+
                             controller.updatePanOffset(dx, dy)
+
+                            // Fire camera move event during pan
+                            if (controller.isCameraMoving) {
+                                controller.onCameraMoveListener?.onCameraMove()
+                            }
+
                             lastTouchX = event.x
                             lastTouchY = event.y
                             invalidate()
@@ -572,6 +587,50 @@ class OpenMapView
          */
         fun setOnMapLongClickListener(listener: OnMapLongClickListener?) {
             onMapLongClickListener = listener
+        }
+
+        /**
+         * Sets a listener to handle camera movement start events.
+         *
+         * Called when the camera starts moving, providing the reason for the movement.
+         *
+         * @param listener The listener to receive camera move started events, or null to clear the listener
+         */
+        fun setOnCameraMoveStartedListener(listener: OnCameraMoveStartedListener?) {
+            controller.onCameraMoveStartedListener = listener
+        }
+
+        /**
+         * Sets a listener to handle camera movement events.
+         *
+         * Called repeatedly while the camera is moving.
+         *
+         * @param listener The listener to receive camera move events, or null to clear the listener
+         */
+        fun setOnCameraMoveListener(listener: OnCameraMoveListener?) {
+            controller.onCameraMoveListener = listener
+        }
+
+        /**
+         * Sets a listener to handle camera idle events.
+         *
+         * Called when the camera stops moving after gestures or animations complete.
+         *
+         * @param listener The listener to receive camera idle events, or null to clear the listener
+         */
+        fun setOnCameraIdleListener(listener: OnCameraIdleListener?) {
+            controller.onCameraIdleListener = listener
+        }
+
+        /**
+         * Sets a listener to handle camera movement cancellation events.
+         *
+         * Called when an ongoing animation is interrupted before completion.
+         *
+         * @param listener The listener to receive camera move canceled events, or null to clear the listener
+         */
+        fun setOnCameraMoveCanceledListener(listener: OnCameraMoveCanceledListener?) {
+            controller.onCameraMoveCanceledListener = listener
         }
 
         /**
