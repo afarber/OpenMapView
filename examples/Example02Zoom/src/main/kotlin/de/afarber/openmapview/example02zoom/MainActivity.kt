@@ -13,10 +13,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -80,53 +77,51 @@ fun MapViewScreen() {
             modifier = Modifier.fillMaxSize(),
         )
 
-        // Zoom controls overlay
-        Column(
+        // Zoom level title at the top
+        Surface(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 16.dp),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+            shape = MaterialTheme.shapes.small,
+        ) {
+            Text(
+                text = "Zoom: ${zoomLevel.roundToInt()}",
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                style = MaterialTheme.typography.titleMedium,
+            )
+        }
+
+        // Zoom in button
+        FloatingActionButton(
+            onClick = {
+                mapView?.let {
+                    val newZoom = (it.getZoom() + 1.0).coerceAtMost(19.0)
+                    it.setZoom(newZoom)
+                    zoomLevel = newZoom
+                }
+            },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 16.dp),
+                .padding(end = 16.dp, bottom = 88.dp),
         ) {
-            // Zoom level display
-            Surface(
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                shape = MaterialTheme.shapes.small,
-            ) {
-                Text(
-                    text = "Zoom: ${zoomLevel.roundToInt()}",
-                    modifier = Modifier.padding(12.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
+            Text("+", style = MaterialTheme.typography.headlineMedium)
+        }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Zoom in button
-            FloatingActionButton(
-                onClick = {
-                    mapView?.let {
-                        val newZoom = (it.getZoom() + 1.0).coerceAtMost(19.0)
-                        it.setZoom(newZoom)
-                        zoomLevel = newZoom
-                    }
-                },
-            ) {
-                Text("+", style = MaterialTheme.typography.headlineMedium)
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Zoom out button
-            FloatingActionButton(
-                onClick = {
-                    mapView?.let {
-                        val newZoom = (it.getZoom() - 1.0).coerceAtLeast(2.0)
-                        it.setZoom(newZoom)
-                        zoomLevel = newZoom
-                    }
-                },
-            ) {
-                Text("-", style = MaterialTheme.typography.headlineMedium)
-            }
+        // Zoom out button
+        FloatingActionButton(
+            onClick = {
+                mapView?.let {
+                    val newZoom = (it.getZoom() - 1.0).coerceAtLeast(2.0)
+                    it.setZoom(newZoom)
+                    zoomLevel = newZoom
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 16.dp),
+        ) {
+            Text("-", style = MaterialTheme.typography.headlineMedium)
         }
     }
 }
