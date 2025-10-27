@@ -44,7 +44,7 @@ object ViewportCalculator {
         if (viewWidth <= 0 || viewHeight <= 0) return emptyList()
 
         // Convert center to pixel coordinates
-        val (centerX, centerY) = Projection.latLngToPixel(center, zoom)
+        val (centerX, centerY) = ProjectionUtils.latLngToPixel(center, zoom)
 
         // Calculate viewport bounds in pixel space (with pan offset)
         val left = (centerX - viewWidth / 2 + panOffsetX).toInt()

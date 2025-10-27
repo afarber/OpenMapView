@@ -16,7 +16,7 @@ class ProjectionTest {
     @Test
     fun testLatLngToPixel_Equator() {
         // At zoom 0, equator center should be at (128, 128)
-        val (x, y) = Projection.latLngToPixel(LatLng(0.0, 0.0), 0)
+        val (x, y) = ProjectionUtils.latLngToPixel(LatLng(0.0, 0.0), 0)
         assertEquals(128.0, x, epsilon)
         assertEquals(128.0, y, epsilon)
     }
@@ -24,11 +24,11 @@ class ProjectionTest {
     @Test
     fun testLatLngToPixel_NullIsland() {
         // Null Island (0,0) at different zooms
-        val zoom1 = Projection.latLngToPixel(LatLng(0.0, 0.0), 1)
+        val zoom1 = ProjectionUtils.latLngToPixel(LatLng(0.0, 0.0), 1)
         assertEquals(256.0, zoom1.first, epsilon)
         assertEquals(256.0, zoom1.second, epsilon)
 
-        val zoom2 = Projection.latLngToPixel(LatLng(0.0, 0.0), 2)
+        val zoom2 = ProjectionUtils.latLngToPixel(LatLng(0.0, 0.0), 2)
         assertEquals(512.0, zoom2.first, epsilon)
         assertEquals(512.0, zoom2.second, epsilon)
     }
@@ -36,7 +36,7 @@ class ProjectionTest {
     @Test
     fun testPixelToLatLng_Equator() {
         // At zoom 0, pixel (128, 128) should be equator center
-        val latLng = Projection.pixelToLatLng(128, 128, 0)
+        val latLng = ProjectionUtils.pixelToLatLng(128, 128, 0)
         assertEquals(0.0, latLng.latitude, epsilon)
         assertEquals(0.0, latLng.longitude, epsilon)
     }
@@ -47,8 +47,8 @@ class ProjectionTest {
         val original = LatLng(51.4661, 7.2491) // Bochum
         val zoom = 14
 
-        val (x, y) = Projection.latLngToPixel(original, zoom)
-        val result = Projection.pixelToLatLng(x.toInt(), y.toInt(), zoom)
+        val (x, y) = ProjectionUtils.latLngToPixel(original, zoom)
+        val result = ProjectionUtils.pixelToLatLng(x.toInt(), y.toInt(), zoom)
 
         assertEquals(original.latitude, result.latitude, epsilon)
         assertEquals(original.longitude, result.longitude, epsilon)
@@ -57,7 +57,7 @@ class ProjectionTest {
     @Test
     fun testLatLngToTile_Bochum() {
         // Bochum at zoom 14
-        val tile = Projection.latLngToTile(LatLng(51.4661, 7.2491), 14)
+        val tile = ProjectionUtils.latLngToTile(LatLng(51.4661, 7.2491), 14)
         assertEquals(14, tile.zoom)
         // Bochum is at tile (8521, 5451) at zoom 14
         // Calculated using Web Mercator projection formulas
@@ -68,7 +68,7 @@ class ProjectionTest {
     @Test
     fun testLatLngToTile_Equator() {
         // Equator center at zoom 0
-        val tile = Projection.latLngToTile(LatLng(0.0, 0.0), 0)
+        val tile = ProjectionUtils.latLngToTile(LatLng(0.0, 0.0), 0)
         assertEquals(0, tile.x)
         assertEquals(0, tile.y)
         assertEquals(0, tile.zoom)
@@ -77,7 +77,7 @@ class ProjectionTest {
     @Test
     fun testTileToPixel() {
         val tile = TileCoordinate(1, 2, 5)
-        val (x, y) = Projection.tileToPixel(tile)
+        val (x, y) = ProjectionUtils.tileToPixel(tile)
         assertEquals(256, x) // 1 * 256
         assertEquals(512, y) // 2 * 256
     }
@@ -86,8 +86,8 @@ class ProjectionTest {
     fun testLongitudeWrapping() {
         // Test that longitude wrapping works correctly
         // At zoom 1, the map is 512 pixels wide (2 tiles * 256)
-        val positive = Projection.latLngToPixel(LatLng(0.0, 180.0), 1)
-        val negative = Projection.latLngToPixel(LatLng(0.0, -180.0), 1)
+        val positive = ProjectionUtils.latLngToPixel(LatLng(0.0, 180.0), 1)
+        val negative = ProjectionUtils.latLngToPixel(LatLng(0.0, -180.0), 1)
 
         // +180° should be at right edge (512), -180° at left edge (0)
         // They represent the same meridian but wrap around
@@ -99,7 +99,7 @@ class ProjectionTest {
     fun testNorthernHemisphere() {
         // Berlin
         val berlin = LatLng(52.52, 13.405)
-        val (x, y) = Projection.latLngToPixel(berlin, 10)
+        val (x, y) = ProjectionUtils.latLngToPixel(berlin, 10)
 
         // Northern hemisphere should have y < center
         val centerY = (256.0 * (1 shl 10)) / 2.0
@@ -110,7 +110,7 @@ class ProjectionTest {
     fun testSouthernHemisphere() {
         // Sydney
         val sydney = LatLng(-33.8688, 151.2093)
-        val (x, y) = Projection.latLngToPixel(sydney, 10)
+        val (x, y) = ProjectionUtils.latLngToPixel(sydney, 10)
 
         // Southern hemisphere should have y > center
         val centerY = (256.0 * (1 shl 10)) / 2.0
@@ -121,7 +121,7 @@ class ProjectionTest {
     fun testEasternHemisphere() {
         // Tokyo
         val tokyo = LatLng(35.6762, 139.6503)
-        val (x, y) = Projection.latLngToPixel(tokyo, 10)
+        val (x, y) = ProjectionUtils.latLngToPixel(tokyo, 10)
 
         // Eastern hemisphere should have x > center
         val centerX = (256.0 * (1 shl 10)) / 2.0
@@ -132,7 +132,7 @@ class ProjectionTest {
     fun testWesternHemisphere() {
         // New York
         val newYork = LatLng(40.7128, -74.0060)
-        val (x, y) = Projection.latLngToPixel(newYork, 10)
+        val (x, y) = ProjectionUtils.latLngToPixel(newYork, 10)
 
         // Western hemisphere should have x < center
         val centerX = (256.0 * (1 shl 10)) / 2.0

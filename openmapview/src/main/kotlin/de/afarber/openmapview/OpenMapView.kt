@@ -253,6 +253,24 @@ class OpenMapView
         fun getCameraPosition(): CameraPosition = controller.getCameraPosition()
 
         /**
+         * Returns a Projection object for coordinate transformations.
+         *
+         * The Projection allows you to convert between screen coordinates (in pixels)
+         * and geographic coordinates (LatLng), as well as query the visible region.
+         *
+         * Example:
+         * ```kotlin
+         * val projection = mapView.getProjection()
+         * val latLng = projection.fromScreenLocation(Point(100, 100))
+         * val screenPoint = projection.toScreenLocation(LatLng(51.5074, -0.1278))
+         * val visibleRegion = projection.getVisibleRegion()
+         * ```
+         *
+         * @return A Projection instance for the current map state
+         */
+        fun getProjection(): Projection = controller.createProjection()
+
+        /**
          * Moves the camera to a new position instantly, without animation.
          *
          * Use [CameraUpdateFactory] to create camera updates:

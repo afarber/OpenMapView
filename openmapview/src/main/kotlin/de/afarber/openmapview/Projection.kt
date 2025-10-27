@@ -7,66 +7,107 @@
 
 package de.afarber.openmapview
 
-import kotlin.math.PI
-import kotlin.math.atan
-import kotlin.math.cos
-import kotlin.math.ln
-import kotlin.math.pow
-import kotlin.math.sinh
-import kotlin.math.tan
+import android.graphics.Point
 
-object Projection {
-    private const val TILE_SIZE = 256
+/**
+ * A projection is used to translate between on-screen location and geographic coordinates.
+ *
+ * Compatible with Google Maps API. Screen locations are in screen pixels (not display pixels)
+ * with respect to the top left corner of the map (not necessarily of the whole screen).
+ *
+ * This class provides methods for converting between screen coordinates and geographic coordinates,
+ * as well as querying the visible region of the map.
+ */
+class Projection
+    internal constructor(
+        private val center: LatLng,
+        private val zoom: Double,
+        private val viewWidth: Int,
+        private val viewHeight: Int,
+        private val panOffsetX: Float,
+        private val panOffsetY: Float,
+    ) {
+        /**
+         * Returns the geographic location that corresponds to a screen location.
+         *
+         * The screen location is specified in screen pixels (not display pixels)
+         * relative to the top left of the map.
+         *
+         * @param point The screen location in pixels
+         * @return The geographic location (LatLng) corresponding to the screen point
+         */
+        fun fromScreenLocation(point: Point): LatLng = fromScreenLocation(point.x.toFloat(), point.y.toFloat())
 
-    /**
-     * Converts GPS coordinates to tile coordinates at a given zoom level.
-     */
-    fun latLngToTile(
-        latLng: LatLng,
-        zoom: Int,
-    ): TileCoordinate {
-        val n = 2.0.pow(zoom)
-        val xTile = ((latLng.longitude + 180.0) / 360.0 * n).toInt()
-        val latRad = Math.toRadians(latLng.latitude)
-        val yTile = ((1.0 - ln(tan(latRad) + 1.0 / cos(latRad)) / PI) / 2.0 * n).toInt()
-        return TileCoordinate(xTile, yTile, zoom)
+        /**
+         * Returns the geographic location that corresponds to a screen location.
+         *
+         * Internal helper that takes float coordinates.
+         *
+         * @param screenX The X coordinate in screen pixels
+         * @param screenY The Y coordinate in screen pixels
+         * @return The geographic location (LatLng) corresponding to the screen position
+         */
+        private fun fromScreenLocation(
+            screenX: Float,
+            screenY: Float,
+        ): LatLng {
+            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+
+            val pixelX = (centerPixelX + (screenX - viewWidth / 2 + panOffsetX).toDouble()).toInt()
+            val pixelY = (centerPixelY + (screenY - viewHeight / 2 + panOffsetY).toDouble()).toInt()
+
+            return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom.toInt())
+        }
+
+        /**
+         * Returns a screen location that corresponds to a geographic coordinate.
+         *
+         * The screen location is specified in screen pixels (not display pixels)
+         * relative to the top left of the map.
+         *
+         * @param location The geographic location (LatLng)
+         * @return The screen location in pixels
+         */
+        fun toScreenLocation(location: LatLng): Point {
+            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+            val (locationPixelX, locationPixelY) = ProjectionUtils.latLngToPixel(location, zoom.toInt())
+
+            val screenX = (locationPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toInt()
+            val screenY = (locationPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toInt()
+
+            return Point(screenX, screenY)
+        }
+
+        /**
+         * Returns the visible region of the map.
+         *
+         * Gets a projection of the viewing frustum for converting between screen coordinates
+         * and geo-latitude/longitude coordinates. The visible region includes the four corner
+         * points and the smallest bounding box that contains them.
+         *
+         * @return A VisibleRegion containing the four corners and bounding box
+         */
+        fun getVisibleRegion(): VisibleRegion {
+            val nearLeft = fromScreenLocation(0f, viewHeight.toFloat())
+            val nearRight = fromScreenLocation(viewWidth.toFloat(), viewHeight.toFloat())
+            val farLeft = fromScreenLocation(0f, 0f)
+            val farRight = fromScreenLocation(viewWidth.toFloat(), 0f)
+
+            val bounds =
+                LatLngBounds
+                    .builder()
+                    .include(nearLeft)
+                    .include(nearRight)
+                    .include(farLeft)
+                    .include(farRight)
+                    .build()
+
+            return VisibleRegion(
+                nearLeft = nearLeft,
+                nearRight = nearRight,
+                farLeft = farLeft,
+                farRight = farRight,
+                latLngBounds = bounds,
+            )
+        }
     }
-
-    /**
-     * Converts tile coordinates to pixel position (top-left corner).
-     */
-    fun tileToPixel(tile: TileCoordinate): Pair<Int, Int> = Pair(tile.x * TILE_SIZE, tile.y * TILE_SIZE)
-
-    /**
-     * Converts pixel coordinates to GPS coordinates at a given zoom level.
-     */
-    fun pixelToLatLng(
-        x: Int,
-        y: Int,
-        zoom: Int,
-    ): LatLng {
-        val n = 2.0.pow(zoom)
-        val xTile = x.toDouble() / TILE_SIZE
-        val yTile = y.toDouble() / TILE_SIZE
-
-        val lng = xTile / n * 360.0 - 180.0
-        val latRad = atan(sinh(PI * (1.0 - 2.0 * yTile / n)))
-        val lat = Math.toDegrees(latRad)
-
-        return LatLng(lat, lng)
-    }
-
-    /**
-     * Converts GPS coordinates to pixel position at a given zoom level.
-     */
-    fun latLngToPixel(
-        latLng: LatLng,
-        zoom: Int,
-    ): Pair<Double, Double> {
-        val n = 2.0.pow(zoom)
-        val xPixel = (latLng.longitude + 180.0) / 360.0 * n * TILE_SIZE
-        val latRad = Math.toRadians(latLng.latitude)
-        val yPixel = (1.0 - ln(tan(latRad) + 1.0 / cos(latRad)) / PI) / 2.0 * n * TILE_SIZE
-        return Pair(xPixel, yPixel)
-    }
-}

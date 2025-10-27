@@ -204,6 +204,24 @@ class MapController(
         )
 
     /**
+     * Creates a Projection instance for coordinate conversions.
+     *
+     * The projection captures the current map state (center, zoom, view size, pan offset)
+     * and provides methods for converting between screen and geographic coordinates.
+     *
+     * @return A Projection instance for the current map state
+     */
+    fun createProjection(): Projection =
+        Projection(
+            center = center,
+            zoom = zoom,
+            viewWidth = viewWidth,
+            viewHeight = viewHeight,
+            panOffsetX = panOffsetX,
+            panOffsetY = panOffsetY,
+        )
+
+    /**
      * Converts screen coordinates to geographic coordinates.
      *
      * Takes into account the current camera position, zoom level, and pan offset.
@@ -217,7 +235,7 @@ class MapController(
         screenY: Float,
     ): LatLng {
         // Get center pixel coordinates at current zoom
-        val (centerPixelX, centerPixelY) = Projection.latLngToPixel(center, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
 
         // Convert screen coordinates to pixel coordinates
         // Account for view center offset and pan offset
@@ -225,7 +243,7 @@ class MapController(
         val pixelY = (centerPixelY + (screenY - viewHeight / 2 + panOffsetY).toDouble()).toInt()
 
         // Convert pixel coordinates to LatLng
-        return Projection.pixelToLatLng(pixelX, pixelY, zoom.toInt())
+        return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom.toInt())
     }
 
     /**
@@ -432,11 +450,11 @@ class MapController(
         if (panOffsetX == 0f && panOffsetY == 0f) return
 
         // Convert accumulated pan offset to new center
-        val (centerPixelX, centerPixelY) = Projection.latLngToPixel(center, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
         val newCenterPixelX = (centerPixelX + panOffsetX).toInt()
         val newCenterPixelY = (centerPixelY + panOffsetY).toInt()
 
-        center = Projection.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom.toInt())
+        center = ProjectionUtils.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom.toInt())
 
         // Reset pan offset
         panOffsetX = 0f
@@ -466,10 +484,10 @@ class MapController(
                 panOffsetY,
             )
 
-        val (centerPixelX, centerPixelY) = Projection.latLngToPixel(center, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
 
         for (tile in visibleTiles) {
-            val (tilePixelX, tilePixelY) = Projection.tileToPixel(tile)
+            val (tilePixelX, tilePixelY) = ProjectionUtils.tileToPixel(tile)
 
             val screenX = (tilePixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
             val screenY = (tilePixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
@@ -549,7 +567,7 @@ class MapController(
             var isFirst = true
 
             for (point in polyline.points) {
-                val (pixelX, pixelY) = Projection.latLngToPixel(point, zoom.toInt())
+                val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
                 val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
                 val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
@@ -593,7 +611,7 @@ class MapController(
             // Draw main polygon outline
             var isFirst = true
             for (point in polygon.points) {
-                val (pixelX, pixelY) = Projection.latLngToPixel(point, zoom.toInt())
+                val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
                 val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
                 val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
@@ -611,7 +629,7 @@ class MapController(
                 if (hole.size < 3) continue
                 isFirst = true
                 for (point in hole) {
-                    val (pixelX, pixelY) = Projection.latLngToPixel(point, zoom.toInt())
+                    val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
                     val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
                     val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
@@ -641,7 +659,7 @@ class MapController(
             if (!marker.visible) continue
 
             // Convert marker position to pixel coordinates
-            val (markerPixelX, markerPixelY) = Projection.latLngToPixel(marker.position, zoom.toInt())
+            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom.toInt())
 
             // Calculate screen position
             val screenX = (markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
@@ -818,11 +836,11 @@ class MapController(
         x: Float,
         y: Float,
     ): Marker? {
-        val (centerPixelX, centerPixelY) = Projection.latLngToPixel(center, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
 
         // Check markers in reverse order (top to bottom) for correct z-ordering
         for (marker in markers.reversed()) {
-            val (markerPixelX, markerPixelY) = Projection.latLngToPixel(marker.position, zoom.toInt())
+            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom.toInt())
 
             val screenX = (markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
             val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
