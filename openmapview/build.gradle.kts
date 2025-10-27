@@ -2,6 +2,7 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("com.diffplug.spotless")
+    id("org.jetbrains.dokka")
     id("maven-publish")
     id("signing")
     id("jacoco")
@@ -218,4 +219,31 @@ signing {
         System.getenv("SIGNING_PASSWORD"),
     )
     sign(publishing.publications)
+}
+
+dokka {
+    moduleName.set("OpenMapView")
+    moduleVersion.set(rootProject.ext["libVersion"] as String)
+
+    dokkaSourceSets.main {
+        documentedVisibilities.set(
+            setOf(
+                org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier.Public,
+                org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier.Protected,
+            ),
+        )
+
+        sourceLink {
+            localDirectory.set(file("src/main/kotlin"))
+            remoteUrl.set(uri("https://github.com/afarber/OpenMapView/tree/main/openmapview/src/main/kotlin"))
+            remoteLineSuffix.set("#L")
+        }
+
+        perPackageOption {
+            matchingRegex.set(".*\\.internal.*")
+            suppress.set(true)
+        }
+
+        enableAndroidDocumentationLink.set(true)
+    }
 }

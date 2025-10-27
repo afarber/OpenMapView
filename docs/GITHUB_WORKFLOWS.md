@@ -4,6 +4,10 @@
 
 This document explains the GitHub Actions workflows used in the OpenMapView project.
 
+> **Naming Convention:** Reusable workflows are prefixed with an underscore (e.g., `_docs.yml`, `_test.yml`)
+> to distinguish them from caller workflows (e.g., `ci.yml`, `release.yml`). This convention
+> makes it easy to identify modular components that can be composed into different pipelines.
+
 ## Architecture Overview
 
 The workflows are designed using a **modular, reusable component architecture** to eliminate code duplication and enable parallel execution.
@@ -69,6 +73,13 @@ Located in `.github/workflows/`:
 - **Usage**: Called by daily.yml and ci.yml (PR only)
 - **Duration**: ~10-15 minutes (may vary due to emulator startup and potential flakiness)
 
+#### `_docs.yml`
+- **Purpose**: Build API documentation with Dokka
+- **Runs**: `./gradlew dokkaGenerate`
+- **Artifacts**: Uploads generated HTML documentation
+- **Usage**: Called by CI for validation and docs-deploy for publishing
+- **Duration**: ~1-2 minutes
+
 ### Main Workflows
 
 #### `ci.yml` - Continuous Integration
@@ -84,18 +95,19 @@ format (Check formatting)
 copyright (Check headers)
    |
    v
-   +----------------+----------------+
-   |                                 |
-   v                                 v
-test (Unit tests)          coverage (Test coverage)
-   |                                 |
-   +----------------+----------------+
-                    |
-   +----------------+----------------+
-   |                                 |
-   v                                 v
-build-library              build-examples
-(Build AAR)                (Build 3 APKs)
+   +----------------+----------------+----------------+
+   |                |                                 |
+   v                v                                 v
+test            docs                       coverage
+(Unit tests)    (Build API docs)           (Test coverage)
+   |                |                                 |
+   +----------------+----------------+----------------+
+                              |
+   +--------------------------+-------------------------+
+   |                                                    |
+   v                                                    v
+build-library                                  build-examples
+(Build AAR)                                    (Build 3 APKs)
 
 For Pull Requests only:
    v
@@ -107,10 +119,11 @@ instrumented-test (Phone + Automotive)
 1. **format** - Runs Spotless formatting check
 2. **copyright** - Verifies MIT license headers
 3. **test** - Runs unit tests (depends on format + copyright)
-4. **coverage** - Checks test coverage meets 20% minimum (depends on format + copyright)
-5. **build-library** - Builds library AAR (depends on format + copyright + test + coverage, runs in parallel with build-examples)
-6. **build-examples** - Builds example APKs (depends on format + copyright + test + coverage, runs in parallel with build-library)
-7. **instrumented-test** - Runs instrumentation tests on phone and automotive emulators (PR only, runs independently)
+4. **docs** - Builds API documentation with Dokka (depends on format + copyright)
+5. **coverage** - Checks test coverage meets 20% minimum (depends on format + copyright)
+6. **build-library** - Builds library AAR (depends on format + copyright + test + docs + coverage, runs in parallel with build-examples)
+7. **build-examples** - Builds example APKs (depends on format + copyright + test + docs + coverage, runs in parallel with build-library)
+8. **instrumented-test** - Runs instrumentation tests on phone and automotive emulators (PR only, runs independently)
 
 **Total Duration**:
 - **Maintainer pushes to main**: ~3-4 minutes (no instrumentation tests)
@@ -201,6 +214,50 @@ Phone Tests                   Automotive Tests
 - Runs independently from main CI pipeline
 - Manual trigger available for on-demand testing
 - Acceptable flakiness since it doesn't block development workflow
+
+#### `docs-deploy.yml` - API Documentation Deployment
+**Trigger**: Push to `main` or `master` branch (paths: `openmapview/src/**/*.kt`, `README.md`, `.github/workflows/_docs.yml`, `.github/workflows/docs-deploy.yml`)
+
+**Purpose**: Generate API documentation from KDoc comments and deploy to GitHub Pages
+
+**Execution Flow**:
+```
+Push to main (filtered by paths)
+   |
+   v
+build-docs (calls _docs.yml)
+   |
+   v
+Build documentation with Dokka
+   |
+   v
+Upload documentation artifact
+   |
+   v
+deploy (Download artifact)
+   |
+   v
+Deploy to GitHub Pages
+```
+
+**Jobs**:
+1. **build-docs** - Calls the reusable `_docs.yml` workflow to build documentation
+2. **deploy** - Downloads artifact and deploys to GitHub Pages
+
+**Configuration**:
+- Only runs when Kotlin source files or docs workflows change
+- Uses concurrency control (only one deployment at a time)
+- Requires GitHub Pages to be enabled with "GitHub Actions" as source
+
+**Total Duration**: ~2-3 minutes
+
+**Published URL**: https://afarber.github.io/OpenMapView/
+
+**Benefits**:
+- Documentation always in sync with code
+- Automatic updates on every push to main
+- No manual publishing needed
+- Professional, searchable API reference
 
 ## Required GitHub Secrets
 

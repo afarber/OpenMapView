@@ -28,14 +28,19 @@ jobs:
     needs: [format, copyright]
     uses: ./.github/workflows/_coverage.yml
 
+  docs:
+    name: Documentation
+    needs: [format, copyright]
+    uses: ./.github/workflows/_docs.yml
+
   build-library:
     name: Build Library
-    needs: [format, copyright, test, coverage]
+    needs: [format, copyright, test, coverage, docs]
     uses: ./.github/workflows/_build-library.yml
 
   build-examples:
     name: Build Examples
-    needs: [format, copyright, test, coverage]
+    needs: [format, copyright, test, coverage, docs]
     uses: ./.github/workflows/_build-examples.yml
 
   instrumented-test:

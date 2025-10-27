@@ -2,6 +2,7 @@
 [![Daily Tests](https://github.com/afarber/OpenMapView/actions/workflows/daily.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/daily.yml)
 [![Release](https://github.com/afarber/OpenMapView/actions/workflows/release.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/afarber/OpenMapView/branch/main/graph/badge.svg)](https://codecov.io/gh/afarber/OpenMapView)
+[![API Documentation](https://img.shields.io/badge/API-Documentation-blue)](https://afarber.github.io/OpenMapView/)
 
 # OpenMapView
 
@@ -27,6 +28,12 @@ The library is available on [Maven Central](https://central.sonatype.com/artifac
 - Smooth camera animations with customizable durations
 - Extensible marker, overlay, and gesture handling
 - MIT licensed (use freely in commercial apps)
+
+## API Documentation
+
+Full API reference documentation is available at [afarber.github.io/OpenMapView](https://afarber.github.io/OpenMapView/).
+
+The documentation is automatically generated from KDoc comments and updated with every commit to main.
 
 ## Examples
 
