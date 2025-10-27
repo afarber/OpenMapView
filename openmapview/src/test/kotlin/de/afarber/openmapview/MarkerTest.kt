@@ -179,4 +179,16 @@ class MarkerTest {
         assertEquals(10.0, marker.position.latitude, 0.001)
         assertEquals(20.0, marker.position.longitude, 0.001)
     }
+
+    @Test
+    fun testMarkerZIndex_Default() {
+        val marker = Marker(position = LatLng(0.0, 0.0))
+        assertEquals(0f, marker.zIndex, 0.001f)
+    }
+
+    @Test
+    fun testMarkerZIndex_Custom() {
+        val marker = Marker(position = LatLng(0.0, 0.0), zIndex = 5.5f)
+        assertEquals(5.5f, marker.zIndex, 0.001f)
+    }
 }

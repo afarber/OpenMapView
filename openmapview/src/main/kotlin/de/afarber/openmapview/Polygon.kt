@@ -20,6 +20,7 @@ import android.graphics.Color
  * @property holes List of hole definitions, where each hole is a list of LatLng points
  * @property visible Whether the polygon is visible. Default is true
  * @property clickable Whether the polygon is clickable. Default is false
+ * @property zIndex Draw order. Polygons with higher zIndex are drawn on top. Default is 0.0
  * @property tag Optional user data associated with the polygon
  */
 data class Polygon(
@@ -30,6 +31,7 @@ data class Polygon(
     val holes: List<List<LatLng>> = emptyList(),
     val visible: Boolean = true,
     val clickable: Boolean = false,
+    val zIndex: Float = 0f,
     val tag: Any? = null,
 ) {
     /**

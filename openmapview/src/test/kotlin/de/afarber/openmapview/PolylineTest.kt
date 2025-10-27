@@ -212,4 +212,26 @@ class PolylineTest {
         val polyline = Polyline(points = points, clickable = true)
         assertEquals(true, polyline.clickable)
     }
+
+    @Test
+    fun testPolylineZIndex_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+        assertEquals(0f, polyline.zIndex, 0.001f)
+    }
+
+    @Test
+    fun testPolylineZIndex_Custom() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points, zIndex = 3.5f)
+        assertEquals(3.5f, polyline.zIndex, 0.001f)
+    }
 }

@@ -17,6 +17,7 @@ import android.graphics.Color
  * @property strokeWidth Width of the line in pixels (default: 10f)
  * @property visible Whether the polyline is visible. Default is true
  * @property clickable Whether the polyline is clickable. Default is false
+ * @property zIndex Draw order. Polylines with higher zIndex are drawn on top. Default is 0.0
  * @property tag Optional user data associated with the polyline
  */
 data class Polyline(
@@ -25,6 +26,7 @@ data class Polyline(
     val strokeWidth: Float = 10f,
     val visible: Boolean = true,
     val clickable: Boolean = false,
+    val zIndex: Float = 0f,
     val tag: Any? = null,
 ) {
     /**

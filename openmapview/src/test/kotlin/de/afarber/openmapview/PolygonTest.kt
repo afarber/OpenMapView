@@ -307,4 +307,28 @@ class PolygonTest {
         val polygon = Polygon(points = points, clickable = true)
         assertEquals(true, polygon.clickable)
     }
+
+    @Test
+    fun testPolygonZIndex_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+                LatLng(51.4620, 7.2430),
+            )
+        val polygon = Polygon(points = points)
+        assertEquals(0f, polygon.zIndex, 0.001f)
+    }
+
+    @Test
+    fun testPolygonZIndex_Custom() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+                LatLng(51.4620, 7.2430),
+            )
+        val polygon = Polygon(points = points, zIndex = 2.5f)
+        assertEquals(2.5f, polygon.zIndex, 0.001f)
+    }
 }

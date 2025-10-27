@@ -512,9 +512,28 @@ class MapController(
             lastDrawnTiles = visibleTiles.toMutableSet()
         }
 
-        drawPolygons(canvas, centerPixelX, centerPixelY)
-        drawPolylines(canvas, centerPixelX, centerPixelY)
-        drawMarkers(canvas, centerPixelX, centerPixelY)
+        // Draw shapes in zIndex order: polygons first, then polylines, then markers
+        // Within each type, sort by zIndex (lower zIndex drawn first, higher on top)
+        val sortedPolygons = polygons.sortedBy { it.zIndex }
+        val sortedPolylines = polylines.sortedBy { it.zIndex }
+        val sortedMarkers = markers.sortedBy { it.zIndex }
+
+        // Group all shapes by zIndex and draw in order
+        val allZIndices =
+            (
+                sortedPolygons.map {
+                    it.zIndex
+                } + sortedPolylines.map { it.zIndex } + sortedMarkers.map { it.zIndex }
+            ).distinct().sorted()
+
+        for (z in allZIndices) {
+            // Draw polygons at this zIndex
+            drawPolygonsByZIndex(canvas, centerPixelX, centerPixelY, z, sortedPolygons)
+            // Draw polylines at this zIndex
+            drawPolylinesByZIndex(canvas, centerPixelX, centerPixelY, z, sortedPolylines)
+            // Draw markers at this zIndex
+            drawMarkersByZIndex(canvas, centerPixelX, centerPixelY, z, sortedMarkers)
+        }
     }
 
     /**
@@ -683,6 +702,139 @@ class MapController(
                 }
 
             // Draw the marker
+            canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
+        }
+    }
+
+    private fun drawPolygonsByZIndex(
+        canvas: Canvas,
+        centerPixelX: Double,
+        centerPixelY: Double,
+        zIndex: Float,
+        sortedPolygons: List<Polygon>,
+    ) {
+        val fillPaint = Paint()
+        fillPaint.style = Paint.Style.FILL
+        fillPaint.isAntiAlias = true
+
+        val strokePaint = Paint()
+        strokePaint.style = Paint.Style.STROKE
+        strokePaint.strokeCap = Paint.Cap.ROUND
+        strokePaint.strokeJoin = Paint.Join.ROUND
+        strokePaint.isAntiAlias = true
+
+        for (polygon in sortedPolygons) {
+            if (polygon.zIndex != zIndex || !polygon.visible || polygon.points.size < 3) continue
+
+            fillPaint.color = polygon.fillColor
+            strokePaint.color = polygon.strokeColor
+            strokePaint.strokeWidth = polygon.strokeWidth
+
+            val path = android.graphics.Path()
+            var isFirst = true
+
+            for (point in polygon.points) {
+                val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
+                val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                if (isFirst) {
+                    path.moveTo(screenX, screenY)
+                    isFirst = false
+                } else {
+                    path.lineTo(screenX, screenY)
+                }
+            }
+            path.close()
+
+            for (hole in polygon.holes) {
+                if (hole.size < 3) continue
+                var isFirstHole = true
+                for (point in hole) {
+                    val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
+                    val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                    val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                    if (isFirstHole) {
+                        path.moveTo(screenX, screenY)
+                        isFirstHole = false
+                    } else {
+                        path.lineTo(screenX, screenY)
+                    }
+                }
+                path.close()
+            }
+
+            path.fillType = android.graphics.Path.FillType.EVEN_ODD
+            canvas.drawPath(path, fillPaint)
+            canvas.drawPath(path, strokePaint)
+        }
+    }
+
+    private fun drawPolylinesByZIndex(
+        canvas: Canvas,
+        centerPixelX: Double,
+        centerPixelY: Double,
+        zIndex: Float,
+        sortedPolylines: List<Polyline>,
+    ) {
+        val paint = Paint()
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.strokeJoin = Paint.Join.ROUND
+        paint.isAntiAlias = true
+
+        for (polyline in sortedPolylines) {
+            if (polyline.zIndex != zIndex || !polyline.visible || polyline.points.size < 2) continue
+
+            paint.color = polyline.strokeColor
+            paint.strokeWidth = polyline.strokeWidth
+
+            val path = android.graphics.Path()
+            var isFirst = true
+
+            for (point in polyline.points) {
+                val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
+                val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                if (isFirst) {
+                    path.moveTo(screenX, screenY)
+                    isFirst = false
+                } else {
+                    path.lineTo(screenX, screenY)
+                }
+            }
+
+            canvas.drawPath(path, paint)
+        }
+    }
+
+    private fun drawMarkersByZIndex(
+        canvas: Canvas,
+        centerPixelX: Double,
+        centerPixelY: Double,
+        zIndex: Float,
+        sortedMarkers: List<Marker>,
+    ) {
+        val paint = Paint()
+        paint.isAntiAlias = true
+
+        for (marker in sortedMarkers) {
+            if (marker.zIndex != zIndex || !marker.visible) continue
+
+            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom.toInt())
+
+            val screenX = (markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+            val icon = marker.icon ?: defaultMarkerIcon
+
+            val anchorX = icon.width * marker.anchor.first
+            val anchorY = icon.height * marker.anchor.second
+
+            paint.alpha = (marker.alpha * 255).toInt().coerceIn(0, 255)
+
             canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
         }
     }

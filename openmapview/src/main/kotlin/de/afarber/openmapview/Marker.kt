@@ -21,6 +21,7 @@ import android.graphics.Bitmap
  * @property visible Whether the marker is visible. Default is true
  * @property alpha Opacity of the marker from 0.0 (transparent) to 1.0 (opaque). Default is 1.0
  * @property draggable Whether the marker can be dragged. Default is false
+ * @property zIndex Draw order. Markers with higher zIndex are drawn on top. Default is 0.0
  * @property tag Optional user data associated with the marker
  */
 data class Marker(
@@ -32,6 +33,7 @@ data class Marker(
     val visible: Boolean = true,
     val alpha: Float = 1.0f,
     val draggable: Boolean = false,
+    val zIndex: Float = 0f,
     val tag: Any? = null,
 ) {
     init {
