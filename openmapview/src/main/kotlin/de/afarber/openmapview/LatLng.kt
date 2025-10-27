@@ -10,8 +10,7 @@ package de.afarber.openmapview
 /**
  * An immutable class representing a pair of latitude and longitude coordinates.
  *
- * Compatible with Google Maps API. Latitude ranges from -90 to 90 degrees,
- * and longitude ranges from -180 to 180 degrees.
+ * Latitude ranges from -90 to 90 degrees, and longitude ranges from -180 to 180 degrees.
  *
  * @property latitude The latitude in degrees
  * @property longitude The longitude in degrees

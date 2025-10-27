@@ -10,14 +10,14 @@ package de.afarber.openmapview
 import android.graphics.Bitmap
 
 /**
- * Factory for creating marker icons, compatible with Google Maps API.
+ * Factory for creating marker icons.
  *
  * Provides predefined color constants and methods to generate colored marker icons.
  * Colors are specified using HSV hue values (0-360 degrees on the color wheel).
  */
 object BitmapDescriptorFactory {
     /**
-     * HUE constants matching Google Maps BitmapDescriptorFactory.
+     * Predefined HUE constants for common marker colors.
      * Values represent degrees on the HSV color wheel.
      */
     const val HUE_RED = 0f

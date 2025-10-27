@@ -10,8 +10,8 @@ package de.afarber.openmapview
 /**
  * Interface for receiving marker drag events.
  *
- * Compatible with Google Maps API. Implement this interface to receive
- * callbacks when a draggable marker is dragged across the map.
+ * Implement this interface to receive callbacks when a draggable marker
+ * is dragged across the map.
  */
 interface OnMarkerDragListener {
     /**

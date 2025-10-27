@@ -20,7 +20,7 @@ import androidx.lifecycle.LifecycleOwner
 /**
  * A MapView powered by OpenStreetMap tiles.
  *
- * This view provides a drop-in replacement for Google MapView, supporting pan and zoom gestures,
+ * This view provides a modern MapView implementation supporting pan and zoom gestures,
  * markers, polylines, polygons, camera animations, and GeoJSON import. The view automatically
  * manages lifecycle events and tile caching for optimal performance.
  *
@@ -47,6 +47,7 @@ class OpenMapView
         DefaultLifecycleObserver {
         private val controller = MapController(context)
         private val attributionOverlay = AttributionOverlay(context)
+        private val uiSettings = UiSettings()
         private var lastTouchX = 0f
         private var lastTouchY = 0f
         private var onMapClickListener: OnMapClickListener? = null
@@ -111,8 +112,10 @@ class OpenMapView
                 gestureDetector.onTouchEvent(event)
             }
 
-            // Let scale detector handle pinch gestures
-            scaleGestureDetector.onTouchEvent(event)
+            // Let scale detector handle pinch gestures only if zoom gestures are enabled
+            if (uiSettings.isZoomGesturesEnabled) {
+                scaleGestureDetector.onTouchEvent(event)
+            }
 
             // Handle dragging and panning only if not scaling
             if (!scaleGestureDetector.isInProgress) {
@@ -153,8 +156,8 @@ class OpenMapView
                             }
                         }
 
-                        // Pan the map if not dragging a marker
-                        if (!isDragging) {
+                        // Pan the map if not dragging a marker and scroll gestures are enabled
+                        if (!isDragging && uiSettings.isScrollGesturesEnabled) {
                             // Fire camera move started event on first pan movement
                             if (movementDistance > 0 && !controller.isCameraMoving) {
                                 controller.isCameraMoving = true
@@ -367,6 +370,24 @@ class OpenMapView
          * @return A Projection instance for the current map state
          */
         fun getProjection(): Projection = controller.createProjection()
+
+        /**
+         * Returns the UI settings for the map.
+         *
+         * Use this to configure which user interactions are enabled on the map,
+         * such as zoom gestures and scroll gestures.
+         *
+         * Example:
+         * ```kotlin
+         * val uiSettings = mapView.getUiSettings()
+         * uiSettings.isZoomGesturesEnabled = false  // Disable pinch-to-zoom
+         * uiSettings.isScrollGesturesEnabled = false  // Disable panning
+         * uiSettings.setAllGesturesEnabled(true)  // Enable all gestures
+         * ```
+         *
+         * @return The UiSettings object for configuring user interactions
+         */
+        fun getUiSettings(): UiSettings = uiSettings
 
         /**
          * Moves the camera to a new position instantly, without animation.

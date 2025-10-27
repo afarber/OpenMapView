@@ -13,8 +13,7 @@ import kotlin.math.min
 /**
  * An immutable class representing a latitude/longitude aligned rectangle.
  *
- * Compatible with Google Maps API. The bounds are defined by the southwest
- * and northeast corners of the rectangle.
+ * The bounds are defined by the southwest and northeast corners of the rectangle.
  *
  * @property southwest The southwest corner of the bounds
  * @property northeast The northeast corner of the bounds

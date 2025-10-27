@@ -38,13 +38,6 @@ class UiSettings {
     val isTiltGesturesEnabled: Boolean = false
 
     /**
-     * Whether zoom controls are enabled.
-     * Deprecated, not implemented.
-     */
-    @Deprecated("Zoom controls are deprecated", ReplaceWith(""))
-    var isZoomControlsEnabled: Boolean = false
-
-    /**
      * Enables or disables all gestures.
      *
      * @param enabled true to enable all gestures, false to disable all

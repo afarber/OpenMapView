@@ -12,8 +12,8 @@ import android.graphics.Point
 /**
  * A projection is used to translate between on-screen location and geographic coordinates.
  *
- * Compatible with Google Maps API. Screen locations are in screen pixels (not display pixels)
- * with respect to the top left corner of the map (not necessarily of the whole screen).
+ * Screen locations are in screen pixels (not display pixels) with respect to the top left
+ * corner of the map (not necessarily of the whole screen).
  *
  * This class provides methods for converting between screen coordinates and geographic coordinates,
  * as well as querying the visible region of the map.

@@ -10,8 +10,8 @@ package de.afarber.openmapview
 /**
  * Factory for creating [CameraUpdate] objects to transform the camera on a map.
  *
- * Compatible with Google Maps API. Use these methods to create camera updates
- * for [OpenMapView.moveCamera] and [OpenMapView.animateCamera].
+ * Use these methods to create camera updates for [OpenMapView.moveCamera]
+ * and [OpenMapView.animateCamera].
  */
 object CameraUpdateFactory {
     /**
