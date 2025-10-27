@@ -105,16 +105,16 @@ jobs:
             ## Changes
             ${{ steps.changelog.outputs.changelog }}
 
-            ## Maven Central
+            ## Installation
+            Add to your `settings.gradle.kts`:
             ```gradle
-            dependencies {
-                implementation("de.afarber:openmapview:${{ env.VERSION }}")
+            dependencyResolutionManagement {
+                repositories {
+                    mavenCentral()
+                }
             }
             ```
 
-            **Note:** It may take 10-30 minutes for the release to appear on Maven Central.
-
-            ## Installation
             Add to your `build.gradle.kts`:
             ```kotlin
             dependencies {
