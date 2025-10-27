@@ -10,6 +10,7 @@ package de.afarber.openmapview
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.widget.FrameLayout
@@ -48,6 +49,19 @@ class OpenMapView
         private val attributionOverlay = AttributionOverlay(context)
         private var lastTouchX = 0f
         private var lastTouchY = 0f
+        private var onMapClickListener: OnMapClickListener? = null
+        private var onMapLongClickListener: OnMapLongClickListener? = null
+
+        private val gestureDetector =
+            GestureDetector(
+                context,
+                object : GestureDetector.SimpleOnGestureListener() {
+                    override fun onLongPress(e: MotionEvent) {
+                        val latLng = controller.screenToLatLng(e.x, e.y)
+                        onMapLongClickListener?.onMapLongClick(latLng)
+                    }
+                },
+            )
 
         private val scaleGestureDetector =
             ScaleGestureDetector(
@@ -89,6 +103,9 @@ class OpenMapView
         }
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
+            // Let gesture detector handle long press
+            gestureDetector.onTouchEvent(event)
+
             // Let scale detector handle pinch gestures
             scaleGestureDetector.onTouchEvent(event)
 
@@ -133,6 +150,10 @@ class OpenMapView
                                     return true
                                 }
                             }
+
+                            // Fire map click event if nothing else was clicked
+                            val latLng = controller.screenToLatLng(event.x, event.y)
+                            onMapClickListener?.onMapClick(latLng)
                         }
 
                         controller.commitPan()
@@ -363,6 +384,42 @@ class OpenMapView
          */
         fun setOnMarkerClickListener(listener: (Marker) -> Boolean) {
             controller.onMarkerClickListener = listener
+        }
+
+        /**
+         * Sets a listener to handle map click events.
+         *
+         * Called when the user taps on the map (not on a marker or other overlay).
+         *
+         * Example:
+         * ```kotlin
+         * mapView.setOnMapClickListener { latLng ->
+         *     Toast.makeText(context, "Clicked: ${latLng.latitude}, ${latLng.longitude}", Toast.LENGTH_SHORT).show()
+         * }
+         * ```
+         *
+         * @param listener Callback invoked when the map is clicked
+         */
+        fun setOnMapClickListener(listener: OnMapClickListener?) {
+            onMapClickListener = listener
+        }
+
+        /**
+         * Sets a listener to handle map long-click events.
+         *
+         * Called when the user long-presses on the map (not on a marker or other overlay).
+         *
+         * Example:
+         * ```kotlin
+         * mapView.setOnMapLongClickListener { latLng ->
+         *     Toast.makeText(context, "Long-clicked: ${latLng.latitude}, ${latLng.longitude}", Toast.LENGTH_SHORT).show()
+         * }
+         * ```
+         *
+         * @param listener Callback invoked when the map is long-clicked
+         */
+        fun setOnMapLongClickListener(listener: OnMapLongClickListener?) {
+            onMapLongClickListener = listener
         }
 
         /**

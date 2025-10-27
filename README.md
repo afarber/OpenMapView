@@ -69,6 +69,10 @@ Shows how to draw vector shapes including polylines, filled polygons, and polygo
 
 Demonstrates smooth camera animations with customizable durations and completion callbacks.
 
+### [Example06Clicks](examples/Example06Clicks) - Map Click Listeners
+
+Demonstrates map click and long-click listeners with coordinate display via Toast messages.
+
 ## Documentation
 
 - [Public API Compatibility](docs/PUBLIC_API.md) - Google MapView API implementation status and compatibility matrix

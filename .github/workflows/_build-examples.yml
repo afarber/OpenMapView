@@ -49,6 +49,9 @@ jobs:
       - name: Build Example05Camera
         run: ./gradlew :examples:Example05Camera:assembleDebug
 
+      - name: Build Example06Clicks
+        run: ./gradlew :examples:Example06Clicks:assembleDebug
+
       - name: Upload example APKs
         uses: actions/upload-artifact@v4
         with:

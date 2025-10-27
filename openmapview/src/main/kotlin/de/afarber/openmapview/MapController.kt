@@ -204,6 +204,31 @@ class MapController(
         )
 
     /**
+     * Converts screen coordinates to geographic coordinates.
+     *
+     * Takes into account the current camera position, zoom level, and pan offset.
+     *
+     * @param screenX The X coordinate in screen pixels
+     * @param screenY The Y coordinate in screen pixels
+     * @return The geographic location (LatLng) at that screen position
+     */
+    fun screenToLatLng(
+        screenX: Float,
+        screenY: Float,
+    ): LatLng {
+        // Get center pixel coordinates at current zoom
+        val (centerPixelX, centerPixelY) = Projection.latLngToPixel(center, zoom.toInt())
+
+        // Convert screen coordinates to pixel coordinates
+        // Account for view center offset and pan offset
+        val pixelX = (centerPixelX + (screenX - viewWidth / 2 + panOffsetX).toDouble()).toInt()
+        val pixelY = (centerPixelY + (screenY - viewHeight / 2 + panOffsetY).toDouble()).toInt()
+
+        // Convert pixel coordinates to LatLng
+        return Projection.pixelToLatLng(pixelX, pixelY, zoom.toInt())
+    }
+
+    /**
      * Moves the camera instantly to a new position.
      *
      * Stops any ongoing animation and commits any pending pan offsets
