@@ -2,8 +2,6 @@
 [![Daily Tests](https://github.com/afarber/OpenMapView/actions/workflows/daily.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/daily.yml)
 [![Release](https://github.com/afarber/OpenMapView/actions/workflows/release.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/afarber/OpenMapView/branch/main/graph/badge.svg)](https://codecov.io/gh/afarber/OpenMapView)
-[![Maven Central](https://img.shields.io/maven-central/v/de.afarber/openmapview.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/de.afarber/openmapview)
-[![JitPack](https://jitpack.io/v/afarber/OpenMapView.svg)](https://jitpack.io/#afarber/OpenMapView)
 
 # OpenMapView
 
