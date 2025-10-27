@@ -11,6 +11,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -67,6 +68,8 @@ fun MapViewScreen() {
                         ),
                         strokeColor = Color.BLUE,
                         strokeWidth = 8f,
+                        clickable = true,
+                        tag = "Blue Route",
                     ),
                 )
 
@@ -82,6 +85,8 @@ fun MapViewScreen() {
                         ),
                         strokeColor = Color.RED,
                         strokeWidth = 6f,
+                        clickable = true,
+                        tag = "Red Path",
                     ),
                 )
 
@@ -97,6 +102,8 @@ fun MapViewScreen() {
                         strokeColor = Color.rgb(0, 128, 0),
                         strokeWidth = 4f,
                         fillColor = Color.argb(100, 0, 255, 0),
+                        clickable = true,
+                        tag = "Green Park",
                     ),
                 )
 
@@ -120,8 +127,19 @@ fun MapViewScreen() {
                         strokeColor = Color.CYAN,
                         strokeWidth = 4f,
                         fillColor = Color.argb(100, 0, 255, 255),
+                        clickable = true,
+                        tag = "Cyan Donut",
                     ),
                 )
+
+                // Set click listeners
+                setOnPolylineClickListener { polyline ->
+                    Toast.makeText(context, "Clicked: ${polyline.tag}", Toast.LENGTH_SHORT).show()
+                }
+
+                setOnPolygonClickListener { polygon ->
+                    Toast.makeText(context, "Clicked: ${polygon.tag}", Toast.LENGTH_SHORT).show()
+                }
 
                 // Set attribution click listener to open OSM copyright page
                 setOnAttributionClickListener {
