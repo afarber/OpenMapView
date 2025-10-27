@@ -204,15 +204,29 @@ class OpenMapView
                                 return true
                             }
 
+                            // Check for info window touch (before marker touch)
+                            val touchedInfoWindow = controller.handleInfoWindowTouch(event.x, event.y)
+                            if (touchedInfoWindow != null) {
+                                controller.onInfoWindowClickListener?.onInfoWindowClick(touchedInfoWindow)
+                                controller.commitPan()
+                                invalidate()
+                                return true
+                            }
+
                             // Check for marker touch
                             val touchedMarker = controller.handleMarkerTouch(event.x, event.y)
                             if (touchedMarker != null) {
-                                val consumed = controller.onMarkerClickListener?.invoke(touchedMarker) ?: false
-                                if (consumed) {
-                                    controller.commitPan()
-                                    invalidate()
-                                    return true
+                                // Hide all other info windows (only one can be shown at a time)
+                                controller.getMarkers().forEach { it.hideInfoWindow() }
+                                // Show info window for clicked marker if it has title or snippet
+                                if (touchedMarker.title != null || touchedMarker.snippet != null) {
+                                    touchedMarker.showInfoWindow()
                                 }
+
+                                val consumed = controller.onMarkerClickListener?.invoke(touchedMarker) ?: false
+                                controller.commitPan()
+                                invalidate()
+                                return true
                             }
 
                             // Check for polyline touch
@@ -234,6 +248,8 @@ class OpenMapView
                             }
 
                             // Fire map click event if nothing else was clicked
+                            // Hide all info windows when clicking on empty map area
+                            controller.getMarkers().forEach { it.hideInfoWindow() }
                             val latLng = controller.screenToLatLng(event.x, event.y)
                             onMapClickListener?.onMapClick(latLng)
                         }
@@ -484,6 +500,25 @@ class OpenMapView
          */
         fun setOnMarkerClickListener(listener: (Marker) -> Boolean) {
             controller.onMarkerClickListener = listener
+        }
+
+        /**
+         * Sets a listener to handle info window click events.
+         *
+         * Called when an info window is clicked. Info windows are shown above markers
+         * when showInfoWindow() is called on a marker.
+         *
+         * Example:
+         * ```kotlin
+         * mapView.setOnInfoWindowClickListener { marker ->
+         *     Toast.makeText(context, "Info window clicked: ${marker.title}", Toast.LENGTH_SHORT).show()
+         * }
+         * ```
+         *
+         * @param listener The listener to receive info window click events, or null to clear the listener
+         */
+        fun setOnInfoWindowClickListener(listener: OnInfoWindowClickListener?) {
+            controller.onInfoWindowClickListener = listener
         }
 
         /**

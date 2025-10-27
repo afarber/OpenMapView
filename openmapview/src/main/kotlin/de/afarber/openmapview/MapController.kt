@@ -49,6 +49,7 @@ class MapController(
     private val markers = mutableListOf<Marker>()
     private val defaultMarkerIcon by lazy { MarkerIconFactory.getDefaultIcon() }
     var onMarkerClickListener: ((Marker) -> Boolean)? = null
+    var onInfoWindowClickListener: OnInfoWindowClickListener? = null
 
     private val polylines = mutableListOf<Polyline>()
     private val polygons = mutableListOf<Polygon>()
@@ -585,6 +586,9 @@ class MapController(
             // Draw markers at this zIndex
             drawMarkersByZIndex(canvas, centerPixelX, centerPixelY, z, sortedMarkers)
         }
+
+        // Draw info windows after all markers (so they appear on top)
+        drawInfoWindows(canvas, centerPixelX, centerPixelY)
     }
 
     /**
@@ -890,6 +894,106 @@ class MapController(
         }
     }
 
+    private fun drawInfoWindows(
+        canvas: Canvas,
+        centerPixelX: Double,
+        centerPixelY: Double,
+    ) {
+        val backgroundPaint =
+            Paint().apply {
+                color = Color.WHITE
+                style = Paint.Style.FILL
+                isAntiAlias = true
+            }
+
+        val borderPaint =
+            Paint().apply {
+                color = Color.DKGRAY
+                style = Paint.Style.STROKE
+                strokeWidth = 2f
+                isAntiAlias = true
+            }
+
+        val titlePaint =
+            Paint().apply {
+                color = Color.BLACK
+                textSize = 36f
+                isAntiAlias = true
+                isFakeBoldText = true
+            }
+
+        val snippetPaint =
+            Paint().apply {
+                color = Color.DKGRAY
+                textSize = 28f
+                isAntiAlias = true
+            }
+
+        for (marker in markers) {
+            if (!marker.isInfoWindowShown || !marker.visible) continue
+
+            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom.toInt())
+            val screenX = (markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+            val title = marker.title
+            val snippet = marker.snippet
+
+            if (title == null && snippet == null) continue
+
+            val padding = 20f
+            val lineSpacing = 10f
+
+            var maxWidth = 0f
+            var totalHeight = 0f
+
+            if (title != null) {
+                val titleWidth = titlePaint.measureText(title)
+                maxWidth = maxOf(maxWidth, titleWidth)
+                totalHeight += titlePaint.textSize
+            }
+
+            if (snippet != null) {
+                val snippetWidth = snippetPaint.measureText(snippet)
+                maxWidth = maxOf(maxWidth, snippetWidth)
+                if (title != null) totalHeight += lineSpacing
+                totalHeight += snippetPaint.textSize
+            }
+
+            val boxWidth = maxWidth + padding * 2
+            val boxHeight = totalHeight + padding * 2
+
+            val icon = marker.icon ?: defaultMarkerIcon
+            val markerHeight = icon.height * marker.anchor.second
+
+            val infoWindowX = screenX - boxWidth / 2
+            val infoWindowY = screenY - markerHeight - boxHeight - 10f
+
+            val rect =
+                android.graphics.RectF(
+                    infoWindowX,
+                    infoWindowY,
+                    infoWindowX + boxWidth,
+                    infoWindowY + boxHeight,
+                )
+
+            canvas.drawRoundRect(rect, 8f, 8f, backgroundPaint)
+            canvas.drawRoundRect(rect, 8f, 8f, borderPaint)
+
+            var textY = infoWindowY + padding + titlePaint.textSize
+
+            if (title != null) {
+                canvas.drawText(title, infoWindowX + padding, textY, titlePaint)
+                textY += lineSpacing
+            }
+
+            if (snippet != null) {
+                textY += snippetPaint.textSize
+                canvas.drawText(snippet, infoWindowX + padding, textY, snippetPaint)
+            }
+        }
+    }
+
     private fun downloadTile(
         tile: TileCoordinate,
         lowPriority: Boolean = false,
@@ -1058,6 +1162,83 @@ class MapController(
             val markerBottom = markerTop + icon.height
 
             if (x >= markerLeft && x <= markerRight && y >= markerTop && y <= markerBottom) {
+                return marker
+            }
+        }
+        return null
+    }
+
+    /**
+     * Finds the info window at the specified screen coordinates.
+     *
+     * Checks info windows for visible markers and returns the marker whose
+     * info window was clicked, if any.
+     *
+     * @param x The screen X coordinate
+     * @param y The screen Y coordinate
+     * @return The marker whose info window was touched, or null if none was found
+     */
+    fun handleInfoWindowTouch(
+        x: Float,
+        y: Float,
+    ): Marker? {
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+
+        val titlePaint =
+            Paint().apply {
+                textSize = 36f
+            }
+
+        val snippetPaint =
+            Paint().apply {
+                textSize = 28f
+            }
+
+        for (marker in markers.reversed()) {
+            if (!marker.isInfoWindowShown || !marker.visible) continue
+
+            val title = marker.title
+            val snippet = marker.snippet
+
+            if (title == null && snippet == null) continue
+
+            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom.toInt())
+            val screenX = (markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+            val padding = 20f
+            val lineSpacing = 10f
+
+            var maxWidth = 0f
+            var totalHeight = 0f
+
+            if (title != null) {
+                val titleWidth = titlePaint.measureText(title)
+                maxWidth = maxOf(maxWidth, titleWidth)
+                totalHeight += titlePaint.textSize
+            }
+
+            if (snippet != null) {
+                val snippetWidth = snippetPaint.measureText(snippet)
+                maxWidth = maxOf(maxWidth, snippetWidth)
+                if (title != null) totalHeight += lineSpacing
+                totalHeight += snippetPaint.textSize
+            }
+
+            val boxWidth = maxWidth + padding * 2
+            val boxHeight = totalHeight + padding * 2
+
+            val icon = marker.icon ?: defaultMarkerIcon
+            val markerHeight = icon.height * marker.anchor.second
+
+            val infoWindowX = screenX - boxWidth / 2
+            val infoWindowY = screenY - markerHeight - boxHeight - 10f
+
+            if (x >= infoWindowX &&
+                x <= infoWindowX + boxWidth &&
+                y >= infoWindowY &&
+                y <= infoWindowY + boxHeight
+            ) {
                 return marker
             }
         }

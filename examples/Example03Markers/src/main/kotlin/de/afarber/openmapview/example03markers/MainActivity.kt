@@ -103,16 +103,15 @@ fun MapViewScreen() {
                 )
 
                 // Set marker click listener
+                // Info window is shown automatically if marker has title or snippet
                 setOnMarkerClickListener { marker ->
-                    val message = buildString {
-                        append(marker.title ?: "Marker")
-                        if (marker.snippet != null) {
-                            append("\n")
-                            append(marker.snippet)
-                        }
-                    }
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    // Can still add custom logic here
                     true // Consume the click event
+                }
+
+                // Set info window click listener
+                setOnInfoWindowClickListener { marker ->
+                    Toast.makeText(context, "Clicked: ${marker.title}", Toast.LENGTH_SHORT).show()
                 }
 
                 // Set attribution click listener to open OSM copyright page

@@ -46,6 +46,26 @@ data class Marker(
      */
     internal val id: String = "marker_${System.nanoTime()}_${System.identityHashCode(this)}"
 
+    /**
+     * Whether the info window is currently shown for this marker.
+     */
+    internal var isInfoWindowShown: Boolean = false
+
+    /**
+     * Shows the info window for this marker.
+     * The info window displays the marker's title and snippet text.
+     */
+    fun showInfoWindow() {
+        isInfoWindowShown = true
+    }
+
+    /**
+     * Hides the info window for this marker.
+     */
+    fun hideInfoWindow() {
+        isInfoWindowShown = false
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Marker) return false

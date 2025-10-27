@@ -191,4 +191,45 @@ class MarkerTest {
         val marker = Marker(position = LatLng(0.0, 0.0), zIndex = 5.5f)
         assertEquals(5.5f, marker.zIndex, 0.001f)
     }
+
+    @Test
+    fun testInfoWindow_DefaultHidden() {
+        val marker = Marker(position = LatLng(0.0, 0.0))
+        assertEquals(false, marker.isInfoWindowShown)
+    }
+
+    @Test
+    fun testInfoWindow_ShowAndHide() {
+        val marker = Marker(position = LatLng(0.0, 0.0))
+        assertEquals(false, marker.isInfoWindowShown)
+
+        marker.showInfoWindow()
+        assertEquals(true, marker.isInfoWindowShown)
+
+        marker.hideInfoWindow()
+        assertEquals(false, marker.isInfoWindowShown)
+    }
+
+    @Test
+    fun testInfoWindow_MultipleShowCalls() {
+        val marker = Marker(position = LatLng(0.0, 0.0))
+
+        marker.showInfoWindow()
+        assertEquals(true, marker.isInfoWindowShown)
+
+        marker.showInfoWindow()
+        assertEquals(true, marker.isInfoWindowShown)
+    }
+
+    @Test
+    fun testInfoWindow_MultipleHideCalls() {
+        val marker = Marker(position = LatLng(0.0, 0.0))
+        marker.showInfoWindow()
+
+        marker.hideInfoWindow()
+        assertEquals(false, marker.isInfoWindowShown)
+
+        marker.hideInfoWindow()
+        assertEquals(false, marker.isInfoWindowShown)
+    }
 }
