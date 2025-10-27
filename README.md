@@ -45,6 +45,7 @@ Explore the example applications to see OpenMapView in action:
 - [Example04Polylines](examples/Example04Polylines) - Polylines, polygons, and polygons with holes
 - [Example05Camera](examples/Example05Camera) - Camera animations with callbacks
 - [Example06Clicks](examples/Example06Clicks) - Map click and long-click listeners
+- [Example07DraggableMarkers](examples/Example07DraggableMarkers) - Draggable markers with drag event listeners
 
 ![Example05Camera Demo](examples/Example05Camera/screenshot.gif)
 
