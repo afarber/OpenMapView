@@ -122,4 +122,38 @@ class MarkerTest {
         assertEquals(latitude, marker.position.latitude, 0.0001)
         assertEquals(longitude, marker.position.longitude, 0.0001)
     }
+
+    @Test
+    fun testMarkerVisibility_Default() {
+        val marker = Marker(position = LatLng(0.0, 0.0))
+        assertEquals(true, marker.visible)
+    }
+
+    @Test
+    fun testMarkerVisibility_SetToFalse() {
+        val marker = Marker(position = LatLng(0.0, 0.0), visible = false)
+        assertEquals(false, marker.visible)
+    }
+
+    @Test
+    fun testMarkerAlpha_Default() {
+        val marker = Marker(position = LatLng(0.0, 0.0))
+        assertEquals(1.0f, marker.alpha, 0.001f)
+    }
+
+    @Test
+    fun testMarkerAlpha_Custom() {
+        val marker = Marker(position = LatLng(0.0, 0.0), alpha = 0.5f)
+        assertEquals(0.5f, marker.alpha, 0.001f)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun testMarkerAlpha_InvalidBelowZero() {
+        Marker(position = LatLng(0.0, 0.0), alpha = -0.1f)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun testMarkerAlpha_InvalidAboveOne() {
+        Marker(position = LatLng(0.0, 0.0), alpha = 1.1f)
+    }
 }

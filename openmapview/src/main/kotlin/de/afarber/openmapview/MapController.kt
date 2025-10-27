@@ -38,10 +38,13 @@ class MapController(
     private var lastDrawnTiles = mutableSetOf<TileCoordinate>()
 
     companion object {
-        private const val MIN_ZOOM = 2.0
-        private const val MAX_ZOOM = 19.0
+        private const val DEFAULT_MIN_ZOOM = 2.0
+        private const val DEFAULT_MAX_ZOOM = 19.0
         private const val TILE_SIZE = 256f
     }
+
+    private var minZoomPreference = DEFAULT_MIN_ZOOM
+    private var maxZoomPreference = DEFAULT_MAX_ZOOM
 
     private val markers = mutableListOf<Marker>()
     private val defaultMarkerIcon by lazy { MarkerIconFactory.getDefaultIcon() }
@@ -83,10 +86,10 @@ class MapController(
     /**
      * Sets the zoom level, clamping to valid range.
      *
-     * @param z The desired zoom level (will be clamped to 2.0-19.0)
+     * @param z The desired zoom level (will be clamped to current min/max zoom preferences)
      */
     fun setZoom(z: Double) {
-        zoom = z.coerceIn(MIN_ZOOM, MAX_ZOOM)
+        zoom = z.coerceIn(minZoomPreference, maxZoomPreference)
     }
 
     /**
@@ -95,6 +98,49 @@ class MapController(
      * @return The current zoom level
      */
     fun getZoom(): Double = zoom
+
+    /**
+     * Sets the minimum zoom level preference.
+     *
+     * @param minZoom The minimum zoom level (will be clamped to 2.0-19.0)
+     */
+    fun setMinZoomPreference(minZoom: Float) {
+        minZoomPreference = minZoom.toDouble().coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
+        zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
+    }
+
+    /**
+     * Sets the maximum zoom level preference.
+     *
+     * @param maxZoom The maximum zoom level (will be clamped to 2.0-19.0)
+     */
+    fun setMaxZoomPreference(maxZoom: Float) {
+        maxZoomPreference = maxZoom.toDouble().coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
+        zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
+    }
+
+    /**
+     * Returns the current minimum zoom level preference.
+     *
+     * @return The minimum zoom level
+     */
+    fun getMinZoomLevel(): Float = minZoomPreference.toFloat()
+
+    /**
+     * Returns the current maximum zoom level preference.
+     *
+     * @return The maximum zoom level
+     */
+    fun getMaxZoomLevel(): Float = maxZoomPreference.toFloat()
+
+    /**
+     * Resets the min/max zoom preferences to their defaults (2.0 - 19.0).
+     */
+    fun resetMinMaxZoomPreference() {
+        minZoomPreference = DEFAULT_MIN_ZOOM
+        maxZoomPreference = DEFAULT_MAX_ZOOM
+        zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
+    }
 
     /**
      * Applies a zoom gesture centered on a specific screen point.
@@ -112,7 +158,7 @@ class MapController(
         focusY: Float,
     ) {
         val oldZoom = zoom
-        val newZoom = (zoom * scaleFactor).coerceIn(MIN_ZOOM, MAX_ZOOM)
+        val newZoom = (zoom * scaleFactor).coerceIn(minZoomPreference, maxZoomPreference)
 
         if (oldZoom == newZoom) return // Already at limit
 
@@ -276,31 +322,31 @@ class MapController(
             is CameraUpdate.NewLatLngZoom ->
                 CameraPosition(
                     target = cameraUpdate.target,
-                    zoom = cameraUpdate.zoom.coerceIn(MIN_ZOOM, MAX_ZOOM),
+                    zoom = cameraUpdate.zoom.coerceIn(minZoomPreference, maxZoomPreference),
                 )
             is CameraUpdate.NewCameraPosition ->
                 cameraUpdate.position.copy(
-                    zoom = cameraUpdate.position.zoom.coerceIn(MIN_ZOOM, MAX_ZOOM),
+                    zoom = cameraUpdate.position.zoom.coerceIn(minZoomPreference, maxZoomPreference),
                 )
             is CameraUpdate.ZoomIn ->
                 CameraPosition(
                     target = currentPosition.target,
-                    zoom = (currentPosition.zoom + 1.0).coerceIn(MIN_ZOOM, MAX_ZOOM),
+                    zoom = (currentPosition.zoom + 1.0).coerceIn(minZoomPreference, maxZoomPreference),
                 )
             is CameraUpdate.ZoomOut ->
                 CameraPosition(
                     target = currentPosition.target,
-                    zoom = (currentPosition.zoom - 1.0).coerceIn(MIN_ZOOM, MAX_ZOOM),
+                    zoom = (currentPosition.zoom - 1.0).coerceIn(minZoomPreference, maxZoomPreference),
                 )
             is CameraUpdate.ZoomTo ->
                 CameraPosition(
                     target = currentPosition.target,
-                    zoom = cameraUpdate.zoom.coerceIn(MIN_ZOOM, MAX_ZOOM),
+                    zoom = cameraUpdate.zoom.coerceIn(minZoomPreference, maxZoomPreference),
                 )
             is CameraUpdate.ZoomBy ->
                 CameraPosition(
                     target = currentPosition.target,
-                    zoom = (currentPosition.zoom + cameraUpdate.amount).coerceIn(MIN_ZOOM, MAX_ZOOM),
+                    zoom = (currentPosition.zoom + cameraUpdate.amount).coerceIn(minZoomPreference, maxZoomPreference),
                 )
         }
 
@@ -566,6 +612,9 @@ class MapController(
         centerPixelY: Double,
     ) {
         for (marker in markers) {
+            // Skip invisible markers
+            if (!marker.visible) continue
+
             // Convert marker position to pixel coordinates
             val (markerPixelX, markerPixelY) = Projection.latLngToPixel(marker.position, zoom.toInt())
 
@@ -580,8 +629,18 @@ class MapController(
             val anchorX = icon.width * marker.anchor.first
             val anchorY = icon.height * marker.anchor.second
 
+            // Create paint with alpha if needed
+            val paint =
+                if (marker.alpha < 1.0f) {
+                    Paint().apply {
+                        alpha = (marker.alpha * 255).toInt()
+                    }
+                } else {
+                    null
+                }
+
             // Draw the marker
-            canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, null)
+            canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
         }
     }
 

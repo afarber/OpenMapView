@@ -18,6 +18,8 @@ import android.graphics.Bitmap
  * @property icon Custom icon bitmap. If null, a default marker icon will be used
  * @property anchor Anchor point for the marker icon. Default (0.5f, 1.0f) means
  *                  the marker is centered horizontally and anchored at the bottom
+ * @property visible Whether the marker is visible. Default is true
+ * @property alpha Opacity of the marker from 0.0 (transparent) to 1.0 (opaque). Default is 1.0
  * @property tag Optional user data associated with the marker
  */
 data class Marker(
@@ -26,8 +28,14 @@ data class Marker(
     val snippet: String? = null,
     val icon: Bitmap? = null,
     val anchor: Pair<Float, Float> = Pair(0.5f, 1.0f),
+    val visible: Boolean = true,
+    val alpha: Float = 1.0f,
     val tag: Any? = null,
 ) {
+    init {
+        require(alpha in 0.0f..1.0f) { "Alpha must be between 0.0 and 1.0" }
+    }
+
     /**
      * Unique identifier for this marker instance.
      * Used internally for touch detection and callbacks.

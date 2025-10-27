@@ -482,4 +482,90 @@ class MapControllerTest {
         assertEquals(polygon2, polygons[1])
         assertEquals(polygon3, polygons[2])
     }
+
+    @Test
+    fun testClear_RemovesAllMarkersPolylinesAndPolygons() {
+        val marker = Marker(position = LatLng(51.5, -0.1))
+        val polyline = Polyline(points = listOf(LatLng(51.5, -0.1), LatLng(51.6, -0.2)))
+        val polygon = Polygon(points = listOf(LatLng(51.5, -0.1), LatLng(51.6, -0.2), LatLng(51.7, -0.3)))
+
+        controller.addMarker(marker)
+        controller.addPolyline(polyline)
+        controller.addPolygon(polygon)
+
+        assertEquals(1, controller.getMarkers().size)
+        assertEquals(1, controller.getPolylines().size)
+        assertEquals(1, controller.getPolygons().size)
+
+        controller.clearMarkers()
+        controller.clearPolylines()
+        controller.clearPolygons()
+
+        assertTrue(controller.getMarkers().isEmpty())
+        assertTrue(controller.getPolylines().isEmpty())
+        assertTrue(controller.getPolygons().isEmpty())
+    }
+
+    @Test
+    fun testSetMinZoomPreference_ConstrainsZoom() {
+        controller.setZoom(5.0)
+        controller.setMinZoomPreference(7.0f)
+        assertEquals(7.0, controller.getZoom(), 0.001)
+        assertEquals(7.0f, controller.getMinZoomLevel(), 0.001f)
+    }
+
+    @Test
+    fun testSetMaxZoomPreference_ConstrainsZoom() {
+        controller.setZoom(15.0)
+        controller.setMaxZoomPreference(12.0f)
+        assertEquals(12.0, controller.getZoom(), 0.001)
+        assertEquals(12.0f, controller.getMaxZoomLevel(), 0.001f)
+    }
+
+    @Test
+    fun testSetZoom_RespectsMinPreference() {
+        controller.setMinZoomPreference(5.0f)
+        controller.setZoom(3.0)
+        assertEquals(5.0, controller.getZoom(), 0.001)
+    }
+
+    @Test
+    fun testSetZoom_RespectsMaxPreference() {
+        controller.setMaxZoomPreference(15.0f)
+        controller.setZoom(18.0)
+        assertEquals(15.0, controller.getZoom(), 0.001)
+    }
+
+    @Test
+    fun testResetMinMaxZoomPreference_RestoresDefaults() {
+        controller.setMinZoomPreference(5.0f)
+        controller.setMaxZoomPreference(15.0f)
+        controller.resetMinMaxZoomPreference()
+        assertEquals(2.0f, controller.getMinZoomLevel(), 0.001f)
+        assertEquals(19.0f, controller.getMaxZoomLevel(), 0.001f)
+    }
+
+    @Test
+    fun testZoomPreferences_WorkWithGestures() {
+        controller.setZoom(10.0)
+        controller.setMaxZoomPreference(12.0f)
+        controller.zoom(1.5f, 540f, 960f)
+        assertTrue(controller.getZoom() <= 12.0)
+    }
+
+    @Test
+    fun testZoomPreferences_WorkWithCameraAnimations() {
+        controller.setMaxZoomPreference(10.0f)
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(LatLng(51.5, -0.1), 15.0)
+        controller.moveCamera(cameraUpdate)
+        assertEquals(10.0, controller.getZoom(), 0.001)
+    }
+
+    @Test
+    fun testZoomPreferences_AllowValidRange() {
+        controller.setMinZoomPreference(5.0f)
+        controller.setMaxZoomPreference(15.0f)
+        controller.setZoom(10.0)
+        assertEquals(10.0, controller.getZoom(), 0.001)
+    }
 }

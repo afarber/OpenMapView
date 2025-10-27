@@ -175,6 +175,56 @@ class OpenMapView
         fun getZoom(): Double = controller.getZoom()
 
         /**
+         * Sets the minimum zoom level preference.
+         *
+         * Constrains the camera zoom level to not go below this value.
+         * If the current zoom is below the new minimum, it will be adjusted.
+         *
+         * @param minZoom The minimum zoom level (will be clamped to 2.0-19.0)
+         */
+        fun setMinZoomPreference(minZoom: Float) {
+            controller.setMinZoomPreference(minZoom)
+            invalidate()
+        }
+
+        /**
+         * Sets the maximum zoom level preference.
+         *
+         * Constrains the camera zoom level to not go above this value.
+         * If the current zoom is above the new maximum, it will be adjusted.
+         *
+         * @param maxZoom The maximum zoom level (will be clamped to 2.0-19.0)
+         */
+        fun setMaxZoomPreference(maxZoom: Float) {
+            controller.setMaxZoomPreference(maxZoom)
+            invalidate()
+        }
+
+        /**
+         * Returns the current minimum zoom level preference.
+         *
+         * @return The minimum zoom level
+         */
+        fun getMinZoomLevel(): Float = controller.getMinZoomLevel()
+
+        /**
+         * Returns the current maximum zoom level preference.
+         *
+         * @return The maximum zoom level
+         */
+        fun getMaxZoomLevel(): Float = controller.getMaxZoomLevel()
+
+        /**
+         * Resets the minimum and maximum zoom preferences to their defaults (2.0 - 19.0).
+         *
+         * If the current zoom is outside the default range, it will be adjusted.
+         */
+        fun resetMinMaxZoomPreference() {
+            controller.resetMinMaxZoomPreference()
+            invalidate()
+        }
+
+        /**
          * Returns the current camera position.
          *
          * @return A CameraPosition containing the current target location and zoom level
@@ -392,6 +442,17 @@ class OpenMapView
          * @return A list copy of all polygons
          */
         fun getPolygons(): List<Polygon> = controller.getPolygons()
+
+        /**
+         * Removes all markers, polylines, and polygons from the map.
+         *
+         * This is equivalent to calling clearMarkers(), clearPolylines(), and clearPolygons().
+         */
+        fun clear() {
+            clearMarkers()
+            clearPolylines()
+            clearPolygons()
+        }
 
         /**
          * Imports GeoJSON data and adds all contained features to the map.
