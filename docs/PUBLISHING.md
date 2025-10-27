@@ -38,12 +38,14 @@ Required secrets configured in GitHub Actions:
 ### Publishing Process
 
 1. Create and push a version tag:
+
    ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
+   git tag v0.3.0
+   git push origin v0.3.0
    ```
 
 2. GitHub Actions automatically:
+
    - Validates formatting with Spotless
    - Runs unit tests
    - Builds library AAR and example APKs
@@ -94,6 +96,7 @@ Required secrets configured in GitHub Actions:
 ### Build Configuration
 
 Publishing configuration is defined in:
+
 - `build.gradle.kts` (root) - nmcp plugin configuration
 - `openmapview/build.gradle.kts` - Maven publication setup (POM metadata, signing)
 - `.github/workflows/release.yml` - Release automation
@@ -111,12 +114,14 @@ Publishing configuration is defined in:
 JitPack builds automatically from GitHub releases on first request:
 
 1. Create and push a version tag:
+
    ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
+   git tag v0.3.0
+   git push origin v0.3.0
    ```
 
 2. JitPack automatically:
+
    - Detects the new tag
    - Builds artifacts when first requested
    - Caches for subsequent requests
@@ -148,11 +153,12 @@ implementation("com.github.afarber:OpenMapView:feature-branch-SNAPSHOT")
 
 OpenMapView uses Semantic Versioning (SemVer):
 
-- **vMAJOR.MINOR.PATCH** (e.g., `v0.2.0`)
+- **vMAJOR.MINOR.PATCH** (e.g., `v0.3.0`)
 - Version is automatically detected from Git tags
 - Tags must match the pattern `v*.*.*` to trigger release workflow
 
 Examples:
+
 - `v0.1.0` - Initial release
 - `v0.2.0` - New features added
 - `v0.2.1` - Bug fixes
@@ -166,7 +172,7 @@ When creating a new release:
 - [ ] Run code formatting: `./gradlew spotlessApply`
 - [ ] Verify local build: `./gradlew build`
 - [ ] Test Maven publication: `./gradlew publishToMavenLocal`
-- [ ] Create and push version tag (e.g., `v0.2.0`)
+- [ ] Create and push version tag (e.g., `v0.3.0`)
 - [ ] Monitor GitHub Actions release workflow
 - [ ] Verify Maven Central publication (10-30 minutes)
 - [ ] Verify JitPack build status
@@ -178,12 +184,14 @@ When creating a new release:
 **Issue: Workflow fails with "401 Unauthorized"**
 
 Solution: Verify GitHub Secrets are correctly configured:
+
 - Generate new tokens at https://central.sonatype.com/account
 - Update `OSSRH_USERNAME` and `OSSRH_PASSWORD` secrets
 
 **Issue: "Failed to verify signature"**
 
 Solution: Verify GPG key configuration:
+
 - Confirm public key `8334881A009EB69E5B5BDBF189999F05686CE169` is published to keyservers
 - Check `SIGNING_KEY` secret contains the full base64 private key
 - Verify `SIGNING_PASSWORD` matches the GPG key passphrase
@@ -191,6 +199,7 @@ Solution: Verify GPG key configuration:
 **Issue: Version conflict**
 
 Solution: Maven Central does not allow republishing the same version:
+
 ```bash
 git tag -d v0.1.0
 git push origin :refs/tags/v0.1.0
@@ -205,6 +214,7 @@ git push origin v0.1.1
 Solution: Check build logs at https://jitpack.io/#afarber/OpenMapView
 
 Common causes:
+
 - Missing `jitpack.yml` with correct JDK version
 - Build configuration errors in `build.gradle.kts`
 - Missing dependencies or plugins
@@ -212,6 +222,7 @@ Common causes:
 **Issue: Build succeeds but artifact is empty**
 
 Solution: Verify `maven-publish` plugin is correctly configured:
+
 ```bash
 ./gradlew publishToMavenLocal
 ls ~/.m2/repository/de/afarber/openmapview/
@@ -220,6 +231,7 @@ ls ~/.m2/repository/de/afarber/openmapview/
 **Issue: Artifact not found**
 
 Solution:
+
 - Ensure repository is public on GitHub
 - Verify tag/release exists: `git tag -l`
 - Check artifact coordinates are correct (case-sensitive)
@@ -274,16 +286,19 @@ The release process is orchestrated by reusable GitHub Actions workflows:
 ## Resources
 
 ### Maven Central
+
 - Central Portal: https://central.sonatype.com/
 - Publishing Guide: https://central.sonatype.org/publish/publish-portal-gradle/
 - Maven Repository: https://repo1.maven.org/maven2/
 
 ### JitPack
+
 - Website: https://jitpack.io/
 - Documentation: https://docs.jitpack.io/
 - Android Guide: https://docs.jitpack.io/android/
 
 ### Project Resources
+
 - GitHub Repository: https://github.com/afarber/OpenMapView
 - Issue Tracker: https://github.com/afarber/OpenMapView/issues
 - GitHub Actions: https://github.com/afarber/OpenMapView/actions
@@ -318,8 +333,8 @@ GitHub Actions workflow uses: `./gradlew publishAggregationToCentralPortal`
 
 ```bash
 # Create a release
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.3.0
+git push origin v0.3.0
 
 # Check workflow status
 # Visit: https://github.com/afarber/OpenMapView/actions
