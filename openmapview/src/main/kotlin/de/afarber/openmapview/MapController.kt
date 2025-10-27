@@ -8,6 +8,8 @@
 package de.afarber.openmapview
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -16,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 /**
  * Core controller managing map state, rendering, and interactions.
@@ -91,6 +94,44 @@ class MapController(
             style = Paint.Style.FILL
             color = Color.LTGRAY
         }
+
+    /**
+     * Loads a bitmap from a BitmapDescriptor.
+     *
+     * @param descriptor The descriptor specifying the bitmap source
+     * @return The loaded bitmap, or the default marker icon if loading fails
+     */
+    private fun loadBitmap(descriptor: BitmapDescriptor?): Bitmap {
+        if (descriptor == null) {
+            return defaultMarkerIcon
+        }
+
+        return when (descriptor) {
+            is BitmapDescriptor.DefaultMarker -> {
+                MarkerIconFactory.getDefaultIcon(descriptor.hue)
+            }
+            is BitmapDescriptor.BitmapMarker -> {
+                descriptor.bitmap
+            }
+            is BitmapDescriptor.ResourceMarker -> {
+                try {
+                    BitmapFactory.decodeResource(context.resources, descriptor.resourceId)
+                        ?: defaultMarkerIcon
+                } catch (e: Exception) {
+                    defaultMarkerIcon
+                }
+            }
+            is BitmapDescriptor.AssetMarker -> {
+                try {
+                    context.assets.open(descriptor.assetName).use { stream ->
+                        BitmapFactory.decodeStream(stream) ?: defaultMarkerIcon
+                    }
+                } catch (e: IOException) {
+                    defaultMarkerIcon
+                }
+            }
+        }
+    }
 
     /**
      * Sets the zoom level, clamping to valid range.
@@ -740,7 +781,7 @@ class MapController(
             val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
             // Get marker icon
-            val icon = marker.icon ?: defaultMarkerIcon
+            val icon = loadBitmap(marker.icon)
 
             // Apply anchor point
             val anchorX = icon.width * marker.anchor.first
@@ -883,7 +924,7 @@ class MapController(
             val screenX = (markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
             val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
-            val icon = marker.icon ?: defaultMarkerIcon
+            val icon = loadBitmap(marker.icon)
 
             val anchorX = icon.width * marker.anchor.first
             val anchorY = icon.height * marker.anchor.second
@@ -963,7 +1004,7 @@ class MapController(
             val boxWidth = maxWidth + padding * 2
             val boxHeight = totalHeight + padding * 2
 
-            val icon = marker.icon ?: defaultMarkerIcon
+            val icon = loadBitmap(marker.icon)
             val markerHeight = icon.height * marker.anchor.second
 
             val infoWindowX = screenX - boxWidth / 2
@@ -1152,7 +1193,7 @@ class MapController(
             val screenX = (markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
             val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
-            val icon = marker.icon ?: defaultMarkerIcon
+            val icon = loadBitmap(marker.icon)
             val anchorX = icon.width * marker.anchor.first
             val anchorY = icon.height * marker.anchor.second
 
@@ -1228,7 +1269,7 @@ class MapController(
             val boxWidth = maxWidth + padding * 2
             val boxHeight = totalHeight + padding * 2
 
-            val icon = marker.icon ?: defaultMarkerIcon
+            val icon = loadBitmap(marker.icon)
             val markerHeight = icon.height * marker.anchor.second
 
             val infoWindowX = screenX - boxWidth / 2

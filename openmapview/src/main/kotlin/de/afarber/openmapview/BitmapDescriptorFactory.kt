@@ -12,7 +12,8 @@ import android.graphics.Bitmap
 /**
  * Factory for creating marker icons.
  *
- * Provides predefined color constants and methods to generate colored marker icons.
+ * Provides predefined color constants and methods to generate marker icon descriptors
+ * from various sources (default colors, resources, assets, bitmaps).
  * Colors are specified using HSV hue values (0-360 degrees on the color wheel).
  */
 object BitmapDescriptorFactory {
@@ -32,11 +33,35 @@ object BitmapDescriptorFactory {
     const val HUE_ROSE = 330f
 
     /**
-     * Creates a marker icon with the specified hue.
+     * Creates a marker icon descriptor with the specified hue.
      *
      * @param hue The hue value (0-360) on the color wheel. Defaults to red (0).
      *            0=red, 120=green, 240=blue, etc.
-     * @return A bitmap of the colored marker icon
+     * @return A BitmapDescriptor for the default colored marker
      */
-    fun defaultMarker(hue: Float = HUE_RED): Bitmap = MarkerIconFactory.getDefaultIcon(hue)
+    fun defaultMarker(hue: Float = HUE_RED): BitmapDescriptor = BitmapDescriptor.DefaultMarker(hue)
+
+    /**
+     * Creates a marker icon descriptor from a drawable resource.
+     *
+     * @param resourceId The drawable resource ID (e.g., R.drawable.marker_icon)
+     * @return A BitmapDescriptor for the resource marker
+     */
+    fun fromResource(resourceId: Int): BitmapDescriptor = BitmapDescriptor.ResourceMarker(resourceId)
+
+    /**
+     * Creates a marker icon descriptor from an asset file.
+     *
+     * @param assetName The name of the asset file (e.g., "markers/custom_marker.png")
+     * @return A BitmapDescriptor for the asset marker
+     */
+    fun fromAsset(assetName: String): BitmapDescriptor = BitmapDescriptor.AssetMarker(assetName)
+
+    /**
+     * Creates a marker icon descriptor from a bitmap object.
+     *
+     * @param bitmap The bitmap to use as marker icon
+     * @return A BitmapDescriptor for the bitmap marker
+     */
+    fun fromBitmap(bitmap: Bitmap): BitmapDescriptor = BitmapDescriptor.BitmapMarker(bitmap)
 }
