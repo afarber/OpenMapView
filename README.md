@@ -17,7 +17,7 @@ Add the dependency to the module `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("de.afarber:openmapview:0.1.0")
+    implementation("de.afarber:openmapview:0.2.0")
 }
 ```
 
@@ -25,7 +25,7 @@ Or for Groovy `build.gradle`:
 
 ```groovy
 dependencies {
-    implementation 'de.afarber:openmapview:0.1.0'
+    implementation 'de.afarber:openmapview:0.2.0'
 }
 ```
 
@@ -49,7 +49,7 @@ Then add the dependency:
 
 ```kotlin
 dependencies {
-    implementation("com.github.afarber:OpenMapView:0.1.0")
+    implementation("com.github.afarber:OpenMapView:0.2.0")
 }
 ```
 
@@ -67,7 +67,7 @@ dependencyResolutionManagement {
 
 ```groovy
 dependencies {
-    implementation 'com.github.afarber:OpenMapView:0.1.0'
+    implementation 'com.github.afarber:OpenMapView:0.2.0'
 }
 ```
 
