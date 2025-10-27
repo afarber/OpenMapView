@@ -146,9 +146,13 @@ class OpenMapView : FrameLayout, DefaultLifecycleObserver {
 
 ---
 
-## The Advantage
+## The Advantages
 
-OpenMapView's single-class approach is **simpler** than Google's two-class pattern:
+OpenMapView offers several key advantages over the reference implementation:
+
+### 1. Simpler Architecture
+
+OpenMapView's single-class approach is **simpler** than the two-class pattern:
 
 ### Google Maps (complex)
 
@@ -205,6 +209,23 @@ class MyActivity : AppCompatActivity() {
 }
 ```
 
+### 2. No Vendor Lock-in or Usage Restrictions
+
+OpenMapView uses **OpenStreetMap tiles** instead of proprietary map data:
+
+- **No API keys required** - No registration, no authentication
+- **No usage fees** - Free for commercial and personal projects
+- **No rate limiting** - Subject only to OSM tile server fair use policies
+- **No terms of service restrictions** - MIT licensed, use anywhere
+- **No dependency on external services** - Works independently of any company's infrastructure
+- **Open data** - Built on community-maintained OpenStreetMap data
+
+This makes OpenMapView particularly valuable for:
+- Commercial applications without maps budget
+- Projects requiring predictable costs
+- Apps that need to work offline or with custom tile servers
+- Organizations avoiding vendor dependencies
+
 ---
 
 ## Conclusion
@@ -213,7 +234,8 @@ This architectural design achieves several goals:
 
 1. **Simplicity** - One class instead of two, no async initialization
 2. **Lifecycle Safety** - DefaultLifecycleObserver prevents common lifecycle bugs
-3. **API Compatibility** - Covers essential Google Maps functionality
+3. **API Compatibility** - Covers essential functionality for drop-in replacement
 4. **Clean Separation** - Internal MapController handles implementation details
+5. **No Vendor Lock-in** - Uses free, open OpenStreetMap data without restrictions
 
-The single-class approach makes OpenMapView easier to use while maintaining the flexibility to implement most Google Maps features that developers expect in a drop-in replacement.
+The single-class approach combined with OSM tiles makes OpenMapView easier to use and more accessible while maintaining the flexibility to implement the features developers expect in a modern map library.
