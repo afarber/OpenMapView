@@ -156,4 +156,27 @@ class MarkerTest {
     fun testMarkerAlpha_InvalidAboveOne() {
         Marker(position = LatLng(0.0, 0.0), alpha = 1.1f)
     }
+
+    @Test
+    fun testMarkerDraggable_Default() {
+        val marker = Marker(position = LatLng(0.0, 0.0))
+        assertEquals(false, marker.draggable)
+    }
+
+    @Test
+    fun testMarkerDraggable_SetToTrue() {
+        val marker = Marker(position = LatLng(0.0, 0.0), draggable = true)
+        assertEquals(true, marker.draggable)
+    }
+
+    @Test
+    fun testMarkerPosition_Mutable() {
+        val marker = Marker(position = LatLng(0.0, 0.0))
+        assertEquals(0.0, marker.position.latitude, 0.001)
+        assertEquals(0.0, marker.position.longitude, 0.001)
+
+        marker.position = LatLng(10.0, 20.0)
+        assertEquals(10.0, marker.position.latitude, 0.001)
+        assertEquals(20.0, marker.position.longitude, 0.001)
+    }
 }

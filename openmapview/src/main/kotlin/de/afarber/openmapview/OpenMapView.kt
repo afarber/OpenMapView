@@ -51,6 +51,9 @@ class OpenMapView
         private var lastTouchY = 0f
         private var onMapClickListener: OnMapClickListener? = null
         private var onMapLongClickListener: OnMapLongClickListener? = null
+        private var onMarkerDragListener: OnMarkerDragListener? = null
+        private var draggedMarker: Marker? = null
+        private var isDragging = false
 
         private val gestureDetector =
             GestureDetector(
@@ -103,30 +106,76 @@ class OpenMapView
         }
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
-            // Let gesture detector handle long press
-            gestureDetector.onTouchEvent(event)
+            // Let gesture detector handle long press (but not during drag)
+            if (!isDragging) {
+                gestureDetector.onTouchEvent(event)
+            }
 
             // Let scale detector handle pinch gestures
             scaleGestureDetector.onTouchEvent(event)
 
-            // Handle panning only if not scaling
+            // Handle dragging and panning only if not scaling
             if (!scaleGestureDetector.isInProgress) {
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
                         lastTouchX = event.x
                         lastTouchY = event.y
+                        // Check if touch is on a draggable marker
+                        val touchedMarker = controller.handleMarkerTouch(event.x, event.y)
+                        if (touchedMarker != null && touchedMarker.draggable) {
+                            draggedMarker = touchedMarker
+                            isDragging = false
+                        }
                         return true
                     }
                     MotionEvent.ACTION_MOVE -> {
                         val dx = event.x - lastTouchX
                         val dy = event.y - lastTouchY
-                        controller.updatePanOffset(dx, dy)
-                        lastTouchX = event.x
-                        lastTouchY = event.y
-                        invalidate()
+                        val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
+
+                        if (draggedMarker != null) {
+                            // Start dragging if moved more than threshold
+                            if (!isDragging && movementDistance > 10) {
+                                isDragging = true
+                                controller.commitPan()
+                                onMarkerDragListener?.onMarkerDragStart(draggedMarker!!)
+                            }
+
+                            // Continue dragging
+                            if (isDragging) {
+                                val latLng = controller.screenToLatLng(event.x, event.y)
+                                draggedMarker!!.position = latLng
+                                onMarkerDragListener?.onMarkerDrag(draggedMarker!!)
+                                invalidate()
+                                lastTouchX = event.x
+                                lastTouchY = event.y
+                                return true
+                            }
+                        }
+
+                        // Pan the map if not dragging a marker
+                        if (!isDragging) {
+                            controller.updatePanOffset(dx, dy)
+                            lastTouchX = event.x
+                            lastTouchY = event.y
+                            invalidate()
+                        }
                         return true
                     }
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        // Handle drag end
+                        if (isDragging && draggedMarker != null) {
+                            onMarkerDragListener?.onMarkerDragEnd(draggedMarker!!)
+                            draggedMarker = null
+                            isDragging = false
+                            invalidate()
+                            return true
+                        }
+
+                        // Reset drag state
+                        draggedMarker = null
+                        isDragging = false
+
                         // Check if touch is on a marker (only if there was minimal movement)
                         val dx = event.x - lastTouchX
                         val dy = event.y - lastTouchY
@@ -402,6 +451,35 @@ class OpenMapView
          */
         fun setOnMarkerClickListener(listener: (Marker) -> Boolean) {
             controller.onMarkerClickListener = listener
+        }
+
+        /**
+         * Sets a listener to handle marker drag events.
+         *
+         * Called when a draggable marker is dragged by the user. The marker must have
+         * its draggable property set to true to receive drag events.
+         *
+         * Example:
+         * ```kotlin
+         * mapView.setOnMarkerDragListener(object : OnMarkerDragListener {
+         *     override fun onMarkerDragStart(marker: Marker) {
+         *         Log.d("Map", "Drag started: ${marker.title}")
+         *     }
+         *
+         *     override fun onMarkerDrag(marker: Marker) {
+         *         Log.d("Map", "Dragging: ${marker.position}")
+         *     }
+         *
+         *     override fun onMarkerDragEnd(marker: Marker) {
+         *         Log.d("Map", "Drag ended: ${marker.position}")
+         *     }
+         * })
+         * ```
+         *
+         * @param listener The listener to receive drag events, or null to clear the listener
+         */
+        fun setOnMarkerDragListener(listener: OnMarkerDragListener?) {
+            onMarkerDragListener = listener
         }
 
         /**

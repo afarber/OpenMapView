@@ -12,7 +12,7 @@ import android.graphics.Bitmap
 /**
  * Represents a marker on the map at a specific geographic location.
  *
- * @property position The geographic location of the marker
+ * @property position The geographic location of the marker (mutable for dragging)
  * @property title Optional title text displayed when marker is clicked
  * @property snippet Optional snippet text displayed below the title
  * @property icon Custom icon bitmap. If null, a default marker icon will be used
@@ -20,16 +20,18 @@ import android.graphics.Bitmap
  *                  the marker is centered horizontally and anchored at the bottom
  * @property visible Whether the marker is visible. Default is true
  * @property alpha Opacity of the marker from 0.0 (transparent) to 1.0 (opaque). Default is 1.0
+ * @property draggable Whether the marker can be dragged. Default is false
  * @property tag Optional user data associated with the marker
  */
 data class Marker(
-    val position: LatLng,
+    var position: LatLng,
     val title: String? = null,
     val snippet: String? = null,
     val icon: Bitmap? = null,
     val anchor: Pair<Float, Float> = Pair(0.5f, 1.0f),
     val visible: Boolean = true,
     val alpha: Float = 1.0f,
+    val draggable: Boolean = false,
     val tag: Any? = null,
 ) {
     init {
