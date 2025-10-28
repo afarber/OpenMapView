@@ -49,6 +49,7 @@ Explore the example applications to see OpenMapView in action:
 - [Example08Circles](examples/Example08Circles) - Circles with various radii, styling, and z-index ordering
 - [Example09Overlays](examples/Example09Overlays) - Tile overlays with transparency control (OpenSeaMap, OpenRailwayMap, Hiking Trails, OpenSnowMap)
 - [Example10GroundOverlays](examples/Example10GroundOverlays) - Ground overlays with position/bounds modes, rotation, and transparency
+- [Example11MapTypes](examples/Example11MapTypes) - Switching between map types (Normal, Terrain, Humanitarian, Cycle)
 
 ![Example05Camera Demo](examples/Example05Camera/screenshot.gif)
 

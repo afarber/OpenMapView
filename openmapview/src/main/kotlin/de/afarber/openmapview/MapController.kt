@@ -76,7 +76,7 @@ class MapController(
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val tileDownloader = TileDownloader()
     private val tileCache = TileCache(context)
-    private var tileSource = TileSource.STANDARD
+    private var tileSource: TileSource? = TileSource.STANDARD
     private val downloadingTiles = mutableSetOf<TileCoordinate>()
     private var onTileLoadedCallback: (() -> Unit)? = null
 
@@ -196,6 +196,28 @@ class MapController(
         maxZoomPreference = DEFAULT_MAX_ZOOM
         zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
     }
+
+    /**
+     * Sets the tile source for rendering the base map.
+     *
+     * When the tile source changes, the tile cache is cleared to prevent
+     * displaying incorrect tiles from the previous source.
+     *
+     * @param source The new tile source, or null to display no base map tiles
+     */
+    fun setTileSource(source: TileSource?) {
+        if (tileSource == source) return
+        tileSource = source
+        tileCache.clear()
+        downloadingTiles.clear()
+    }
+
+    /**
+     * Gets the current tile source.
+     *
+     * @return The current tile source, or null if no base map tiles are displayed
+     */
+    fun getTileSource(): TileSource? = tileSource
 
     /**
      * Applies a zoom gesture centered on a specific screen point.
@@ -1235,7 +1257,8 @@ class MapController(
         lowPriority: Boolean = false,
     ) {
         scope.launch(Dispatchers.IO) {
-            val url = tileSource.getTileUrl(tile)
+            val source = tileSource ?: return@launch
+            val url = source.getTileUrl(tile)
             val bitmap = tileDownloader.downloadTile(url)
             if (bitmap != null) {
                 tileCache.put(tile, bitmap)

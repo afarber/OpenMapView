@@ -48,6 +48,7 @@ class OpenMapView
         private val controller = MapController(context)
         private val attributionOverlay = AttributionOverlay(context)
         private val uiSettings = UiSettings()
+        private var currentMapType: Int = MapType.NORMAL
         private var lastTouchX = 0f
         private var lastTouchY = 0f
         private var onMapClickListener: OnMapClickListener? = null
@@ -363,6 +364,82 @@ class OpenMapView
             controller.resetMinMaxZoomPreference()
             invalidate()
         }
+
+        /**
+         * Sets the type of map tiles that should be displayed.
+         *
+         * OpenMapView supports a subset of Google Maps map types using free OpenStreetMap
+         * tile sources, plus additional OSM-specific styles.
+         *
+         * **Supported types:**
+         * - [MapType.NONE] - No base map tiles
+         * - [MapType.NORMAL] - Standard road map (default)
+         * - [MapType.TERRAIN] - Topographic map with contour lines
+         * - [MapType.HUMANITARIAN] - Humanitarian-focused style
+         * - [MapType.TOPO] - Alias for TERRAIN
+         * - [MapType.CYCLE] - Cycling-focused map style
+         *
+         * **Unsupported types (throw exception):**
+         * - [MapType.SATELLITE] - Requires paid satellite imagery API
+         * - [MapType.HYBRID] - Requires paid satellite imagery API
+         *
+         * When the map type changes, the tile cache is cleared and the map is redrawn.
+         *
+         * Example:
+         * ```kotlin
+         * mapView.setMapType(MapType.TERRAIN)
+         * mapView.setMapType(MapType.HUMANITARIAN)
+         * ```
+         *
+         * @param type The map type constant from [MapType]
+         * @throws UnsupportedOperationException if type is SATELLITE or HYBRID
+         * @see MapType
+         * @see getMapType
+         */
+        fun setMapType(type: Int) {
+            currentMapType = type
+            val newSource =
+                when (type) {
+                    MapType.NONE -> null
+                    MapType.NORMAL -> TileSource.STANDARD
+                    MapType.TERRAIN, MapType.TOPO -> TileSource.TOPO
+                    MapType.HUMANITARIAN -> TileSource.HUMANITARIAN
+                    MapType.CYCLE -> TileSource.CYCLE
+                    MapType.SATELLITE, MapType.HYBRID ->
+                        throw UnsupportedOperationException(
+                            "Map type $type (${
+                                when (type) {
+                                    MapType.SATELLITE -> "SATELLITE"
+                                    MapType.HYBRID -> "HYBRID"
+                                    else -> "unknown"
+                                }
+                            }) is not supported. " +
+                                "Satellite and hybrid maps require paid tile providers (Mapbox, Google, Bing). " +
+                                "OpenMapView only supports free OpenStreetMap tile sources.",
+                        )
+                    else ->
+                        throw IllegalArgumentException(
+                            "Unknown map type: $type. " +
+                                "Valid types are: NONE (0), NORMAL (1), TERRAIN (3), " +
+                                "HUMANITARIAN (5), TOPO (6), CYCLE (7). " +
+                                "SATELLITE (2) and HYBRID (4) are not supported.",
+                        )
+                }
+            controller.setTileSource(newSource)
+            if (newSource != null) {
+                attributionOverlay.setAttributionText(newSource.attribution)
+            }
+            invalidate()
+        }
+
+        /**
+         * Returns the current map type.
+         *
+         * @return The current map type constant from [MapType]
+         * @see MapType
+         * @see setMapType
+         */
+        fun getMapType(): Int = currentMapType
 
         /**
          * Returns the current camera position.

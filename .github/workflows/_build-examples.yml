@@ -64,6 +64,9 @@ jobs:
       - name: Build Example10GroundOverlays
         run: ./gradlew :examples:Example10GroundOverlays:assembleDebug
 
+      - name: Build Example11MapTypes
+        run: ./gradlew :examples:Example11MapTypes:assembleDebug
+
       - name: Upload example APKs
         uses: actions/upload-artifact@v4
         with:

@@ -81,12 +81,12 @@ Methods that must be forwarded from the parent Activity/Fragment.
 
 | Method                         | Return Type | Status          | Notes                                       |
 | ------------------------------ | ----------- | --------------- | ------------------------------------------- |
-| `setCenter(LatLng)`            | `void`      | IMPLEMENTED     | Direct method, not via GoogleMap pattern    |
-| `setZoom(double)`              | `void`      | IMPLEMENTED     | Direct method, not via GoogleMap pattern    |
-| `getZoom()`                    | `double`    | IMPLEMENTED     | Direct method, not via GoogleMap pattern    |
-| `setMapType(int)`              | `void`      | NOT IMPLEMENTED | Only standard OSM tiles currently supported |
-| `getMapType()`                 | `int`       | NOT IMPLEMENTED | Only standard OSM tiles currently supported |
-| `setMapStyle(MapStyleOptions)` | `boolean`   | NOT PLANNED     | Custom tile sources could provide this      |
+| `setCenter(LatLng)`            | `void`      | IMPLEMENTED     | Direct method, not via GoogleMap pattern                                                                                                                                    |
+| `setZoom(double)`              | `void`      | IMPLEMENTED     | Direct method, not via GoogleMap pattern                                                                                                                                    |
+| `getZoom()`                    | `double`    | IMPLEMENTED     | Direct method, not via GoogleMap pattern                                                                                                                                    |
+| `setMapType(int)`              | `void`      | IMPLEMENTED     | Supports NORMAL, TERRAIN, HUMANITARIAN, TOPO, CYCLE, NONE. Throws exception for SATELLITE/HYBRID (requires paid APIs). See MapType constants.                              |
+| `getMapType()`                 | `int`       | IMPLEMENTED     | Returns current map type constant                                                                                                                                           |
+| `setMapStyle(MapStyleOptions)` | `boolean`   | NOT PLANNED     | Custom tile sources could provide this                                                                                                                                      |
 
 ---
 

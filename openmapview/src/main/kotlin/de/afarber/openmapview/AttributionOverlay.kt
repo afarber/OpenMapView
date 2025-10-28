@@ -15,15 +15,15 @@ import android.graphics.Rect
 import android.text.TextPaint
 
 /**
- * Attribution overlay displaying OpenStreetMap copyright notice.
+ * Attribution overlay displaying tile source copyright notice.
  *
- * Required by OSM tile usage policy to show attribution on all maps using OSM data.
+ * Required by tile provider usage policies to show attribution on all maps.
  * Renders a semi-transparent background with clickable attribution text in the bottom-right corner.
  */
 class AttributionOverlay(
     context: Context,
 ) {
-    private val attributionText = "© OpenStreetMap contributors"
+    private var attributionText = "© OpenStreetMap contributors"
 
     private val textPaint =
         TextPaint().apply {
@@ -38,12 +38,26 @@ class AttributionOverlay(
             style = Paint.Style.FILL
         }
 
-    private val textBounds = Rect()
+    private var textBounds = Rect()
     private val padding = (4 * context.resources.displayMetrics.density).toInt()
 
     var onAttributionClickListener: (() -> Unit)? = null
 
     init {
+        updateTextBounds()
+    }
+
+    /**
+     * Sets the attribution text to be displayed.
+     *
+     * @param text The attribution text (e.g., tile source copyright notice)
+     */
+    fun setAttributionText(text: String) {
+        attributionText = text
+        updateTextBounds()
+    }
+
+    private fun updateTextBounds() {
         textPaint.getTextBounds(attributionText, 0, attributionText.length, textBounds)
     }
 
