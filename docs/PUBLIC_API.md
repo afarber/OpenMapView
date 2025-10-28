@@ -63,7 +63,7 @@ Methods that must be forwarded from the parent Activity/Fragment.
 | `addPolygon(PolygonOptions)`             | `Polygon`       | IMPLEMENTED     | Supports points, holes, colors, visible, clickable, tag     |
 | `addCircle(CircleOptions)`               | `Circle`        | IMPLEMENTED     | Supports center, radius, stroke/fill colors, z-index, visible, clickable, tag |
 | `addGroundOverlay(GroundOverlayOptions)` | `GroundOverlay` | NOT IMPLEMENTED | Planned for future release                                  |
-| `addTileOverlay(TileOverlayOptions)`     | `TileOverlay`   | NOT PLANNED     | Advanced feature                                            |
+| `addTileOverlay(TileOverlayOptions)`     | `TileOverlay`   | IMPLEMENTED     | Supports tileProvider, transparency, zIndex, visible, fadeIn, tag. Includes predefined providers for public OSM services |
 
 ---
 

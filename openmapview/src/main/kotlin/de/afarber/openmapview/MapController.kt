@@ -57,6 +57,9 @@ class MapController(
     private val polylines = mutableListOf<Polyline>()
     private val polygons = mutableListOf<Polygon>()
     private val circles = mutableListOf<Circle>()
+    private val tileOverlays = mutableListOf<TileOverlay>()
+    private val overlayTileCaches = mutableMapOf<String, TileCache>()
+    private val overlayDownloadingTiles = mutableMapOf<String, MutableSet<TileCoordinate>>()
 
     private var animationJob: Job? = null
     private var animationListener: CancelableCallback? = null
@@ -580,6 +583,15 @@ class MapController(
 
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
 
+        // Sort tile overlays by z-index
+        val sortedTileOverlays = tileOverlays.filter { it.visible }.sortedBy { it.zIndex }
+
+        // Draw tile overlays with negative z-index (below base tiles)
+        for (overlay in sortedTileOverlays.filter { it.zIndex < 0 }) {
+            drawTileOverlay(canvas, visibleTiles, centerPixelX, centerPixelY, overlay)
+        }
+
+        // Draw base map tiles (z-index 0)
         for (tile in visibleTiles) {
             val (tilePixelX, tilePixelY) = ProjectionUtils.tileToPixel(tile)
 
@@ -598,6 +610,11 @@ class MapController(
                     downloadTile(tile)
                 }
             }
+        }
+
+        // Draw tile overlays with positive z-index (above base tiles)
+        for (overlay in sortedTileOverlays.filter { it.zIndex >= 0 }) {
+            drawTileOverlay(canvas, visibleTiles, centerPixelX, centerPixelY, overlay)
         }
 
         // Prefetch adjacent tiles only when viewport changes to avoid excessive downloads
@@ -1150,6 +1167,92 @@ class MapController(
     }
 
     /**
+     * Draws tiles for a tile overlay layer.
+     *
+     * @param canvas The canvas to draw on
+     * @param visibleTiles The list of visible tile coordinates
+     * @param centerPixelX Center pixel X coordinate
+     * @param centerPixelY Center pixel Y coordinate
+     * @param overlay The tile overlay to render
+     */
+    private fun drawTileOverlay(
+        canvas: Canvas,
+        visibleTiles: List<TileCoordinate>,
+        centerPixelX: Double,
+        centerPixelY: Double,
+        overlay: TileOverlay,
+    ) {
+        val cache = overlayTileCaches[overlay.id] ?: return
+        val downloadingSet = overlayDownloadingTiles[overlay.id] ?: return
+
+        // Create paint for transparency if needed
+        val paint =
+            if (overlay.transparency > 0f) {
+                Paint().apply {
+                    alpha = ((1f - overlay.transparency) * 255).toInt()
+                }
+            } else {
+                null
+            }
+
+        for (tile in visibleTiles) {
+            val (tilePixelX, tilePixelY) = ProjectionUtils.tileToPixel(tile)
+
+            val screenX = (tilePixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val screenY = (tilePixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+            val cachedBitmap = cache.get(tile)
+            if (cachedBitmap != null) {
+                canvas.drawBitmap(cachedBitmap, screenX, screenY, paint)
+            } else {
+                if (!downloadingSet.contains(tile)) {
+                    downloadingSet.add(tile)
+                    downloadOverlayTile(tile, overlay)
+                }
+            }
+        }
+    }
+
+    /**
+     * Downloads a tile for an overlay layer.
+     *
+     * @param tile The tile coordinate to download
+     * @param overlay The tile overlay requesting the tile
+     */
+    private fun downloadOverlayTile(
+        tile: TileCoordinate,
+        overlay: TileOverlay,
+    ) {
+        scope.launch(Dispatchers.IO) {
+            val tileData = overlay.tileProvider.getTile(tile.x, tile.y, tile.zoom)
+            if (tileData != null) {
+                // Decode tile data to bitmap
+                val options =
+                    BitmapFactory.Options().apply {
+                        inPreferredConfig = Bitmap.Config.ARGB_8888 // Support transparency
+                        inScaled = false
+                    }
+                val bitmap = BitmapFactory.decodeByteArray(tileData.data, 0, tileData.data.size, options)
+
+                if (bitmap != null) {
+                    val cache = overlayTileCaches[overlay.id]
+                    cache?.put(tile, bitmap)
+
+                    overlayDownloadingTiles[overlay.id]?.remove(tile)
+
+                    launch(Dispatchers.Main) {
+                        onTileLoadedCallback?.invoke()
+                    }
+                } else {
+                    overlayDownloadingTiles[overlay.id]?.remove(tile)
+                }
+            } else {
+                overlayDownloadingTiles[overlay.id]?.remove(tile)
+            }
+        }
+    }
+
+    /**
      * Adds a marker to the map.
      *
      * @param marker The marker to add
@@ -1280,6 +1383,50 @@ class MapController(
      * @return A list of all circles
      */
     fun getCircles(): List<Circle> = circles.toList()
+
+    /**
+     * Adds a tile overlay to the map.
+     *
+     * @param tileOverlay The tile overlay to add
+     * @return The added tile overlay instance
+     */
+    fun addTileOverlay(tileOverlay: TileOverlay): TileOverlay {
+        tileOverlays.add(tileOverlay)
+        overlayTileCaches[tileOverlay.id] = TileCache(context)
+        overlayDownloadingTiles[tileOverlay.id] = mutableSetOf()
+        return tileOverlay
+    }
+
+    /**
+     * Removes a tile overlay from the map.
+     *
+     * @param tileOverlay The tile overlay to remove
+     * @return true if removed, false if not found
+     */
+    fun removeTileOverlay(tileOverlay: TileOverlay): Boolean {
+        val removed = tileOverlays.remove(tileOverlay)
+        if (removed) {
+            overlayTileCaches.remove(tileOverlay.id)
+            overlayDownloadingTiles.remove(tileOverlay.id)
+        }
+        return removed
+    }
+
+    /**
+     * Removes all tile overlays from the map.
+     */
+    fun clearTileOverlays() {
+        tileOverlays.clear()
+        overlayTileCaches.clear()
+        overlayDownloadingTiles.clear()
+    }
+
+    /**
+     * Returns a copy of all tile overlays on the map.
+     *
+     * @return A list of all tile overlays
+     */
+    fun getTileOverlays(): List<TileOverlay> = tileOverlays.toList()
 
     /**
      * Parses GeoJSON and adds all features to the map.

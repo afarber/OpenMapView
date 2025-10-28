@@ -58,6 +58,9 @@ jobs:
       - name: Build Example08Circles
         run: ./gradlew :examples:Example08Circles:assembleDebug
 
+      - name: Build Example09Overlays
+        run: ./gradlew :examples:Example09Overlays:assembleDebug
+
       - name: Upload example APKs
         uses: actions/upload-artifact@v4
         with:

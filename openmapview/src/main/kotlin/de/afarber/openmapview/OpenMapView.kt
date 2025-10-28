@@ -941,15 +941,68 @@ class OpenMapView
         fun getCircles(): List<Circle> = controller.getCircles()
 
         /**
-         * Removes all markers, polylines, polygons, and circles from the map.
+         * Adds a tile overlay to the map using TileOverlayOptions builder pattern.
          *
-         * This is equivalent to calling clearMarkers(), clearPolylines(), clearPolygons(), and clearCircles().
+         * @param tileOverlayOptions Builder containing overlay configuration
+         * @return The created TileOverlay instance
+         * @throws IllegalArgumentException if tileProvider is not set
+         */
+        fun addTileOverlay(tileOverlayOptions: TileOverlayOptions): TileOverlay {
+            val overlay = tileOverlayOptions.build()
+            return addTileOverlay(overlay)
+        }
+
+        /**
+         * Adds a tile overlay to the map directly (Kotlin style).
+         *
+         * @param tileOverlay The tile overlay to add
+         * @return The added TileOverlay instance
+         */
+        fun addTileOverlay(tileOverlay: TileOverlay): TileOverlay {
+            val result = controller.addTileOverlay(tileOverlay)
+            invalidate()
+            return result
+        }
+
+        /**
+         * Removes a tile overlay from the map.
+         *
+         * @param tileOverlay The tile overlay to remove
+         * @return true if the overlay was found and removed, false otherwise
+         */
+        fun removeTileOverlay(tileOverlay: TileOverlay): Boolean {
+            val result = controller.removeTileOverlay(tileOverlay)
+            if (result) invalidate()
+            return result
+        }
+
+        /**
+         * Removes all tile overlays from the map.
+         */
+        fun clearTileOverlays() {
+            controller.clearTileOverlays()
+            invalidate()
+        }
+
+        /**
+         * Returns a list of all tile overlays currently on the map.
+         *
+         * @return A list copy of all tile overlays
+         */
+        fun getTileOverlays(): List<TileOverlay> = controller.getTileOverlays()
+
+        /**
+         * Removes all markers, polylines, polygons, circles, and tile overlays from the map.
+         *
+         * This is equivalent to calling clearMarkers(), clearPolylines(), clearPolygons(),
+         * clearCircles(), and clearTileOverlays().
          */
         fun clear() {
             clearMarkers()
             clearPolylines()
             clearPolygons()
             clearCircles()
+            clearTileOverlays()
         }
 
         /**
