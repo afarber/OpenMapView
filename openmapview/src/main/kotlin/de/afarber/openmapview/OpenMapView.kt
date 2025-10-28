@@ -250,6 +250,15 @@ class OpenMapView
                                 return true
                             }
 
+                            // Check for circle touch
+                            val touchedCircle = controller.handleCircleTouch(event.x, event.y)
+                            if (touchedCircle != null) {
+                                controller.onCircleClickListener?.onCircleClick(touchedCircle)
+                                controller.commitPan()
+                                invalidate()
+                                return true
+                            }
+
                             // Fire map click event if nothing else was clicked
                             // Hide all info windows when clicking on empty map area
                             controller.getMarkers().forEach { it.hideInfoWindow() }
@@ -610,6 +619,17 @@ class OpenMapView
         }
 
         /**
+         * Sets a listener to handle circle click events.
+         *
+         * Called when the user taps on a clickable circle on the map.
+         *
+         * @param listener Callback invoked when a circle is clicked, or null to remove
+         */
+        fun setOnCircleClickListener(listener: OnCircleClickListener?) {
+            controller.onCircleClickListener = listener
+        }
+
+        /**
          * Sets a listener to handle map click events.
          *
          * Called when the user taps on the map (not on a marker or other overlay).
@@ -768,14 +788,55 @@ class OpenMapView
         fun getPolygons(): List<Polygon> = controller.getPolygons()
 
         /**
-         * Removes all markers, polylines, and polygons from the map.
+         * Adds a circle to the map using CircleOptions.
          *
-         * This is equivalent to calling clearMarkers(), clearPolylines(), and clearPolygons().
+         * @param circleOptions Configuration for the circle
+         * @return The created Circle instance
+         */
+        fun addCircle(circleOptions: CircleOptions): Circle {
+            val circle = circleOptions.build()
+            val result = controller.addCircle(circle)
+            invalidate()
+            return result
+        }
+
+        /**
+         * Removes a circle from the map.
+         *
+         * @param circle The circle to remove
+         * @return true if the circle was found and removed, false otherwise
+         */
+        fun removeCircle(circle: Circle): Boolean {
+            val result = controller.removeCircle(circle)
+            if (result) invalidate()
+            return result
+        }
+
+        /**
+         * Removes all circles from the map.
+         */
+        fun clearCircles() {
+            controller.clearCircles()
+            invalidate()
+        }
+
+        /**
+         * Returns a list of all circles currently on the map.
+         *
+         * @return A list copy of all circles
+         */
+        fun getCircles(): List<Circle> = controller.getCircles()
+
+        /**
+         * Removes all markers, polylines, polygons, and circles from the map.
+         *
+         * This is equivalent to calling clearMarkers(), clearPolylines(), clearPolygons(), and clearCircles().
          */
         fun clear() {
             clearMarkers()
             clearPolylines()
             clearPolygons()
+            clearCircles()
         }
 
         /**

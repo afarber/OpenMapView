@@ -14,7 +14,7 @@ Add to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("de.afarber:openmapview:0.3.0")
+    implementation("de.afarber:openmapview:0.5.0")
 }
 ```
 
@@ -46,6 +46,7 @@ Explore the example applications to see OpenMapView in action:
 - [Example05Camera](examples/Example05Camera) - Camera animations with callbacks
 - [Example06Clicks](examples/Example06Clicks) - Map click and long-click listeners
 - [Example07DraggableMarkers](examples/Example07DraggableMarkers) - Draggable markers with drag event listeners
+- [Example08Circles](examples/Example08Circles) - Circles with various radii, styling, and z-index ordering
 
 ![Example05Camera Demo](examples/Example05Camera/screenshot.gif)
 

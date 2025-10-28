@@ -55,6 +55,9 @@ jobs:
       - name: Build Example07DraggableMarkers
         run: ./gradlew :examples:Example07DraggableMarkers:assembleDebug
 
+      - name: Build Example08Circles
+        run: ./gradlew :examples:Example08Circles:assembleDebug
+
       - name: Upload example APKs
         uses: actions/upload-artifact@v4
         with:

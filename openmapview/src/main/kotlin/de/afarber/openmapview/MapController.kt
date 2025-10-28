@@ -56,6 +56,7 @@ class MapController(
 
     private val polylines = mutableListOf<Polyline>()
     private val polygons = mutableListOf<Polygon>()
+    private val circles = mutableListOf<Circle>()
 
     private var animationJob: Job? = null
     private var animationListener: OnCameraAnimationListener? = null
@@ -605,9 +606,10 @@ class MapController(
             lastDrawnTiles = visibleTiles.toMutableSet()
         }
 
-        // Draw shapes in zIndex order: polygons first, then polylines, then markers
+        // Draw shapes in zIndex order: polygons first, then circles, then polylines, then markers
         // Within each type, sort by zIndex (lower zIndex drawn first, higher on top)
         val sortedPolygons = polygons.sortedBy { it.zIndex }
+        val sortedCircles = circles.sortedBy { it.zIndex }
         val sortedPolylines = polylines.sortedBy { it.zIndex }
         val sortedMarkers = markers.sortedBy { it.zIndex }
 
@@ -616,12 +618,14 @@ class MapController(
             (
                 sortedPolygons.map {
                     it.zIndex
-                } + sortedPolylines.map { it.zIndex } + sortedMarkers.map { it.zIndex }
+                } + sortedCircles.map { it.zIndex } + sortedPolylines.map { it.zIndex } + sortedMarkers.map { it.zIndex }
             ).distinct().sorted()
 
         for (z in allZIndices) {
             // Draw polygons at this zIndex
             drawPolygonsByZIndex(canvas, centerPixelX, centerPixelY, z, sortedPolygons)
+            // Draw circles at this zIndex
+            drawCirclesByZIndex(canvas, centerPixelX, centerPixelY, z, sortedCircles)
             // Draw polylines at this zIndex
             drawPolylinesByZIndex(canvas, centerPixelX, centerPixelY, z, sortedPolylines)
             // Draw markers at this zIndex
@@ -764,6 +768,59 @@ class MapController(
         }
     }
 
+    private fun drawCircles(
+        canvas: Canvas,
+        centerPixelX: Double,
+        centerPixelY: Double,
+    ) {
+        val fillPaint = Paint()
+        fillPaint.style = Paint.Style.FILL
+        fillPaint.isAntiAlias = true
+
+        val strokePaint = Paint()
+        strokePaint.style = Paint.Style.STROKE
+        strokePaint.strokeCap = Paint.Cap.ROUND
+        strokePaint.isAntiAlias = true
+
+        for (circle in circles) {
+            if (!circle.visible || circle.radius <= 0) continue
+
+            fillPaint.color = circle.fillColor
+            strokePaint.color = circle.strokeColor
+            strokePaint.strokeWidth = circle.strokeWidth
+
+            // Convert center to screen coordinates
+            val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(circle.center, zoom.toInt())
+            val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+            // Convert radius from meters to pixels
+            val radiusInPixels = metersToPixels(circle.radius, circle.center.latitude, zoom)
+
+            // Draw fill first, then stroke
+            canvas.drawCircle(screenX, screenY, radiusInPixels, fillPaint)
+            canvas.drawCircle(screenX, screenY, radiusInPixels, strokePaint)
+        }
+    }
+
+    /**
+     * Converts a distance in meters to screen pixels at a given latitude and zoom level.
+     * Uses the Mercator projection formula.
+     *
+     * @param meters Distance in meters
+     * @param latitude Latitude at which to calculate (affects scale in Mercator projection)
+     * @param zoom Current zoom level
+     * @return Distance in screen pixels
+     */
+    private fun metersToPixels(
+        meters: Float,
+        latitude: Double,
+        zoom: Double,
+    ): Float {
+        val metersPerPixel = 156543.03392 * Math.cos(Math.toRadians(latitude)) / Math.pow(2.0, zoom)
+        return (meters / metersPerPixel).toFloat()
+    }
+
     private fun drawMarkers(
         canvas: Canvas,
         centerPixelX: Double,
@@ -903,6 +960,40 @@ class MapController(
             }
 
             canvas.drawPath(path, paint)
+        }
+    }
+
+    private fun drawCirclesByZIndex(
+        canvas: Canvas,
+        centerPixelX: Double,
+        centerPixelY: Double,
+        zIndex: Float,
+        sortedCircles: List<Circle>,
+    ) {
+        val fillPaint = Paint()
+        fillPaint.style = Paint.Style.FILL
+        fillPaint.isAntiAlias = true
+
+        val strokePaint = Paint()
+        strokePaint.style = Paint.Style.STROKE
+        strokePaint.strokeCap = Paint.Cap.ROUND
+        strokePaint.isAntiAlias = true
+
+        for (circle in sortedCircles) {
+            if (circle.zIndex != zIndex || !circle.visible || circle.radius <= 0) continue
+
+            fillPaint.color = circle.fillColor
+            strokePaint.color = circle.strokeColor
+            strokePaint.strokeWidth = circle.strokeWidth
+
+            val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(circle.center, zoom.toInt())
+            val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+            val radiusInPixels = metersToPixels(circle.radius, circle.center.latitude, zoom)
+
+            canvas.drawCircle(screenX, screenY, radiusInPixels, fillPaint)
+            canvas.drawCircle(screenX, screenY, radiusInPixels, strokePaint)
         }
     }
 
@@ -1158,6 +1249,39 @@ class MapController(
     fun getPolygons(): List<Polygon> = polygons.toList()
 
     /**
+     * Adds a circle to the map.
+     *
+     * @param circle The circle to add
+     * @return The added circle instance
+     */
+    fun addCircle(circle: Circle): Circle {
+        circles.add(circle)
+        return circle
+    }
+
+    /**
+     * Removes a circle from the map.
+     *
+     * @param circle The circle to remove
+     * @return true if removed, false if not found
+     */
+    fun removeCircle(circle: Circle): Boolean = circles.remove(circle)
+
+    /**
+     * Removes all circles from the map.
+     */
+    fun clearCircles() {
+        circles.clear()
+    }
+
+    /**
+     * Returns a copy of all circles on the map.
+     *
+     * @return A list of all circles
+     */
+    fun getCircles(): List<Circle> = circles.toList()
+
+    /**
      * Parses GeoJSON and adds all features to the map.
      *
      * @param geoJsonString The GeoJSON string to parse
@@ -1288,6 +1412,7 @@ class MapController(
 
     var onPolylineClickListener: OnPolylineClickListener? = null
     var onPolygonClickListener: OnPolygonClickListener? = null
+    var onCircleClickListener: OnCircleClickListener? = null
 
     /**
      * Checks if a touch at screen coordinates hits a clickable polyline.
@@ -1381,6 +1506,47 @@ class MapController(
                 if (!inHole) {
                     return polygon
                 }
+            }
+        }
+        return null
+    }
+
+    /**
+     * Checks if a touch at screen coordinates hits a clickable circle.
+     *
+     * Detects circle hits by calculating the distance from the touch point to the circle center.
+     * Returns the topmost (highest zIndex) circle that was touched.
+     *
+     * @param x Screen X coordinate in pixels
+     * @param y Screen Y coordinate in pixels
+     * @return The touched circle, or null if none was hit
+     */
+    fun handleCircleTouch(
+        x: Float,
+        y: Float,
+    ): Circle? {
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+
+        // Check circles in reverse order (top to bottom) for correct z-ordering
+        for (circle in circles.reversed()) {
+            if (!circle.clickable) continue
+
+            // Convert circle center to screen coordinates
+            val (px, py) = ProjectionUtils.latLngToPixel(circle.center, zoom.toInt())
+            val sx = (px - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val sy = (py - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+            // Convert radius from meters to pixels
+            val radiusInPixels = metersToPixels(circle.radius, circle.center.latitude, zoom)
+
+            // Calculate distance from touch point to circle center
+            val dx = x - sx
+            val dy = y - sy
+            val distance = kotlin.math.sqrt(dx * dx + dy * dy)
+
+            // Check if touch is within the circle (including stroke width)
+            if (distance <= radiusInPixels + circle.strokeWidth / 2) {
+                return circle
             }
         }
         return null
