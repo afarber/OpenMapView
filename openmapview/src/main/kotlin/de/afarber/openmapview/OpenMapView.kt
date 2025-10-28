@@ -259,6 +259,15 @@ class OpenMapView
                                 return true
                             }
 
+                            // Check for ground overlay touch
+                            val touchedGroundOverlay = controller.handleGroundOverlayTouch(event.x, event.y)
+                            if (touchedGroundOverlay != null) {
+                                controller.onGroundOverlayClickListener?.onGroundOverlayClick(touchedGroundOverlay)
+                                controller.commitPan()
+                                invalidate()
+                                return true
+                            }
+
                             // Fire map click event if nothing else was clicked
                             // Hide all info windows when clicking on empty map area
                             controller.getMarkers().forEach { it.hideInfoWindow() }
@@ -668,6 +677,17 @@ class OpenMapView
         }
 
         /**
+         * Sets a listener to handle ground overlay click events.
+         *
+         * Called when the user taps on a clickable ground overlay on the map.
+         *
+         * @param listener Callback invoked when a ground overlay is clicked, or null to remove
+         */
+        fun setOnGroundOverlayClickListener(listener: OnGroundOverlayClickListener?) {
+            controller.onGroundOverlayClickListener = listener
+        }
+
+        /**
          * Sets a listener to handle map click events.
          *
          * Called when the user taps on the map (not on a marker or other overlay).
@@ -939,6 +959,57 @@ class OpenMapView
          * @return A list copy of all circles
          */
         fun getCircles(): List<Circle> = controller.getCircles()
+
+        /**
+         * Adds a ground overlay to the map using GroundOverlayOptions builder pattern.
+         *
+         * @param groundOverlayOptions Builder containing overlay configuration
+         * @return The created GroundOverlay instance
+         * @throws IllegalArgumentException if image or position/bounds is not set
+         */
+        fun addGroundOverlay(groundOverlayOptions: GroundOverlayOptions): GroundOverlay {
+            val overlay = groundOverlayOptions.build()
+            return addGroundOverlay(overlay)
+        }
+
+        /**
+         * Adds a ground overlay to the map directly (Kotlin style).
+         *
+         * @param groundOverlay The ground overlay to add
+         * @return The added GroundOverlay instance
+         */
+        fun addGroundOverlay(groundOverlay: GroundOverlay): GroundOverlay {
+            val result = controller.addGroundOverlay(groundOverlay)
+            invalidate()
+            return result
+        }
+
+        /**
+         * Removes a ground overlay from the map.
+         *
+         * @param groundOverlay The ground overlay to remove
+         * @return true if the overlay was found and removed, false otherwise
+         */
+        fun removeGroundOverlay(groundOverlay: GroundOverlay): Boolean {
+            val result = controller.removeGroundOverlay(groundOverlay)
+            if (result) invalidate()
+            return result
+        }
+
+        /**
+         * Removes all ground overlays from the map.
+         */
+        fun clearGroundOverlays() {
+            controller.clearGroundOverlays()
+            invalidate()
+        }
+
+        /**
+         * Returns a list of all ground overlays currently on the map.
+         *
+         * @return A list copy of all ground overlays
+         */
+        fun getGroundOverlays(): List<GroundOverlay> = controller.getGroundOverlays()
 
         /**
          * Adds a tile overlay to the map using TileOverlayOptions builder pattern.

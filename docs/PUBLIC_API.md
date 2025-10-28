@@ -57,13 +57,13 @@ Methods that must be forwarded from the parent Activity/Fragment.
 
 ## GoogleMap Class - Shapes & Overlays
 
-| Method                                   | Return Type     | Status          | Notes                                                       |
-| ---------------------------------------- | --------------- | --------------- | ----------------------------------------------------------- |
-| `addPolyline(PolylineOptions)`           | `Polyline`      | IMPLEMENTED     | Supports points, stroke color/width, visible, clickable, tag |
-| `addPolygon(PolygonOptions)`             | `Polygon`       | IMPLEMENTED     | Supports points, holes, colors, visible, clickable, tag     |
-| `addCircle(CircleOptions)`               | `Circle`        | IMPLEMENTED     | Supports center, radius, stroke/fill colors, z-index, visible, clickable, tag |
-| `addGroundOverlay(GroundOverlayOptions)` | `GroundOverlay` | NOT IMPLEMENTED | Planned for future release                                  |
-| `addTileOverlay(TileOverlayOptions)`     | `TileOverlay`   | IMPLEMENTED     | Supports tileProvider, transparency, zIndex, visible, fadeIn, tag. Includes predefined providers for public OSM services |
+| Method                                   | Return Type     | Status      | Notes                                                       |
+| ---------------------------------------- | --------------- | ----------- | ----------------------------------------------------------- |
+| `addPolyline(PolylineOptions)`           | `Polyline`      | IMPLEMENTED | Supports points, stroke color/width, visible, clickable, tag |
+| `addPolygon(PolygonOptions)`             | `Polygon`       | IMPLEMENTED | Supports points, holes, colors, visible, clickable, tag     |
+| `addCircle(CircleOptions)`               | `Circle`        | IMPLEMENTED | Supports center, radius, stroke/fill colors, z-index, visible, clickable, tag |
+| `addGroundOverlay(GroundOverlayOptions)` | `GroundOverlay` | IMPLEMENTED | Supports image, position/bounds modes, bearing, transparency, anchor, z-index, visible, clickable, tag |
+| `addTileOverlay(TileOverlayOptions)`     | `TileOverlay`   | IMPLEMENTED | Supports tileProvider, transparency, zIndex, visible, fadeIn, tag. Includes predefined providers for public OSM services |
 
 ---
 
@@ -160,8 +160,8 @@ Methods that must be forwarded from the parent Activity/Fragment.
 | `setOnMarkerDragListener(OnMarkerDragListener)`                       | `void`           | IMPLEMENTED     | Full drag support with start/drag/end callbacks      |
 | `setOnPolylineClickListener(OnPolylineClickListener)`                 | `void`           | IMPLEMENTED     | Point-to-line distance hit testing with tolerance    |
 | `setOnPolygonClickListener(OnPolygonClickListener)`                   | `void`           | IMPLEMENTED     | Ray casting algorithm with hole support              |
-| `setOnCircleClickListener(OnCircleClickListener)`                     | `void`           | NOT IMPLEMENTED | Not applicable                                       |
-| `setOnGroundOverlayClickListener(OnGroundOverlayClickListener)`       | `void`           | NOT IMPLEMENTED | Not applicable                                       |
+| `setOnCircleClickListener(OnCircleClickListener)`                     | `void`           | IMPLEMENTED     | Distance-based hit testing with stroke width         |
+| `setOnGroundOverlayClickListener(OnGroundOverlayClickListener)`       | `void`           | IMPLEMENTED     | Rectangle hit testing with rotation support          |
 | `setOnPoiClickListener(OnPoiClickListener)`                           | `void`           | NOT PLANNED     | POI data not available in OSM tiles                  |
 | `setOnCameraMoveStartedListener(OnCameraMoveStartedListener)`         | `void`           | IMPLEMENTED     | Tracks gesture, API, and developer-initiated moves   |
 | `setOnCameraMoveListener(OnCameraMoveListener)`                       | `void`           | IMPLEMENTED     | Called repeatedly during camera movement             |
@@ -226,16 +226,18 @@ This method is an OpenMapView-specific feature not present in Google Maps API.
 
 **Implementation Status:**
 
-- IMPLEMENTED: 62 methods (68.1%)
+- IMPLEMENTED: 65 methods (71.4%)
 - PARTIAL: 2 methods (2.2%)
-- NOT IMPLEMENTED: 1 method (1.1%)
-- NOT PLANNED: 26 methods (28.6%)
+- NOT IMPLEMENTED: 0 methods (0%)
+- NOT PLANNED: 24 methods (26.4%)
 
 **Core Functionality Coverage:**
 
 - Camera control: 100% (animateCamera, moveCamera, stopAnimation, getCameraPosition)
 - Markers: 100% (addMarker, click listener, drag support, visibility, alpha)
-- Vector shapes: 100% (polylines, polygons with holes, visibility)
+- Vector shapes: 100% (polylines, polygons with holes, circles, visibility)
+- Ground overlays: 100% (position/bounds modes, bearing, transparency, click listener)
+- Tile overlays: 100% (custom tile providers, transparency, z-index, visibility)
 - Map interaction: 100% (click listeners, long-click, projection API)
 - Zoom control: 100% (min/max zoom preferences, getZoom)
 - Lifecycle management: 75% (onResume, onPause, onDestroy)

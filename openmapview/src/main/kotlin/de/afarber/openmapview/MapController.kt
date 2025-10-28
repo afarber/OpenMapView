@@ -57,6 +57,7 @@ class MapController(
     private val polylines = mutableListOf<Polyline>()
     private val polygons = mutableListOf<Polygon>()
     private val circles = mutableListOf<Circle>()
+    private val groundOverlays = mutableListOf<GroundOverlay>()
     private val tileOverlays = mutableListOf<TileOverlay>()
     private val overlayTileCaches = mutableMapOf<String, TileCache>()
     private val overlayDownloadingTiles = mutableMapOf<String, MutableSet<TileCoordinate>>()
@@ -623,6 +624,12 @@ class MapController(
             lastDrawnTiles = visibleTiles.toMutableSet()
         }
 
+        // Draw ground overlays (after tile overlays, before shapes)
+        val sortedGroundOverlays = groundOverlays.filter { it.visible }.sortedBy { it.zIndex }
+        for (groundOverlay in sortedGroundOverlays) {
+            drawGroundOverlay(canvas, centerPixelX, centerPixelY, groundOverlay)
+        }
+
         // Draw shapes in zIndex order: polygons first, then circles, then polylines, then markers
         // Within each type, sort by zIndex (lower zIndex drawn first, higher on top)
         val sortedPolygons = polygons.sortedBy { it.zIndex }
@@ -874,6 +881,86 @@ class MapController(
             // Draw the marker
             canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
         }
+    }
+
+    private fun drawGroundOverlay(
+        canvas: Canvas,
+        centerPixelX: Double,
+        centerPixelY: Double,
+        groundOverlay: GroundOverlay,
+    ) {
+        val bitmap = loadBitmap(groundOverlay.image)
+
+        val paint =
+            Paint().apply {
+                alpha = ((1f - groundOverlay.transparency) * 255).toInt()
+            }
+
+        canvas.save()
+
+        if (groundOverlay.bounds != null) {
+            val bounds = groundOverlay.bounds
+            val (nwPixelX, nwPixelY) =
+                ProjectionUtils.latLngToPixel(
+                    LatLng(bounds.northeast.latitude, bounds.southwest.longitude),
+                    zoom.toInt(),
+                )
+            val (sePixelX, sePixelY) =
+                ProjectionUtils.latLngToPixel(
+                    LatLng(bounds.southwest.latitude, bounds.northeast.longitude),
+                    zoom.toInt(),
+                )
+
+            val left = (nwPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val top = (nwPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+            val right = (sePixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val bottom = (sePixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+            val centerX = (left + right) / 2
+            val centerY = (top + bottom) / 2
+            val anchorX = left + (right - left) * groundOverlay.anchor.first
+            val anchorY = top + (bottom - top) * groundOverlay.anchor.second
+
+            if (groundOverlay.bearing != 0f) {
+                canvas.rotate(groundOverlay.bearing, anchorX, anchorY)
+            }
+
+            val destRect = android.graphics.RectF(left, top, right, bottom)
+            canvas.drawBitmap(bitmap, null, destRect, paint)
+        } else if (groundOverlay.position != null && groundOverlay.width != null) {
+            val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(groundOverlay.position, zoom.toInt())
+
+            val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(groundOverlay.position.latitude, zoom.toInt())
+            val widthPixels = groundOverlay.width / metersPerPixel
+
+            val heightPixels =
+                if (groundOverlay.height != null) {
+                    groundOverlay.height / metersPerPixel
+                } else {
+                    val aspectRatio = bitmap.height.toFloat() / bitmap.width.toFloat()
+                    widthPixels * aspectRatio
+                }
+
+            val centerX = (posPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+            val centerY = (posPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+            val left = (centerX - widthPixels / 2).toFloat()
+            val top = (centerY - heightPixels / 2).toFloat()
+            val right = (centerX + widthPixels / 2).toFloat()
+            val bottom = (centerY + heightPixels / 2).toFloat()
+
+            val anchorX = left + (right - left) * groundOverlay.anchor.first
+            val anchorY = top + (bottom - top) * groundOverlay.anchor.second
+
+            if (groundOverlay.bearing != 0f) {
+                canvas.rotate(groundOverlay.bearing, anchorX, anchorY)
+            }
+
+            val destRect = android.graphics.RectF(left, top, right, bottom)
+            canvas.drawBitmap(bitmap, null, destRect, paint)
+        }
+
+        canvas.restore()
     }
 
     private fun drawPolygonsByZIndex(
@@ -1385,6 +1472,39 @@ class MapController(
     fun getCircles(): List<Circle> = circles.toList()
 
     /**
+     * Adds a ground overlay to the map.
+     *
+     * @param groundOverlay The ground overlay to add
+     * @return The added ground overlay instance
+     */
+    fun addGroundOverlay(groundOverlay: GroundOverlay): GroundOverlay {
+        groundOverlays.add(groundOverlay)
+        return groundOverlay
+    }
+
+    /**
+     * Removes a ground overlay from the map.
+     *
+     * @param groundOverlay The ground overlay to remove
+     * @return true if removed, false if not found
+     */
+    fun removeGroundOverlay(groundOverlay: GroundOverlay): Boolean = groundOverlays.remove(groundOverlay)
+
+    /**
+     * Removes all ground overlays from the map.
+     */
+    fun clearGroundOverlays() {
+        groundOverlays.clear()
+    }
+
+    /**
+     * Returns a copy of all ground overlays on the map.
+     *
+     * @return A list of all ground overlays
+     */
+    fun getGroundOverlays(): List<GroundOverlay> = groundOverlays.toList()
+
+    /**
      * Adds a tile overlay to the map.
      *
      * @param tileOverlay The tile overlay to add
@@ -1560,6 +1680,7 @@ class MapController(
     var onPolylineClickListener: OnPolylineClickListener? = null
     var onPolygonClickListener: OnPolygonClickListener? = null
     var onCircleClickListener: OnCircleClickListener? = null
+    var onGroundOverlayClickListener: OnGroundOverlayClickListener? = null
 
     /**
      * Checks if a touch at screen coordinates hits a clickable polyline.
@@ -1697,6 +1818,112 @@ class MapController(
             }
         }
         return null
+    }
+
+    fun handleGroundOverlayTouch(
+        x: Float,
+        y: Float,
+    ): GroundOverlay? {
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+
+        for (groundOverlay in groundOverlays.reversed()) {
+            if (!groundOverlay.clickable) continue
+
+            if (groundOverlay.bounds != null) {
+                val bounds = groundOverlay.bounds
+                val (nwPixelX, nwPixelY) =
+                    ProjectionUtils.latLngToPixel(
+                        LatLng(bounds.northeast.latitude, bounds.southwest.longitude),
+                        zoom.toInt(),
+                    )
+                val (sePixelX, sePixelY) =
+                    ProjectionUtils.latLngToPixel(
+                        LatLng(bounds.southwest.latitude, bounds.northeast.longitude),
+                        zoom.toInt(),
+                    )
+
+                val left = (nwPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val top = (nwPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+                val right = (sePixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val bottom = (sePixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                if (groundOverlay.bearing != 0f) {
+                    val anchorX = left + (right - left) * groundOverlay.anchor.first
+                    val anchorY = top + (bottom - top) * groundOverlay.anchor.second
+                    val rotatedPoint = rotatePointAround(x, y, anchorX, anchorY, -groundOverlay.bearing)
+                    if (rotatedPoint.first >= left &&
+                        rotatedPoint.first <= right &&
+                        rotatedPoint.second >= top &&
+                        rotatedPoint.second <= bottom
+                    ) {
+                        return groundOverlay
+                    }
+                } else {
+                    if (x >= left && x <= right && y >= top && y <= bottom) {
+                        return groundOverlay
+                    }
+                }
+            } else if (groundOverlay.position != null && groundOverlay.width != null) {
+                val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(groundOverlay.position, zoom.toInt())
+                val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(groundOverlay.position.latitude, zoom.toInt())
+                val widthPixels = groundOverlay.width / metersPerPixel
+
+                val bitmap = loadBitmap(groundOverlay.image)
+                val heightPixels =
+                    if (groundOverlay.height != null) {
+                        groundOverlay.height / metersPerPixel
+                    } else {
+                        val aspectRatio = bitmap.height.toFloat() / bitmap.width.toFloat()
+                        widthPixels * aspectRatio
+                    }
+
+                val centerX = (posPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val centerY = (posPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                val left = (centerX - widthPixels / 2).toFloat()
+                val top = (centerY - heightPixels / 2).toFloat()
+                val right = (centerX + widthPixels / 2).toFloat()
+                val bottom = (centerY + heightPixels / 2).toFloat()
+
+                if (groundOverlay.bearing != 0f) {
+                    val anchorX = left + (right - left) * groundOverlay.anchor.first
+                    val anchorY = top + (bottom - top) * groundOverlay.anchor.second
+                    val rotatedPoint = rotatePointAround(x, y, anchorX, anchorY, -groundOverlay.bearing)
+                    if (rotatedPoint.first >= left &&
+                        rotatedPoint.first <= right &&
+                        rotatedPoint.second >= top &&
+                        rotatedPoint.second <= bottom
+                    ) {
+                        return groundOverlay
+                    }
+                } else {
+                    if (x >= left && x <= right && y >= top && y <= bottom) {
+                        return groundOverlay
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    private fun rotatePointAround(
+        x: Float,
+        y: Float,
+        centerX: Float,
+        centerY: Float,
+        angleDegrees: Float,
+    ): Pair<Float, Float> {
+        val angleRadians = Math.toRadians(angleDegrees.toDouble())
+        val cos = kotlin.math.cos(angleRadians).toFloat()
+        val sin = kotlin.math.sin(angleRadians).toFloat()
+
+        val dx = x - centerX
+        val dy = y - centerY
+
+        val rotatedX = dx * cos - dy * sin + centerX
+        val rotatedY = dx * sin + dy * cos + centerY
+
+        return Pair(rotatedX, rotatedY)
     }
 
     /**

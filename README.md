@@ -48,6 +48,7 @@ Explore the example applications to see OpenMapView in action:
 - [Example07DraggableMarkers](examples/Example07DraggableMarkers) - Draggable markers with drag event listeners
 - [Example08Circles](examples/Example08Circles) - Circles with various radii, styling, and z-index ordering
 - [Example09Overlays](examples/Example09Overlays) - Tile overlays with transparency control (OpenSeaMap, OpenRailwayMap, Hiking Trails, OpenSnowMap)
+- [Example10GroundOverlays](examples/Example10GroundOverlays) - Ground overlays with position/bounds modes, rotation, and transparency
 
 ![Example05Camera Demo](examples/Example05Camera/screenshot.gif)
 

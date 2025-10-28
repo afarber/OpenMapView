@@ -69,4 +69,22 @@ internal object ProjectionUtils {
         val yPixel = (1.0 - ln(tan(latRad) + 1.0 / cos(latRad)) / PI) / 2.0 * n * TILE_SIZE
         return Pair(xPixel, yPixel)
     }
+
+    /**
+     * Calculates meters per pixel at a given latitude and zoom level.
+     * Uses Web Mercator projection where scale varies with latitude.
+     *
+     * @param latitude The latitude in degrees
+     * @param zoom The zoom level
+     * @return Meters per pixel at this latitude and zoom
+     */
+    fun metersPerPixelAtLatitude(
+        latitude: Double,
+        zoom: Int,
+    ): Double {
+        val earthCircumference = 40075017.0
+        val latitudeRadians = Math.toRadians(latitude)
+        val pixelsAtZoom = TILE_SIZE * 2.0.pow(zoom)
+        return earthCircumference * cos(latitudeRadians) / pixelsAtZoom
+    }
 }
