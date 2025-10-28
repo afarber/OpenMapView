@@ -123,12 +123,12 @@ class MapControllerInstrumentationTest {
         val redMarker =
             Marker(
                 LatLng(51.4661, 7.2491),
-                icon = MarkerIconFactory.getDefaultIcon(BitmapDescriptorFactory.HUE_RED),
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
             )
         val blueMarker =
             Marker(
                 LatLng(51.47, 7.25),
-                icon = MarkerIconFactory.getDefaultIcon(BitmapDescriptorFactory.HUE_BLUE),
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE),
             )
 
         controller.addMarker(redMarker)

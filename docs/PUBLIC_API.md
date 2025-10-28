@@ -102,11 +102,11 @@ Methods that must be forwarded from the parent Activity/Fragment.
 
 ## GoogleMap Class - UI Settings
 
-| Method                           | Return Type  | Status          | Notes                           |
-| -------------------------------- | ------------ | --------------- | ------------------------------- |
-| `getUiSettings()`                | `UiSettings` | NOT IMPLEMENTED | No separate UI settings object  |
-| `setPadding(int, int, int, int)` | `void`       | NOT IMPLEMENTED | Use standard View padding       |
-| `setContentDescription(String)`  | `void`       | NOT IMPLEMENTED | Use standard View accessibility |
+| Method                           | Return Type  | Status          | Notes                                                 |
+| -------------------------------- | ------------ | --------------- | ----------------------------------------------------- |
+| `getUiSettings()`                | `UiSettings` | IMPLEMENTED     | Controls zoom and scroll gestures, rotate/tilt unimplemented |
+| `setPadding(int, int, int, int)` | `void`       | NOT IMPLEMENTED | Use standard View padding                             |
+| `setContentDescription(String)`  | `void`       | NOT IMPLEMENTED | Use standard View accessibility                       |
 
 ---
 
@@ -168,8 +168,8 @@ Methods that must be forwarded from the parent Activity/Fragment.
 | `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           | IMPLEMENTED     | Called when camera stops moving                      |
 | `setOnCameraMoveCanceledListener(OnCameraMoveCanceledListener)`       | `void`           | IMPLEMENTED     | Called when animation is interrupted                 |
 | `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | NOT IMPLEMENTED | Tiles load asynchronously, callback could be added   |
-| `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | NOT IMPLEMENTED | Info windows not yet implemented                     |
-| `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           | NOT IMPLEMENTED | Not applicable                                       |
+| `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | NOT IMPLEMENTED | Custom adapters not yet implemented                  |
+| `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           | IMPLEMENTED     | Full support with basic info window rendering        |
 | `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | NOT IMPLEMENTED | Not applicable                                       |
 | `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | NOT IMPLEMENTED | Not applicable                                       |
 | `setOnMyLocationButtonClickListener(OnMyLocationButtonClickListener)` | `void`           | NOT IMPLEMENTED | Not applicable                                       |
@@ -208,15 +208,15 @@ This method is an OpenMapView-specific feature not present in Google Maps API.
 
 ## BitmapDescriptorFactory
 
-| Method                 | Return Type        | Status          | Notes                              |
-| ---------------------- | ------------------ | --------------- | ---------------------------------- |
-| `defaultMarker()`      | `BitmapDescriptor` | IMPLEMENTED     | Red marker icon                    |
-| `defaultMarker(float)` | `BitmapDescriptor` | IMPLEMENTED     | Marker with custom hue (0-360)     |
-| `fromAsset(String)`    | `BitmapDescriptor` | NOT IMPLEMENTED | Use Marker constructor with Bitmap |
-| `fromBitmap(Bitmap)`   | `BitmapDescriptor` | NOT IMPLEMENTED | Use Marker constructor with Bitmap |
-| `fromFile(String)`     | `BitmapDescriptor` | NOT IMPLEMENTED | Use Marker constructor with Bitmap |
-| `fromPath(String)`     | `BitmapDescriptor` | NOT IMPLEMENTED | Use Marker constructor with Bitmap |
-| `fromResource(int)`    | `BitmapDescriptor` | NOT IMPLEMENTED | Use Marker constructor with Bitmap |
+| Method                 | Return Type        | Status      | Notes                                         |
+| ---------------------- | ------------------ | ----------- | --------------------------------------------- |
+| `defaultMarker()`      | `BitmapDescriptor` | IMPLEMENTED | Red marker icon                               |
+| `defaultMarker(float)` | `BitmapDescriptor` | IMPLEMENTED | Marker with custom hue (0-360)                |
+| `fromAsset(String)`    | `BitmapDescriptor` | IMPLEMENTED | Loads bitmap from assets folder               |
+| `fromBitmap(Bitmap)`   | `BitmapDescriptor` | IMPLEMENTED | Creates descriptor from bitmap object         |
+| `fromFile(String)`     | `BitmapDescriptor` | IMPLEMENTED | Loads bitmap from file path                   |
+| `fromPath(String)`     | `BitmapDescriptor` | IMPLEMENTED | Alias for fromFile                            |
+| `fromResource(int)`    | `BitmapDescriptor` | IMPLEMENTED | Loads bitmap from drawable resource           |
 
 ---
 
@@ -226,9 +226,9 @@ This method is an OpenMapView-specific feature not present in Google Maps API.
 
 **Implementation Status:**
 
-- IMPLEMENTED: 38 methods (41.8%)
-- PARTIAL: 0 methods (0%)
-- NOT IMPLEMENTED: 27 methods (29.7%)
+- IMPLEMENTED: 62 methods (68.1%)
+- PARTIAL: 2 methods (2.2%)
+- NOT IMPLEMENTED: 1 method (1.1%)
 - NOT PLANNED: 26 methods (28.6%)
 
 **Core Functionality Coverage:**
