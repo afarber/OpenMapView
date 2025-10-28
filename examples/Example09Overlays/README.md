@@ -2,6 +2,8 @@
 
 This example demonstrates the tile overlay system in OpenMapView, showing how to add multiple tile layers on top of the base map from public OpenStreetMap services.
 
+![Example09Overlays Demo](screenshot.gif)
+
 ## Features Demonstrated
 
 - Multiple tile overlays from public OSM services

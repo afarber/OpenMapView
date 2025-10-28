@@ -47,6 +47,7 @@ Explore the example applications to see OpenMapView in action:
 - [Example06Clicks](examples/Example06Clicks) - Map click and long-click listeners
 - [Example07DraggableMarkers](examples/Example07DraggableMarkers) - Draggable markers with drag event listeners
 - [Example08Circles](examples/Example08Circles) - Circles with various radii, styling, and z-index ordering
+- [Example09Overlays](examples/Example09Overlays) - Tile overlays with transparency control (OpenSeaMap, OpenRailwayMap, Hiking Trails, OpenSnowMap)
 
 ![Example05Camera Demo](examples/Example05Camera/screenshot.gif)
 

@@ -1,9 +1,13 @@
 // Auto-detect version from Git tag (e.g., "v0.2.0" -> "0.2.0")
 fun getGitVersion(): String {
-    val process = Runtime.getRuntime().exec("git describe --tags --abbrev=0")
+    val process = ProcessBuilder("git", "describe", "--tags", "--abbrev=0")
+        .redirectOutput(ProcessBuilder.Redirect.PIPE)
+        .redirectError(ProcessBuilder.Redirect.PIPE)
+        .start()
+    process.waitFor()
     val output = process.inputStream.bufferedReader().readText().trim()
     val cleanVersion = output.removePrefix("v")
-    return if (cleanVersion.isNotEmpty()) cleanVersion else "0.0.1-SNAPSHOT"
+    return cleanVersion.ifEmpty { "0.0.1-SNAPSHOT" }
 }
 
 ext["libVersion"] = try {
@@ -14,13 +18,13 @@ ext["libVersion"] = try {
 }
 
 plugins {
-    id("com.android.library") version "8.13.0" apply false
-    id("com.android.application") version "8.13.0" apply false
-    id("org.jetbrains.kotlin.android") version "2.0.21" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" apply false
-    id("com.diffplug.spotless") version "6.25.0" apply false
+    id("com.android.library") version "8.11.1" apply false
+    id("com.android.application") version "8.11.1" apply false
+    id("org.jetbrains.kotlin.android") version "2.2.21" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.2.21" apply false
+    id("com.diffplug.spotless") version "8.0.0" apply false
     id("org.jetbrains.dokka") version "2.1.0" apply false
-    id("com.gradleup.nmcp.aggregation") version "0.1.2"
+    id("com.gradleup.nmcp.aggregation") version "1.2.0"
 }
 
 nmcpAggregation {

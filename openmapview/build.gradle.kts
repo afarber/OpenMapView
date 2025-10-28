@@ -27,8 +27,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
     }
 
     sourceSets {
@@ -48,6 +50,13 @@ android {
         debug {
             enableAndroidTestCoverage = true
             enableUnitTestCoverage = true
+        }
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
         }
     }
 }
@@ -84,7 +93,7 @@ spotless {
         ktlint("1.3.1")
         trimTrailingWhitespace()
         endWithNewline()
-        indentWithSpaces(4)
+        leadingTabsToSpaces(4)
         licenseHeaderFile(rootProject.file("spotless.license.kt"), "(package|import)")
     }
     kotlinGradle {
