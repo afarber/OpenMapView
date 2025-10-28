@@ -80,7 +80,7 @@ fun MapViewScreen() {
                         }
                     }
                 },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).fillMaxSize(),
             )
 
             Surface(
@@ -114,7 +114,7 @@ fun MapViewScreen() {
                         }
                     }
                 },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).fillMaxSize(),
             )
 
             Surface(

@@ -8,24 +8,25 @@
 package de.afarber.openmapview.example09overlays
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -41,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -69,7 +71,7 @@ data class OverlayState(
     val name: String,
     val overlay: TileOverlay,
     var isVisible: Boolean = false,
-    var transparency: Float = 0f,
+    var transparency: Float = 0.5f,
 )
 
 @Composable
@@ -118,7 +120,7 @@ fun MapViewScreen() {
         )
     }
 
-    var transparency by remember { mutableFloatStateOf(0f) }
+    var transparency by remember { mutableFloatStateOf(0.5f) }
     val bochumCenter = LatLng(51.4661, 7.2491)
 
     // Show initial instruction toast
@@ -177,104 +179,147 @@ fun MapViewScreen() {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            factory = { ctx ->
-                OpenMapView(ctx).apply {
-                    mapView = this
-                    lifecycleOwner.lifecycle.addObserver(this)
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-                    setCenter(bochumCenter)
-                    setZoom(12.0)
-
-                    // Set attribution click listener
-                    setOnAttributionClickListener {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
-                        context.startActivity(intent)
+    if (isLandscape) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            AndroidView(
+                factory = { ctx ->
+                    OpenMapView(ctx).apply {
+                        mapView = this
+                        lifecycleOwner.lifecycle.addObserver(this)
+                        setCenter(bochumCenter)
+                        setZoom(12.0)
+                        setOnAttributionClickListener {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
+                            context.startActivity(intent)
+                        }
                     }
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
+                },
+                modifier = Modifier.weight(1f).fillMaxSize(),
+            )
+
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier
+                    .width(250.dp)
+                    .fillMaxHeight(),
+            ) {
+                OverlayControls(
+                    overlays = overlays,
+                    transparency = transparency,
+                    onToggleOverlay = { index, enabled -> toggleOverlay(index, enabled) },
+                    onTransparencyChange = { newValue -> updateTransparency(newValue) },
+                    onClearAll = {
+                        mapView?.clearTileOverlays()
+                        overlays = overlays.map { state -> state.copy(isVisible = false) }
+                        transparency = 0.5f
+                        Toast.makeText(context, "All overlays cleared", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
+        }
+    } else {
+        Column(modifier = Modifier.fillMaxSize()) {
+            AndroidView(
+                factory = { ctx ->
+                    OpenMapView(ctx).apply {
+                        mapView = this
+                        lifecycleOwner.lifecycle.addObserver(this)
+                        setCenter(bochumCenter)
+                        setZoom(12.0)
+                        setOnAttributionClickListener {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
+                            context.startActivity(intent)
+                        }
+                    }
+                },
+                modifier = Modifier.weight(1f).fillMaxSize(),
+            )
+
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                OverlayControls(
+                    overlays = overlays,
+                    transparency = transparency,
+                    onToggleOverlay = { index, enabled -> toggleOverlay(index, enabled) },
+                    onTransparencyChange = { newValue -> updateTransparency(newValue) },
+                    onClearAll = {
+                        mapView?.clearTileOverlays()
+                        overlays = overlays.map { state -> state.copy(isVisible = false) }
+                        transparency = 0.5f
+                        Toast.makeText(context, "All overlays cleared", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun OverlayControls(
+    overlays: List<OverlayState>,
+    transparency: Float,
+    onToggleOverlay: (Int, Boolean) -> Unit,
+    onTransparencyChange: (Float) -> Unit,
+    onClearAll: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = "Tile Overlays",
+            style = MaterialTheme.typography.titleMedium,
         )
 
-        // Control panel
-        Card(
-            modifier =
-            Modifier
-                .align(Alignment.TopEnd)
-                .padding(12.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+        overlays.forEachIndexed { index, state ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Tile Overlays",
-                    style = MaterialTheme.typography.titleSmall,
+                    text = state.name,
+                    style = MaterialTheme.typography.bodyMedium,
                 )
-
-                // Overlay toggles
-                overlays.forEachIndexed { index, state ->
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = state.name,
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                        Switch(
-                            checked = state.isVisible,
-                            onCheckedChange = { enabled ->
-                                toggleOverlay(index, enabled)
-                            },
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                // Transparency slider
-                Text(
-                    text = "Transparency: ${(transparency * 100).toInt()}%",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                Slider(
-                    value = transparency,
-                    onValueChange = { newValue ->
-                        updateTransparency(newValue)
+                Switch(
+                    checked = state.isVisible,
+                    onCheckedChange = { enabled ->
+                        onToggleOverlay(index, enabled)
                     },
-                    valueRange = 0f..1f,
                 )
             }
         }
 
-        // Clear all button
-        FloatingActionButton(
-            onClick = {
-                mapView?.clearTileOverlays()
-                overlays =
-                    overlays.map { state ->
-                        state.copy(isVisible = false)
-                    }
-                transparency = 0f
-                Toast.makeText(
-                    context,
-                    "All overlays cleared",
-                    Toast.LENGTH_SHORT,
-                ).show()
-            },
-            modifier =
-            Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Transparency: ${(transparency * 100).toInt()}%",
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Slider(
+            value = transparency,
+            onValueChange = onTransparencyChange,
+            valueRange = 0f..1f,
+        )
+
+        Button(
+            onClick = onClearAll,
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Icon(
                 imageVector = Icons.Default.Clear,
-                contentDescription = "Clear all overlays",
+                contentDescription = null,
+                modifier = Modifier.padding(end = 8.dp),
             )
+            Text("Clear All")
         }
     }
 }
