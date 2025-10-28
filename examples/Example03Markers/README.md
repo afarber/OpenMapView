@@ -5,12 +5,14 @@ This example demonstrates the marker system in OpenMapView, including marker ren
 ## Features Demonstrated
 
 - Multiple markers at different geographic locations
-- Default red teardrop marker icons
+- Default red teardrop marker icons with color variations
+- Both API styles: Kotlin direct instantiation and Google Maps builder pattern
 - Marker click detection and callbacks
 - Toast notifications on marker click
 - Markers with title and snippet metadata
 - Marker positioning with proper anchor points
 - Markers that stay fixed during pan and zoom
+- Info windows showing marker titles and snippets
 
 ## Screenshot
 
@@ -37,14 +39,14 @@ adb shell am start -n de.afarber.openmapview.example03markers/.MainActivity
 
 ## Code Highlights
 
-### Adding Markers
+### Adding Markers - Kotlin Style
 
 ```kotlin
 OpenMapView(context).apply {
     setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
     setZoom(14.0)
 
-    // Add marker with title and snippet
+    // Kotlin-style direct instantiation
     addMarker(
         Marker(
             position = LatLng(51.4661, 7.2491),
@@ -53,6 +55,19 @@ OpenMapView(context).apply {
         )
     )
 }
+```
+
+### Adding Markers - Google Maps Style
+
+```kotlin
+// Google Maps API builder pattern
+addMarker(
+    MarkerOptions()
+        .position(LatLng(51.4650, 7.2500))
+        .title("Builder Pattern")
+        .snippet("Created with MarkerOptions")
+        .alpha(0.8f)
+)
 ```
 
 ### Click Listener

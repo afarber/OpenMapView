@@ -79,11 +79,19 @@ fun MapViewScreen() {
                 setCenter(LatLng(51.4661, 7.2491))
                 setZoom(14.0)
 
-                // Add markers (optional)
+                // Add markers - Kotlin style (direct instantiation)
                 addMarker(Marker(
                     position = LatLng(51.4661, 7.2491),
                     title = "Bochum City Center"
                 ))
+
+                // Or Google Maps API style (builder pattern)
+                addMarker(
+                    MarkerOptions()
+                        .position(LatLng(51.4700, 7.2550))
+                        .title("North Location")
+                        .draggable(true)
+                )
             }
         },
         modifier = Modifier.fillMaxSize()
