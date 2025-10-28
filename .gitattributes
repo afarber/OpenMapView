@@ -1,5 +1,35 @@
-# Ensure shell scripts always use LF line endings
-*.sh text eol=lf
+# Ensure consistent line endings across platforms
+# Everything stored as LF in the repository (Android/Kotlin ecosystem standard)
+* text=auto eol=lf
 
-# Ensure Gradle wrapper script uses LF line endings
+# Source code files
+*.kt text eol=lf
+*.kts text eol=lf
+*.java text eol=lf
+
+# Configuration and data files
+*.xml text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.gradle text eol=lf
+*.properties text eol=lf
+*.pro text eol=lf
+
+# Documentation
+*.md text eol=lf
+*.txt text eol=lf
+
+# Shell scripts MUST use LF (will break on Unix if using CRLF)
+*.sh text eol=lf
 gradlew text eol=lf
+
+# Binary files (do not modify)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.jar binary
+*.aar binary
+*.apk binary
+*.so binary

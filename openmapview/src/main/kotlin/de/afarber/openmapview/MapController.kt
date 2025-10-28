@@ -59,7 +59,7 @@ class MapController(
     private val circles = mutableListOf<Circle>()
 
     private var animationJob: Job? = null
-    private var animationListener: OnCameraAnimationListener? = null
+    private var animationListener: CancelableCallback? = null
 
     var onCameraMoveStartedListener: OnCameraMoveStartedListener? = null
     var onCameraMoveListener: OnCameraMoveListener? = null
@@ -337,7 +337,7 @@ class MapController(
     fun animateCamera(
         cameraUpdate: CameraUpdate,
         durationMs: Int = 250,
-        listener: OnCameraAnimationListener? = null,
+        listener: CancelableCallback? = null,
     ) {
         stopAnimation()
         commitPan()

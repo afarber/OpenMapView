@@ -42,7 +42,7 @@ adb shell am start -n de.afarber.openmapview.example05camera/.MainActivity
 mapView.animateCamera(
     CameraUpdateFactory.newLatLngZoom(targetLocation, 15.0),
     1000, // 1 second duration
-    object : OnCameraAnimationListener {
+    object : CancelableCallback {
         override fun onFinish() {
             Toast.makeText(context, "Animation finished", Toast.LENGTH_SHORT).show()
         }
@@ -112,7 +112,7 @@ animateCamera(cameraUpdate, durationMs)
 animateCamera(cameraUpdate, durationMs, listener)
 ```
 
-### OnCameraAnimationListener
+### CancelableCallback
 
 Callback interface for animation lifecycle:
 
@@ -187,7 +187,7 @@ mapView.animateCamera(
 mapView.animateCamera(
     CameraUpdateFactory.newLatLng(location1),
     1000,
-    object : OnCameraAnimationListener {
+    object : CancelableCallback {
         override fun onFinish() {
             // Start second animation when first completes
             mapView.animateCamera(

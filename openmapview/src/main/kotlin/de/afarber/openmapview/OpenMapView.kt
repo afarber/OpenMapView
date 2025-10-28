@@ -437,22 +437,39 @@ class OpenMapView
         }
 
         /**
+         * Animates the camera to a new position with callbacks.
+         *
+         * The callback will receive notifications when the animation completes or is cancelled.
+         * An animation can be cancelled by calling [stopAnimation] or by starting another
+         * camera move or animation.
+         *
+         * @param cameraUpdate The camera update to animate to
+         * @param callback Optional callback for animation completion events
+         */
+        fun animateCamera(
+            cameraUpdate: CameraUpdate,
+            callback: CancelableCallback?,
+        ) {
+            controller.animateCamera(cameraUpdate, 250, callback)
+        }
+
+        /**
          * Animates the camera to a new position with custom duration and callbacks.
          *
-         * The listener will receive callbacks when the animation completes or is cancelled.
+         * The callback will receive notifications when the animation completes or is cancelled.
          * An animation can be cancelled by calling [stopAnimation] or by starting another
          * camera move or animation.
          *
          * @param cameraUpdate The camera update to animate to
          * @param durationMs Duration of the animation in milliseconds
-         * @param listener Optional listener for animation completion events
+         * @param callback Optional callback for animation completion events
          */
         fun animateCamera(
             cameraUpdate: CameraUpdate,
             durationMs: Int,
-            listener: OnCameraAnimationListener?,
+            callback: CancelableCallback?,
         ) {
-            controller.animateCamera(cameraUpdate, durationMs, listener)
+            controller.animateCamera(cameraUpdate, durationMs, callback)
         }
 
         /**

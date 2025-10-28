@@ -38,8 +38,8 @@ Methods that must be forwarded from the parent Activity/Fragment.
 | Method                                                 | Return Type      | Status      | Notes                                                        |
 | ------------------------------------------------------ | ---------------- | ----------- | ------------------------------------------------------------ |
 | `animateCamera(CameraUpdate)`                          | `void`           | IMPLEMENTED | Default 250ms duration                                       |
-| `animateCamera(CameraUpdate, CancelableCallback)`      | `void`           | PARTIAL     | Uses OnCameraAnimationListener instead of CancelableCallback |
-| `animateCamera(CameraUpdate, int, CancelableCallback)` | `void`           | PARTIAL     | Custom duration supported, uses OnCameraAnimationListener    |
+| `animateCamera(CameraUpdate, CancelableCallback)`      | `void`           | IMPLEMENTED | Default 250ms duration with callback                         |
+| `animateCamera(CameraUpdate, int, CancelableCallback)` | `void`           | IMPLEMENTED | Custom duration with callback support                        |
 | `moveCamera(CameraUpdate)`                             | `void`           | IMPLEMENTED | Instant camera repositioning                                 |
 | `stopAnimation()`                                      | `void`           | IMPLEMENTED | Cancels ongoing camera animation                             |
 | `getCameraPosition()`                                  | `CameraPosition` | IMPLEMENTED | Returns current camera state                                 |
@@ -61,7 +61,7 @@ Methods that must be forwarded from the parent Activity/Fragment.
 | ---------------------------------------- | --------------- | --------------- | ----------------------------------------------------------- |
 | `addPolyline(PolylineOptions)`           | `Polyline`      | IMPLEMENTED     | Supports points, stroke color/width, visible, clickable, tag |
 | `addPolygon(PolygonOptions)`             | `Polygon`       | IMPLEMENTED     | Supports points, holes, colors, visible, clickable, tag     |
-| `addCircle(CircleOptions)`               | `Circle`        | NOT IMPLEMENTED | Planned for future release                                  |
+| `addCircle(CircleOptions)`               | `Circle`        | IMPLEMENTED     | Supports center, radius, stroke/fill colors, z-index, visible, clickable, tag |
 | `addGroundOverlay(GroundOverlayOptions)` | `GroundOverlay` | NOT IMPLEMENTED | Planned for future release                                  |
 | `addTileOverlay(TileOverlayOptions)`     | `TileOverlay`   | NOT PLANNED     | Advanced feature                                            |
 

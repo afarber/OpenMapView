@@ -8,11 +8,14 @@
 package de.afarber.openmapview
 
 /**
- * Listener for camera animation completion events.
+ * A callback interface for tracking camera animation completion.
+ *
+ * This interface matches the Google Maps SDK CancelableCallback interface,
+ * providing compatibility with the standard Maps API pattern.
  *
  * Provides callbacks when a camera animation finishes normally or is cancelled.
  */
-interface OnCameraAnimationListener {
+interface CancelableCallback {
     /**
      * Called when the camera animation completes successfully.
      */

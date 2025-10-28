@@ -36,9 +36,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.CameraUpdateFactory
+import de.afarber.openmapview.CancelableCallback
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.Marker
-import de.afarber.openmapview.OnCameraAnimationListener
 import de.afarber.openmapview.OpenMapView
 
 class MainActivity : ComponentActivity() {
@@ -123,7 +123,7 @@ fun MapViewScreen() {
                         mapView?.animateCamera(
                             CameraUpdateFactory.newLatLngZoom(location1, 15.0),
                             1000,
-                            object : OnCameraAnimationListener {
+                            object : CancelableCallback {
                                 override fun onFinish() {
                                     Toast.makeText(context, "Animation finished", Toast.LENGTH_SHORT).show()
                                 }
