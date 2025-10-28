@@ -23,6 +23,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.BitmapDescriptorFactory
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.Marker
+import de.afarber.openmapview.MarkerOptions
 import de.afarber.openmapview.OpenMapView
 
 class MainActivity : ComponentActivity() {
@@ -100,6 +101,16 @@ fun MapViewScreen() {
                         snippet = "A place east of center",
                         icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA),
                     ),
+                )
+
+                // Alternative: Google Maps API style using MarkerOptions builder
+                addMarker(
+                    MarkerOptions()
+                        .position(LatLng(51.4650, 7.2500))
+                        .title("Builder Pattern")
+                        .snippet("Created with MarkerOptions")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN))
+                        .alpha(0.8f),
                 )
 
                 // Set marker click listener

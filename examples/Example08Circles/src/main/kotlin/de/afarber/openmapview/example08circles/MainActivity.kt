@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import de.afarber.openmapview.Circle
 import de.afarber.openmapview.CircleOptions
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
@@ -118,8 +119,23 @@ fun MapViewScreen() {
                     .tag("Large Green Circle - 1500m"),
             )
 
-            circleCount += 3
-            Toast.makeText(context, "Added 3 demonstration circles", Toast.LENGTH_SHORT).show()
+            // Circle 4: Alternative Kotlin-style direct instantiation
+            val offset3 = LatLng(bochumCenter.latitude + 0.005, bochumCenter.longitude - 0.015)
+            map.addCircle(
+                Circle(
+                    center = offset3,
+                    radius = 750f,
+                    strokeColor = Color.MAGENTA,
+                    strokeWidth = 6f,
+                    fillColor = Color.argb(64, 255, 0, 255),
+                    clickable = true,
+                    zIndex = 1.5f,
+                    tag = "Kotlin Style Circle - 750m",
+                ),
+            )
+
+            circleCount += 4
+            Toast.makeText(context, "Added 4 demonstration circles", Toast.LENGTH_SHORT).show()
         }
     }
 

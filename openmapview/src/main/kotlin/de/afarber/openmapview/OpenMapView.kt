@@ -489,6 +489,27 @@ class OpenMapView
         }
 
         /**
+         * Adds a marker to the map using MarkerOptions builder (Google Maps API style).
+         *
+         * Example:
+         * ```kotlin
+         * mapView.addMarker(
+         *     MarkerOptions()
+         *         .position(LatLng(51.5, 0.0))
+         *         .title("London")
+         *         .draggable(true)
+         * )
+         * ```
+         *
+         * @param markerOptions Configuration for the marker
+         * @return The created Marker instance
+         */
+        fun addMarker(markerOptions: MarkerOptions): Marker {
+            val marker = markerOptions.build()
+            return addMarker(marker)
+        }
+
+        /**
          * Removes a marker from the map.
          *
          * @param marker The marker to remove
@@ -722,6 +743,28 @@ class OpenMapView
         }
 
         /**
+         * Adds a polyline to the map using PolylineOptions builder (Google Maps API style).
+         *
+         * Example:
+         * ```kotlin
+         * mapView.addPolyline(
+         *     PolylineOptions()
+         *         .add(LatLng(51.5, 0.0))
+         *         .add(LatLng(51.6, 0.1))
+         *         .color(Color.BLUE)
+         *         .width(5f)
+         * )
+         * ```
+         *
+         * @param polylineOptions Configuration for the polyline
+         * @return The created Polyline instance
+         */
+        fun addPolyline(polylineOptions: PolylineOptions): Polyline {
+            val polyline = polylineOptions.build()
+            return addPolyline(polyline)
+        }
+
+        /**
          * Removes a polyline from the map.
          *
          * @param polyline The polyline to remove
@@ -761,6 +804,28 @@ class OpenMapView
         }
 
         /**
+         * Adds a polygon to the map using PolygonOptions builder (Google Maps API style).
+         *
+         * Example:
+         * ```kotlin
+         * mapView.addPolygon(
+         *     PolygonOptions()
+         *         .add(LatLng(51.5, 0.0))
+         *         .add(LatLng(51.6, 0.0))
+         *         .add(LatLng(51.6, 0.1))
+         *         .fillColor(Color.argb(128, 255, 0, 0))
+         * )
+         * ```
+         *
+         * @param polygonOptions Configuration for the polygon
+         * @return The created Polygon instance
+         */
+        fun addPolygon(polygonOptions: PolygonOptions): Polygon {
+            val polygon = polygonOptions.build()
+            return addPolygon(polygon)
+        }
+
+        /**
          * Removes a polygon from the map.
          *
          * @param polygon The polygon to remove
@@ -788,13 +853,44 @@ class OpenMapView
         fun getPolygons(): List<Polygon> = controller.getPolygons()
 
         /**
-         * Adds a circle to the map using CircleOptions.
+         * Adds a circle to the map using CircleOptions builder (Google Maps API style).
+         *
+         * Example:
+         * ```kotlin
+         * mapView.addCircle(
+         *     CircleOptions()
+         *         .center(LatLng(51.5, 0.0))
+         *         .radius(1000f)
+         *         .fillColor(Color.argb(128, 0, 0, 255))
+         * )
+         * ```
          *
          * @param circleOptions Configuration for the circle
          * @return The created Circle instance
          */
         fun addCircle(circleOptions: CircleOptions): Circle {
             val circle = circleOptions.build()
+            return addCircle(circle)
+        }
+
+        /**
+         * Adds a circle to the map (Kotlin-style direct instantiation).
+         *
+         * Example:
+         * ```kotlin
+         * mapView.addCircle(
+         *     Circle(
+         *         center = LatLng(51.5, 0.0),
+         *         radius = 1000f,
+         *         fillColor = Color.argb(128, 0, 0, 255)
+         *     )
+         * )
+         * ```
+         *
+         * @param circle The circle to add
+         * @return The added circle instance
+         */
+        fun addCircle(circle: Circle): Circle {
             val result = controller.addCircle(circle)
             invalidate()
             return result
