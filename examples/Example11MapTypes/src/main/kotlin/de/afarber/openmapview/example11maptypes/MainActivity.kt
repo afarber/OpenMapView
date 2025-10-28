@@ -158,37 +158,15 @@ fun MapViewScreen() {
                         )
                     }
 
-                    Row(
+                    MapTypeButton(
+                        text = "None",
+                        enabled = currentMapType != MapType.NONE,
+                        onClick = {
+                            mapView?.setMapType(MapType.NONE)
+                            currentMapType = MapType.NONE
+                        },
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        MapTypeButton(
-                            text = "None",
-                            enabled = currentMapType != MapType.NONE,
-                            onClick = {
-                                mapView?.setMapType(MapType.NONE)
-                                currentMapType = MapType.NONE
-                            },
-                            modifier = Modifier.weight(1f),
-                        )
-                        MapTypeButton(
-                            text = "Satellite",
-                            enabled = true,
-                            onClick = {
-                                try {
-                                    mapView?.setMapType(MapType.SATELLITE)
-                                    currentMapType = MapType.SATELLITE
-                                } catch (e: UnsupportedOperationException) {
-                                    android.widget.Toast.makeText(
-                                        context,
-                                        "Satellite type not supported:\n${e.message}",
-                                        android.widget.Toast.LENGTH_LONG,
-                                    ).show()
-                                }
-                            },
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
+                    )
                 }
             }
         }
@@ -215,11 +193,8 @@ fun getMapTypeName(type: Int): String =
     when (type) {
         MapType.NONE -> "None"
         MapType.NORMAL -> "Normal"
-        MapType.SATELLITE -> "Satellite"
         MapType.TERRAIN -> "Terrain"
-        MapType.HYBRID -> "Hybrid"
         MapType.HUMANITARIAN -> "Humanitarian"
-        MapType.TOPO -> "Topo"
         MapType.CYCLE -> "Cycle"
         else -> "Unknown ($type)"
     }

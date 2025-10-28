@@ -32,12 +32,9 @@ class MapTypeTest {
     fun testMapTypeConstants() {
         assertEquals(0, MapType.NONE)
         assertEquals(1, MapType.NORMAL)
-        assertEquals(2, MapType.SATELLITE)
-        assertEquals(3, MapType.TERRAIN)
-        assertEquals(4, MapType.HYBRID)
-        assertEquals(5, MapType.HUMANITARIAN)
-        assertEquals(6, MapType.TOPO)
-        assertEquals(7, MapType.CYCLE)
+        assertEquals(2, MapType.TERRAIN)
+        assertEquals(3, MapType.HUMANITARIAN)
+        assertEquals(4, MapType.CYCLE)
     }
 
     @Test
@@ -64,12 +61,6 @@ class MapTypeTest {
     }
 
     @Test
-    fun testSetMapType_Topo() {
-        mapView.setMapType(MapType.TOPO)
-        assertEquals(MapType.TOPO, mapView.getMapType())
-    }
-
-    @Test
     fun testSetMapType_Humanitarian() {
         mapView.setMapType(MapType.HUMANITARIAN)
         assertEquals(MapType.HUMANITARIAN, mapView.getMapType())
@@ -79,28 +70,6 @@ class MapTypeTest {
     fun testSetMapType_Cycle() {
         mapView.setMapType(MapType.CYCLE)
         assertEquals(MapType.CYCLE, mapView.getMapType())
-    }
-
-    @Test
-    fun testSetMapType_Satellite_ThrowsException() {
-        val exception =
-            assertThrows(UnsupportedOperationException::class.java) {
-                mapView.setMapType(MapType.SATELLITE)
-            }
-        assertNotNull(exception.message)
-        assert(exception.message!!.contains("SATELLITE"))
-        assert(exception.message!!.contains("not supported"))
-    }
-
-    @Test
-    fun testSetMapType_Hybrid_ThrowsException() {
-        val exception =
-            assertThrows(UnsupportedOperationException::class.java) {
-                mapView.setMapType(MapType.HYBRID)
-            }
-        assertNotNull(exception.message)
-        assert(exception.message!!.contains("HYBRID"))
-        assert(exception.message!!.contains("not supported"))
     }
 
     @Test
