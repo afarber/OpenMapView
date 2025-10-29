@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -75,6 +74,9 @@ fun MapViewScreen() {
 
                     setCenter(LatLng(51.4620, 7.2480))
                     setZoom(13.0)
+
+                    // Enable built-in zoom controls
+                    getUiSettings().isZoomControlsEnabled = true
 
                     addMarker(
                         Marker(
@@ -170,32 +172,6 @@ fun MapViewScreen() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
             ) {
-                FloatingActionButton(
-                    onClick = {
-                        mapView?.animateCamera(
-                            CameraUpdateFactory.zoomIn(),
-                            500,
-                        )
-                    },
-                ) {
-                    Text("+", style = MaterialTheme.typography.headlineMedium)
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                FloatingActionButton(
-                    onClick = {
-                        mapView?.animateCamera(
-                            CameraUpdateFactory.zoomOut(),
-                            500,
-                        )
-                    },
-                ) {
-                    Text("-", style = MaterialTheme.typography.headlineMedium)
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
                 FloatingActionButton(
                     onClick = {
                         mapView?.stopAnimation()

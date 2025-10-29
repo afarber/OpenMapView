@@ -15,7 +15,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -67,6 +66,9 @@ fun MapViewScreen() {
                     setZoom(14.0)
                     mapView = this
 
+                    // Enable built-in zoom controls
+                    getUiSettings().isZoomControlsEnabled = true
+
                     // Set attribution click listener to open OSM copyright page
                     setOnAttributionClickListener {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
@@ -90,38 +92,6 @@ fun MapViewScreen() {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                 style = MaterialTheme.typography.titleMedium,
             )
-        }
-
-        // Zoom in button
-        FloatingActionButton(
-            onClick = {
-                mapView?.let {
-                    val newZoom = (it.getZoom() + 1.0).coerceAtMost(19.0)
-                    it.setZoom(newZoom)
-                    zoomLevel = newZoom
-                }
-            },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 88.dp),
-        ) {
-            Text("+", style = MaterialTheme.typography.headlineMedium)
-        }
-
-        // Zoom out button
-        FloatingActionButton(
-            onClick = {
-                mapView?.let {
-                    val newZoom = (it.getZoom() - 1.0).coerceAtLeast(2.0)
-                    it.setZoom(newZoom)
-                    zoomLevel = newZoom
-                }
-            },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 16.dp),
-        ) {
-            Text("-", style = MaterialTheme.typography.headlineMedium)
         }
     }
 }

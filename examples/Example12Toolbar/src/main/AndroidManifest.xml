@@ -6,7 +6,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@android:drawable/ic_menu_mapmode"
+        android:icon="@android:drawable/ic_dialog_map"
         android:label="Example12 Toolbar"
         android:supportsRtl="true">
 
