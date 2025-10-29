@@ -237,17 +237,18 @@ class MapControllerTest {
         var callbackInvoked = false
         var clickedMarker: Marker? = null
 
-        controller.onMarkerClickListener = { marker ->
-            callbackInvoked = true
-            clickedMarker = marker
-            true
-        }
+        controller.onMarkerClickListener =
+            OnMarkerClickListener { marker ->
+                callbackInvoked = true
+                clickedMarker = marker
+                true
+            }
 
         val marker = Marker(LatLng(51.4661, 7.2491))
         controller.addMarker(marker)
 
         // Simulate marker click by calling the listener
-        val result = controller.onMarkerClickListener?.invoke(marker)
+        val result = controller.onMarkerClickListener?.onMarkerClick(marker)
 
         assertTrue(callbackInvoked)
         assertEquals(marker, clickedMarker)

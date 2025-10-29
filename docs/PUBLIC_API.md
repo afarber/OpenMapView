@@ -182,30 +182,65 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 ## GoogleMap Class - Event Listeners
 
+OpenMapView provides comprehensive event listener support using Kotlin `fun interface` for single-method listeners (enabling lambda syntax) and regular `interface` for multi-method listeners. All callbacks execute on the UI thread.
+
 | Method                                                                | Return Type      | Status          | Notes                                                |
 | --------------------------------------------------------------------- | ---------------- | --------------- | ---------------------------------------------------- |
-| `setOnMapClickListener(OnMapClickListener)`                           | `void`           | IMPLEMENTED     | Full implementation with LatLng coordinate callbacks |
-| `setOnMapLongClickListener(OnMapLongClickListener)`                   | `void`           | IMPLEMENTED     | GestureDetector-based long-press detection           |
-| `setOnMarkerClickListener(OnMarkerClickListener)`                     | `void`           | IMPLEMENTED     | Returns boolean to consume event                     |
-| `setOnMarkerDragListener(OnMarkerDragListener)`                       | `void`           | IMPLEMENTED     | Full drag support with start/drag/end callbacks      |
-| `setOnPolylineClickListener(OnPolylineClickListener)`                 | `void`           | IMPLEMENTED     | Point-to-line distance hit testing with tolerance    |
-| `setOnPolygonClickListener(OnPolygonClickListener)`                   | `void`           | IMPLEMENTED     | Ray casting algorithm with hole support              |
-| `setOnCircleClickListener(OnCircleClickListener)`                     | `void`           | IMPLEMENTED     | Distance-based hit testing with stroke width         |
-| `setOnGroundOverlayClickListener(OnGroundOverlayClickListener)`       | `void`           | IMPLEMENTED     | Rectangle hit testing with rotation support          |
+| `setOnMapClickListener(OnMapClickListener)`                           | `void`           | IMPLEMENTED     | `fun interface` - LatLng coordinate callbacks. Fires when map clicked (not markers/shapes) |
+| `setOnMapLongClickListener(OnMapLongClickListener)`                   | `void`           | IMPLEMENTED     | `fun interface` - GestureDetector-based long-press detection (~500ms) |
+| `setOnMarkerClickListener(OnMarkerClickListener)`                     | `void`           | IMPLEMENTED     | `fun interface` - Returns boolean to consume event (true = no info window/centering) |
+| `setOnMarkerDragListener(OnMarkerDragListener)`                       | `void`           | IMPLEMENTED     | 3-method interface - onMarkerDragStart/onMarkerDrag/onMarkerDragEnd callbacks |
+| `setOnPolylineClickListener(OnPolylineClickListener)`                 | `void`           | IMPLEMENTED     | `fun interface` - Point-to-line distance hit testing (~10px tolerance) |
+| `setOnPolygonClickListener(OnPolygonClickListener)`                   | `void`           | IMPLEMENTED     | `fun interface` - Ray casting algorithm with hole support |
+| `setOnCircleClickListener(OnCircleClickListener)`                     | `void`           | IMPLEMENTED     | `fun interface` - Distance-based hit testing (center to touch point) |
+| `setOnGroundOverlayClickListener(OnGroundOverlayClickListener)`       | `void`           | IMPLEMENTED     | `fun interface` - Rectangle bounds hit testing with rotation support |
 | `setOnPoiClickListener(OnPoiClickListener)`                           | `void`           | NOT PLANNED     | POI data not available in OSM tiles                  |
-| `setOnCameraMoveStartedListener(OnCameraMoveStartedListener)`         | `void`           | IMPLEMENTED     | Tracks gesture, API, and developer-initiated moves   |
-| `setOnCameraMoveListener(OnCameraMoveListener)`                       | `void`           | IMPLEMENTED     | Called repeatedly during camera movement             |
-| `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           | IMPLEMENTED     | Called when camera stops moving                      |
-| `setOnCameraMoveCanceledListener(OnCameraMoveCanceledListener)`       | `void`           | IMPLEMENTED     | Called when animation is interrupted                 |
+| `setOnCameraMoveStartedListener(OnCameraMoveStartedListener)`         | `void`           | IMPLEMENTED     | `fun interface` - Reason constants: REASON_GESTURE (1), REASON_API_ANIMATION (2), REASON_DEVELOPER_ANIMATION (3) |
+| `setOnCameraMoveListener(OnCameraMoveListener)`                       | `void`           | IMPLEMENTED     | `fun interface` - Called repeatedly during camera movement (60fps) - keep lightweight! |
+| `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           | IMPLEMENTED     | `fun interface` - Called when camera stops moving (after gesture or animation completes) |
+| `setOnCameraMoveCanceledListener(OnCameraMoveCanceledListener)`       | `void`           | IMPLEMENTED     | `fun interface` - Called when animation interrupted by gesture or new camera command |
 | `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | NOT IMPLEMENTED | Tiles load asynchronously, callback could be added   |
 | `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | NOT IMPLEMENTED | Custom adapters not yet implemented                  |
-| `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           | IMPLEMENTED     | Full support with basic info window rendering        |
+| `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           | IMPLEMENTED     | `fun interface` - Full support with basic info window rendering |
 | `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | NOT IMPLEMENTED | Not applicable                                       |
 | `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | NOT IMPLEMENTED | Not applicable                                       |
 | `setOnMyLocationButtonClickListener(OnMyLocationButtonClickListener)` | `void`           | NOT IMPLEMENTED | Not applicable                                       |
 | `setOnMyLocationClickListener(OnMyLocationClickListener)`             | `void`           | NOT IMPLEMENTED | Not applicable                                       |
 | `setOnIndoorStateChangeListener(OnIndoorStateChangeListener)`         | `void`           | NOT PLANNED     | Indoor mapping not supported                         |
 | `getFocusedBuilding()`                                                | `IndoorBuilding` | NOT PLANNED     | Indoor mapping not supported                         |
+
+**Event Priority (highest to lowest):**
+1. Info window click (if info window is showing)
+2. Marker click (returns boolean - true consumes event)
+3. Ground overlay click (highest z-index first)
+4. Circle click (highest z-index first)
+5. Polygon click (highest z-index first)
+6. Polyline click (highest z-index first)
+7. Map click (fires if nothing else consumed event)
+
+**Camera Event Sequence:**
+- **Successful animation:** onCameraMoveStarted(reason) → onCameraMove* → onCameraIdle
+- **Interrupted animation:** onCameraMoveStarted(reason) → onCameraMove* → onCameraMoveCanceled → onCameraMoveStarted(REASON_GESTURE) → ...
+
+**Kotlin Lambda Syntax Examples:**
+```kotlin
+// Single-method listeners support lambda syntax
+mapView.setOnMapClickListener { latLng ->
+    Log.d("Map", "Clicked: ${latLng.latitude}, ${latLng.longitude}")
+}
+
+mapView.setOnMarkerClickListener { marker ->
+    Toast.makeText(context, marker.title, Toast.LENGTH_SHORT).show()
+    true  // Consume event (prevents info window)
+}
+
+// Multi-method listeners use object syntax
+mapView.setOnMarkerDragListener(object : OnMarkerDragListener {
+    override fun onMarkerDragStart(marker: Marker) { }
+    override fun onMarkerDrag(marker: Marker) { }
+    override fun onMarkerDragEnd(marker: Marker) { }
+})
+```
 
 ---
 
@@ -278,6 +313,11 @@ This method is an OpenMapView-specific feature not present in Google Maps API. S
 - Vector shapes: 100% (polylines, polygons with holes, circles, visibility, click listeners, z-index)
 - Ground overlays: 100% (position/bounds modes, rotation, transparency, click listener)
 - Tile overlays: 100% (custom tile providers, transparency, z-index, visibility, predefined OSM providers)
+- **Event listeners: 100%** (13/13 applicable listeners - all use Kotlin `fun interface` or regular interface)
+  - Map events: OnMapClickListener, OnMapLongClickListener
+  - Marker events: OnMarkerClickListener, OnMarkerDragListener, OnInfoWindowClickListener
+  - Shape events: OnPolylineClickListener, OnPolygonClickListener, OnCircleClickListener, OnGroundOverlayClickListener
+  - Camera events: OnCameraMoveStartedListener, OnCameraMoveListener, OnCameraIdleListener, OnCameraMoveCanceledListener
 - Map interaction: 100% (click listeners, long-click, projection API, visible region)
 - Zoom control: 100% (min/max zoom preferences, getZoom, built-in zoom controls)
 - Map types: 100% (5 types: NONE, NORMAL, TERRAIN, HUMANITARIAN, CYCLE)

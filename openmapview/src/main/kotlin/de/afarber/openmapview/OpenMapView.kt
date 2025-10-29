@@ -268,7 +268,7 @@ class OpenMapView
                                     touchedMarker.showInfoWindow()
                                 }
 
-                                val consumed = controller.onMarkerClickListener?.invoke(touchedMarker) ?: false
+                                val consumed = controller.onMarkerClickListener?.onMarkerClick(touchedMarker) ?: false
                                 controller.commitPan()
                                 invalidate()
                                 return true
@@ -922,9 +922,9 @@ class OpenMapView
          * }
          * ```
          *
-         * @param listener Callback invoked when a marker is clicked. Return true to consume the event.
+         * @param listener Callback invoked when a marker is clicked. Return true to consume the event, or null to clear the listener.
          */
-        fun setOnMarkerClickListener(listener: (Marker) -> Boolean) {
+        fun setOnMarkerClickListener(listener: OnMarkerClickListener?) {
             controller.onMarkerClickListener = listener
         }
 

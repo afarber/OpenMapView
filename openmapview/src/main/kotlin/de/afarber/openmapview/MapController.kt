@@ -78,7 +78,7 @@ class MapController(
 
     private val markers = mutableListOf<Marker>()
     private val defaultMarkerIcon by lazy { MarkerIconFactory.getDefaultIcon() }
-    var onMarkerClickListener: ((Marker) -> Boolean)? = null
+    var onMarkerClickListener: OnMarkerClickListener? = null
     var onInfoWindowClickListener: OnInfoWindowClickListener? = null
 
     private val polylines = mutableListOf<Polyline>()
