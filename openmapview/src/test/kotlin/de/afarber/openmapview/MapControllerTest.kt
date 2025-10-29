@@ -842,4 +842,207 @@ class MapControllerTest {
         // Second position should match target exactly (no padding)
         assertEquals(targetLatLng.latitude, position2.target.latitude, 0.0001)
     }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_GetterReturnsSetValue() {
+        val bounds = LatLngBounds(LatLng(-35.0, 138.58), LatLng(-34.9, 138.61))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+        assertEquals(bounds, controller.getLatLngBoundsForCameraTarget())
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_NullRemovesConstraint() {
+        val bounds = LatLngBounds(LatLng(-35.0, 138.58), LatLng(-34.9, 138.61))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+        controller.setLatLngBoundsForCameraTarget(null)
+        assertNull(controller.getLatLngBoundsForCameraTarget())
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_ClampsCameraIfOutsideBounds() {
+        // Set camera far from bounds
+        controller.setCenter(LatLng(0.0, 0.0))
+
+        // Set bounds
+        val bounds = LatLngBounds(LatLng(-35.0, 138.58), LatLng(-34.9, 138.61))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        // Camera should be clamped to nearest point in bounds
+        val center = controller.getCenter()
+        assertTrue(center.latitude >= bounds.southwest.latitude)
+        assertTrue(center.latitude <= bounds.northeast.latitude)
+        assertTrue(center.longitude >= bounds.southwest.longitude)
+        assertTrue(center.longitude <= bounds.northeast.longitude)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_ConstrainsSetCenter() {
+        val bounds = LatLngBounds(LatLng(-35.0, 138.58), LatLng(-34.9, 138.61))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        // Try to set center outside bounds
+        controller.setCenter(LatLng(0.0, 0.0))
+
+        // Center should be clamped
+        val center = controller.getCenter()
+        assertTrue(center.latitude >= bounds.southwest.latitude)
+        assertTrue(center.latitude <= bounds.northeast.latitude)
+        assertTrue(center.longitude >= bounds.southwest.longitude)
+        assertTrue(center.longitude <= bounds.northeast.longitude)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_ConstrainsMoveCamera() {
+        val bounds = LatLngBounds(LatLng(-35.0, 138.58), LatLng(-34.9, 138.61))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        // Try to move camera outside bounds
+        val outsideLocation = LatLng(0.0, 0.0)
+        controller.moveCamera(CameraUpdateFactory.newLatLng(outsideLocation))
+
+        // Center should be clamped
+        val center = controller.getCenter()
+        assertTrue(center.latitude >= bounds.southwest.latitude)
+        assertTrue(center.latitude <= bounds.northeast.latitude)
+        assertTrue(center.longitude >= bounds.southwest.longitude)
+        assertTrue(center.longitude <= bounds.northeast.longitude)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_AllowsMovementWithinBounds() {
+        val bounds = LatLngBounds(LatLng(-35.0, 138.58), LatLng(-34.9, 138.61))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        // Move to center of bounds
+        val centerOfBounds = bounds.getCenter()
+        controller.setCenter(centerOfBounds)
+
+        assertEquals(centerOfBounds.latitude, controller.getCenter().latitude, 0.0001)
+        assertEquals(centerOfBounds.longitude, controller.getCenter().longitude, 0.0001)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_ClampsToSouthwestCorner() {
+        val bounds = LatLngBounds(LatLng(10.0, 20.0), LatLng(30.0, 40.0))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        // Try to move far southwest of bounds
+        controller.setCenter(LatLng(-50.0, -50.0))
+
+        // Should clamp to southwest corner
+        val center = controller.getCenter()
+        assertEquals(10.0, center.latitude, 0.0001)
+        assertEquals(20.0, center.longitude, 0.0001)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_ClampsToNortheastCorner() {
+        val bounds = LatLngBounds(LatLng(10.0, 20.0), LatLng(30.0, 40.0))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        // Try to move far northeast of bounds
+        controller.setCenter(LatLng(80.0, 90.0))
+
+        // Should clamp to northeast corner
+        val center = controller.getCenter()
+        assertEquals(30.0, center.latitude, 0.0001)
+        assertEquals(40.0, center.longitude, 0.0001)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_ClampsLatitudeOnly() {
+        val bounds = LatLngBounds(LatLng(10.0, 20.0), LatLng(30.0, 40.0))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        // Set position with valid longitude but invalid latitude
+        controller.setCenter(LatLng(50.0, 30.0))
+
+        val center = controller.getCenter()
+        assertEquals(30.0, center.latitude, 0.0001) // Clamped
+        assertEquals(30.0, center.longitude, 0.0001) // Unchanged
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_ClampsLongitudeOnly() {
+        val bounds = LatLngBounds(LatLng(10.0, 20.0), LatLng(30.0, 40.0))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        // Set position with valid latitude but invalid longitude
+        controller.setCenter(LatLng(20.0, 50.0))
+
+        val center = controller.getCenter()
+        assertEquals(20.0, center.latitude, 0.0001) // Unchanged
+        assertEquals(40.0, center.longitude, 0.0001) // Clamped
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_WorksWithVerySmallBounds() {
+        // Create very small bounds (0.01 x 0.01 degrees)
+        val bounds = LatLngBounds(LatLng(51.5, -0.1), LatLng(51.51, -0.09))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        // Try to move outside
+        controller.setCenter(LatLng(40.0, 10.0))
+
+        // Should still clamp
+        val center = controller.getCenter()
+        assertTrue(center.latitude >= bounds.southwest.latitude)
+        assertTrue(center.latitude <= bounds.northeast.latitude)
+        assertTrue(center.longitude >= bounds.southwest.longitude)
+        assertTrue(center.longitude <= bounds.northeast.longitude)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_NullAllowsFreeMovement() {
+        // Set bounds, then remove them
+        val bounds = LatLngBounds(LatLng(10.0, 20.0), LatLng(30.0, 40.0))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+        controller.setLatLngBoundsForCameraTarget(null)
+
+        // Should be able to move anywhere
+        val targetLocation = LatLng(0.0, 0.0)
+        controller.setCenter(targetLocation)
+
+        assertEquals(targetLocation.latitude, controller.getCenter().latitude, 0.0001)
+        assertEquals(targetLocation.longitude, controller.getCenter().longitude, 0.0001)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_WorksAtEquator() {
+        val bounds = LatLngBounds(LatLng(-1.0, -1.0), LatLng(1.0, 1.0))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        controller.setCenter(LatLng(0.0, 0.0))
+        assertEquals(0.0, controller.getCenter().latitude, 0.0001)
+        assertEquals(0.0, controller.getCenter().longitude, 0.0001)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_WorksAtPrimeMeridian() {
+        val bounds = LatLngBounds(LatLng(50.0, -1.0), LatLng(52.0, 1.0))
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        controller.setCenter(LatLng(51.0, 0.0))
+        assertEquals(51.0, controller.getCenter().latitude, 0.0001)
+        assertEquals(0.0, controller.getCenter().longitude, 0.0001)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_HandlesBoundsUpdate() {
+        // Set initial bounds
+        val bounds1 = LatLngBounds(LatLng(10.0, 20.0), LatLng(30.0, 40.0))
+        controller.setLatLngBoundsForCameraTarget(bounds1)
+        controller.setCenter(LatLng(20.0, 30.0))
+
+        // Update to different bounds
+        val bounds2 = LatLngBounds(LatLng(50.0, 60.0), LatLng(70.0, 80.0))
+        controller.setLatLngBoundsForCameraTarget(bounds2)
+
+        // Camera should be clamped to new bounds
+        val center = controller.getCenter()
+        assertTrue(center.latitude >= bounds2.southwest.latitude)
+        assertTrue(center.latitude <= bounds2.northeast.latitude)
+        assertTrue(center.longitude >= bounds2.southwest.longitude)
+        assertTrue(center.longitude <= bounds2.northeast.longitude)
+    }
 }

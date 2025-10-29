@@ -407,6 +407,33 @@ class OpenMapView
         }
 
         /**
+         * Sets a LatLngBounds to constrain the camera target.
+         *
+         * When bounds are set, the camera target (center point) is constrained to remain within
+         * these bounds for both user gestures (pan/scroll) and programmatic camera movements
+         * (via [moveCamera] or [animateCamera]).
+         *
+         * The map viewport may show areas outside the bounds (since the camera target is just the
+         * center point), but the center itself cannot move outside the specified region.
+         *
+         * If the camera is currently positioned outside the bounds when this method is called,
+         * it will be immediately adjusted to the nearest point within the bounds.
+         *
+         * @param bounds The bounds to constrain the camera target, or null to remove constraints
+         */
+        fun setLatLngBoundsForCameraTarget(bounds: LatLngBounds?) {
+            controller.setLatLngBoundsForCameraTarget(bounds)
+            invalidate()
+        }
+
+        /**
+         * Returns the current camera target bounds constraint.
+         *
+         * @return The bounds constraining the camera target, or null if no constraint is set
+         */
+        fun getLatLngBoundsForCameraTarget(): LatLngBounds? = controller.getLatLngBoundsForCameraTarget()
+
+        /**
          * Sets the type of map tiles that should be displayed.
          *
          * OpenMapView provides free OpenStreetMap-based tile sources.

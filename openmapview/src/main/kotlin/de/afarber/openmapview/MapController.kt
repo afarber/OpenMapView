@@ -56,6 +56,7 @@ class MapController(
 
     private var minZoomPreference = DEFAULT_MIN_ZOOM
     private var maxZoomPreference = DEFAULT_MAX_ZOOM
+    private var cameraTargetBounds: LatLngBounds? = null
 
     private val markers = mutableListOf<Marker>()
     private val defaultMarkerIcon by lazy { MarkerIconFactory.getDefaultIcon() }
@@ -206,6 +207,44 @@ class MapController(
     }
 
     /**
+     * Sets a LatLngBounds to constrain the camera target.
+     *
+     * When bounds are set, the camera target (center) is constrained to remain within
+     * these bounds for both user gestures (pan/scroll) and programmatic camera movements.
+     *
+     * @param bounds The bounds to constrain the camera target, or null to remove constraints
+     */
+    fun setLatLngBoundsForCameraTarget(bounds: LatLngBounds?) {
+        cameraTargetBounds = bounds
+        // Apply constraint immediately if camera is currently outside bounds
+        bounds?.let { center = clampToTargetBounds(center) }
+    }
+
+    /**
+     * Returns the current camera target bounds constraint.
+     *
+     * @return The bounds constraining the camera target, or null if no constraint is set
+     */
+    fun getLatLngBoundsForCameraTarget(): LatLngBounds? = cameraTargetBounds
+
+    /**
+     * Clamps a LatLng coordinate to remain within the camera target bounds.
+     *
+     * If no bounds are set, returns the input unchanged.
+     *
+     * @param latLng The coordinate to clamp
+     * @return The clamped coordinate
+     */
+    private fun clampToTargetBounds(latLng: LatLng): LatLng {
+        val bounds = cameraTargetBounds ?: return latLng
+
+        val clampedLat = latLng.latitude.coerceIn(bounds.southwest.latitude, bounds.northeast.latitude)
+        val clampedLng = latLng.longitude.coerceIn(bounds.southwest.longitude, bounds.northeast.longitude)
+
+        return LatLng(clampedLat, clampedLng)
+    }
+
+    /**
      * Sets the tile source for rendering the base map.
      *
      * When the tile source changes, the tile cache is cleared to prevent
@@ -264,10 +303,12 @@ class MapController(
     /**
      * Sets the map center to the specified location.
      *
+     * If camera target bounds are set, the center will be clamped to stay within those bounds.
+     *
      * @param latLng The new center location
      */
     fun setCenter(latLng: LatLng) {
-        center = latLng
+        center = clampToTargetBounds(latLng)
     }
 
     /**
@@ -423,8 +464,8 @@ class MapController(
                                 progress,
                             )
 
-                        center = LatLng(interpolatedLat, interpolatedLng)
-                        zoom = interpolatedZoom
+                        setCenter(LatLng(interpolatedLat, interpolatedLng))
+                        setZoom(interpolatedZoom)
 
                         // Fire camera move event during animation
                         onCameraMoveListener?.onCameraMove()
@@ -433,8 +474,8 @@ class MapController(
                         kotlinx.coroutines.delay(16)
                     }
 
-                    center = targetPosition.target
-                    zoom = targetPosition.zoom
+                    setCenter(targetPosition.target)
+                    setZoom(targetPosition.zoom)
                     onTileLoadedCallback?.invoke()
 
                     animationListener?.onFinish()
@@ -476,8 +517,8 @@ class MapController(
 
     private fun applyCameraUpdate(cameraUpdate: CameraUpdate) {
         val targetPosition = calculateTargetPosition(cameraUpdate, getCameraPosition())
-        center = applyPaddingOffset(targetPosition.target, targetPosition.zoom)
-        zoom = targetPosition.zoom
+        setCenter(applyPaddingOffset(targetPosition.target, targetPosition.zoom))
+        setZoom(targetPosition.zoom)
     }
 
     /**
@@ -643,7 +684,7 @@ class MapController(
         val newCenterPixelX = (centerPixelX + panOffsetX).toInt()
         val newCenterPixelY = (centerPixelY + panOffsetY).toInt()
 
-        center = ProjectionUtils.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom.toInt())
+        setCenter(ProjectionUtils.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom.toInt()))
 
         // Reset pan offset
         panOffsetX = 0f

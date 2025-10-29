@@ -167,7 +167,7 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 | Method                                         | Return Type | Status          | Notes                      |
 | ---------------------------------------------- | ----------- | --------------- | -------------------------- |
-| `setLatLngBoundsForCameraTarget(LatLngBounds)` | `void`      | NOT IMPLEMENTED | Planned for future release |
+| `setLatLngBoundsForCameraTarget(LatLngBounds)` | `void`      | IMPLEMENTED     | Constrains camera target to bounds |
 
 ---
 
