@@ -129,37 +129,37 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 | `setTiltGesturesEnabled(boolean)`                       | `void`      | NOT PLANNED | OSM tiles don't support 3D tilt                                |
 | `isTiltGesturesEnabled()`                               | `boolean`   | IMPLEMENTED | Always returns false (tilt not supported)                      |
 | `setCompassEnabled(boolean)`                            | `void`      | NOT PLANNED | Requires rotation support                                      |
-| `isCompassEnabled()`                                    | `boolean`   | NOT PLANNED | Not applicable                                                 |
+| `isCompassEnabled()`                                    | `boolean`   | IMPLEMENTED | Always returns false (compass not implemented)                 |
 | `setMyLocationButtonEnabled(boolean)`                   | `void`      | NOT PLANNED | Requires location services integration                         |
-| `isMyLocationButtonEnabled()`                           | `boolean`   | NOT PLANNED | Not applicable                                                 |
+| `isMyLocationButtonEnabled()`                           | `boolean`   | IMPLEMENTED | Always returns false (location button not implemented)         |
 | `setIndoorLevelPickerEnabled(boolean)`                  | `void`      | NOT PLANNED | No indoor mapping support                                      |
-| `isIndoorLevelPickerEnabled()`                          | `boolean`   | NOT PLANNED | Not applicable                                                 |
+| `isIndoorLevelPickerEnabled()`                          | `boolean`   | IMPLEMENTED | Always returns false (indoor mapping not supported)            |
 | `setMapToolbarEnabled(boolean)`                         | `void`      | NOT PLANNED | No Google Maps integration                                     |
-| `isMapToolbarEnabled()`                                 | `boolean`   | NOT PLANNED | Not applicable                                                 |
+| `isMapToolbarEnabled()`                                 | `boolean`   | IMPLEMENTED | Always returns false (map toolbar not implemented)             |
 | `setAllGesturesEnabled(boolean)`                        | `void`      | IMPLEMENTED | Enable/disable all gesture controls at once                    |
 
 ---
 
 ## GoogleMap Class - Feature Toggles
 
-| Method                         | Return Type | Status      | Notes                                  |
-| ------------------------------ | ----------- | ----------- | -------------------------------------- |
-| `setTrafficEnabled(boolean)`   | `void`      | NOT PLANNED | Requires traffic data source           |
-| `isTrafficEnabled()`           | `boolean`   | NOT PLANNED | Not applicable                         |
-| `setBuildingsEnabled(boolean)` | `void`      | NOT PLANNED | OSM tiles include buildings by default |
-| `isBuildingsEnabled()`         | `boolean`   | NOT PLANNED | Not applicable                         |
-| `setIndoorEnabled(boolean)`    | `void`      | NOT PLANNED | Requires indoor mapping data           |
-| `isIndoorEnabled()`            | `boolean`   | NOT PLANNED | Not applicable                         |
+| Method                         | Return Type | Status      | Notes                                                           |
+| ------------------------------ | ----------- | ----------- | --------------------------------------------------------------- |
+| `setTrafficEnabled(boolean)`   | `void`      | NOT PLANNED | Requires traffic data source                                    |
+| `isTrafficEnabled()`           | `boolean`   | IMPLEMENTED | Always returns false (traffic not supported by OSM tiles)       |
+| `setBuildingsEnabled(boolean)` | `void`      | NOT PLANNED | OSM tiles include buildings by default                          |
+| `isBuildingsEnabled()`         | `boolean`   | IMPLEMENTED | Always returns true (buildings always visible in OSM tiles)     |
+| `setIndoorEnabled(boolean)`    | `void`      | NOT PLANNED | Requires indoor mapping data                                    |
+| `isIndoorEnabled()`            | `boolean`   | IMPLEMENTED | Always returns false (indoor maps not supported by OpenMapView) |
 
 ---
 
 ## GoogleMap Class - Location Layer
 
-| Method                              | Return Type | Status          | Notes                                |
-| ----------------------------------- | ----------- | --------------- | ------------------------------------ |
-| `setMyLocationEnabled(boolean)`     | `void`      | NOT IMPLEMENTED | Can be implemented via custom marker |
-| `isMyLocationEnabled()`             | `boolean`   | NOT IMPLEMENTED | Not applicable                       |
-| `setLocationSource(LocationSource)` | `void`      | NOT IMPLEMENTED | Not applicable                       |
+| Method                              | Return Type | Status          | Notes                                                                |
+| ----------------------------------- | ----------- | --------------- | -------------------------------------------------------------------- |
+| `setMyLocationEnabled(boolean)`     | `void`      | NOT IMPLEMENTED | Can be implemented via custom marker                                 |
+| `isMyLocationEnabled()`             | `boolean`   | IMPLEMENTED     | Always returns false (my-location layer not implemented)             |
+| `setLocationSource(LocationSource)` | `void`      | NOT IMPLEMENTED | Can be implemented via custom location tracking and marker placement |
 
 ---
 
@@ -256,10 +256,10 @@ This method is an OpenMapView-specific feature not present in Google Maps API.
 
 **Implementation Status:**
 
-- IMPLEMENTED: 75 methods (73.5%)
+- IMPLEMENTED: 83 methods (81.4%)
 - PARTIAL: 0 methods (0%)
 - NOT IMPLEMENTED: 0 methods (0%)
-- NOT PLANNED: 27 methods (26.5%)
+- NOT PLANNED: 19 methods (18.6%)
 
 **Core Functionality Coverage:**
 

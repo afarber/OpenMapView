@@ -145,4 +145,28 @@ class UiSettingsTest {
         // Zoom controls visibility should not be affected by setAllGesturesEnabled
         assertTrue(uiSettings.isZoomControlsEnabled)
     }
+
+    @Test
+    fun testIsCompassEnabled_ReturnsFalse() {
+        val uiSettings = UiSettings()
+        assertFalse(uiSettings.isCompassEnabled)
+    }
+
+    @Test
+    fun testIsMyLocationButtonEnabled_ReturnsFalse() {
+        val uiSettings = UiSettings()
+        assertFalse(uiSettings.isMyLocationButtonEnabled)
+    }
+
+    @Test
+    fun testIsIndoorLevelPickerEnabled_ReturnsFalse() {
+        val uiSettings = UiSettings()
+        assertFalse(uiSettings.isIndoorLevelPickerEnabled)
+    }
+
+    @Test
+    fun testIsMapToolbarEnabled_ReturnsFalse() {
+        val uiSettings = UiSettings()
+        assertFalse(uiSettings.isMapToolbarEnabled)
+    }
 }

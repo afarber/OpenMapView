@@ -463,6 +463,41 @@ class OpenMapView
         fun getMapType(): Int = currentMapType
 
         /**
+         * Returns whether indoor maps are enabled.
+         *
+         * @return false - indoor maps are not supported by OpenMapView.
+         *         Standard OSM tiles do not include indoor map rendering.
+         *         Use Google Maps SDK if indoor maps are required.
+         */
+        fun isIndoorEnabled(): Boolean = false
+
+        /**
+         * Returns whether the traffic layer is enabled.
+         *
+         * @return false - traffic layer is not supported by OpenMapView.
+         *         OSM tiles do not include real-time traffic data.
+         *         Consider using custom tile overlays for third-party traffic data.
+         */
+        fun isTrafficEnabled(): Boolean = false
+
+        /**
+         * Returns whether buildings are enabled on the map.
+         *
+         * @return true - buildings are always rendered in OSM tiles and cannot be disabled.
+         *         Building visibility is controlled by the tile server, not the client.
+         */
+        fun isBuildingsEnabled(): Boolean = true
+
+        /**
+         * Returns whether the my-location layer is enabled.
+         *
+         * @return false - my-location layer is not implemented in OpenMapView.
+         *         Developers can show user location using custom markers instead.
+         *         Example: addMarker(Marker(position = userLocation, icon = customLocationIcon))
+         */
+        fun isMyLocationEnabled(): Boolean = false
+
+        /**
          * Returns the current camera position.
          *
          * @return A CameraPosition containing the current target location and zoom level

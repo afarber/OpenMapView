@@ -51,6 +51,34 @@ class UiSettings {
     val isTiltGesturesEnabled: Boolean = false
 
     /**
+     * Whether the compass is enabled.
+     * Compass requires rotation support which is not implemented.
+     * Always returns false.
+     */
+    val isCompassEnabled: Boolean = false
+
+    /**
+     * Whether the my-location button is enabled.
+     * My-location button is not implemented in OpenMapView.
+     * Always returns false.
+     */
+    val isMyLocationButtonEnabled: Boolean = false
+
+    /**
+     * Whether the indoor level picker is enabled.
+     * Indoor mapping is not supported by standard OSM tiles.
+     * Always returns false.
+     */
+    val isIndoorLevelPickerEnabled: Boolean = false
+
+    /**
+     * Whether the map toolbar is enabled.
+     * Map toolbar (Google Maps feature) is not implemented.
+     * Always returns false.
+     */
+    val isMapToolbarEnabled: Boolean = false
+
+    /**
      * Enables or disables all gestures.
      *
      * This affects zoom gestures, scroll gestures, and scroll-during-zoom,
