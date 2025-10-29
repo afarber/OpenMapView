@@ -766,4 +766,80 @@ class MapControllerTest {
         assertNotNull(touched)
         assertEquals("second", touched?.tag)
     }
+
+    @Test
+    fun testSetMapPadding_NoPadding() {
+        controller.setMapPadding(0, 0, 0, 0)
+        val targetLatLng = LatLng(51.5, 0.0)
+
+        controller.moveCamera(CameraUpdateFactory.newLatLng(targetLatLng))
+
+        val position = controller.getCameraPosition()
+        assertEquals(targetLatLng.latitude, position.target.latitude, 0.0001)
+        assertEquals(targetLatLng.longitude, position.target.longitude, 0.0001)
+    }
+
+    @Test
+    fun testSetMapPadding_TopPadding() {
+        val targetLatLng = LatLng(51.5, 0.0)
+        controller.setZoom(10.0)
+
+        // Set top padding - camera should move down to compensate
+        controller.setMapPadding(0, 200, 0, 0)
+        controller.moveCamera(CameraUpdateFactory.newLatLng(targetLatLng))
+
+        val position = controller.getCameraPosition()
+        // With top padding, the center should be shifted south (higher latitude value means north, so lower means south)
+        assertTrue(position.target.latitude > targetLatLng.latitude)
+    }
+
+    @Test
+    fun testSetMapPadding_LeftPadding() {
+        val targetLatLng = LatLng(51.5, 0.0)
+        controller.setZoom(10.0)
+
+        // Set left padding - camera should move right to compensate
+        controller.setMapPadding(200, 0, 0, 0)
+        controller.moveCamera(CameraUpdateFactory.newLatLng(targetLatLng))
+
+        val position = controller.getCameraPosition()
+        // With left padding, the center should be shifted west (lower longitude)
+        assertTrue(position.target.longitude < targetLatLng.longitude)
+    }
+
+    @Test
+    fun testSetMapPadding_SymmetricPadding() {
+        val targetLatLng = LatLng(51.5, 0.0)
+        controller.setZoom(10.0)
+
+        // Symmetric padding should not shift the center
+        controller.setMapPadding(100, 100, 100, 100)
+        controller.moveCamera(CameraUpdateFactory.newLatLng(targetLatLng))
+
+        val position = controller.getCameraPosition()
+        // With symmetric padding, center should remain the same
+        assertEquals(targetLatLng.latitude, position.target.latitude, 0.0001)
+        assertEquals(targetLatLng.longitude, position.target.longitude, 0.0001)
+    }
+
+    @Test
+    fun testSetMapPadding_UpdatePadding() {
+        val targetLatLng = LatLng(51.5, 0.0)
+        controller.setZoom(10.0)
+
+        // Set initial padding
+        controller.setMapPadding(0, 200, 0, 0)
+        controller.moveCamera(CameraUpdateFactory.newLatLng(targetLatLng))
+        val position1 = controller.getCameraPosition()
+
+        // Update padding
+        controller.setMapPadding(0, 0, 0, 0)
+        controller.moveCamera(CameraUpdateFactory.newLatLng(targetLatLng))
+        val position2 = controller.getCameraPosition()
+
+        // Positions should be different
+        assertTrue(position1.target.latitude != position2.target.latitude)
+        // Second position should match target exactly (no padding)
+        assertEquals(targetLatLng.latitude, position2.target.latitude, 0.0001)
+    }
 }

@@ -19,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.io.IOException
+import kotlin.math.pow
 
 /**
  * Core controller managing map state, rendering, and interactions.
@@ -37,6 +38,10 @@ class MapController(
     private var viewHeight = 0
     private var panOffsetX = 0f
     private var panOffsetY = 0f
+    private var paddingLeft = 0
+    private var paddingTop = 0
+    private var paddingRight = 0
+    private var paddingBottom = 0
 
     private var lastDrawnTiles = mutableSetOf<TileCoordinate>()
 
@@ -461,8 +466,46 @@ class MapController(
 
     private fun applyCameraUpdate(cameraUpdate: CameraUpdate) {
         val targetPosition = calculateTargetPosition(cameraUpdate, getCameraPosition())
-        center = targetPosition.target
+        center = applyPaddingOffset(targetPosition.target, targetPosition.zoom)
         zoom = targetPosition.zoom
+    }
+
+    /**
+     * Applies padding offset to a target LatLng position.
+     *
+     * Converts the pixel padding offset to a LatLng offset at the given zoom level,
+     * then adjusts the target position to compensate for the padding.
+     *
+     * @param target The original target position
+     * @param targetZoom The zoom level at which to calculate the offset
+     * @return The adjusted LatLng position accounting for padding
+     */
+    private fun applyPaddingOffset(
+        target: LatLng,
+        targetZoom: Double,
+    ): LatLng {
+        // If no padding, return original target
+        if (paddingLeft == 0 && paddingTop == 0 && paddingRight == 0 && paddingBottom == 0) {
+            return target
+        }
+
+        // Calculate pixel offset from padding (positive values shift the "logical center")
+        val xOffsetPixels = (paddingLeft - paddingRight) / 2.0
+        val yOffsetPixels = (paddingTop - paddingBottom) / 2.0
+
+        // Convert the offset to lat/lng degrees
+        // At the target location, calculate the degrees per pixel
+        val scale = 256.0 * 2.0.pow(targetZoom)
+
+        // Convert pixel offsets to world coordinate offsets
+        val worldXOffset = xOffsetPixels * (1.0 / scale) * 360.0
+        val worldYOffset = yOffsetPixels * (1.0 / scale) * 360.0
+
+        // Apply the offset to the target (subtract because padding pushes content away)
+        return LatLng(
+            target.latitude + worldYOffset,
+            target.longitude - worldXOffset,
+        )
     }
 
     private fun calculateTargetPosition(
@@ -526,6 +569,29 @@ class MapController(
     ) {
         viewWidth = width
         viewHeight = height
+    }
+
+    /**
+     * Sets map padding that affects the logical viewport.
+     *
+     * Padding adjusts where camera operations consider the "center" of the map
+     * without changing the physical view size.
+     *
+     * @param left Left padding in pixels
+     * @param top Top padding in pixels
+     * @param right Right padding in pixels
+     * @param bottom Bottom padding in pixels
+     */
+    fun setMapPadding(
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+    ) {
+        paddingLeft = left
+        paddingTop = top
+        paddingRight = right
+        paddingBottom = bottom
     }
 
     /**

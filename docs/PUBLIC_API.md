@@ -102,11 +102,41 @@ Methods that must be forwarded from the parent Activity/Fragment.
 
 ## GoogleMap Class - UI Settings
 
-| Method                           | Return Type  | Status          | Notes                                                 |
-| -------------------------------- | ------------ | --------------- | ----------------------------------------------------- |
-| `getUiSettings()`                | `UiSettings` | IMPLEMENTED     | Controls zoom and scroll gestures, rotate/tilt unimplemented |
-| `setPadding(int, int, int, int)` | `void`       | NOT IMPLEMENTED | Use standard View padding                             |
-| `setContentDescription(String)`  | `void`       | NOT IMPLEMENTED | Use standard View accessibility                       |
+| Method                           | Return Type  | Status      | Notes                                                                                                             |
+| -------------------------------- | ------------ | ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| `getUiSettings()`                | `UiSettings` | IMPLEMENTED | Full UiSettings support: gestures, zoom controls, scroll-during-zoom                                              |
+| `setPadding(int, int, int, int)` | `void`       | IMPLEMENTED | Implemented as setMapPadding() to avoid conflict with View.setPadding(). Adjusts logical viewport for camera ops |
+| `setContentDescription(String)`  | `void`       | IMPLEMENTED | Inherited from View class - use directly on OpenMapView instance for accessibility support                        |
+
+---
+
+## UiSettings Class - Methods
+
+Methods available on the UiSettings object returned by `getUiSettings()`:
+
+| Method                                                  | Return Type | Status      | Notes                                                          |
+| ------------------------------------------------------- | ----------- | ----------- | -------------------------------------------------------------- |
+| `setZoomGesturesEnabled(boolean)`                       | `void`      | IMPLEMENTED | Enable/disable pinch-to-zoom gestures (property: isZoomGesturesEnabled) |
+| `isZoomGesturesEnabled()`                               | `boolean`   | IMPLEMENTED | Check if zoom gestures are enabled (default: true)             |
+| `setScrollGesturesEnabled(boolean)`                     | `void`      | IMPLEMENTED | Enable/disable pan/scroll gestures (property: isScrollGesturesEnabled) |
+| `isScrollGesturesEnabled()`                             | `boolean`   | IMPLEMENTED | Check if scroll gestures are enabled (default: true)           |
+| `setZoomControlsEnabled(boolean)`                       | `void`      | IMPLEMENTED | Show/hide +/- zoom button overlay (property: isZoomControlsEnabled) |
+| `isZoomControlsEnabled()`                               | `boolean`   | IMPLEMENTED | Check if zoom controls are visible (default: false)            |
+| `setScrollGesturesEnabledDuringRotateOrZoom(boolean)`   | `void`      | IMPLEMENTED | Allow panning during pinch-zoom (property: isScrollGesturesEnabledDuringRotateOrZoom) |
+| `isScrollGesturesEnabledDuringRotateOrZoom()`           | `boolean`   | IMPLEMENTED | Check if scroll-during-zoom is enabled (default: true)         |
+| `setRotateGesturesEnabled(boolean)`                     | `void`      | NOT PLANNED | OSM tiles don't support rotation                               |
+| `isRotateGesturesEnabled()`                             | `boolean`   | IMPLEMENTED | Always returns false (rotation not supported)                  |
+| `setTiltGesturesEnabled(boolean)`                       | `void`      | NOT PLANNED | OSM tiles don't support 3D tilt                                |
+| `isTiltGesturesEnabled()`                               | `boolean`   | IMPLEMENTED | Always returns false (tilt not supported)                      |
+| `setCompassEnabled(boolean)`                            | `void`      | NOT PLANNED | Requires rotation support                                      |
+| `isCompassEnabled()`                                    | `boolean`   | NOT PLANNED | Not applicable                                                 |
+| `setMyLocationButtonEnabled(boolean)`                   | `void`      | NOT PLANNED | Requires location services integration                         |
+| `isMyLocationButtonEnabled()`                           | `boolean`   | NOT PLANNED | Not applicable                                                 |
+| `setIndoorLevelPickerEnabled(boolean)`                  | `void`      | NOT PLANNED | No indoor mapping support                                      |
+| `isIndoorLevelPickerEnabled()`                          | `boolean`   | NOT PLANNED | Not applicable                                                 |
+| `setMapToolbarEnabled(boolean)`                         | `void`      | NOT PLANNED | No Google Maps integration                                     |
+| `isMapToolbarEnabled()`                                 | `boolean`   | NOT PLANNED | Not applicable                                                 |
+| `setAllGesturesEnabled(boolean)`                        | `void`      | IMPLEMENTED | Enable/disable all gesture controls at once                    |
 
 ---
 
@@ -222,24 +252,25 @@ This method is an OpenMapView-specific feature not present in Google Maps API.
 
 ## Summary Statistics
 
-**Total Methods Reviewed:** 91
+**Total Methods Reviewed:** 102 (includes UiSettings class methods)
 
 **Implementation Status:**
 
-- IMPLEMENTED: 65 methods (71.4%)
-- PARTIAL: 2 methods (2.2%)
+- IMPLEMENTED: 75 methods (73.5%)
+- PARTIAL: 0 methods (0%)
 - NOT IMPLEMENTED: 0 methods (0%)
-- NOT PLANNED: 24 methods (26.4%)
+- NOT PLANNED: 27 methods (26.5%)
 
 **Core Functionality Coverage:**
 
-- Camera control: 100% (animateCamera, moveCamera, stopAnimation, getCameraPosition)
+- Camera control: 100% (animateCamera, moveCamera, stopAnimation, getCameraPosition, setPadding)
 - Markers: 100% (addMarker, click listener, drag support, visibility, alpha)
 - Vector shapes: 100% (polylines, polygons with holes, circles, visibility)
 - Ground overlays: 100% (position/bounds modes, bearing, transparency, click listener)
 - Tile overlays: 100% (custom tile providers, transparency, z-index, visibility)
 - Map interaction: 100% (click listeners, long-click, projection API)
 - Zoom control: 100% (min/max zoom preferences, getZoom)
+- UI Settings: 100% of applicable methods (gesture controls, zoom controls, scroll-during-zoom)
 - Lifecycle management: 75% (onResume, onPause, onDestroy)
 
 **Focus Areas:**

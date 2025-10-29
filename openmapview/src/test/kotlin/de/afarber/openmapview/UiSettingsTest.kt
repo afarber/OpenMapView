@@ -79,4 +79,70 @@ class UiSettingsTest {
         assertFalse(uiSettings.isZoomGesturesEnabled)
         assertFalse(uiSettings.isScrollGesturesEnabled)
     }
+
+    @Test
+    fun testDefaultZoomControlsDisabled() {
+        val uiSettings = UiSettings()
+        assertFalse(uiSettings.isZoomControlsEnabled)
+    }
+
+    @Test
+    fun testZoomControlsEnabledProperty() {
+        val uiSettings = UiSettings()
+        uiSettings.isZoomControlsEnabled = true
+        assertTrue(uiSettings.isZoomControlsEnabled)
+
+        uiSettings.isZoomControlsEnabled = false
+        assertFalse(uiSettings.isZoomControlsEnabled)
+    }
+
+    @Test
+    fun testDefaultScrollGesturesEnabledDuringRotateOrZoom() {
+        val uiSettings = UiSettings()
+        assertTrue(uiSettings.isScrollGesturesEnabledDuringRotateOrZoom)
+    }
+
+    @Test
+    fun testScrollGesturesEnabledDuringRotateOrZoomProperty() {
+        val uiSettings = UiSettings()
+        uiSettings.isScrollGesturesEnabledDuringRotateOrZoom = false
+        assertFalse(uiSettings.isScrollGesturesEnabledDuringRotateOrZoom)
+
+        uiSettings.isScrollGesturesEnabledDuringRotateOrZoom = true
+        assertTrue(uiSettings.isScrollGesturesEnabledDuringRotateOrZoom)
+    }
+
+    @Test
+    fun testSetAllGesturesEnabled_IncludesScrollDuringZoom() {
+        val uiSettings = UiSettings()
+        uiSettings.isScrollGesturesEnabledDuringRotateOrZoom = false
+
+        uiSettings.setAllGesturesEnabled(true)
+
+        assertTrue(uiSettings.isZoomGesturesEnabled)
+        assertTrue(uiSettings.isScrollGesturesEnabled)
+        assertTrue(uiSettings.isScrollGesturesEnabledDuringRotateOrZoom)
+    }
+
+    @Test
+    fun testSetAllGesturesEnabled_False_IncludesScrollDuringZoom() {
+        val uiSettings = UiSettings()
+
+        uiSettings.setAllGesturesEnabled(false)
+
+        assertFalse(uiSettings.isZoomGesturesEnabled)
+        assertFalse(uiSettings.isScrollGesturesEnabled)
+        assertFalse(uiSettings.isScrollGesturesEnabledDuringRotateOrZoom)
+    }
+
+    @Test
+    fun testSetAllGesturesEnabled_DoesNotAffectZoomControls() {
+        val uiSettings = UiSettings()
+        uiSettings.isZoomControlsEnabled = true
+
+        uiSettings.setAllGesturesEnabled(false)
+
+        // Zoom controls visibility should not be affected by setAllGesturesEnabled
+        assertTrue(uiSettings.isZoomControlsEnabled)
+    }
 }

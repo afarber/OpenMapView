@@ -36,6 +36,17 @@ import androidx.lifecycle.LifecycleOwner
  * ```kotlin
  * lifecycle.addObserver(mapView)
  * ```
+ *
+ * ## Inherited View Methods
+ *
+ * As OpenMapView extends [FrameLayout], all standard Android View methods are available,
+ * including accessibility support via [android.view.View.setContentDescription].
+ * Use `setContentDescription(String)` to provide accessibility descriptions for screen readers.
+ *
+ * Example:
+ * ```kotlin
+ * mapView.setContentDescription("Map showing current location")
+ * ```
  */
 class OpenMapView
     @JvmOverloads
@@ -47,8 +58,13 @@ class OpenMapView
         DefaultLifecycleObserver {
         private val controller = MapController(context)
         private val attributionOverlay = AttributionOverlay(context)
+        private val zoomControlsOverlay = ZoomControlsOverlay(context)
         private val uiSettings = UiSettings()
         private var currentMapType: Int = MapType.NORMAL
+        private var paddingLeft = 0
+        private var paddingTop = 0
+        private var paddingRight = 0
+        private var paddingBottom = 0
         private var lastTouchX = 0f
         private var lastTouchY = 0f
         private var onMapClickListener: OnMapClickListener? = null
@@ -93,6 +109,9 @@ class OpenMapView
         override fun dispatchDraw(canvas: Canvas) {
             super.dispatchDraw(canvas)
             controller.draw(canvas)
+            if (uiSettings.isZoomControlsEnabled) {
+                zoomControlsOverlay.draw(canvas, width, height)
+            }
             attributionOverlay.draw(canvas, width, height)
         }
 
@@ -158,7 +177,13 @@ class OpenMapView
                         }
 
                         // Pan the map if not dragging a marker and scroll gestures are enabled
-                        if (!isDragging && uiSettings.isScrollGesturesEnabled) {
+                        // Also check if scrolling during zoom is allowed
+                        val allowScroll =
+                            !isDragging &&
+                                uiSettings.isScrollGesturesEnabled &&
+                                (!scaleGestureDetector.isInProgress || uiSettings.isScrollGesturesEnabledDuringRotateOrZoom)
+
+                        if (allowScroll) {
                             // Fire camera move started event on first pan movement
                             if (movementDistance > 0 && !controller.isCameraMoving) {
                                 controller.isCameraMoving = true
@@ -201,7 +226,22 @@ class OpenMapView
                         val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
 
                         if (movementDistance < 10) {
-                            // Check attribution overlay first
+                            // Check zoom controls first (if enabled)
+                            if (uiSettings.isZoomControlsEnabled) {
+                                val zoomAction = zoomControlsOverlay.handleTouch(event.x, event.y)
+                                if (zoomAction != 0) {
+                                    if (zoomAction > 0) {
+                                        controller.setZoom(controller.getZoom() + 1.0)
+                                    } else {
+                                        controller.setZoom(controller.getZoom() - 1.0)
+                                    }
+                                    controller.commitPan()
+                                    invalidate()
+                                    return true
+                                }
+                            }
+
+                            // Check attribution overlay
                             if (attributionOverlay.handleTouch(event.x, event.y, width, height)) {
                                 controller.commitPan()
                                 invalidate()
@@ -464,6 +504,42 @@ class OpenMapView
          * @return The UiSettings object for configuring user interactions
          */
         fun getUiSettings(): UiSettings = uiSettings
+
+        /**
+         * Sets padding on the map.
+         *
+         * This padding affects the logical viewport of the map - it adjusts where the map
+         * considers its "center" to be without changing the physical size of the view.
+         * This is useful when you have UI elements (toolbars, FABs, etc.) overlaying parts
+         * of the map and want camera operations to center content in the visible area.
+         *
+         * Note: This is different from View.setPadding(). View padding reduces the drawable
+         * area, while map padding keeps the map full-size but adjusts camera positioning.
+         *
+         * Example:
+         * ```kotlin
+         * // Account for a 200px top toolbar
+         * mapView.setMapPadding(0, 200, 0, 0)
+         * // Now moveCamera will center 100px lower to account for the toolbar
+         * ```
+         *
+         * @param left Left padding in pixels
+         * @param top Top padding in pixels
+         * @param right Right padding in pixels
+         * @param bottom Bottom padding in pixels
+         */
+        fun setMapPadding(
+            left: Int,
+            top: Int,
+            right: Int,
+            bottom: Int,
+        ) {
+            paddingLeft = left
+            paddingTop = top
+            paddingRight = right
+            paddingBottom = bottom
+            controller.setMapPadding(left, top, right, bottom)
+        }
 
         /**
          * Moves the camera to a new position instantly, without animation.
