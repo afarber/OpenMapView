@@ -14,7 +14,7 @@ Add to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("de.afarber:openmapview:0.6.0")
+    implementation("de.afarber:openmapview:0.7.0")
 }
 ```
 
@@ -23,9 +23,14 @@ The library is available on [Maven Central](https://central.sonatype.com/artifac
 ## Features
 
 - Drop-in compatible with Google `MapView` (non-deprecated methods only)
-- Lightweight, pure Kotlin implementation
-- OSM tiles via standard APIs
-- Smooth camera animations with customizable durations
+- Lightweight, pure Kotlin implementation with zero Google dependencies
+- OSM tiles via standard APIs (free, no API keys required)
+- Smooth camera animations with customizable durations and callbacks
+- 7 overlay types: Markers, Polylines, Polygons, Circles, Ground Overlays, Tile Overlays, Info Windows
+- 5 map types: Normal (OSM), Terrain (OpenTopoMap), Humanitarian, Cycle, None
+- Built-in zoom controls (+/- buttons) via UiSettings
+- External app integration (open in Google Maps, OsmAnd, etc. via geo: URI)
+- GeoJSON import support
 - Extensible marker, overlay, and gesture handling
 - MIT licensed (use freely in commercial apps)
 
@@ -40,17 +45,17 @@ The documentation is automatically generated from KDoc comments and updated with
 Explore the example applications to see OpenMapView in action:
 
 - [Example01Pan](examples/Example01Pan) - Basic map panning with touch gestures
-- [Example02Zoom](examples/Example02Zoom) - Zoom controls and pinch-to-zoom
-- [Example03Markers](examples/Example03Markers) - Marker overlays with custom icons
-- [Example04Polylines](examples/Example04Polylines) - Polylines, polygons, and polygons with holes
-- [Example05Camera](examples/Example05Camera) - Camera animations with callbacks
-- [Example06Clicks](examples/Example06Clicks) - Map click and long-click listeners
+- [Example02Zoom](examples/Example02Zoom) - Built-in zoom controls (+/- buttons) and zoom level display
+- [Example03Markers](examples/Example03Markers) - Marker overlays with custom colors and info windows
+- [Example04Polylines](examples/Example04Polylines) - Polylines, polygons, and polygons with holes (donut shapes)
+- [Example05Camera](examples/Example05Camera) - Camera animations with callbacks, custom durations, and built-in zoom controls
+- [Example06Clicks](examples/Example06Clicks) - Map click and long-click listeners with coordinate display
 - [Example07DraggableMarkers](examples/Example07DraggableMarkers) - Draggable markers with drag event listeners
-- [Example08Circles](examples/Example08Circles) - Circles with various radii, styling, and z-index ordering
-- [Example09Overlays](examples/Example09Overlays) - Tile overlays with transparency control (OpenSeaMap, OpenRailwayMap, Hiking Trails, OpenSnowMap)
+- [Example08Circles](examples/Example08Circles) - Circles with radius, styling, z-index ordering, and click listeners
+- [Example09Overlays](examples/Example09Overlays) - Tile overlays with transparency control (OpenSeaMap, Railways, Trails, Snow)
 - [Example10GroundOverlays](examples/Example10GroundOverlays) - Ground overlays with position/bounds modes, rotation, and transparency
-- [Example11MapTypes](examples/Example11MapTypes) - Switching between map types (Normal, Terrain, Humanitarian, Cycle)
-- [Example12Toolbar](examples/Example12Toolbar) - Open location in external map apps (geo intent with browser fallback)
+- [Example11MapTypes](examples/Example11MapTypes) - Switching between 5 map types (Normal, Terrain, Humanitarian, Cycle, None)
+- [Example12Toolbar](examples/Example12Toolbar) - Open location in external map apps via geo: URI with OpenStreetMap browser fallback
 
 ![Example05Camera Demo](examples/Example05Camera/screenshot.gif)
 

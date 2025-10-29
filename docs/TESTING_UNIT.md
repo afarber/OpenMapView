@@ -50,21 +50,31 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (107 tests)
+### Current Test Coverage (260+ tests across 21 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
 | **AttributionOverlayTest** | 4 | Attribution rendering and touch detection |
-| **BitmapDescriptorFactoryTest** | 7 | Marker icon generation with colors |
+| **BitmapDescriptorFactoryTest** | 18 | Marker icon generation with colors and custom images |
+| **CameraPositionTest** | 6 | Camera position validation and equality |
+| **CameraUpdateFactoryTest** | 8 | Camera update creation (zoom, pan, position) |
 | **DiskTileCacheTest** | 4 | Persistent disk cache with DiskLruCache |
-| **MapControllerTest** | 40 | Zoom, pan, marker/polyline/polygon management, touch detection |
-| **MarkerTest** | 8 | Marker creation, equality, and properties |
-| **PolygonTest** | 12 | Polygon creation, validation, holes, and styling |
-| **PolylineTest** | 10 | Polyline creation, validation, and styling |
+| **GeoJsonParserTest** | 14 | GeoJSON parsing (Point, LineString, Polygon, Multi*, Features) |
+| **IntentUtilsTest** | 4 | External app integration (geo: URI, OSM fallback) |
+| **LatLngBoundsTest** | 13 | Lat/lng bounds calculations and contains checks |
+| **MapControllerTest** | 63 | Zoom, pan, marker/polyline/polygon/circle management, touch detection, padding |
+| **MapFeaturesTest** | 4 | Feature query methods (traffic, indoor, buildings, myLocation) |
+| **MapTypeTest** | 9 | Map type switching and validation |
+| **MarkerTest** | 24 | Marker creation, equality, properties, info windows, dragging |
+| **PolygonTest** | 16 | Polygon creation, validation, holes, and styling |
+| **PolylineTest** | 16 | Polyline creation, validation, and styling |
 | **ProjectionTest** | 12 | Web Mercator projection calculations |
 | **TileCacheTest** | 6 | Memory LRU cache behavior |
 | **TileDownloaderTest** | 2 | HTTP tile downloading with mocked Ktor client |
+| **TileSourceTest** | 7 | Tile source URL generation and attribution |
+| **UiSettingsTest** | 19 | UI settings (gestures, zoom controls, not-implemented features) |
 | **ViewportCalculatorTest** | 10 | Visible tile calculation |
+| **VisibleRegionTest** | 4 | Visible region bounds and corners |
 
 ### Example Test
 

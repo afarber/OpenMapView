@@ -273,20 +273,22 @@ This method is an OpenMapView-specific feature not present in Google Maps API. S
 
 **Core Functionality Coverage:**
 
-- Camera control: 100% (animateCamera, moveCamera, stopAnimation, getCameraPosition, setPadding)
-- Markers: 100% (addMarker, click listener, drag support, visibility, alpha)
-- Vector shapes: 100% (polylines, polygons with holes, circles, visibility)
-- Ground overlays: 100% (position/bounds modes, bearing, transparency, click listener)
-- Tile overlays: 100% (custom tile providers, transparency, z-index, visibility)
-- Map interaction: 100% (click listeners, long-click, projection API)
-- Zoom control: 100% (min/max zoom preferences, getZoom)
+- Camera control: 100% (animateCamera, moveCamera, stopAnimation, getCameraPosition, setPadding, zoom constraints)
+- Markers: 100% (addMarker, click listener, drag support, visibility, alpha, info windows, custom icons)
+- Vector shapes: 100% (polylines, polygons with holes, circles, visibility, click listeners, z-index)
+- Ground overlays: 100% (position/bounds modes, rotation, transparency, click listener)
+- Tile overlays: 100% (custom tile providers, transparency, z-index, visibility, predefined OSM providers)
+- Map interaction: 100% (click listeners, long-click, projection API, visible region)
+- Zoom control: 100% (min/max zoom preferences, getZoom, built-in zoom controls)
+- Map types: 100% (5 types: NONE, NORMAL, TERRAIN, HUMANITARIAN, CYCLE)
 - UI Settings: 100% of applicable methods (gesture controls, zoom controls, scroll-during-zoom)
 - Lifecycle management: 75% (onResume, onPause, onDestroy)
 
 **OpenMapView-Specific Features:**
 In addition to Google Maps API compatibility, OpenMapView provides:
-- GeoJSON import (addGeoJson)
-- External map integration (openInExternalApp) - opens location in external map apps or browser
+- GeoJSON import (addGeoJson) - supports Point, LineString, Polygon, Multi* variants, FeatureCollection
+- External map integration (openInExternalApp) - opens location in external map apps via geo: URI with OpenStreetMap browser fallback
+- Built-in zoom controls (UiSettings.isZoomControlsEnabled) - circular +/- buttons rendered automatically
 
 **Focus Areas:**
 OpenMapView prioritizes lightweight, essential mapping features for applications that need basic map display, markers, shapes, and camera animations without the complexity and overhead of Google Play Services.
