@@ -35,8 +35,36 @@ import kotlin.math.sin
 class MapController(
     private val context: Context,
 ) {
+    companion object {
+        private const val DEFAULT_MIN_ZOOM = 2.0
+        private const val DEFAULT_MAX_ZOOM = 19.0
+        private const val TILE_SIZE = 256f
+    }
+
+    private var minZoomPreference = DEFAULT_MIN_ZOOM
+    private var maxZoomPreference = DEFAULT_MAX_ZOOM
+    private var cameraTargetBounds: LatLngBounds? = null
+
     private var zoom = 10.0
     private var center = LatLng(0.0, 0.0)
+
+    /**
+     * Clamps a LatLng coordinate to remain within the camera target bounds.
+     *
+     * If no bounds are set, returns the input unchanged.
+     *
+     * @param latLng The coordinate to clamp
+     * @return The clamped coordinate
+     */
+    private fun clampToTargetBounds(latLng: LatLng): LatLng {
+        val bounds = cameraTargetBounds ?: return latLng
+
+        val clampedLat = latLng.latitude.coerceIn(bounds.southwest.latitude, bounds.northeast.latitude)
+        val clampedLng = latLng.longitude.coerceIn(bounds.southwest.longitude, bounds.northeast.longitude)
+
+        return LatLng(clampedLat, clampedLng)
+    }
+
     private var viewWidth = 0
     private var viewHeight = 0
     private var panOffsetX = 0f
@@ -47,16 +75,6 @@ class MapController(
     private var paddingBottom = 0
 
     private var lastDrawnTiles = mutableSetOf<TileCoordinate>()
-
-    companion object {
-        private const val DEFAULT_MIN_ZOOM = 2.0
-        private const val DEFAULT_MAX_ZOOM = 19.0
-        private const val TILE_SIZE = 256f
-    }
-
-    private var minZoomPreference = DEFAULT_MIN_ZOOM
-    private var maxZoomPreference = DEFAULT_MAX_ZOOM
-    private var cameraTargetBounds: LatLngBounds? = null
 
     private val markers = mutableListOf<Marker>()
     private val defaultMarkerIcon by lazy { MarkerIconFactory.getDefaultIcon() }
@@ -217,7 +235,7 @@ class MapController(
     fun setLatLngBoundsForCameraTarget(bounds: LatLngBounds?) {
         cameraTargetBounds = bounds
         // Apply constraint immediately if camera is currently outside bounds
-        bounds?.let { center = clampToTargetBounds(center) }
+        bounds?.let { setCenter(center) }
     }
 
     /**
@@ -226,23 +244,6 @@ class MapController(
      * @return The bounds constraining the camera target, or null if no constraint is set
      */
     fun getLatLngBoundsForCameraTarget(): LatLngBounds? = cameraTargetBounds
-
-    /**
-     * Clamps a LatLng coordinate to remain within the camera target bounds.
-     *
-     * If no bounds are set, returns the input unchanged.
-     *
-     * @param latLng The coordinate to clamp
-     * @return The clamped coordinate
-     */
-    private fun clampToTargetBounds(latLng: LatLng): LatLng {
-        val bounds = cameraTargetBounds ?: return latLng
-
-        val clampedLat = latLng.latitude.coerceIn(bounds.southwest.latitude, bounds.northeast.latitude)
-        val clampedLng = latLng.longitude.coerceIn(bounds.southwest.longitude, bounds.northeast.longitude)
-
-        return LatLng(clampedLat, clampedLng)
-    }
 
     /**
      * Sets the tile source for rendering the base map.
