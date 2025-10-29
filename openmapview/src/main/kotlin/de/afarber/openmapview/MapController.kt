@@ -288,8 +288,11 @@ class MapController(
     /**
      * Creates a Projection instance for coordinate conversions.
      *
-     * The projection captures the current map state (center, zoom, view size, pan offset)
+     * The projection captures the current map state (center, zoom, view size, pan offset, padding)
      * and provides methods for converting between screen and geographic coordinates.
+     *
+     * If map padding is set, the projection accounts for the logical viewport offset in all
+     * coordinate conversions and visible region calculations.
      *
      * @return A Projection instance for the current map state
      */
@@ -301,6 +304,10 @@ class MapController(
             viewHeight = viewHeight,
             panOffsetX = panOffsetX,
             panOffsetY = panOffsetY,
+            paddingLeft = paddingLeft,
+            paddingTop = paddingTop,
+            paddingRight = paddingRight,
+            paddingBottom = paddingBottom,
         )
 
     /**

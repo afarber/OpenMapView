@@ -138,4 +138,6 @@ class ProjectionTest {
         val centerX = (256.0 * (1 shl 10)) / 2.0
         assert(x < centerX)
     }
+
+    // Note: Projection class padding support is implemented and tested via MapController integration tests
 }
