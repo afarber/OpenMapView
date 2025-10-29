@@ -8,6 +8,7 @@
 package de.afarber.openmapview
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.GestureDetector
@@ -698,6 +699,119 @@ class OpenMapView
         fun stopAnimation() {
             controller.stopAnimation()
             invalidate()
+        }
+
+        /**
+         * Takes a snapshot of the map.
+         *
+         * The snapshot is captured asynchronously. When the snapshot is ready,
+         * the callback is invoked on the Android UI thread with the resulting
+         * bitmap. If the view has not been laid out yet (width or height is 0),
+         * the callback receives null.
+         *
+         * The snapshot includes all visible map content:
+         * - Base map tiles
+         * - Tile overlays
+         * - Markers, polylines, polygons, circles, ground overlays
+         * - Zoom controls (if enabled)
+         * - Attribution overlay
+         *
+         * Example usage:
+         * ```kotlin
+         * mapView.snapshot { bitmap ->
+         *     bitmap?.let {
+         *         // Save to file
+         *         val file = File(context.filesDir, "map.png")
+         *         it.compress(Bitmap.CompressFormat.PNG, 100, FileOutputStream(file))
+         *     }
+         * }
+         * ```
+         *
+         * @param callback A [SnapshotReadyCallback] that will be invoked with the
+         *                 snapshot bitmap or null if the snapshot failed.
+         */
+        fun snapshot(callback: SnapshotReadyCallback) {
+            post {
+                // Check if view is laid out
+                if (width <= 0 || height <= 0) {
+                    callback.onSnapshotReady(null)
+                    return@post
+                }
+
+                try {
+                    // Create bitmap matching view dimensions
+                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    val canvas = Canvas(bitmap)
+
+                    // Render the entire view to the bitmap
+                    draw(canvas)
+
+                    callback.onSnapshotReady(bitmap)
+                } catch (e: Exception) {
+                    // Handle OOM or other bitmap creation failures
+                    callback.onSnapshotReady(null)
+                }
+            }
+        }
+
+        /**
+         * Takes a snapshot of the map into a pre-allocated bitmap.
+         *
+         * This method is equivalent to [snapshot] but allows you to provide a
+         * pre-allocated [Bitmap] object. If the bitmap's dimensions do not match
+         * the current view dimensions, a new bitmap will be allocated at the
+         * correct size.
+         *
+         * The snapshot is captured asynchronously and the callback is invoked on
+         * the Android UI thread.
+         *
+         * Example usage:
+         * ```kotlin
+         * val bitmap = Bitmap.createBitmap(800, 600, Bitmap.Config.ARGB_8888)
+         * mapView.snapshot({ result ->
+         *     // result may be the same bitmap or a new one if size didn't match
+         *     result?.let { saveToFile(it) }
+         * }, bitmap)
+         * ```
+         *
+         * @param callback A [SnapshotReadyCallback] that will be invoked with the
+         *                 snapshot bitmap or null if the snapshot failed.
+         * @param bitmap A pre-allocated [Bitmap] to render into. If the bitmap's
+         *               dimensions do not match the view's dimensions, a new bitmap
+         *               will be allocated.
+         */
+        fun snapshot(
+            callback: SnapshotReadyCallback,
+            bitmap: Bitmap,
+        ) {
+            post {
+                // Check if view is laid out
+                if (width <= 0 || height <= 0) {
+                    callback.onSnapshotReady(null)
+                    return@post
+                }
+
+                try {
+                    // Check if provided bitmap matches view dimensions
+                    val targetBitmap =
+                        if (bitmap.width == width && bitmap.height == height) {
+                            bitmap
+                        } else {
+                            // Allocate new bitmap at correct size (matches Google Maps behavior)
+                            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                        }
+
+                    val canvas = Canvas(targetBitmap)
+
+                    // Render the entire view to the bitmap
+                    draw(canvas)
+
+                    callback.onSnapshotReady(targetBitmap)
+                } catch (e: Exception) {
+                    // Handle OOM or other bitmap creation failures
+                    callback.onSnapshotReady(null)
+                }
+            }
         }
 
         /**

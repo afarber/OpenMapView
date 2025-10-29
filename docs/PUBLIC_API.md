@@ -173,10 +173,10 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 ## GoogleMap Class - Snapshots
 
-| Method                                    | Return Type | Status          | Notes                              |
-| ----------------------------------------- | ----------- | --------------- | ---------------------------------- |
-| `snapshot(SnapshotReadyCallback)`         | `void`      | NOT IMPLEMENTED | Can be implemented via View.draw() |
-| `snapshot(SnapshotReadyCallback, Bitmap)` | `void`      | NOT IMPLEMENTED | Can be implemented via View.draw() |
+| Method                                    | Return Type | Status      | Notes                                                                                                                                                     |
+| ----------------------------------------- | ----------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `snapshot(SnapshotReadyCallback)`         | `void`      | IMPLEMENTED | Renders current map view to Bitmap. Callback invoked asynchronously on UI thread. Includes all UI overlays (zoom controls, attribution). Returns null if view not laid out. |
+| `snapshot(SnapshotReadyCallback, Bitmap)` | `void`      | IMPLEMENTED | Same as above but with pre-allocated Bitmap. Allocates new bitmap if size doesn't match view dimensions.                                                |
 
 ---
 
