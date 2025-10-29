@@ -1045,4 +1045,159 @@ class MapControllerTest {
         assertTrue(center.longitude >= bounds2.southwest.longitude)
         assertTrue(center.longitude <= bounds2.northeast.longitude)
     }
+
+    @Test
+    fun testScrollBy_MovesMapByPixels() {
+        controller.setViewSize(1080, 1920)
+        controller.setZoom(14.0)
+        val startPosition = LatLng(51.5, 0.0)
+        controller.setCenter(startPosition)
+
+        val update = CameraUpdateFactory.scrollBy(100f, 50f)
+        controller.moveCamera(update)
+
+        val endPosition = controller.getCenter()
+        // Position should have changed
+        assertTrue(startPosition.latitude != endPosition.latitude)
+        assertTrue(startPosition.longitude != endPosition.longitude)
+        // Zoom should remain the same
+        assertEquals(14.0, controller.getZoom(), 0.001)
+    }
+
+    @Test
+    fun testScrollBy_NegativeValues() {
+        controller.setViewSize(1080, 1920)
+        controller.setZoom(14.0)
+        val startPosition = LatLng(51.5, 0.0)
+        controller.setCenter(startPosition)
+
+        val update = CameraUpdateFactory.scrollBy(-100f, -50f)
+        controller.moveCamera(update)
+
+        val endPosition = controller.getCenter()
+        // Position should have changed in opposite direction
+        assertTrue(startPosition.latitude != endPosition.latitude)
+        assertTrue(startPosition.longitude != endPosition.longitude)
+        assertEquals(14.0, controller.getZoom(), 0.001)
+    }
+
+    @Test
+    fun testNewLatLngBounds_CentersOnBoundsCenter() {
+        controller.setViewSize(1080, 1920)
+        val bounds = LatLngBounds(LatLng(51.46, 7.24), LatLng(51.47, 7.25))
+
+        val update = CameraUpdateFactory.newLatLngBounds(bounds, 100)
+        controller.moveCamera(update)
+
+        val position = controller.getCameraPosition()
+        val boundsCenter = bounds.getCenter()
+
+        // Center should be at bounds center
+        assertEquals(boundsCenter.latitude, position.target.latitude, 0.01)
+        assertEquals(boundsCenter.longitude, position.target.longitude, 0.01)
+    }
+
+    @Test
+    fun testNewLatLngBounds_CalculatesAppropriateZoom() {
+        controller.setViewSize(1080, 1920)
+        val bounds = LatLngBounds(LatLng(51.46, 7.24), LatLng(51.47, 7.25))
+
+        val update = CameraUpdateFactory.newLatLngBounds(bounds, 100)
+        controller.moveCamera(update)
+
+        val zoom = controller.getZoom()
+        // Zoom should be within valid range
+        assertTrue(zoom >= 2.0)
+        assertTrue(zoom <= 19.0)
+        // For this small area, zoom should be relatively high
+        assertTrue(zoom >= 10.0)
+    }
+
+    @Test
+    fun testNewLatLngBounds_RespectsMinMaxZoom() {
+        controller.setViewSize(1080, 1920)
+        controller.setMinZoomPreference(10.0f)
+        controller.setMaxZoomPreference(15.0f)
+
+        // Create very small bounds that would require high zoom
+        val bounds = LatLngBounds(LatLng(51.5, 0.0), LatLng(51.501, 0.001))
+
+        val update = CameraUpdateFactory.newLatLngBounds(bounds, 50)
+        controller.moveCamera(update)
+
+        // Should be clamped to max zoom preference
+        val zoom = controller.getZoom()
+        assertTrue(zoom <= 15.0)
+        assertTrue(zoom >= 10.0)
+    }
+
+    @Test
+    fun testNewLatLngBounds_WithLargeBounds() {
+        controller.setViewSize(1080, 1920)
+        // Large bounds spanning multiple degrees
+        val bounds = LatLngBounds(LatLng(45.0, 5.0), LatLng(55.0, 15.0))
+
+        val update = CameraUpdateFactory.newLatLngBounds(bounds, 50)
+        controller.moveCamera(update)
+
+        val zoom = controller.getZoom()
+        // Should use relatively low zoom for large area
+        assertTrue(zoom >= 2.0)
+        assertTrue(zoom <= 10.0)
+    }
+
+    @Test
+    fun testNewLatLngBoundsWithSize_WorksBeforeViewLayout() {
+        // Don't set view size - simulating before layout
+        val bounds = LatLngBounds(LatLng(51.46, 7.24), LatLng(51.47, 7.25))
+
+        // Provide explicit dimensions
+        val update = CameraUpdateFactory.newLatLngBounds(bounds, 1080, 1920, 100)
+        controller.moveCamera(update)
+
+        val position = controller.getCameraPosition()
+        val boundsCenter = bounds.getCenter()
+
+        // Should still work with provided dimensions
+        assertEquals(boundsCenter.latitude, position.target.latitude, 0.01)
+        assertEquals(boundsCenter.longitude, position.target.longitude, 0.01)
+        assertTrue(controller.getZoom() >= 2.0)
+        assertTrue(controller.getZoom() <= 19.0)
+    }
+
+    @Test
+    fun testNewLatLngBounds_WithPadding() {
+        controller.setViewSize(1080, 1920)
+        val bounds = LatLngBounds(LatLng(51.46, 7.24), LatLng(51.47, 7.25))
+
+        // With large padding, should zoom out more to fit
+        val updateLargePadding = CameraUpdateFactory.newLatLngBounds(bounds, 300)
+        controller.moveCamera(updateLargePadding)
+        val zoomWithLargePadding = controller.getZoom()
+
+        // Reset
+        controller.setZoom(10.0)
+
+        // With small padding, should zoom in more
+        val updateSmallPadding = CameraUpdateFactory.newLatLngBounds(bounds, 10)
+        controller.moveCamera(updateSmallPadding)
+        val zoomWithSmallPadding = controller.getZoom()
+
+        // Smaller padding should result in higher zoom
+        assertTrue(zoomWithSmallPadding > zoomWithLargePadding)
+    }
+
+    @Test
+    fun testScrollBy_PreservesZoom() {
+        controller.setViewSize(1080, 1920)
+        val initialZoom = 12.5
+        controller.setZoom(initialZoom)
+        controller.setCenter(LatLng(51.5, 0.0))
+
+        val update = CameraUpdateFactory.scrollBy(200f, 100f)
+        controller.moveCamera(update)
+
+        // Zoom must be exactly preserved
+        assertEquals(initialZoom, controller.getZoom(), 0.0001)
+    }
 }

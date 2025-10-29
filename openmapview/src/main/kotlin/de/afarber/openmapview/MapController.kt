@@ -560,6 +560,44 @@ class MapController(
         )
     }
 
+    /**
+     * Calculates the appropriate zoom level to fit bounds within the specified viewport dimensions.
+     *
+     * Iterates from maximum zoom down to minimum zoom, finding the largest zoom level
+     * where the bounds fit entirely within the viewport.
+     *
+     * @param bounds The geographic bounds to fit
+     * @param viewWidth The viewport width in pixels
+     * @param viewHeight The viewport height in pixels
+     * @return The calculated zoom level (between 2.0 and 19.0)
+     */
+    private fun calculateZoomForBounds(
+        bounds: LatLngBounds,
+        viewWidth: Int,
+        viewHeight: Int,
+    ): Double {
+        // Ensure we have valid viewport dimensions
+        if (viewWidth <= 0 || viewHeight <= 0) {
+            return DEFAULT_MIN_ZOOM
+        }
+
+        // Iterate from max zoom down to find the largest zoom that fits
+        for (zoom in 19 downTo 2) {
+            val (swX, swY) = ProjectionUtils.latLngToPixel(bounds.southwest, zoom)
+            val (neX, neY) = ProjectionUtils.latLngToPixel(bounds.northeast, zoom)
+
+            val boundsWidth = kotlin.math.abs(neX - swX)
+            val boundsHeight = kotlin.math.abs(swY - neY) // Y increases downward
+
+            if (boundsWidth <= viewWidth && boundsHeight <= viewHeight) {
+                return zoom.toDouble()
+            }
+        }
+
+        // Fallback to minimum zoom
+        return DEFAULT_MIN_ZOOM
+    }
+
     private fun calculateTargetPosition(
         cameraUpdate: CameraUpdate,
         currentPosition: CameraPosition,
@@ -599,6 +637,50 @@ class MapController(
                     target = currentPosition.target,
                     zoom = (currentPosition.zoom + cameraUpdate.amount).coerceIn(minZoomPreference, maxZoomPreference),
                 )
+            is CameraUpdate.ScrollBy -> {
+                // Convert current center to pixel coordinates
+                val (centerPixelX, centerPixelY) =
+                    ProjectionUtils.latLngToPixel(
+                        currentPosition.target,
+                        currentPosition.zoom.toInt(),
+                    )
+
+                // Apply pixel scroll offset
+                val newPixelX = (centerPixelX + cameraUpdate.xPixels).toInt()
+                val newPixelY = (centerPixelY + cameraUpdate.yPixels).toInt()
+
+                // Convert back to LatLng
+                val newTarget = ProjectionUtils.pixelToLatLng(newPixelX, newPixelY, currentPosition.zoom.toInt())
+
+                CameraPosition(
+                    target = newTarget,
+                    zoom = currentPosition.zoom,
+                )
+            }
+            is CameraUpdate.NewLatLngBounds -> {
+                val zoom =
+                    calculateZoomForBounds(
+                        bounds = cameraUpdate.bounds,
+                        viewWidth = viewWidth - cameraUpdate.padding * 2,
+                        viewHeight = viewHeight - cameraUpdate.padding * 2,
+                    )
+                CameraPosition(
+                    target = cameraUpdate.bounds.getCenter(),
+                    zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference),
+                )
+            }
+            is CameraUpdate.NewLatLngBoundsWithSize -> {
+                val zoom =
+                    calculateZoomForBounds(
+                        bounds = cameraUpdate.bounds,
+                        viewWidth = cameraUpdate.width - cameraUpdate.padding * 2,
+                        viewHeight = cameraUpdate.height - cameraUpdate.padding * 2,
+                    )
+                CameraPosition(
+                    target = cameraUpdate.bounds.getCenter(),
+                    zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference),
+                )
+            }
         }
 
     private fun interpolate(

@@ -61,4 +61,33 @@ sealed class CameraUpdate {
     internal data class ZoomBy(
         val amount: Double,
     ) : CameraUpdate()
+
+    /**
+     * Scrolls the map by specified pixel amounts.
+     * Positive x moves viewport right, positive y moves viewport down.
+     */
+    internal data class ScrollBy(
+        val xPixels: Float,
+        val yPixels: Float,
+    ) : CameraUpdate()
+
+    /**
+     * Moves camera to show the entire bounds with uniform padding.
+     * Calculates appropriate zoom level automatically.
+     */
+    internal data class NewLatLngBounds(
+        val bounds: LatLngBounds,
+        val padding: Int,
+    ) : CameraUpdate()
+
+    /**
+     * Moves camera to show the entire bounds in specified viewport dimensions with padding.
+     * Useful when map view hasn't been laid out yet.
+     */
+    internal data class NewLatLngBoundsWithSize(
+        val bounds: LatLngBounds,
+        val width: Int,
+        val height: Int,
+        val padding: Int,
+    ) : CameraUpdate()
 }

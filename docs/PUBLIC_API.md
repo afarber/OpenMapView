@@ -237,12 +237,12 @@ This method is an OpenMapView-specific feature not present in Google Maps API. S
 | `newLatLngZoom(LatLng, float)`                 | `CameraUpdate` | IMPLEMENTED     | Move to location and zoom  |
 | `newCameraPosition(CameraPosition)`            | `CameraUpdate` | IMPLEMENTED     | Move to camera position    |
 | `zoomIn()`                                     | `CameraUpdate` | IMPLEMENTED     | Increment zoom by 1        |
-| `zoomOut()`                                    | `CameraUpdate` | IMPLEMENTED     | Decrement zoom by 1        |
-| `zoomTo(float)`                                | `CameraUpdate` | IMPLEMENTED     | Set specific zoom level    |
-| `zoomBy(float)`                                | `CameraUpdate` | IMPLEMENTED     | Adjust zoom by amount      |
-| `newLatLngBounds(LatLngBounds, int)`           | `CameraUpdate` | NOT IMPLEMENTED | Planned for future release |
-| `newLatLngBounds(LatLngBounds, int, int, int)` | `CameraUpdate` | NOT IMPLEMENTED | Planned for future release |
-| `scrollBy(float, float)`                       | `CameraUpdate` | NOT IMPLEMENTED | Planned for future release |
+| `zoomOut()`                                    | `CameraUpdate` | IMPLEMENTED     | Decrement zoom by 1                |
+| `zoomTo(float)`                                | `CameraUpdate` | IMPLEMENTED     | Set specific zoom level            |
+| `zoomBy(float)`                                | `CameraUpdate` | IMPLEMENTED     | Adjust zoom by amount              |
+| `newLatLngBounds(LatLngBounds, int)`           | `CameraUpdate` | IMPLEMENTED     | Fit bounds with padding            |
+| `newLatLngBounds(LatLngBounds, int, int, int)` | `CameraUpdate` | IMPLEMENTED     | Fit bounds in specified dimensions |
+| `scrollBy(float, float)`                       | `CameraUpdate` | IMPLEMENTED     | Scroll map by pixel offset         |
 
 ---
 

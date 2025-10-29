@@ -86,4 +86,44 @@ class CameraUpdateFactoryTest {
         assertTrue(update is CameraUpdate.ZoomBy)
         assertEquals(amount, (update as CameraUpdate.ZoomBy).amount, 0.0001)
     }
+
+    @Test
+    fun `scrollBy creates ScrollBy update`() {
+        val xPixels = 100f
+        val yPixels = -50f
+        val update = CameraUpdateFactory.scrollBy(xPixels, yPixels)
+
+        assertTrue(update is CameraUpdate.ScrollBy)
+        val scrollUpdate = update as CameraUpdate.ScrollBy
+        assertEquals(xPixels, scrollUpdate.xPixels, 0.01f)
+        assertEquals(yPixels, scrollUpdate.yPixels, 0.01f)
+    }
+
+    @Test
+    fun `newLatLngBounds creates NewLatLngBounds update`() {
+        val bounds = LatLngBounds(LatLng(51.46, 7.24), LatLng(51.47, 7.25))
+        val padding = 100
+        val update = CameraUpdateFactory.newLatLngBounds(bounds, padding)
+
+        assertTrue(update is CameraUpdate.NewLatLngBounds)
+        val boundsUpdate = update as CameraUpdate.NewLatLngBounds
+        assertEquals(bounds, boundsUpdate.bounds)
+        assertEquals(padding, boundsUpdate.padding)
+    }
+
+    @Test
+    fun `newLatLngBounds with dimensions creates NewLatLngBoundsWithSize update`() {
+        val bounds = LatLngBounds(LatLng(51.46, 7.24), LatLng(51.47, 7.25))
+        val width = 1080
+        val height = 1920
+        val padding = 50
+        val update = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding)
+
+        assertTrue(update is CameraUpdate.NewLatLngBoundsWithSize)
+        val boundsUpdate = update as CameraUpdate.NewLatLngBoundsWithSize
+        assertEquals(bounds, boundsUpdate.bounds)
+        assertEquals(width, boundsUpdate.width)
+        assertEquals(height, boundsUpdate.height)
+        assertEquals(padding, boundsUpdate.padding)
+    }
 }

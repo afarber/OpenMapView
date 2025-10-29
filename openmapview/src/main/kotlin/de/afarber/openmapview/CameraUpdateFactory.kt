@@ -75,4 +75,55 @@ object CameraUpdateFactory {
      * @return A CameraUpdate for the relative zoom adjustment
      */
     fun zoomBy(amount: Double): CameraUpdate = CameraUpdate.ZoomBy(amount)
+
+    /**
+     * Returns a CameraUpdate that scrolls the map by the specified pixel amounts.
+     *
+     * Positive xPixels moves the viewport right (map content moves left).
+     * Positive yPixels moves the viewport down (map content moves up).
+     * The current zoom level is preserved.
+     *
+     * @param xPixels The horizontal scroll amount in pixels
+     * @param yPixels The vertical scroll amount in pixels
+     * @return A CameraUpdate for the pixel scroll
+     */
+    fun scrollBy(
+        xPixels: Float,
+        yPixels: Float,
+    ): CameraUpdate = CameraUpdate.ScrollBy(xPixels, yPixels)
+
+    /**
+     * Returns a CameraUpdate that moves the camera to show the entire bounds.
+     *
+     * The camera will be positioned at the center of the bounds, and the zoom level
+     * will be calculated to fit the entire bounds within the viewport with the specified padding.
+     *
+     * @param bounds The geographic bounds to display
+     * @param padding Padding in pixels to apply uniformly on all sides
+     * @return A CameraUpdate to display the bounds
+     */
+    fun newLatLngBounds(
+        bounds: LatLngBounds,
+        padding: Int,
+    ): CameraUpdate = CameraUpdate.NewLatLngBounds(bounds, padding)
+
+    /**
+     * Returns a CameraUpdate that moves the camera to show the entire bounds
+     * in a viewport of the specified dimensions.
+     *
+     * This overload is useful when the map view hasn't been laid out yet and you need
+     * to calculate the camera position for specific viewport dimensions.
+     *
+     * @param bounds The geographic bounds to display
+     * @param width The viewport width in pixels
+     * @param height The viewport height in pixels
+     * @param padding Padding in pixels to apply uniformly on all sides
+     * @return A CameraUpdate to display the bounds
+     */
+    fun newLatLngBounds(
+        bounds: LatLngBounds,
+        width: Int,
+        height: Int,
+        padding: Int,
+    ): CameraUpdate = CameraUpdate.NewLatLngBoundsWithSize(bounds, width, height, padding)
 }
