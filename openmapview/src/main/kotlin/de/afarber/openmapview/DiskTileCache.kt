@@ -66,8 +66,9 @@ class DiskTileCache(
         try {
             diskCache?.edit(key)?.let { editor ->
                 try {
-                    val outputStream = editor.newOutputStream(0)
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                    editor.newOutputStream(0).use { outputStream ->
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                    }
                     editor.commit()
                 } catch (e: IOException) {
                     Log.w(TAG, "Failed to write tile $key to disk cache", e)

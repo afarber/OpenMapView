@@ -19,7 +19,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.io.IOException
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.pow
+import kotlin.math.sin
 
 /**
  * Core controller managing map state, rendering, and interactions.
@@ -936,7 +939,7 @@ class MapController(
         latitude: Double,
         zoom: Double,
     ): Float {
-        val metersPerPixel = 156543.03392 * Math.cos(Math.toRadians(latitude)) / Math.pow(2.0, zoom)
+        val metersPerPixel = 156543.03392 * cos(latitude * PI / 180.0) / 2.0.pow(zoom)
         return (meters / metersPerPixel).toFloat()
     }
 
@@ -2009,15 +2012,15 @@ class MapController(
         centerY: Float,
         angleDegrees: Float,
     ): Pair<Float, Float> {
-        val angleRadians = Math.toRadians(angleDegrees.toDouble())
-        val cos = kotlin.math.cos(angleRadians).toFloat()
-        val sin = kotlin.math.sin(angleRadians).toFloat()
+        val angleRadians = angleDegrees.toDouble() * PI / 180.0
+        val cosValue = cos(angleRadians).toFloat()
+        val sinValue = sin(angleRadians).toFloat()
 
         val dx = x - centerX
         val dy = y - centerY
 
-        val rotatedX = dx * cos - dy * sin + centerX
-        val rotatedY = dx * sin + dy * cos + centerY
+        val rotatedX = dx * cosValue - dy * sinValue + centerX
+        val rotatedY = dx * sinValue + dy * cosValue + centerY
 
         return Pair(rotatedX, rotatedY)
     }

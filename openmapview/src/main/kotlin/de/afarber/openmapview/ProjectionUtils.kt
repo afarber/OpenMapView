@@ -27,7 +27,7 @@ internal object ProjectionUtils {
     ): TileCoordinate {
         val n = 2.0.pow(zoom)
         val xTile = ((latLng.longitude + 180.0) / 360.0 * n).toInt()
-        val latRad = Math.toRadians(latLng.latitude)
+        val latRad = latLng.latitude * PI / 180.0
         val yTile = ((1.0 - ln(tan(latRad) + 1.0 / cos(latRad)) / PI) / 2.0 * n).toInt()
         return TileCoordinate(xTile, yTile, zoom)
     }
@@ -51,7 +51,7 @@ internal object ProjectionUtils {
 
         val lng = xTile / n * 360.0 - 180.0
         val latRad = atan(sinh(PI * (1.0 - 2.0 * yTile / n)))
-        val lat = Math.toDegrees(latRad)
+        val lat = latRad * 180.0 / PI
 
         return LatLng(lat, lng)
     }
@@ -65,7 +65,7 @@ internal object ProjectionUtils {
     ): Pair<Double, Double> {
         val n = 2.0.pow(zoom)
         val xPixel = (latLng.longitude + 180.0) / 360.0 * n * TILE_SIZE
-        val latRad = Math.toRadians(latLng.latitude)
+        val latRad = latLng.latitude * PI / 180.0
         val yPixel = (1.0 - ln(tan(latRad) + 1.0 / cos(latRad)) / PI) / 2.0 * n * TILE_SIZE
         return Pair(xPixel, yPixel)
     }
@@ -83,7 +83,7 @@ internal object ProjectionUtils {
         zoom: Int,
     ): Double {
         val earthCircumference = 40075017.0
-        val latitudeRadians = Math.toRadians(latitude)
+        val latitudeRadians = latitude * PI / 180.0
         val pixelsAtZoom = TILE_SIZE * 2.0.pow(zoom)
         return earthCircumference * cos(latitudeRadians) / pixelsAtZoom
     }
