@@ -523,6 +523,45 @@ class OpenMapView
         fun getProjection(): Projection = controller.createProjection()
 
         /**
+         * Opens the current map center in an external map application.
+         *
+         * Attempts to launch installed map apps (Google Maps, OsmAnd, Maps.me, HERE WeGo,
+         * Waze, Organic Maps, etc.) using the geo: URI scheme. If no map app is available,
+         * falls back to opening OpenStreetMap.org in the device browser.
+         *
+         * This provides functionality similar to Google Maps SDK's map toolbar, but opens
+         * OpenStreetMap instead of requiring Google services.
+         *
+         * The geo: URI format follows RFC 5870 and is compatible with most map applications.
+         * Android will either open the user's default map app or show an app picker if
+         * multiple map apps are installed.
+         *
+         * Example usage:
+         * ```kotlin
+         * // Open current location
+         * mapView.openInExternalApp()
+         *
+         * // Open with label
+         * mapView.openInExternalApp("Coffee Shop")
+         *
+         * // Long-press to open
+         * mapView.setOnMapLongClickListener { latLng ->
+         *     mapView.moveCamera(CameraUpdateFactory.newLatLng(latLng))
+         *     mapView.openInExternalApp("Selected Location")
+         * }
+         * ```
+         *
+         * @param label Optional label for the location (shown as pin title in some map apps)
+         * @return true if successfully launched an intent, false if an error occurred
+         * @see openLocationInExternalApp
+         */
+        fun openInExternalApp(label: String? = null): Boolean {
+            val center = controller.getCenter()
+            val zoom = controller.getZoom()
+            return openLocationInExternalApp(center, zoom, context, label)
+        }
+
+        /**
          * Returns the UI settings for the map.
          *
          * Use this to configure which user interactions are enabled on the map,

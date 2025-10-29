@@ -134,7 +134,7 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 | `isMyLocationButtonEnabled()`                           | `boolean`   | IMPLEMENTED | Always returns false (location button not implemented)         |
 | `setIndoorLevelPickerEnabled(boolean)`                  | `void`      | NOT PLANNED | No indoor mapping support                                      |
 | `isIndoorLevelPickerEnabled()`                          | `boolean`   | IMPLEMENTED | Always returns false (indoor mapping not supported)            |
-| `setMapToolbarEnabled(boolean)`                         | `void`      | NOT PLANNED | No Google Maps integration                                     |
+| `setMapToolbarEnabled(boolean)`                         | `void`      | NOT IMPLEMENTED | Use openInExternalApp() instead - see External Map Integration section below |
 | `isMapToolbarEnabled()`                                 | `boolean`   | IMPLEMENTED | Always returns false (map toolbar not implemented)             |
 | `setAllGesturesEnabled(boolean)`                        | `void`      | IMPLEMENTED | Enable/disable all gesture controls at once                    |
 
@@ -219,6 +219,16 @@ This method is an OpenMapView-specific feature not present in Google Maps API.
 
 ---
 
+## External Map Integration
+
+| Feature                     | Status      | Notes                                                                                              |
+| --------------------------- | ----------- | -------------------------------------------------------------------------------------------------- |
+| `openInExternalApp(String)` | IMPLEMENTED | Opens current map location in external apps via geo: URI. Falls back to OpenStreetMap.org in browser if no map apps installed. Similar to Google Maps toolbar functionality but open-source. |
+
+This method is an OpenMapView-specific feature not present in Google Maps API. See [MAP_TOOLBAR.md](MAP_TOOLBAR.md) for details.
+
+---
+
 ## CameraUpdateFactory
 
 | Method                                         | Return Type    | Status          | Notes                      |
@@ -272,6 +282,11 @@ This method is an OpenMapView-specific feature not present in Google Maps API.
 - Zoom control: 100% (min/max zoom preferences, getZoom)
 - UI Settings: 100% of applicable methods (gesture controls, zoom controls, scroll-during-zoom)
 - Lifecycle management: 75% (onResume, onPause, onDestroy)
+
+**OpenMapView-Specific Features:**
+In addition to Google Maps API compatibility, OpenMapView provides:
+- GeoJSON import (addGeoJson)
+- External map integration (openInExternalApp) - opens location in external map apps or browser
 
 **Focus Areas:**
 OpenMapView prioritizes lightweight, essential mapping features for applications that need basic map display, markers, shapes, and camera animations without the complexity and overhead of Google Play Services.

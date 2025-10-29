@@ -50,6 +50,7 @@ Explore the example applications to see OpenMapView in action:
 - [Example09Overlays](examples/Example09Overlays) - Tile overlays with transparency control (OpenSeaMap, OpenRailwayMap, Hiking Trails, OpenSnowMap)
 - [Example10GroundOverlays](examples/Example10GroundOverlays) - Ground overlays with position/bounds modes, rotation, and transparency
 - [Example11MapTypes](examples/Example11MapTypes) - Switching between map types (Normal, Terrain, Humanitarian, Cycle)
+- [Example12Toolbar](examples/Example12Toolbar) - Open location in external map apps (geo intent with browser fallback)
 
 ![Example05Camera Demo](examples/Example05Camera/screenshot.gif)
 
@@ -57,6 +58,7 @@ Explore the example applications to see OpenMapView in action:
 
 - [Public API Compatibility](docs/PUBLIC_API.md) - Google MapView API implementation status and compatibility matrix
 - [Architecture](docs/ARCHITECTURE.md) - Architectural design and comparison with Google Maps SDK
+- [Map Toolbar](docs/MAP_TOOLBAR.md) - External map app integration using geo: URIs with browser fallback
 - [Contributing Guide](docs/CONTRIBUTING.md) - Code quality requirements, formatting, git hooks, and PR process
 - [Lifecycle Management](docs/LIFECYCLE.md) - How OpenMapView handles Android lifecycle events
 - [Publishing Guide](docs/PUBLISHING.md) - Publishing to Maven Central and JitPack

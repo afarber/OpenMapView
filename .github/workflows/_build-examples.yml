@@ -67,6 +67,9 @@ jobs:
       - name: Build Example11MapTypes
         run: ./gradlew :examples:Example11MapTypes:assembleDebug
 
+      - name: Build Example12Toolbar
+        run: ./gradlew :examples:Example12Toolbar:assembleDebug
+
       - name: Upload example APKs
         uses: actions/upload-artifact@v4
         with:
