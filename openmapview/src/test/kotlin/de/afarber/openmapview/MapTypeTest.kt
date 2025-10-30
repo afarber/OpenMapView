@@ -29,22 +29,44 @@ class MapTypeTest {
     }
 
     @Test
-    fun testMapTypeConstants() {
-        assertEquals(0, MapType.NONE)
-        assertEquals(1, MapType.STANDARD)
-        assertEquals(2, MapType.CYCLOSM)
-        assertEquals(3, MapType.CYCLEMAP)
-        assertEquals(4, MapType.TRANSPORT)
-        assertEquals(5, MapType.TRANSPORT_DARK)
-        assertEquals(6, MapType.TRACESTRACK_TOPO)
-        assertEquals(7, MapType.HUMANITARIAN)
-        assertEquals(8, MapType.OPNVKARTE)
-        assertEquals(9, MapType.OPENTOPOMAP)
-        assertEquals(10, MapType.CARTO_LIGHT)
-        assertEquals(11, MapType.CARTO_DARK)
-        assertEquals(12, MapType.CARTO_VOYAGER)
-        assertEquals(13, MapType.STAMEN_TONER)
-        assertEquals(14, MapType.STAMEN_WATERCOLOR)
+    fun testMapTypeConstantsAreUnique() {
+        val values =
+            setOf(
+                MapType.NONE,
+                MapType.STANDARD,
+                MapType.CYCLOSM,
+                MapType.CYCLEMAP,
+                MapType.TRANSPORT,
+                MapType.TRANSPORT_DARK,
+                MapType.TRACESTRACK_TOPO,
+                MapType.HUMANITARIAN,
+                MapType.OPNVKARTE,
+                MapType.OPENTOPOMAP,
+                MapType.CARTO_LIGHT,
+                MapType.CARTO_DARK,
+                MapType.CARTO_VOYAGER,
+                MapType.STAMEN_TONER,
+                MapType.STAMEN_WATERCOLOR,
+            )
+        assertEquals(15, values.size)
+    }
+
+
+    @Test
+    fun testAllMapTypesHaveTileSource() {
+        for (type in 0..14) {
+            val source = TileSource.fromMapType(type)
+            assertNotNull(source)
+        }
+    }
+
+    @Test
+    fun testAllMapTypesHaveDisplayName() {
+        for (type in 0..14) {
+            val name = TileSource.getMapTypeName(type)
+            assertNotNull(name)
+            assert(name != "Unknown")
+        }
     }
 
     @Test

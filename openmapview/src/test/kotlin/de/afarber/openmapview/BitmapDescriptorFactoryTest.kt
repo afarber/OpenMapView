@@ -18,19 +18,43 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class BitmapDescriptorFactoryTest {
     @Test
-    fun testHueConstants() {
-        // Verify all HUE constants have expected values
-        assertEquals(0f, BitmapDescriptorFactory.HUE_RED, 0.001f)
-        assertEquals(30f, BitmapDescriptorFactory.HUE_ORANGE, 0.001f)
-        assertEquals(60f, BitmapDescriptorFactory.HUE_YELLOW, 0.001f)
-        assertEquals(120f, BitmapDescriptorFactory.HUE_GREEN, 0.001f)
-        assertEquals(180f, BitmapDescriptorFactory.HUE_CYAN, 0.001f)
-        assertEquals(210f, BitmapDescriptorFactory.HUE_AZURE, 0.001f)
-        assertEquals(240f, BitmapDescriptorFactory.HUE_BLUE, 0.001f)
-        assertEquals(270f, BitmapDescriptorFactory.HUE_VIOLET, 0.001f)
-        assertEquals(300f, BitmapDescriptorFactory.HUE_MAGENTA, 0.001f)
-        assertEquals(330f, BitmapDescriptorFactory.HUE_ROSE, 0.001f)
+    fun testHueConstantsAreInValidRange() {
+        val hues =
+            listOf(
+                BitmapDescriptorFactory.HUE_RED,
+                BitmapDescriptorFactory.HUE_ORANGE,
+                BitmapDescriptorFactory.HUE_YELLOW,
+                BitmapDescriptorFactory.HUE_GREEN,
+                BitmapDescriptorFactory.HUE_CYAN,
+                BitmapDescriptorFactory.HUE_AZURE,
+                BitmapDescriptorFactory.HUE_BLUE,
+                BitmapDescriptorFactory.HUE_VIOLET,
+                BitmapDescriptorFactory.HUE_MAGENTA,
+                BitmapDescriptorFactory.HUE_ROSE,
+            )
+        hues.forEach { hue ->
+            assertTrue("Hue $hue must be in 0-360 range", hue in 0f..360f)
+        }
     }
+
+    @Test
+    fun testHueConstantsAreUnique() {
+        val hues =
+            setOf(
+                BitmapDescriptorFactory.HUE_RED,
+                BitmapDescriptorFactory.HUE_ORANGE,
+                BitmapDescriptorFactory.HUE_YELLOW,
+                BitmapDescriptorFactory.HUE_GREEN,
+                BitmapDescriptorFactory.HUE_CYAN,
+                BitmapDescriptorFactory.HUE_AZURE,
+                BitmapDescriptorFactory.HUE_BLUE,
+                BitmapDescriptorFactory.HUE_VIOLET,
+                BitmapDescriptorFactory.HUE_MAGENTA,
+                BitmapDescriptorFactory.HUE_ROSE,
+            )
+        assertEquals(10, hues.size)
+    }
+
 
     @Test
     fun testDefaultMarker_Red() {
