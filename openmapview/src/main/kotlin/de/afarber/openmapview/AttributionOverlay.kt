@@ -24,6 +24,7 @@ class AttributionOverlay(
     context: Context,
 ) {
     private var attributionText = "© OpenStreetMap contributors"
+    private var attributionUrl = "https://www.openstreetmap.org/copyright"
 
     private val textPaint =
         TextPaint().apply {
@@ -56,6 +57,22 @@ class AttributionOverlay(
         attributionText = text
         updateTextBounds()
     }
+
+    /**
+     * Sets the attribution URL.
+     *
+     * @param url The URL to the attribution/copyright page
+     */
+    fun setAttributionUrl(url: String) {
+        attributionUrl = url
+    }
+
+    /**
+     * Gets the current attribution URL.
+     *
+     * @return The URL to the attribution/copyright page
+     */
+    fun getAttributionUrl(): String = attributionUrl
 
     private fun updateTextBounds() {
         textPaint.getTextBounds(attributionText, 0, attributionText.length, textBounds)

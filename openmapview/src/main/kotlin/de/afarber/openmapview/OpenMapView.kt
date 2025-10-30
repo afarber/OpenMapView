@@ -61,7 +61,7 @@ class OpenMapView
         private val attributionOverlay = AttributionOverlay(context)
         private val zoomControlsOverlay = ZoomControlsOverlay(context)
         private val uiSettings = UiSettings()
-        private var currentMapType: Int = MapType.NORMAL
+        private var currentMapType: Int = MapType.STANDARD
         private var paddingLeft = 0
         private var paddingTop = 0
         private var paddingRight = 0
@@ -440,16 +440,21 @@ class OpenMapView
          *
          * **Supported types:**
          * - [MapType.NONE] - No base map tiles
-         * - [MapType.NORMAL] - Standard road map (default)
-         * - [MapType.TERRAIN] - Topographic map with contour lines
+         * - [MapType.STANDARD] - Standard road map (default)
+         * - [MapType.CYCLOSM] - Cycling-focused map style
+         * - [MapType.CYCLEMAP] - Thunderforest cycling map (requires API key)
+         * - [MapType.TRANSPORT] - Public transport map (requires API key)
+         * - [MapType.TRACESTRACK_TOPO] - Topographic map with contour lines (requires API key)
          * - [MapType.HUMANITARIAN] - Humanitarian-focused style
-         * - [MapType.CYCLE] - Cycling-focused map style
+         * - [MapType.OPNVKARTE] - German public transport
+         * - [MapType.SHORTBREAD] - Vector tiles (not yet supported)
+         * - [MapType.MAPTILER_OMT] - Vector tiles (not yet supported, requires API key)
          *
          * When the map type changes, the tile cache is cleared and the map is redrawn.
          *
          * Example:
          * ```kotlin
-         * mapView.setMapType(MapType.TERRAIN)
+         * mapView.setMapType(MapType.CYCLOSM)
          * mapView.setMapType(MapType.HUMANITARIAN)
          * ```
          *
@@ -459,24 +464,19 @@ class OpenMapView
          * @see getMapType
          */
         fun setMapType(type: Int) {
+            // Validate map type
+            if (type !in 0..9) {
+                throw IllegalArgumentException("Unknown map type: $type. Must be a valid MapType constant (0-9).")
+            }
+
             currentMapType = type
-            val newSource =
-                when (type) {
-                    MapType.NONE -> null
-                    MapType.NORMAL -> TileSource.STANDARD
-                    MapType.TERRAIN -> TileSource.TOPO
-                    MapType.HUMANITARIAN -> TileSource.HUMANITARIAN
-                    MapType.CYCLE -> TileSource.CYCLE
-                    else ->
-                        throw IllegalArgumentException(
-                            "Unknown map type: $type. " +
-                                "Valid types are: NONE (0), NORMAL (1), TERRAIN (2), " +
-                                "HUMANITARIAN (3), CYCLE (4).",
-                        )
-                }
-            controller.setTileSource(newSource)
-            if (newSource != null) {
-                attributionOverlay.setAttributionText(newSource.attribution)
+            controller.setMapType(type)
+
+            // Update attribution for the actual tile source being used
+            val source = TileSource.fromMapType(type)
+            if (type != MapType.NONE && source.isSupported()) {
+                attributionOverlay.setAttributionText(source.attributionText)
+                attributionOverlay.setAttributionUrl(source.attributionUrl)
             }
             invalidate()
         }
@@ -1448,6 +1448,13 @@ class OpenMapView
         fun setOnAttributionClickListener(listener: () -> Unit) {
             attributionOverlay.onAttributionClickListener = listener
         }
+
+        /**
+         * Gets the current attribution URL for the active tile source.
+         *
+         * @return The URL to the attribution/copyright page
+         */
+        fun getAttributionUrl(): String = attributionOverlay.getAttributionUrl()
 
         override fun onResume(owner: LifecycleOwner) {
             controller.onResume()

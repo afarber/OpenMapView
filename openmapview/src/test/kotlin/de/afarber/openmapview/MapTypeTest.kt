@@ -31,21 +31,26 @@ class MapTypeTest {
     @Test
     fun testMapTypeConstants() {
         assertEquals(0, MapType.NONE)
-        assertEquals(1, MapType.NORMAL)
-        assertEquals(2, MapType.TERRAIN)
-        assertEquals(3, MapType.HUMANITARIAN)
-        assertEquals(4, MapType.CYCLE)
+        assertEquals(1, MapType.STANDARD)
+        assertEquals(2, MapType.CYCLOSM)
+        assertEquals(3, MapType.CYCLEMAP)
+        assertEquals(4, MapType.TRANSPORT)
+        assertEquals(5, MapType.TRACESTRACK_TOPO)
+        assertEquals(6, MapType.HUMANITARIAN)
+        assertEquals(7, MapType.OPNVKARTE)
+        assertEquals(8, MapType.SHORTBREAD)
+        assertEquals(9, MapType.MAPTILER_OMT)
     }
 
     @Test
     fun testDefaultMapType() {
-        assertEquals(MapType.NORMAL, mapView.getMapType())
+        assertEquals(MapType.STANDARD, mapView.getMapType())
     }
 
     @Test
-    fun testSetMapType_Normal() {
-        mapView.setMapType(MapType.NORMAL)
-        assertEquals(MapType.NORMAL, mapView.getMapType())
+    fun testSetMapType_Standard() {
+        mapView.setMapType(MapType.STANDARD)
+        assertEquals(MapType.STANDARD, mapView.getMapType())
     }
 
     @Test
@@ -55,9 +60,9 @@ class MapTypeTest {
     }
 
     @Test
-    fun testSetMapType_Terrain() {
-        mapView.setMapType(MapType.TERRAIN)
-        assertEquals(MapType.TERRAIN, mapView.getMapType())
+    fun testSetMapType_CyclOSM() {
+        mapView.setMapType(MapType.CYCLOSM)
+        assertEquals(MapType.CYCLOSM, mapView.getMapType())
     }
 
     @Test
@@ -67,9 +72,9 @@ class MapTypeTest {
     }
 
     @Test
-    fun testSetMapType_Cycle() {
-        mapView.setMapType(MapType.CYCLE)
-        assertEquals(MapType.CYCLE, mapView.getMapType())
+    fun testSetMapType_Transport() {
+        mapView.setMapType(MapType.TRANSPORT)
+        assertEquals(MapType.TRANSPORT, mapView.getMapType())
     }
 
     @Test
@@ -84,13 +89,13 @@ class MapTypeTest {
 
     @Test
     fun testSetMapType_SwitchingTypes() {
-        mapView.setMapType(MapType.TERRAIN)
-        assertEquals(MapType.TERRAIN, mapView.getMapType())
+        mapView.setMapType(MapType.CYCLOSM)
+        assertEquals(MapType.CYCLOSM, mapView.getMapType())
 
         mapView.setMapType(MapType.HUMANITARIAN)
         assertEquals(MapType.HUMANITARIAN, mapView.getMapType())
 
-        mapView.setMapType(MapType.NORMAL)
-        assertEquals(MapType.NORMAL, mapView.getMapType())
+        mapView.setMapType(MapType.STANDARD)
+        assertEquals(MapType.STANDARD, mapView.getMapType())
     }
 }

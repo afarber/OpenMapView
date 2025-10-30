@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -33,7 +35,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.MapType
@@ -60,7 +64,7 @@ fun MapViewScreen() {
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val configuration = LocalConfiguration.current
-    var currentMapType by remember { mutableStateOf(MapType.NORMAL) }
+    var currentMapType by remember { mutableStateOf(MapType.STANDARD) }
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
 
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -75,18 +79,26 @@ fun MapViewScreen() {
                         setZoom(12.0)
                         mapView = this
                         setOnAttributionClickListener {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
+                            val intent =
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(getAttributionUrl()),
+                                )
                             context.startActivity(intent)
                         }
                     }
                 },
-                modifier = Modifier.weight(1f).fillMaxSize(),
+                modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxSize(),
             )
 
             Surface(
                 color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier
-                    .width(200.dp)
+                modifier =
+                Modifier
+                    .width(220.dp)
                     .fillMaxHeight(),
             ) {
                 MapTypeControls(
@@ -109,12 +121,19 @@ fun MapViewScreen() {
                         setZoom(12.0)
                         mapView = this
                         setOnAttributionClickListener {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
+                            val intent =
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(getAttributionUrl()),
+                                )
                             context.startActivity(intent)
                         }
                     }
                 },
-                modifier = Modifier.weight(1f).fillMaxSize(),
+                modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxSize(),
             )
 
             Surface(
@@ -141,53 +160,108 @@ fun MapTypeControls(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier,
+        modifier =
+        modifier
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = "Current: ${getMapTypeName(currentMapType)}",
             style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
         )
 
         Text(
-            text = "Map Type:",
+            text = "Map Types (${getMapTypeCount()} available)",
             style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
         )
 
+        // None
         MapTypeButton(
-            text = "Normal",
-            enabled = currentMapType != MapType.NORMAL,
-            onClick = { onMapTypeChange(MapType.NORMAL) },
+            text = "None",
+            description = "No base tiles",
+            enabled = currentMapType != MapType.NONE,
+            onClick = { onMapTypeChange(MapType.NONE) },
             modifier = Modifier.fillMaxWidth(),
         )
 
+        // Standard
         MapTypeButton(
-            text = "Terrain",
-            enabled = currentMapType != MapType.TERRAIN,
-            onClick = { onMapTypeChange(MapType.TERRAIN) },
+            text = "Standard",
+            description = "Default OSM Mapnik",
+            enabled = currentMapType != MapType.STANDARD,
+            onClick = { onMapTypeChange(MapType.STANDARD) },
             modifier = Modifier.fillMaxWidth(),
         )
 
+        // CyclOSM
+        MapTypeButton(
+            text = "CyclOSM",
+            description = "Cycling infrastructure",
+            enabled = currentMapType != MapType.CYCLOSM,
+            onClick = { onMapTypeChange(MapType.CYCLOSM) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Cycle Map (requires API key)
+        MapTypeButton(
+            text = "Cycle Map",
+            description = "Thunderforest (API key required)",
+            enabled = currentMapType != MapType.CYCLEMAP,
+            onClick = { onMapTypeChange(MapType.CYCLEMAP) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Transport (requires API key)
+        MapTypeButton(
+            text = "Transport",
+            description = "Public transit (API key required)",
+            enabled = currentMapType != MapType.TRANSPORT,
+            onClick = { onMapTypeChange(MapType.TRANSPORT) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Tracestrack Topo (requires API key)
+        MapTypeButton(
+            text = "Tracestrack Topo",
+            description = "Topographic (API key required)",
+            enabled = currentMapType != MapType.TRACESTRACK_TOPO,
+            onClick = { onMapTypeChange(MapType.TRACESTRACK_TOPO) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Humanitarian
         MapTypeButton(
             text = "Humanitarian",
+            description = "HOT emergency response",
             enabled = currentMapType != MapType.HUMANITARIAN,
             onClick = { onMapTypeChange(MapType.HUMANITARIAN) },
             modifier = Modifier.fillMaxWidth(),
         )
 
+        // OPNVKarte
         MapTypeButton(
-            text = "Cycle",
-            enabled = currentMapType != MapType.CYCLE,
-            onClick = { onMapTypeChange(MapType.CYCLE) },
+            text = "OPNVKarte",
+            description = "German public transport",
+            enabled = currentMapType != MapType.OPNVKARTE,
+            onClick = { onMapTypeChange(MapType.OPNVKARTE) },
             modifier = Modifier.fillMaxWidth(),
         )
 
-        MapTypeButton(
-            text = "None",
-            enabled = currentMapType != MapType.NONE,
-            onClick = { onMapTypeChange(MapType.NONE) },
-            modifier = Modifier.fillMaxWidth(),
+        // API Key Info
+        Text(
+            text = "API key required map types: Cycle Map, Transport, Tracestrack Topo",
+            style = MaterialTheme.typography.bodySmall,
+            fontSize = 11.sp,
+            modifier = Modifier.padding(top = 8.dp),
+        )
+
+        Text(
+            text = "Configure API keys in AndroidManifest.xml\nSee docs/API_KEYS.md for details",
+            style = MaterialTheme.typography.bodySmall,
+            fontSize = 10.sp,
+            lineHeight = 12.sp,
         )
     }
 }
@@ -195,25 +269,39 @@ fun MapTypeControls(
 @Composable
 fun MapTypeButton(
     text: String,
+    description: String,
     enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier,
-    ) {
-        Text(text)
+    Column(modifier = modifier) {
+        Button(
+            onClick = onClick,
+            enabled = enabled,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(text)
+        }
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodySmall,
+            fontSize = 11.sp,
+            modifier = Modifier.padding(start = 8.dp, top = 2.dp),
+        )
     }
 }
 
 fun getMapTypeName(type: Int): String =
     when (type) {
         MapType.NONE -> "None"
-        MapType.NORMAL -> "Normal"
-        MapType.TERRAIN -> "Terrain"
+        MapType.STANDARD -> "Standard"
+        MapType.CYCLOSM -> "CyclOSM"
+        MapType.CYCLEMAP -> "Cycle Map"
+        MapType.TRANSPORT -> "Transport"
+        MapType.TRACESTRACK_TOPO -> "Tracestrack Topo"
         MapType.HUMANITARIAN -> "Humanitarian"
-        MapType.CYCLE -> "Cycle"
+        MapType.OPNVKARTE -> "OPNVKarte"
         else -> "Unknown ($type)"
     }
+
+fun getMapTypeCount(): Int = 8

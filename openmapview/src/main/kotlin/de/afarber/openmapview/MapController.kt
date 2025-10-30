@@ -107,6 +107,11 @@ class MapController(
     private val downloadingTiles = mutableSetOf<TileCoordinate>()
     private var onTileLoadedCallback: (() -> Unit)? = null
 
+    // API key error overlay (null if no error)
+    private var apiKeyErrorOverlay: ApiKeyErrorOverlay? = null
+    private var requestedMapType: Int = MapType.STANDARD
+    private var actualTileSource: TileSource? = TileSource.STANDARD
+
     private val tileBorderPaint =
         Paint().apply {
             style = Paint.Style.STROKE
@@ -246,6 +251,69 @@ class MapController(
     fun getLatLngBoundsForCameraTarget(): LatLngBounds? = cameraTargetBounds
 
     /**
+     * Sets the map type with API key handling.
+     *
+     * If the requested map type requires an API key that is not configured:
+     * - Falls back to STANDARD tile source
+     * - Creates an overlay indicating the missing API key
+     * - The map remains interactive (touch events pass through)
+     *
+     * If the map type is vector-based (not yet supported):
+     * - Falls back to STANDARD tile source
+     * - Creates an overlay indicating vector tiles are not yet supported
+     *
+     * @param mapType The MapType constant
+     */
+    fun setMapType(mapType: Int) {
+        requestedMapType = mapType
+
+        // Initialize ApiKeyManager if not already done
+        ApiKeyManager.initialize(context)
+
+        // Get the tile source for this map type
+        val source = TileSource.fromMapType(mapType)
+
+        // Check if the tile source is supported (not vector tiles)
+        if (!source.isSupported()) {
+            // Vector tiles not supported - use STANDARD and show overlay
+            actualTileSource = TileSource.STANDARD
+            apiKeyErrorOverlay =
+                ApiKeyErrorOverlay(
+                    context,
+                    source.getProviderName(),
+                    TileSource.getMapTypeName(mapType),
+                )
+            android.util.Log.i(
+                "OpenMapView",
+                "${TileSource.getMapTypeName(mapType)} requires vector tile support (MapLibre GL). " +
+                    "Displaying STANDARD map instead.",
+            )
+        } else if (source.requiresApiKey && !source.hasApiKey()) {
+            // API key required but not configured - use STANDARD and show overlay
+            actualTileSource = TileSource.STANDARD
+            apiKeyErrorOverlay =
+                ApiKeyErrorOverlay(
+                    context,
+                    source.getProviderName(),
+                    TileSource.getMapTypeName(mapType),
+                )
+            android.util.Log.w(
+                "OpenMapView",
+                "${TileSource.getMapTypeName(mapType)} requires an API key from ${source.getProviderName()}. " +
+                    "Configure key in AndroidManifest.xml or via ApiKeyManager. " +
+                    "Displaying STANDARD map instead.",
+            )
+        } else {
+            // All good - use the requested tile source
+            actualTileSource = source
+            apiKeyErrorOverlay = null
+        }
+
+        // Apply the tile source
+        setTileSource(if (mapType == MapType.NONE) null else actualTileSource)
+    }
+
+    /**
      * Sets the tile source for rendering the base map.
      *
      * When the tile source changes, the tile cache is cleared to prevent
@@ -253,7 +321,7 @@ class MapController(
      *
      * @param source The new tile source, or null to display no base map tiles
      */
-    fun setTileSource(source: TileSource?) {
+    private fun setTileSource(source: TileSource?) {
         if (tileSource == source) return
         tileSource = source
         tileCache.clear()
@@ -880,6 +948,9 @@ class MapController(
 
         // Draw info windows after all markers (so they appear on top)
         drawInfoWindows(canvas, centerPixelX, centerPixelY)
+
+        // Draw API key error overlay if present (on top of everything, but touch events pass through)
+        apiKeyErrorOverlay?.draw(canvas, viewWidth, viewHeight)
     }
 
     /**
