@@ -1,112 +1,103 @@
-# Google MapView Public API - Implementation Status
+# Google MapView Public API Compatibility
 
 [Back to README](../README.md) | [Architecture](ARCHITECTURE.md) | [API Documentation (KDoc)](https://afarber.github.io/OpenMapView/)
 
-This document lists all public non-deprecated methods from Google's MapView and GoogleMap classes, along with their implementation status in OpenMapView.
-
-**Legend:**
-
-- IMPLEMENTED: Feature is fully implemented and tested
-- PARTIAL: Feature is partially implemented
-- NOT IMPLEMENTED: Feature is not yet implemented
-- NOT PLANNED: Feature is out of scope for this project
+This document lists all public non-deprecated methods from Google's MapView and GoogleMap classes and notes any differences in OpenMapView's implementation.
 
 ---
 
 ## MapView Class
 
-Methods that must be forwarded from the parent Activity/Fragment.
-
-| Method                            | Return Type | Status          | Notes                                              |
-| --------------------------------- | ----------- | --------------- | -------------------------------------------------- |
-| `onCreate(Bundle)`                | `void`      | NOT IMPLEMENTED | OpenMapView uses DefaultLifecycleObserver pattern  |
-| `onStart()`                       | `void`      | NOT IMPLEMENTED | OpenMapView uses DefaultLifecycleObserver pattern  |
-| `onResume()`                      | `void`      | IMPLEMENTED     | Called via DefaultLifecycleObserver.onResume()     |
-| `onPause()`                       | `void`      | IMPLEMENTED     | Called via DefaultLifecycleObserver.onPause()      |
-| `onStop()`                        | `void`      | NOT IMPLEMENTED | OpenMapView uses DefaultLifecycleObserver pattern  |
-| `onDestroy()`                     | `void`      | IMPLEMENTED     | Called via DefaultLifecycleObserver.onDestroy()    |
-| `onSaveInstanceState(Bundle)`     | `void`      | NOT IMPLEMENTED | State persistence not yet implemented              |
-| `onLowMemory()`                   | `void`      | NOT IMPLEMENTED | Memory management optimization not yet implemented |
-| `getMapAsync(OnMapReadyCallback)` | `void`      | NOT IMPLEMENTED | Map is immediately available after view creation   |
-| `onEnterAmbient(Bundle)`          | `void`      | NOT PLANNED     | Wearable-specific feature                          |
-| `onExitAmbient()`                 | `void`      | NOT PLANNED     | Wearable-specific feature                          |
+| Method                            | Return Type | Notes                                                              |
+| --------------------------------- | ----------- | ------------------------------------------------------------------ |
+| `onCreate(Bundle)`                | `void`      | Not needed - OpenMapView uses DefaultLifecycleObserver pattern     |
+| `onStart()`                       | `void`      | Not needed - OpenMapView uses DefaultLifecycleObserver pattern     |
+| `onResume()`                      | `void`      |                                                                    |
+| `onPause()`                       | `void`      |                                                                    |
+| `onStop()`                        | `void`      | Not needed - OpenMapView uses DefaultLifecycleObserver pattern     |
+| `onDestroy()`                     | `void`      |                                                                    |
+| `onSaveInstanceState(Bundle)`     | `void`      | Not yet implemented - state persistence planned for future release |
+| `onLowMemory()`                   | `void`      | Not yet implemented - memory management optimization planned       |
+| `getMapAsync(OnMapReadyCallback)` | `void`      | Not needed - map is immediately available after view creation      |
+| `onEnterAmbient(Bundle)`          | `void`      | Not planned - wearable-specific feature                            |
+| `onExitAmbient()`                 | `void`      | Not planned - wearable-specific feature                            |
 
 ---
 
 ## GoogleMap Class - Camera Movement
 
-| Method                                                 | Return Type      | Status      | Notes                                                        |
-| ------------------------------------------------------ | ---------------- | ----------- | ------------------------------------------------------------ |
-| `animateCamera(CameraUpdate)`                          | `void`           | IMPLEMENTED | Default 250ms duration                                       |
-| `animateCamera(CameraUpdate, CancelableCallback)`      | `void`           | IMPLEMENTED | Default 250ms duration with callback                         |
-| `animateCamera(CameraUpdate, int, CancelableCallback)` | `void`           | IMPLEMENTED | Custom duration with callback support                        |
-| `moveCamera(CameraUpdate)`                             | `void`           | IMPLEMENTED | Instant camera repositioning                                 |
-| `stopAnimation()`                                      | `void`           | IMPLEMENTED | Cancels ongoing camera animation                             |
-| `getCameraPosition()`                                  | `CameraPosition` | IMPLEMENTED | Returns current camera state                                 |
+| Method                                                 | Return Type      | Notes |
+| ------------------------------------------------------ | ---------------- | ----- |
+| `animateCamera(CameraUpdate)`                          | `void`           |       |
+| `animateCamera(CameraUpdate, CancelableCallback)`      | `void`           |       |
+| `animateCamera(CameraUpdate, int, CancelableCallback)` | `void`           |       |
+| `moveCamera(CameraUpdate)`                             | `void`           |       |
+| `stopAnimation()`                                      | `void`           |       |
+| `getCameraPosition()`                                  | `CameraPosition` |       |
 
 ---
 
 ## GoogleMap Class - Marker Management
 
-| Method                     | Return Type | Status      | Notes                                                                       |
-| -------------------------- | ----------- | ----------- | --------------------------------------------------------------------------- |
-| `addMarker(MarkerOptions)` | `Marker`    | IMPLEMENTED | Supports position, title, snippet, icon, anchor, tag, visible, alpha, draggable |
-| `clear()`                  | `void`      | IMPLEMENTED | Clears all markers, polylines, and polygons                                 |
+| Method                     | Return Type | Notes |
+| -------------------------- | ----------- | ----- |
+| `addMarker(MarkerOptions)` | `Marker`    |       |
+| `clear()`                  | `void`      |       |
 
 ---
 
 ## GoogleMap Class - Shapes & Overlays
 
-| Method                                   | Return Type     | Status      | Notes                                                       |
-| ---------------------------------------- | --------------- | ----------- | ----------------------------------------------------------- |
-| `addPolyline(PolylineOptions)`           | `Polyline`      | IMPLEMENTED | Supports points, stroke color/width, visible, clickable, tag |
-| `addPolygon(PolygonOptions)`             | `Polygon`       | IMPLEMENTED | Supports points, holes, colors, visible, clickable, tag     |
-| `addCircle(CircleOptions)`               | `Circle`        | IMPLEMENTED | Supports center, radius, stroke/fill colors, z-index, visible, clickable, tag |
-| `addGroundOverlay(GroundOverlayOptions)` | `GroundOverlay` | IMPLEMENTED | Supports image, position/bounds modes, bearing, transparency, anchor, z-index, visible, clickable, tag |
-| `addTileOverlay(TileOverlayOptions)`     | `TileOverlay`   | IMPLEMENTED | Supports tileProvider, transparency, zIndex, visible, fadeIn, tag. Includes predefined providers for public OSM services |
+| Method                                   | Return Type     | Notes                                                                                    |
+| ---------------------------------------- | --------------- | ---------------------------------------------------------------------------------------- |
+| `addPolyline(PolylineOptions)`           | `Polyline`      |                                                                                          |
+| `addPolygon(PolygonOptions)`             | `Polygon`       |                                                                                          |
+| `addCircle(CircleOptions)`               | `Circle`        |                                                                                          |
+| `addGroundOverlay(GroundOverlayOptions)` | `GroundOverlay` |                                                                                          |
+| `addTileOverlay(TileOverlayOptions)`     | `TileOverlay`   | Includes predefined providers for public OSM services (OpenSeaMap, OpenRailwayMap, etc.) |
 
 ---
 
 ## GoogleMap Class - View Information
 
-| Method              | Return Type  | Status      | Notes                                                     |
-| ------------------- | ------------ | ----------- | --------------------------------------------------------- |
-| `getProjection()`   | `Projection` | IMPLEMENTED | Full Projection API with coordinate conversion            |
-| `getMaxZoomLevel()` | `float`      | IMPLEMENTED | Returns current max zoom preference (default 19.0)        |
-| `getMinZoomLevel()` | `float`      | IMPLEMENTED | Returns current min zoom preference (default 2.0)         |
+| Method              | Return Type  | Notes |
+| ------------------- | ------------ | ----- |
+| `getProjection()`   | `Projection` |       |
+| `getMaxZoomLevel()` | `float`      |       |
+| `getMinZoomLevel()` | `float`      |       |
 
 ---
 
 ## GoogleMap Class - Map Configuration
 
-| Method                         | Return Type | Status          | Notes                                       |
-| ------------------------------ | ----------- | --------------- | ------------------------------------------- |
-| `setCenter(LatLng)`            | `void`      | IMPLEMENTED     | Direct method, not via GoogleMap pattern                                   |
-| `setZoom(double)`              | `void`      | IMPLEMENTED     | Direct method, not via GoogleMap pattern                                   |
-| `getZoom()`                    | `double`    | IMPLEMENTED     | Direct method, not via GoogleMap pattern                                   |
-| `setMapType(int)`              | `void`      | IMPLEMENTED     | Supports NORMAL, TERRAIN, HUMANITARIAN, CYCLE, NONE. See MapType constants |
-| `getMapType()`                 | `int`       | IMPLEMENTED     | Returns current map type constant                                          |
-| `setMapStyle(MapStyleOptions)` | `boolean`   | NOT PLANNED     | Custom tile sources could provide this                                     |
+| Method                         | Return Type | Notes                                                            |
+| ------------------------------ | ----------- | ---------------------------------------------------------------- |
+| `setCenter(LatLng)`            | `void`      | Direct method on OpenMapView (not via separate GoogleMap object) |
+| `setZoom(double)`              | `void`      | Direct method on OpenMapView (not via separate GoogleMap object) |
+| `getZoom()`                    | `double`    | Direct method on OpenMapView (not via separate GoogleMap object) |
+| `setMapType(int)`              | `void`      | Supports NORMAL, TERRAIN, HUMANITARIAN, CYCLE, NONE              |
+| `getMapType()`                 | `int`       |                                                                  |
+| `setMapStyle(MapStyleOptions)` | `boolean`   | Not planned - custom tile sources could provide this             |
 
 ---
 
 ## GoogleMap Class - Zoom Preferences
 
-| Method                        | Return Type | Status      | Notes                                       |
-| ----------------------------- | ----------- | ----------- | ------------------------------------------- |
-| `setMaxZoomPreference(float)` | `void`      | IMPLEMENTED | Configurable, default 19.0                  |
-| `setMinZoomPreference(float)` | `void`      | IMPLEMENTED | Configurable, default 2.0                   |
-| `resetMinMaxZoomPreference()` | `void`      | IMPLEMENTED | Resets to defaults (min=2.0, max=19.0)      |
+| Method                        | Return Type | Notes |
+| ----------------------------- | ----------- | ----- |
+| `setMaxZoomPreference(float)` | `void`      |       |
+| `setMinZoomPreference(float)` | `void`      |       |
+| `resetMinMaxZoomPreference()` | `void`      |       |
 
 ---
 
 ## GoogleMap Class - UI Settings
 
-| Method                           | Return Type  | Status      | Notes                                                                                                             |
-| -------------------------------- | ------------ | ----------- | ----------------------------------------------------------------------------------------------------------------- |
-| `getUiSettings()`                | `UiSettings` | IMPLEMENTED | Full UiSettings support: gestures, zoom controls, scroll-during-zoom                                              |
-| `setPadding(int, int, int, int)` | `void`       | IMPLEMENTED | Implemented as setMapPadding() to avoid conflict with View.setPadding(). Adjusts logical viewport for camera ops |
-| `setContentDescription(String)`  | `void`       | IMPLEMENTED | Inherited from View class - use directly on OpenMapView instance for accessibility support                        |
+| Method                           | Return Type  | Notes                                                                   |
+| -------------------------------- | ------------ | ----------------------------------------------------------------------- |
+| `getUiSettings()`                | `UiSettings` |                                                                         |
+| `setPadding(int, int, int, int)` | `void`       | Implemented as setMapPadding() to avoid conflict with View.setPadding() |
+| `setContentDescription(String)`  | `void`       | Inherited from View class                                               |
 
 ---
 
@@ -114,69 +105,69 @@ Methods that must be forwarded from the parent Activity/Fragment.
 
 Methods available on the UiSettings object returned by `getUiSettings()`:
 
-| Method                                                  | Return Type | Status      | Notes                                                          |
-| ------------------------------------------------------- | ----------- | ----------- | -------------------------------------------------------------- |
-| `setZoomGesturesEnabled(boolean)`                       | `void`      | IMPLEMENTED | Enable/disable pinch-to-zoom gestures (property: isZoomGesturesEnabled) |
-| `isZoomGesturesEnabled()`                               | `boolean`   | IMPLEMENTED | Check if zoom gestures are enabled (default: true)             |
-| `setScrollGesturesEnabled(boolean)`                     | `void`      | IMPLEMENTED | Enable/disable pan/scroll gestures (property: isScrollGesturesEnabled) |
-| `isScrollGesturesEnabled()`                             | `boolean`   | IMPLEMENTED | Check if scroll gestures are enabled (default: true)           |
-| `setZoomControlsEnabled(boolean)`                       | `void`      | IMPLEMENTED | Show/hide +/- zoom button overlay (property: isZoomControlsEnabled) |
-| `isZoomControlsEnabled()`                               | `boolean`   | IMPLEMENTED | Check if zoom controls are visible (default: false)            |
-| `setScrollGesturesEnabledDuringRotateOrZoom(boolean)`   | `void`      | IMPLEMENTED | Allow panning during pinch-zoom (property: isScrollGesturesEnabledDuringRotateOrZoom) |
-| `isScrollGesturesEnabledDuringRotateOrZoom()`           | `boolean`   | IMPLEMENTED | Check if scroll-during-zoom is enabled (default: true)         |
-| `setRotateGesturesEnabled(boolean)`                     | `void`      | NOT PLANNED | OSM tiles don't support rotation                               |
-| `isRotateGesturesEnabled()`                             | `boolean`   | IMPLEMENTED | Always returns false (rotation not supported)                  |
-| `setTiltGesturesEnabled(boolean)`                       | `void`      | NOT PLANNED | OSM tiles don't support 3D tilt                                |
-| `isTiltGesturesEnabled()`                               | `boolean`   | IMPLEMENTED | Always returns false (tilt not supported)                      |
-| `setCompassEnabled(boolean)`                            | `void`      | NOT PLANNED | Requires rotation support                                      |
-| `isCompassEnabled()`                                    | `boolean`   | IMPLEMENTED | Always returns false (compass not implemented)                 |
-| `setMyLocationButtonEnabled(boolean)`                   | `void`      | NOT PLANNED | Requires location services integration                         |
-| `isMyLocationButtonEnabled()`                           | `boolean`   | IMPLEMENTED | Always returns false (location button not implemented)         |
-| `setIndoorLevelPickerEnabled(boolean)`                  | `void`      | NOT PLANNED | No indoor mapping support                                      |
-| `isIndoorLevelPickerEnabled()`                          | `boolean`   | IMPLEMENTED | Always returns false (indoor mapping not supported)            |
-| `setMapToolbarEnabled(boolean)`                         | `void`      | NOT IMPLEMENTED | Use openInExternalApp() instead - see External Map Integration section below |
-| `isMapToolbarEnabled()`                                 | `boolean`   | IMPLEMENTED | Always returns false (map toolbar not implemented)             |
-| `setAllGesturesEnabled(boolean)`                        | `void`      | IMPLEMENTED | Enable/disable all gesture controls at once                    |
+| Method                                                | Return Type | Notes                                                                                    |
+| ----------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------- |
+| `setZoomGesturesEnabled(boolean)`                     | `void`      |                                                                                          |
+| `isZoomGesturesEnabled()`                             | `boolean`   |                                                                                          |
+| `setScrollGesturesEnabled(boolean)`                   | `void`      |                                                                                          |
+| `isScrollGesturesEnabled()`                           | `boolean`   |                                                                                          |
+| `setZoomControlsEnabled(boolean)`                     | `void`      |                                                                                          |
+| `isZoomControlsEnabled()`                             | `boolean`   |                                                                                          |
+| `setScrollGesturesEnabledDuringRotateOrZoom(boolean)` | `void`      |                                                                                          |
+| `isScrollGesturesEnabledDuringRotateOrZoom()`         | `boolean`   |                                                                                          |
+| `setRotateGesturesEnabled(boolean)`                   | `void`      | Not planned - OSM tiles don't support rotation                                           |
+| `isRotateGesturesEnabled()`                           | `boolean`   | Always returns false                                                                     |
+| `setTiltGesturesEnabled(boolean)`                     | `void`      | Not planned - OSM tiles don't support 3D tilt                                            |
+| `isTiltGesturesEnabled()`                             | `boolean`   | Always returns false                                                                     |
+| `setCompassEnabled(boolean)`                          | `void`      | Not planned - requires rotation support                                                  |
+| `isCompassEnabled()`                                  | `boolean`   | Always returns false                                                                     |
+| `setMyLocationButtonEnabled(boolean)`                 | `void`      | Not planned - requires location services integration                                     |
+| `isMyLocationButtonEnabled()`                         | `boolean`   | Always returns false                                                                     |
+| `setIndoorLevelPickerEnabled(boolean)`                | `void`      | Not planned - no indoor mapping support                                                  |
+| `isIndoorLevelPickerEnabled()`                        | `boolean`   | Always returns false                                                                     |
+| `setMapToolbarEnabled(boolean)`                       | `void`      | Not implemented - use openInExternalApp() instead (see External Map Integration section) |
+| `isMapToolbarEnabled()`                               | `boolean`   | Always returns false                                                                     |
+| `setAllGesturesEnabled(boolean)`                      | `void`      |                                                                                          |
 
 ---
 
 ## GoogleMap Class - Feature Toggles
 
-| Method                         | Return Type | Status      | Notes                                                           |
-| ------------------------------ | ----------- | ----------- | --------------------------------------------------------------- |
-| `setTrafficEnabled(boolean)`   | `void`      | NOT PLANNED | Requires traffic data source                                    |
-| `isTrafficEnabled()`           | `boolean`   | IMPLEMENTED | Always returns false (traffic not supported by OSM tiles)       |
-| `setBuildingsEnabled(boolean)` | `void`      | NOT PLANNED | OSM tiles include buildings by default                          |
-| `isBuildingsEnabled()`         | `boolean`   | IMPLEMENTED | Always returns true (buildings always visible in OSM tiles)     |
-| `setIndoorEnabled(boolean)`    | `void`      | NOT PLANNED | Requires indoor mapping data                                    |
-| `isIndoorEnabled()`            | `boolean`   | IMPLEMENTED | Always returns false (indoor maps not supported by OpenMapView) |
+| Method                         | Return Type | Notes                                                |
+| ------------------------------ | ----------- | ---------------------------------------------------- |
+| `setTrafficEnabled(boolean)`   | `void`      | Not planned - requires traffic data source           |
+| `isTrafficEnabled()`           | `boolean`   | Always returns false                                 |
+| `setBuildingsEnabled(boolean)` | `void`      | Not planned - OSM tiles include buildings by default |
+| `isBuildingsEnabled()`         | `boolean`   | Always returns true                                  |
+| `setIndoorEnabled(boolean)`    | `void`      | Not planned - requires indoor mapping data           |
+| `isIndoorEnabled()`            | `boolean`   | Always returns false                                 |
 
 ---
 
 ## GoogleMap Class - Location Layer
 
-| Method                              | Return Type | Status          | Notes                                                                |
-| ----------------------------------- | ----------- | --------------- | -------------------------------------------------------------------- |
-| `setMyLocationEnabled(boolean)`     | `void`      | NOT IMPLEMENTED | Can be implemented via custom marker                                 |
-| `isMyLocationEnabled()`             | `boolean`   | IMPLEMENTED     | Always returns false (my-location layer not implemented)             |
-| `setLocationSource(LocationSource)` | `void`      | NOT IMPLEMENTED | Can be implemented via custom location tracking and marker placement |
+| Method                              | Return Type | Notes                                                                               |
+| ----------------------------------- | ----------- | ----------------------------------------------------------------------------------- |
+| `setMyLocationEnabled(boolean)`     | `void`      | Not implemented - can be achieved via custom marker                                 |
+| `isMyLocationEnabled()`             | `boolean`   | Always returns false                                                                |
+| `setLocationSource(LocationSource)` | `void`      | Not implemented - can be achieved via custom location tracking and marker placement |
 
 ---
 
 ## GoogleMap Class - Camera Constraints
 
-| Method                                         | Return Type | Status          | Notes                      |
-| ---------------------------------------------- | ----------- | --------------- | -------------------------- |
-| `setLatLngBoundsForCameraTarget(LatLngBounds)` | `void`      | IMPLEMENTED     | Constrains camera target to bounds |
+| Method                                         | Return Type | Notes |
+| ---------------------------------------------- | ----------- | ----- |
+| `setLatLngBoundsForCameraTarget(LatLngBounds)` | `void`      |       |
 
 ---
 
 ## GoogleMap Class - Snapshots
 
-| Method                                    | Return Type | Status      | Notes                                                                                                                                                     |
-| ----------------------------------------- | ----------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `snapshot(SnapshotReadyCallback)`         | `void`      | IMPLEMENTED | Renders current map view to Bitmap. Callback invoked asynchronously on UI thread. Includes all UI overlays (zoom controls, attribution). Returns null if view not laid out. |
-| `snapshot(SnapshotReadyCallback, Bitmap)` | `void`      | IMPLEMENTED | Same as above but with pre-allocated Bitmap. Allocates new bitmap if size doesn't match view dimensions.                                                |
+| Method                                    | Return Type | Notes |
+| ----------------------------------------- | ----------- | ----- |
+| `snapshot(SnapshotReadyCallback)`         | `void`      |       |
+| `snapshot(SnapshotReadyCallback, Bitmap)` | `void`      |       |
 
 ---
 
@@ -184,32 +175,33 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 OpenMapView provides comprehensive event listener support using Kotlin `fun interface` for single-method listeners (enabling lambda syntax) and regular `interface` for multi-method listeners. All callbacks execute on the UI thread.
 
-| Method                                                                | Return Type      | Status          | Notes                                                |
-| --------------------------------------------------------------------- | ---------------- | --------------- | ---------------------------------------------------- |
-| `setOnMapClickListener(OnMapClickListener)`                           | `void`           | IMPLEMENTED     | `fun interface` - LatLng coordinate callbacks. Fires when map clicked (not markers/shapes) |
-| `setOnMapLongClickListener(OnMapLongClickListener)`                   | `void`           | IMPLEMENTED     | `fun interface` - GestureDetector-based long-press detection (~500ms) |
-| `setOnMarkerClickListener(OnMarkerClickListener)`                     | `void`           | IMPLEMENTED     | `fun interface` - Returns boolean to consume event (true = no info window/centering) |
-| `setOnMarkerDragListener(OnMarkerDragListener)`                       | `void`           | IMPLEMENTED     | 3-method interface - onMarkerDragStart/onMarkerDrag/onMarkerDragEnd callbacks |
-| `setOnPolylineClickListener(OnPolylineClickListener)`                 | `void`           | IMPLEMENTED     | `fun interface` - Point-to-line distance hit testing (~10px tolerance) |
-| `setOnPolygonClickListener(OnPolygonClickListener)`                   | `void`           | IMPLEMENTED     | `fun interface` - Ray casting algorithm with hole support |
-| `setOnCircleClickListener(OnCircleClickListener)`                     | `void`           | IMPLEMENTED     | `fun interface` - Distance-based hit testing (center to touch point) |
-| `setOnGroundOverlayClickListener(OnGroundOverlayClickListener)`       | `void`           | IMPLEMENTED     | `fun interface` - Rectangle bounds hit testing with rotation support |
-| `setOnPoiClickListener(OnPoiClickListener)`                           | `void`           | NOT PLANNED     | POI data not available in OSM tiles                  |
-| `setOnCameraMoveStartedListener(OnCameraMoveStartedListener)`         | `void`           | IMPLEMENTED     | `fun interface` - Reason constants: REASON_GESTURE (1), REASON_API_ANIMATION (2), REASON_DEVELOPER_ANIMATION (3) |
-| `setOnCameraMoveListener(OnCameraMoveListener)`                       | `void`           | IMPLEMENTED     | `fun interface` - Called repeatedly during camera movement (60fps) - keep lightweight! |
-| `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           | IMPLEMENTED     | `fun interface` - Called when camera stops moving (after gesture or animation completes) |
-| `setOnCameraMoveCanceledListener(OnCameraMoveCanceledListener)`       | `void`           | IMPLEMENTED     | `fun interface` - Called when animation interrupted by gesture or new camera command |
-| `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | NOT IMPLEMENTED | Tiles load asynchronously, callback could be added   |
-| `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | NOT IMPLEMENTED | Custom adapters not yet implemented                  |
-| `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           | IMPLEMENTED     | `fun interface` - Full support with basic info window rendering |
-| `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | NOT IMPLEMENTED | Not applicable                                       |
-| `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | NOT IMPLEMENTED | Not applicable                                       |
-| `setOnMyLocationButtonClickListener(OnMyLocationButtonClickListener)` | `void`           | NOT IMPLEMENTED | Not applicable                                       |
-| `setOnMyLocationClickListener(OnMyLocationClickListener)`             | `void`           | NOT IMPLEMENTED | Not applicable                                       |
-| `setOnIndoorStateChangeListener(OnIndoorStateChangeListener)`         | `void`           | NOT PLANNED     | Indoor mapping not supported                         |
-| `getFocusedBuilding()`                                                | `IndoorBuilding` | NOT PLANNED     | Indoor mapping not supported                         |
+| Method                                                                | Return Type      | Notes                                                                |
+| --------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------- |
+| `setOnMapClickListener(OnMapClickListener)`                           | `void`           |                                                                      |
+| `setOnMapLongClickListener(OnMapLongClickListener)`                   | `void`           |                                                                      |
+| `setOnMarkerClickListener(OnMarkerClickListener)`                     | `void`           |                                                                      |
+| `setOnMarkerDragListener(OnMarkerDragListener)`                       | `void`           |                                                                      |
+| `setOnPolylineClickListener(OnPolylineClickListener)`                 | `void`           |                                                                      |
+| `setOnPolygonClickListener(OnPolygonClickListener)`                   | `void`           |                                                                      |
+| `setOnCircleClickListener(OnCircleClickListener)`                     | `void`           |                                                                      |
+| `setOnGroundOverlayClickListener(OnGroundOverlayClickListener)`       | `void`           |                                                                      |
+| `setOnPoiClickListener(OnPoiClickListener)`                           | `void`           | Not planned - POI data not available in OSM tiles                    |
+| `setOnCameraMoveStartedListener(OnCameraMoveStartedListener)`         | `void`           |                                                                      |
+| `setOnCameraMoveListener(OnCameraMoveListener)`                       | `void`           |                                                                      |
+| `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           |                                                                      |
+| `setOnCameraMoveCanceledListener(OnCameraMoveCanceledListener)`       | `void`           |                                                                      |
+| `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | Not implemented - tiles load asynchronously, callback could be added |
+| `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | Not implemented - custom adapters not yet implemented                |
+| `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           |                                                                      |
+| `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | Not implemented                                                      |
+| `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | Not implemented                                                      |
+| `setOnMyLocationButtonClickListener(OnMyLocationButtonClickListener)` | `void`           | Not implemented                                                      |
+| `setOnMyLocationClickListener(OnMyLocationClickListener)`             | `void`           | Not implemented                                                      |
+| `setOnIndoorStateChangeListener(OnIndoorStateChangeListener)`         | `void`           | Not planned - indoor mapping not supported                           |
+| `getFocusedBuilding()`                                                | `IndoorBuilding` | Not planned - indoor mapping not supported                           |
 
 **Event Priority (highest to lowest):**
+
 1. Info window click (if info window is showing)
 2. Marker click (returns boolean - true consumes event)
 3. Ground overlay click (highest z-index first)
@@ -219,10 +211,12 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 7. Map click (fires if nothing else consumed event)
 
 **Camera Event Sequence:**
-- **Successful animation:** onCameraMoveStarted(reason) → onCameraMove* → onCameraIdle
-- **Interrupted animation:** onCameraMoveStarted(reason) → onCameraMove* → onCameraMoveCanceled → onCameraMoveStarted(REASON_GESTURE) → ...
+
+- **Successful animation:** onCameraMoveStarted(reason) → onCameraMove\* → onCameraIdle
+- **Interrupted animation:** onCameraMoveStarted(reason) → onCameraMove\* → onCameraMoveCanceled → onCameraMoveStarted(REASON_GESTURE) → ...
 
 **Kotlin Lambda Syntax Examples:**
+
 ```kotlin
 // Single-method listeners support lambda syntax
 mapView.setOnMapClickListener { latLng ->
@@ -246,92 +240,77 @@ mapView.setOnMarkerDragListener(object : OnMarkerDragListener {
 
 ## GeoJSON Support
 
-| Feature              | Status      | Notes                                              |
-| -------------------- | ----------- | -------------------------------------------------- |
-| `addGeoJson(String)` | IMPLEMENTED | Parses Point, LineString, Polygon, Multi- variants |
-
-This method is an OpenMapView-specific feature not present in Google Maps API.
+| Feature              | Return Type | Notes                                                 |
+| -------------------- | ----------- | ----------------------------------------------------- |
+| `addGeoJson(String)` | `void`      | OpenMapView-specific feature (not in Google Maps API) |
 
 ---
 
 ## External Map Integration
 
-| Feature                     | Status      | Notes                                                                                              |
-| --------------------------- | ----------- | -------------------------------------------------------------------------------------------------- |
-| `openInExternalApp(String)` | IMPLEMENTED | Opens current map location in external apps via geo: URI. Falls back to OpenStreetMap.org in browser if no map apps installed. Similar to Google Maps toolbar functionality but open-source. |
-
-This method is an OpenMapView-specific feature not present in Google Maps API. See [MAP_TOOLBAR.md](MAP_TOOLBAR.md) for details.
+| Feature                     | Return Type | Notes                                                                                                                                                  |
+| --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `openInExternalApp(String)` | `void`      | OpenMapView-specific feature (not in Google Maps API). Opens location in external apps via geo: URI. See [MAP_TOOLBAR.md](MAP_TOOLBAR.md) for details. |
 
 ---
 
 ## CameraUpdateFactory
 
-| Method                                         | Return Type    | Status          | Notes                      |
-| ---------------------------------------------- | -------------- | --------------- | -------------------------- |
-| `newLatLng(LatLng)`                            | `CameraUpdate` | IMPLEMENTED     | Move to location           |
-| `newLatLngZoom(LatLng, float)`                 | `CameraUpdate` | IMPLEMENTED     | Move to location and zoom  |
-| `newCameraPosition(CameraPosition)`            | `CameraUpdate` | IMPLEMENTED     | Move to camera position    |
-| `zoomIn()`                                     | `CameraUpdate` | IMPLEMENTED     | Increment zoom by 1        |
-| `zoomOut()`                                    | `CameraUpdate` | IMPLEMENTED     | Decrement zoom by 1                |
-| `zoomTo(float)`                                | `CameraUpdate` | IMPLEMENTED     | Set specific zoom level            |
-| `zoomBy(float)`                                | `CameraUpdate` | IMPLEMENTED     | Adjust zoom by amount              |
-| `newLatLngBounds(LatLngBounds, int)`           | `CameraUpdate` | IMPLEMENTED     | Fit bounds with padding            |
-| `newLatLngBounds(LatLngBounds, int, int, int)` | `CameraUpdate` | IMPLEMENTED     | Fit bounds in specified dimensions |
-| `scrollBy(float, float)`                       | `CameraUpdate` | IMPLEMENTED     | Scroll map by pixel offset         |
+| Method                                         | Return Type    | Notes |
+| ---------------------------------------------- | -------------- | ----- |
+| `newLatLng(LatLng)`                            | `CameraUpdate` |       |
+| `newLatLngZoom(LatLng, float)`                 | `CameraUpdate` |       |
+| `newCameraPosition(CameraPosition)`            | `CameraUpdate` |       |
+| `zoomIn()`                                     | `CameraUpdate` |       |
+| `zoomOut()`                                    | `CameraUpdate` |       |
+| `zoomTo(float)`                                | `CameraUpdate` |       |
+| `zoomBy(float)`                                | `CameraUpdate` |       |
+| `newLatLngBounds(LatLngBounds, int)`           | `CameraUpdate` |       |
+| `newLatLngBounds(LatLngBounds, int, int, int)` | `CameraUpdate` |       |
+| `scrollBy(float, float)`                       | `CameraUpdate` |       |
 
 ---
 
 ## BitmapDescriptorFactory
 
-| Method                 | Return Type        | Status      | Notes                                         |
-| ---------------------- | ------------------ | ----------- | --------------------------------------------- |
-| `defaultMarker()`      | `BitmapDescriptor` | IMPLEMENTED | Red marker icon                               |
-| `defaultMarker(float)` | `BitmapDescriptor` | IMPLEMENTED | Marker with custom hue (0-360)                |
-| `fromAsset(String)`    | `BitmapDescriptor` | IMPLEMENTED | Loads bitmap from assets folder               |
-| `fromBitmap(Bitmap)`   | `BitmapDescriptor` | IMPLEMENTED | Creates descriptor from bitmap object         |
-| `fromFile(String)`     | `BitmapDescriptor` | IMPLEMENTED | Loads bitmap from file path                   |
-| `fromPath(String)`     | `BitmapDescriptor` | IMPLEMENTED | Alias for fromFile                            |
-| `fromResource(int)`    | `BitmapDescriptor` | IMPLEMENTED | Loads bitmap from drawable resource           |
+| Method                 | Return Type        | Notes |
+| ---------------------- | ------------------ | ----- |
+| `defaultMarker()`      | `BitmapDescriptor` |       |
+| `defaultMarker(float)` | `BitmapDescriptor` |       |
+| `fromAsset(String)`    | `BitmapDescriptor` |       |
+| `fromBitmap(Bitmap)`   | `BitmapDescriptor` |       |
+| `fromFile(String)`     | `BitmapDescriptor` |       |
+| `fromPath(String)`     | `BitmapDescriptor` |       |
+| `fromResource(int)`    | `BitmapDescriptor` |       |
 
 ---
 
-## Summary Statistics
+## Summary
 
 **Total Methods Reviewed:** 102 (includes UiSettings class methods)
 
-**Implementation Status:**
+**Implementation Summary:**
 
-- IMPLEMENTED: 83 methods (81.4%)
-- PARTIAL: 0 methods (0%)
-- NOT IMPLEMENTED: 0 methods (0%)
-- NOT PLANNED: 19 methods (18.6%)
-
-**Core Functionality Coverage:**
-
-- Camera control: 100% (animateCamera, moveCamera, stopAnimation, getCameraPosition, setPadding, zoom constraints)
-- Markers: 100% (addMarker, click listener, drag support, visibility, alpha, info windows, custom icons)
-- Vector shapes: 100% (polylines, polygons with holes, circles, visibility, click listeners, z-index)
-- Ground overlays: 100% (position/bounds modes, rotation, transparency, click listener)
-- Tile overlays: 100% (custom tile providers, transparency, z-index, visibility, predefined OSM providers)
-- **Event listeners: 100%** (13/13 applicable listeners - all use Kotlin `fun interface` or regular interface)
-  - Map events: OnMapClickListener, OnMapLongClickListener
-  - Marker events: OnMarkerClickListener, OnMarkerDragListener, OnInfoWindowClickListener
-  - Shape events: OnPolylineClickListener, OnPolygonClickListener, OnCircleClickListener, OnGroundOverlayClickListener
-  - Camera events: OnCameraMoveStartedListener, OnCameraMoveListener, OnCameraIdleListener, OnCameraMoveCanceledListener
-- Map interaction: 100% (click listeners, long-click, projection API, visible region)
-- Zoom control: 100% (min/max zoom preferences, getZoom, built-in zoom controls)
-- Map types: 100% (5 types: NONE, NORMAL, TERRAIN, HUMANITARIAN, CYCLE)
-- UI Settings: 100% of applicable methods (gesture controls, zoom controls, scroll-during-zoom)
-- Lifecycle management: 75% (onResume, onPause, onDestroy)
+- 83 methods fully implemented (81.4%)
+- 19 methods not planned (18.6%) - mostly features requiring Google-specific data (traffic, indoor maps, POI) or unsupported map capabilities (rotation, tilt)
 
 **OpenMapView-Specific Features:**
-In addition to Google Maps API compatibility, OpenMapView provides:
-- GeoJSON import (addGeoJson) - supports Point, LineString, Polygon, Multi* variants, FeatureCollection
-- External map integration (openInExternalApp) - opens location in external map apps via geo: URI with OpenStreetMap browser fallback
-- Built-in zoom controls (UiSettings.isZoomControlsEnabled) - circular +/- buttons rendered automatically
 
-**Focus Areas:**
-OpenMapView prioritizes lightweight, essential mapping features for applications that need basic map display, markers, shapes, and camera animations without the complexity and overhead of Google Play Services.
+In addition to Google Maps API compatibility, OpenMapView provides:
+
+- **GeoJSON import** (`addGeoJson`) - supports Point, LineString, Polygon, Multi\* variants, FeatureCollection
+- **External map integration** (`openInExternalApp`) - opens location in external map apps via geo: URI with OpenStreetMap browser fallback
+- **Built-in zoom controls** (`UiSettings.isZoomControlsEnabled`) - circular +/- buttons rendered automatically
+- **Map types** - 5 types: NONE, NORMAL, TERRAIN, HUMANITARIAN, CYCLE (uses different OSM tile sources)
+
+**Key Architectural Differences:**
+
+OpenMapView uses a **single-class architecture** (vs. Google Maps' MapView + GoogleMap pattern):
+
+- Map methods called directly on `OpenMapView` instance (e.g., `mapView.setCenter()`, `mapView.getZoom()`)
+- No async initialization needed - map ready immediately after view creation
+- Uses `DefaultLifecycleObserver` pattern - no manual lifecycle forwarding required
+- Just call `lifecycle.addObserver(mapView)` once in Activity/Fragment
 
 ---
 
