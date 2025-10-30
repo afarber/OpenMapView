@@ -16,11 +16,11 @@ This document lists all public non-deprecated methods from Google's MapView and 
 | `onPause()`                       | `void`      |                                                                    |
 | `onStop()`                        | `void`      | Not needed - OpenMapView uses DefaultLifecycleObserver pattern     |
 | `onDestroy()`                     | `void`      |                                                                    |
-| `onSaveInstanceState(Bundle)`     | `void`      | Not yet implemented - state persistence planned for future release |
-| `onLowMemory()`                   | `void`      | Not yet implemented - memory management optimization planned       |
+| `onSaveInstanceState(Bundle)`     | `void`      | Not implemented                                                     |
+| `onLowMemory()`                   | `void`      | Not implemented                                                     |
 | `getMapAsync(OnMapReadyCallback)` | `void`      | Not needed - map is immediately available after view creation      |
-| `onEnterAmbient(Bundle)`          | `void`      | Not planned - wearable-specific feature                            |
-| `onExitAmbient()`                 | `void`      | Not planned - wearable-specific feature                            |
+| `onEnterAmbient(Bundle)`          | `void`      | Not implemented - wearable-specific feature                         |
+| `onExitAmbient()`                 | `void`      | Not implemented - wearable-specific feature                         |
 
 ---
 
@@ -77,7 +77,7 @@ This document lists all public non-deprecated methods from Google's MapView and 
 | `getZoom()`                    | `double`    | Direct method on OpenMapView (not via separate GoogleMap object) |
 | `setMapType(int)`              | `void`      | Supports NORMAL, TERRAIN, HUMANITARIAN, CYCLE, NONE              |
 | `getMapType()`                 | `int`       |                                                                  |
-| `setMapStyle(MapStyleOptions)` | `boolean`   | Not planned - custom tile sources could provide this             |
+| `setMapStyle(MapStyleOptions)` | `boolean`   | Not implemented                                                   |
 
 ---
 
@@ -115,15 +115,15 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 | `isZoomControlsEnabled()`                             | `boolean`   |                                                                                          |
 | `setScrollGesturesEnabledDuringRotateOrZoom(boolean)` | `void`      |                                                                                          |
 | `isScrollGesturesEnabledDuringRotateOrZoom()`         | `boolean`   |                                                                                          |
-| `setRotateGesturesEnabled(boolean)`                   | `void`      | Not planned - OSM tiles don't support rotation                                           |
+| `setRotateGesturesEnabled(boolean)`                   | `void`      | Not implemented                                                                           |
 | `isRotateGesturesEnabled()`                           | `boolean`   | Always returns false                                                                     |
-| `setTiltGesturesEnabled(boolean)`                     | `void`      | Not planned - OSM tiles don't support 3D tilt                                            |
+| `setTiltGesturesEnabled(boolean)`                     | `void`      | Not implemented                                                                           |
 | `isTiltGesturesEnabled()`                             | `boolean`   | Always returns false                                                                     |
-| `setCompassEnabled(boolean)`                          | `void`      | Not planned - requires rotation support                                                  |
+| `setCompassEnabled(boolean)`                          | `void`      | Not implemented                                                                           |
 | `isCompassEnabled()`                                  | `boolean`   | Always returns false                                                                     |
-| `setMyLocationButtonEnabled(boolean)`                 | `void`      | Not planned - requires location services integration                                     |
+| `setMyLocationButtonEnabled(boolean)`                 | `void`      | Not implemented                                                                           |
 | `isMyLocationButtonEnabled()`                         | `boolean`   | Always returns false                                                                     |
-| `setIndoorLevelPickerEnabled(boolean)`                | `void`      | Not planned - no indoor mapping support                                                  |
+| `setIndoorLevelPickerEnabled(boolean)`                | `void`      | Not implemented                                                                           |
 | `isIndoorLevelPickerEnabled()`                        | `boolean`   | Always returns false                                                                     |
 | `setMapToolbarEnabled(boolean)`                       | `void`      | Not implemented - use openInExternalApp() instead (see External Map Integration section) |
 | `isMapToolbarEnabled()`                               | `boolean`   | Always returns false                                                                     |
@@ -135,11 +135,11 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 | Method                         | Return Type | Notes                                                |
 | ------------------------------ | ----------- | ---------------------------------------------------- |
-| `setTrafficEnabled(boolean)`   | `void`      | Not planned - requires traffic data source           |
+| `setTrafficEnabled(boolean)`   | `void`      | Not implemented                                       |
 | `isTrafficEnabled()`           | `boolean`   | Always returns false                                 |
-| `setBuildingsEnabled(boolean)` | `void`      | Not planned - OSM tiles include buildings by default |
+| `setBuildingsEnabled(boolean)` | `void`      | Not implemented - OSM tiles include buildings by default |
 | `isBuildingsEnabled()`         | `boolean`   | Always returns true                                  |
-| `setIndoorEnabled(boolean)`    | `void`      | Not planned - requires indoor mapping data           |
+| `setIndoorEnabled(boolean)`    | `void`      | Not implemented                                       |
 | `isIndoorEnabled()`            | `boolean`   | Always returns false                                 |
 
 ---
@@ -185,7 +185,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 | `setOnPolygonClickListener(OnPolygonClickListener)`                   | `void`           |                                                                      |
 | `setOnCircleClickListener(OnCircleClickListener)`                     | `void`           |                                                                      |
 | `setOnGroundOverlayClickListener(OnGroundOverlayClickListener)`       | `void`           |                                                                      |
-| `setOnPoiClickListener(OnPoiClickListener)`                           | `void`           | Not planned - POI data not available in OSM tiles                    |
+| `setOnPoiClickListener(OnPoiClickListener)`                           | `void`           | Not implemented - POI data not available in OSM tiles                 |
 | `setOnCameraMoveStartedListener(OnCameraMoveStartedListener)`         | `void`           |                                                                      |
 | `setOnCameraMoveListener(OnCameraMoveListener)`                       | `void`           |                                                                      |
 | `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           |                                                                      |
@@ -197,8 +197,8 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 | `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | Not implemented                                                      |
 | `setOnMyLocationButtonClickListener(OnMyLocationButtonClickListener)` | `void`           | Not implemented                                                      |
 | `setOnMyLocationClickListener(OnMyLocationClickListener)`             | `void`           | Not implemented                                                      |
-| `setOnIndoorStateChangeListener(OnIndoorStateChangeListener)`         | `void`           | Not planned - indoor mapping not supported                           |
-| `getFocusedBuilding()`                                                | `IndoorBuilding` | Not planned - indoor mapping not supported                           |
+| `setOnIndoorStateChangeListener(OnIndoorStateChangeListener)`         | `void`           | Not implemented - indoor mapping not supported                        |
+| `getFocusedBuilding()`                                                | `IndoorBuilding` | Not implemented - indoor mapping not supported                        |
 
 **Event Priority (highest to lowest):**
 

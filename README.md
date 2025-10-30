@@ -26,8 +26,8 @@ The library is available on [Maven Central](https://central.sonatype.com/artifac
 - Lightweight, pure Kotlin implementation with zero Google dependencies
 - OSM tiles via standard APIs (free, no API keys required)
 - Smooth camera animations with customizable durations and callbacks
-- 7 overlay types: Markers, Polylines, Polygons, Circles, Ground Overlays, Tile Overlays, Info Windows
-- 5 map types: Normal (OSM), Terrain (OpenTopoMap), Humanitarian, Cycle, None
+- Multiple overlay types: Markers, Polylines, Polygons, Circles, Ground Overlays, Tile Overlays, Info Windows
+- Multiple map types (see [Map Types Guide](docs/MAP_TYPES.md))
 - Built-in zoom controls (+/- buttons) via UiSettings
 - External app integration (open in Google Maps, OsmAnd, etc. via geo: URI)
 - GeoJSON import support

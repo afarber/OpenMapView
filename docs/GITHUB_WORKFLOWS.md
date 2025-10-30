@@ -40,7 +40,7 @@ Located in `.github/workflows/`:
 
 #### `_coverage.yml`
 - **Purpose**: Check test coverage meets minimum threshold
-- **Runs**: `./scripts/check-coverage.sh` (minimum 20% coverage)
+- **Runs**: `./scripts/check-coverage.sh` (minimum threshold defined in [Contributing Guide](CONTRIBUTING.md#test-coverage))
 - **Artifacts**: Uploads coverage reports to Codecov and as artifacts
 - **Usage**: Called by CI workflow
 - **Duration**: ~1-2 minutes
@@ -495,16 +495,6 @@ This single workflow definition powers both daily scheduled tests and PR validat
 - Builds ensure compilation works
 - Publish handles distribution
 
-## Future Enhancements
-
-Possible additions:
-
-- **Instrumentation Tests**: Run UI tests on Android emulator
-- **Code Coverage**: Upload coverage reports to Codecov
-- **Dependency Updates**: Automated PRs for dependency updates (Renovate/Dependabot)
-- **Release Drafter**: Automated changelog generation from PR labels
-- **Benchmark Tracking**: Performance regression detection
-- **Doc Generation**: Auto-generate KDoc documentation
 
 ## Monitoring
 
@@ -541,4 +531,4 @@ The OpenMapView GitHub Actions setup provides:
 - **Easy maintenance** - Change configuration once
 - **Full automation** - From code change to Maven Central
 
-For Maven Central setup details, see [MAVEN_CENTRAL_SETUP.md](MAVEN_CENTRAL_SETUP.md).
+For Maven Central setup details, see [Publishing Guide](PUBLISHING.md).

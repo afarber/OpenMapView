@@ -307,7 +307,8 @@ The release process is orchestrated by reusable GitHub Actions workflows:
 
 - [GitHub Workflows](GITHUB_WORKFLOWS.md) - CI/CD pipeline details
 - [Contributing Guide](CONTRIBUTING.md) - Contribution guidelines
-- [Testing Guide](TESTING.md) - Testing documentation
+- [Unit Testing Guide](TESTING_UNIT.md) - Unit testing with Robolectric
+- [Instrumented Testing Guide](TESTING_INSTRUMENTED.md) - On-device testing
 
 ## Migration Notes
 

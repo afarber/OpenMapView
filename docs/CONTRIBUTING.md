@@ -92,7 +92,7 @@ If issues are found, the commit is blocked and instructions are displayed.
 
 ### Unit Tests
 
-All new features and bug fixes should include unit tests.
+All new features and bug fixes should include unit tests. See [Unit Testing Guide](TESTING_UNIT.md) for detailed information on writing tests with Robolectric.
 
 Run unit tests:
 
@@ -102,7 +102,7 @@ Run unit tests:
 
 ### Test Coverage
 
-The project enforces a minimum test coverage of 20% for all code. Coverage is measured using JaCoCo.
+The project enforces a **minimum test coverage of 20%** for all code. Coverage is measured using JaCoCo.
 
 Generate coverage report:
 
@@ -121,7 +121,7 @@ Check coverage meets minimum threshold:
 ./scripts/check-coverage.sh
 ```
 
-The CI pipeline will fail if coverage drops below 20%. Focus on testing:
+The CI pipeline will fail if coverage drops below the minimum threshold. Focus on testing:
 - Core business logic
 - Public API methods
 - Edge cases and error handling

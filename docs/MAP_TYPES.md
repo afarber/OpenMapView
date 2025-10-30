@@ -169,24 +169,22 @@ mapView.setMapType(MapType.TRACESTRACK_TOPO)
 ```
 
 #### 9. MAPTILER_OMT - OpenMapTiles Vector Style
-**`MapType.MAPTILER_OMT`** (constant value: 9) 🔑🚧 **Coming Soon**
+**`MapType.MAPTILER_OMT`** (constant value: 9) 🔑🚧 **Not Yet Supported**
 
 High-quality vector tile map based on OpenMapTiles schema.
 
 - **Status**: Not yet supported - requires MapLibre GL integration
-- **When Available**: Smooth rendering, client-side styling, excellent performance
 - **Get API Key**: https://www.maptiler.com/cloud/plans/
 - **Free Tier**: 100,000 tiles/month
 
-### Vector Tile Support (Coming Soon)
+### Vector Tile Support
 
 #### 10. SHORTBREAD - Modern Vector Style
-**`MapType.SHORTBREAD`** (constant value: 8) 🚧 **Coming Soon**
+**`MapType.SHORTBREAD`** (constant value: 8) 🚧 **Not Yet Supported**
 
 Modern, clean vector-based map style.
 
 - **Status**: Not yet supported - requires MapLibre GL integration
-- **When Available**: Smooth rendering, customizable styling
 - **No API Key Required**
 
 ## API Key Configuration
@@ -341,11 +339,6 @@ mapView.setMapType(MapType.CYCLOSM)  // Switch map types dynamically
 - **Public API**: See `docs/PUBLIC_API.md` for complete API reference
 - **Tile Specifications**: All maps use 256×256 pixel tiles, Web Mercator projection (EPSG:3857)
 
-## Future Enhancements
-
-- **Vector Tile Support**: MapLibre GL integration for SHORTBREAD and MAPTILER_OMT (planned)
-- **Dark Mode Variants**: TransportDarkMap, ShortbreadEclipse (considering for future release)
-- **Additional Free Maps**: Evaluating other public tile sources
 
 ---
 

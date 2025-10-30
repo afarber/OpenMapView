@@ -8,7 +8,7 @@ This document explains instrumented testing for OpenMapView, including setup and
 
 **Instrumented tests** run on an Android emulator or physical device. They provide access to real Android framework APIs and hardware.
 
-**Current Status:** OpenMapView has **9 instrumented tests** (2 for TileDownloader, 7 for MapController) that test real rendering, network operations, and Canvas drawing. Unit tests with Robolectric (107 tests) cover logic, calculations, and vector shape management.
+**Current Status:** OpenMapView has instrumented tests covering real rendering, network operations, and Canvas drawing. Unit tests with Robolectric cover logic, calculations, and vector shape management. See [Unit Testing Guide](TESTING_UNIT.md) for details on unit tests.
 
 **CI Integration:** Instrumented tests run automatically daily at 09:45 UTC on GitHub Actions using the free Ubuntu runner with Android emulator.
 
@@ -46,10 +46,8 @@ Use unit tests (with Robolectric) for:
 
 The project has instrumented tests in `openmapview/src/androidTest/kotlin/de/afarber/openmapview/`:
 
-- **TileDownloaderInstrumentationTest.kt** (2 tests) - Real OSM tile downloads with network
-- **MapControllerInstrumentationTest.kt** (7 tests) - Real Canvas rendering, marker drawing, lifecycle
-
-Total: 9 instrumented tests covering real Android framework behavior.
+- **TileDownloaderInstrumentationTest.kt** - Real OSM tile downloads with network
+- **MapControllerInstrumentationTest.kt** - Real Canvas rendering, marker drawing, lifecycle
 
 ## Running Instrumented Tests
 

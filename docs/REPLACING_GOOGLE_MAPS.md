@@ -451,19 +451,7 @@ mapView.post {
 
 ## Code Examples
 
-See working example applications in the repository:
-
-- [Example01Pan](../examples/Example01Pan) - Basic map panning
-- [Example02Zoom](../examples/Example02Zoom) - Zoom controls
-- [Example03Markers](../examples/Example03Markers) - Marker overlays
-- [Example04Polylines](../examples/Example04Polylines) - Lines and polygons
-- [Example05Camera](../examples/Example05Camera) - Camera animations
-- [Example06Clicks](../examples/Example06Clicks) - Click listeners
-- [Example07DraggableMarkers](../examples/Example07DraggableMarkers) - Draggable markers
-- [Example08Circles](../examples/Example08Circles) - Circle overlays
-- [Example09Overlays](../examples/Example09Overlays) - Tile overlays
-- [Example10GroundOverlays](../examples/Example10GroundOverlays) - Ground overlays
-- [Example11MapTypes](../examples/Example11MapTypes) - Map type switching
+See working example applications in the `examples/` directory of the repository, covering features like basic panning, zoom controls, markers, polylines, camera animations, click listeners, draggable markers, circles, tile overlays, ground overlays, and map type switching.
 
 ---
 
@@ -472,10 +460,10 @@ See working example applications in the repository:
 1. **Read the API compatibility matrix**: [PUBLIC_API.md](PUBLIC_API.md)
 2. **Understand the architecture**: [ARCHITECTURE.md](ARCHITECTURE.md)
 3. **Learn lifecycle management**: [LIFECYCLE.md](LIFECYCLE.md)
-4. **Explore tile overlays**: [TILE_OVERLAYS.md](TILE_OVERLAYS.md)
+4. **Explore map types**: [MAP_TYPES.md](MAP_TYPES.md)
 5. **Review API documentation**: [https://afarber.github.io/OpenMapView/](https://afarber.github.io/OpenMapView/)
-6. **Try the examples**: Clone the repository and run example apps
-7. **Join the community**: Report issues or contribute on [GitHub](https://github.com/afarber/OpenMapView)
+6. **Try the examples**: Clone the repository and run example apps in `examples/` directory
+7. **Report issues**: [GitHub Issues](https://github.com/afarber/OpenMapView/issues)
 
 ---
 

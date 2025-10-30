@@ -383,11 +383,7 @@ Check Robolectric version compatibility with CI's JDK version. The project uses:
 
 ## Test Coverage
 
-### Overview
-
-OpenMapView enforces a minimum test coverage of 20% using JaCoCo. Coverage is measured automatically on every CI run and displayed via a badge in the README.
-
-[![codecov](https://codecov.io/gh/afarber/OpenMapView/branch/main/graph/badge.svg)](https://codecov.io/gh/afarber/OpenMapView)
+OpenMapView uses JaCoCo for test coverage measurement. For coverage requirements and thresholds, see the [Contributing Guide](CONTRIBUTING.md#test-coverage).
 
 ### Generating Coverage Reports
 
@@ -411,13 +407,11 @@ Check coverage meets minimum threshold:
 
 ### Coverage Configuration
 
-JaCoCo is configured in `openmapview/build.gradle.kts` with the following exclusions:
+JaCoCo is configured in `openmapview/build.gradle.kts` with exclusions for:
 
 - Generated code (R.class, BuildConfig)
 - Test files
 - Android framework classes
-
-The minimum coverage threshold is set to 20% and enforced in CI.
 
 ### Current Coverage Areas
 
@@ -443,26 +437,13 @@ The `.github/workflows/_coverage.yml` workflow:
 1. Runs all unit tests
 2. Generates JaCoCo coverage report
 3. Uploads coverage to Codecov
-4. Checks coverage meets 20% minimum
+4. Checks coverage meets minimum threshold
 5. Uploads HTML and XML reports as artifacts
 
 Coverage results are available:
 - On Codecov: https://codecov.io/gh/afarber/OpenMapView
 - As CI artifacts (HTML report)
 - In PR status checks (pass/fail)
-
-### Improving Coverage
-
-Focus testing efforts on:
-- Public API methods
-- Core business logic
-- Edge cases and error handling
-- Critical code paths
-
-Less critical:
-- Private internal utilities
-- Simple getters/setters
-- Generated code
 
 See [Contributing Guide](CONTRIBUTING.md#test-coverage) for coverage requirements when submitting PRs.
 

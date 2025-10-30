@@ -338,17 +338,6 @@ With prefetching enabled:
 - **Pan gesture:** 0-4 tile downloads (~0-150KB) from cache
 - **Zoom change:** 0-20 tile downloads (~0-700KB) depending on zoom delta
 
-## Future Optimizations
-
-Potential areas for further improvement:
-
-1. **Bitmap pooling** - Reuse bitmap objects to reduce allocations
-2. **Tile compression** - Store tiles in WebP format in disk cache
-3. **Vector tiles** - Support vector-based rendering for reduced bandwidth
-4. **Adaptive prefetch** - Adjust buffer size based on panning velocity
-5. **Render throttling** - Limit draw calls during rapid gestures
-6. **Tile source selection** - Support multiple tile providers with fallback
-7. **Offline mode** - Bundle common area tiles in APK
 
 ## Benchmarking
 
@@ -372,9 +361,9 @@ Choreographer.getInstance().postFrameCallback { frameTimeNanos ->
 
 ## Best Practices
 
-For optimal performance in your app:
+For optimal performance:
 
-1. **Lifecycle integration:** Always call lifecycle methods (onResume, onPause, onDestroy)
+1. **Lifecycle integration:** Register OpenMapView with lifecycle observer (see [Lifecycle Management](LIFECYCLE.md))
 2. **Memory limits:** Monitor memory usage if displaying multiple maps simultaneously
 3. **Cache clearing:** Provide UI to clear cache if storage becomes an issue
 4. **Network awareness:** Consider pausing downloads on metered connections

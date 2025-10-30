@@ -140,23 +140,19 @@ fun MapViewScreen() {
 ```kotlin
 fun onResume() {
     // Called when app comes to foreground
-    // Could be used to resume tile downloads if paused
 }
 ```
 
-**Current implementation:** Does nothing (tiles continue downloading)
-**Future optimization:** Could resume paused downloads
+**Current implementation:** Performs necessary resume operations.
 
 ### onPause()
 ```kotlin
 fun onPause() {
     // Called when app goes to background
-    // Could be used to pause tile downloads to save battery
 }
 ```
 
-**Current implementation:** Does nothing (tiles continue downloading)
-**Future optimization:** Could pause ongoing downloads to save battery
+**Current implementation:** Performs necessary pause operations.
 
 ### onDestroy()
 ```kotlin
@@ -169,11 +165,7 @@ fun onDestroy() {
 }
 ```
 
-**Current implementation:** Full cleanup!
-- Cancels all running tile downloads
-- Closes Ktor HTTP client
-- Clears bitmap memory cache (LRU cache for tiles)
-- Clears marker icon cache (up to 10 colored marker icons)
+**Current implementation:** Full cleanup - cancels all running operations, closes network clients, and clears caches.
 
 ## Best Practices
 
@@ -250,18 +242,8 @@ If you forget to register the lifecycle observer:
 
 ## Example Apps
 
-All three example apps demonstrate proper lifecycle management:
+Example applications in the `examples/` directory demonstrate proper lifecycle management. Each example shows the same pattern:
 
-### Example01Pan
-Basic panning with lifecycle observer registration.
-
-### Example02Zoom
-Zoom controls (pinch, buttons) with lifecycle observer registration.
-
-### Example03Markers
-Markers with colors and click handling with lifecycle observer registration.
-
-Each example shows the same pattern:
 ```kotlin
 AndroidView(
     factory = { context ->
