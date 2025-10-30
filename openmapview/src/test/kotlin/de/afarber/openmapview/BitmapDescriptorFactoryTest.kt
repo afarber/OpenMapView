@@ -55,7 +55,6 @@ class BitmapDescriptorFactoryTest {
         assertEquals(10, hues.size)
     }
 
-
     @Test
     fun testDefaultMarker_Red() {
         val descriptor = BitmapDescriptorFactory.defaultMarker()

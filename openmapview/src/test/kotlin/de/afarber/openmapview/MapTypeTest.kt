@@ -51,7 +51,6 @@ class MapTypeTest {
         assertEquals(15, values.size)
     }
 
-
     @Test
     fun testAllMapTypesHaveTileSource() {
         for (type in 0..14) {
