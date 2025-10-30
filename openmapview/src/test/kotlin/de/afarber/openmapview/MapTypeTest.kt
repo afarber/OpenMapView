@@ -39,8 +39,6 @@ class MapTypeTest {
         assertEquals(6, MapType.TRACESTRACK_TOPO)
         assertEquals(7, MapType.HUMANITARIAN)
         assertEquals(8, MapType.OPNVKARTE)
-        assertEquals(9, MapType.SHORTBREAD)
-        assertEquals(10, MapType.MAPTILER_OMT)
     }
 
     @Test

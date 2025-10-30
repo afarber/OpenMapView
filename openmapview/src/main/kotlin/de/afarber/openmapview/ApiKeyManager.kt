@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Manages API keys for third-party tile providers.
  *
- * Some map types (CYCLEMAP, TRANSPORT, TRACESTRACK_TOPO, MAPTILER_OMT) require API keys
+ * Some map types (CYCLEMAP, TRANSPORT, TRANSPORT_DARK, TRACESTRACK_TOPO) require API keys
  * from tile providers. Keys can be configured in two ways:
  *
  * **1. AndroidManifest.xml** (Recommended):
@@ -27,9 +27,6 @@ import java.util.concurrent.ConcurrentHashMap
  *     <meta-data
  *         android:name="de.afarber.openmapview.TRACESTRACK_API_KEY"
  *         android:value="your_tracestrack_key_here"/>
- *     <meta-data
- *         android:name="de.afarber.openmapview.MAPTILER_API_KEY"
- *         android:value="your_maptiler_key_here"/>
  * </application>
  * ```
  *
@@ -37,20 +34,17 @@ import java.util.concurrent.ConcurrentHashMap
  * ```kotlin
  * ApiKeyManager.setApiKey("thunderforest", "your_key_here")
  * ApiKeyManager.setApiKey("tracestrack", "your_key_here")
- * ApiKeyManager.setApiKey("maptiler", "your_key_here")
  * ```
  *
  * API keys set programmatically override keys from the manifest.
  *
  * ## Provider Names
- * - `"thunderforest"` - For CYCLEMAP and TRANSPORT map types
+ * - `"thunderforest"` - For CYCLEMAP, TRANSPORT, and TRANSPORT_DARK map types
  * - `"tracestrack"` - For TRACESTRACK_TOPO map type
- * - `"maptiler"` - For MAPTILER_OMT map type (vector tiles, not yet supported)
  *
  * ## Obtaining API Keys
  * - **Thunderforest**: https://www.thunderforest.com/pricing/ (Free: 150k tiles/month)
  * - **Tracestrack**: https://www.tracestrack.com/en/signup (Free tier available)
- * - **MapTiler**: https://www.maptiler.com/cloud/plans/ (Free: 100k tiles/month)
  *
  * @see TileSource
  * @see MapType
@@ -59,7 +53,6 @@ object ApiKeyManager {
     private const val META_DATA_PREFIX = "de.afarber.openmapview."
     private const val THUNDERFOREST_KEY_NAME = "THUNDERFOREST_API_KEY"
     private const val TRACESTRACK_KEY_NAME = "TRACESTRACK_API_KEY"
-    private const val MAPTILER_KEY_NAME = "MAPTILER_API_KEY"
 
     /**
      * Thread-safe storage for API keys set programmatically.
@@ -116,7 +109,7 @@ object ApiKeyManager {
      *
      * Keys set this way override keys from AndroidManifest.xml.
      *
-     * @param provider Provider name ("thunderforest", "tracestrack", or "maptiler")
+     * @param provider Provider name ("thunderforest" or "tracestrack")
      * @param key API key string
      */
     @Synchronized
@@ -132,7 +125,7 @@ object ApiKeyManager {
      *
      * Checks programmatic keys first, then falls back to manifest meta-data.
      *
-     * @param provider Provider name ("thunderforest", "tracestrack", or "maptiler")
+     * @param provider Provider name ("thunderforest" or "tracestrack")
      * @return API key string, or null if not configured
      */
     @Synchronized
@@ -147,7 +140,6 @@ object ApiKeyManager {
             when (normalizedProvider) {
                 "thunderforest" -> META_DATA_PREFIX + THUNDERFOREST_KEY_NAME
                 "tracestrack" -> META_DATA_PREFIX + TRACESTRACK_KEY_NAME
-                "maptiler" -> META_DATA_PREFIX + MAPTILER_KEY_NAME
                 else -> null
             }
 
@@ -157,7 +149,7 @@ object ApiKeyManager {
     /**
      * Checks if an API key is configured for the given provider.
      *
-     * @param provider Provider name ("thunderforest", "tracestrack", or "maptiler")
+     * @param provider Provider name ("thunderforest" or "tracestrack")
      * @return true if a key is available, false otherwise
      */
     fun hasApiKey(provider: String): Boolean = !getApiKey(provider).isNullOrEmpty()

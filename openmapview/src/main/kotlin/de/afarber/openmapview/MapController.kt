@@ -258,10 +258,6 @@ class MapController(
      * - Creates an overlay indicating the missing API key
      * - The map remains interactive (touch events pass through)
      *
-     * If the map type is vector-based (not yet supported):
-     * - Falls back to STANDARD tile source
-     * - Creates an overlay indicating vector tiles are not yet supported
-     *
      * @param mapType The MapType constant
      */
     fun setMapType(mapType: Int) {
@@ -273,22 +269,8 @@ class MapController(
         // Get the tile source for this map type
         val source = TileSource.fromMapType(mapType)
 
-        // Check if the tile source is supported (not vector tiles)
-        if (!source.isSupported()) {
-            // Vector tiles not supported - use STANDARD and show overlay
-            actualTileSource = TileSource.STANDARD
-            apiKeyErrorOverlay =
-                ApiKeyErrorOverlay(
-                    context,
-                    source.getProviderName(),
-                    TileSource.getMapTypeName(mapType),
-                )
-            android.util.Log.i(
-                "OpenMapView",
-                "${TileSource.getMapTypeName(mapType)} requires vector tile support (MapLibre GL). " +
-                    "Displaying STANDARD map instead.",
-            )
-        } else if (source.requiresApiKey && !source.hasApiKey()) {
+        // Check if an API key is required but not configured
+        if (source.requiresApiKey && !source.hasApiKey()) {
             // API key required but not configured - use STANDARD and show overlay
             actualTileSource = TileSource.STANDARD
             apiKeyErrorOverlay =

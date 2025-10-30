@@ -4,7 +4,7 @@ This guide helps you choose and configure the right map type for your OpenMapVie
 
 ## Quick Start
 
-OpenMapView provides **10 map types** matching the OpenStreetMap.org layer switcher. Six types work without any configuration, while four premium types require free API keys.
+OpenMapView provides **9 map types** matching the OpenStreetMap.org layer switcher. Six types work without any configuration, while three premium types require free API keys.
 
 ```kotlin
 val mapView = OpenMapView(context)
@@ -49,7 +49,7 @@ mapView.setMapType(MapType.CYCLOSM)
 ```
 
 #### 3. HUMANITARIAN - Emergency Response
-**`MapType.HUMANITARIAN`** (constant value: 6)
+**`MapType.HUMANITARIAN`** (constant value: 7)
 
 Humanitarian OpenStreetMap Team (HOT) style with red/orange color scheme.
 
@@ -65,7 +65,7 @@ mapView.setMapType(MapType.HUMANITARIAN)
 ```
 
 #### 4. OPNVKARTE - German Public Transport
-**`MapType.OPNVKARTE`** (constant value: 7)
+**`MapType.OPNVKARTE`** (constant value: 8)
 
 Detailed public transport map focusing on German transit networks.
 
@@ -142,8 +142,27 @@ Public transport focused map with comprehensive transit information.
 mapView.setMapType(MapType.TRANSPORT)
 ```
 
-#### 8. TRACESTRACK_TOPO - Topographic Map
-**`MapType.TRACESTRACK_TOPO`** (constant value: 5) 🔑 **Requires Tracestrack API Key**
+#### 8. TRANSPORT_DARK - Dark Mode Public Transit Map
+**`MapType.TRANSPORT_DARK`** (constant value: 5) **Requires Thunderforest API Key**
+
+Dark variant of the public transport map with comprehensive transit information in a dark color scheme.
+
+- **Best for**: Night mode transit apps, low-light journey planning, dark mode applications
+- **Features**: Bus routes, train lines, tram tracks, transit stations
+- **Highlights**: Dark color scheme suitable for night mode
+- **Tile Server**: tile.thunderforest.com
+- **Max Zoom**: 21
+- **Free Tier**: 150,000 tiles/month
+- **Get API Key**: https://www.thunderforest.com/pricing/
+- **Attribution**: © OpenStreetMap contributors. Tiles courtesy of Andy Allan
+
+```kotlin
+// Same API key as CYCLEMAP and TRANSPORT
+mapView.setMapType(MapType.TRANSPORT_DARK)
+```
+
+#### 9. TRACESTRACK_TOPO - Topographic Map
+**`MapType.TRACESTRACK_TOPO`** (constant value: 6) **Requires Tracestrack API Key**
 
 Detailed topographic map with elevation contours and hillshading.
 
@@ -168,25 +187,6 @@ ApiKeyManager.setApiKey("tracestrack", "your_key_here")
 mapView.setMapType(MapType.TRACESTRACK_TOPO)
 ```
 
-#### 9. MAPTILER_OMT - OpenMapTiles Vector Style
-**`MapType.MAPTILER_OMT`** (constant value: 9) 🔑🚧 **Not Yet Supported**
-
-High-quality vector tile map based on OpenMapTiles schema.
-
-- **Status**: Not yet supported - requires MapLibre GL integration
-- **Get API Key**: https://www.maptiler.com/cloud/plans/
-- **Free Tier**: 100,000 tiles/month
-
-### Vector Tile Support
-
-#### 10. SHORTBREAD - Modern Vector Style
-**`MapType.SHORTBREAD`** (constant value: 8) 🚧 **Not Yet Supported**
-
-Modern, clean vector-based map style.
-
-- **Status**: Not yet supported - requires MapLibre GL integration
-- **No API Key Required**
-
 ## API Key Configuration
 
 ### Method 1: AndroidManifest.xml (Recommended)
@@ -195,7 +195,7 @@ Add API keys to your app's `AndroidManifest.xml`:
 
 ```xml
 <application>
-    <!-- Thunderforest (for CYCLEMAP and TRANSPORT) -->
+    <!-- Thunderforest (for CYCLEMAP, TRANSPORT, and TRANSPORT_DARK) -->
     <meta-data
         android:name="de.afarber.openmapview.THUNDERFOREST_API_KEY"
         android:value="your_thunderforest_key_here"/>
@@ -204,11 +204,6 @@ Add API keys to your app's `AndroidManifest.xml`:
     <meta-data
         android:name="de.afarber.openmapview.TRACESTRACK_API_KEY"
         android:value="your_tracestrack_key_here"/>
-
-    <!-- MapTiler (for MAPTILER_OMT - when supported) -->
-    <meta-data
-        android:name="de.afarber.openmapview.MAPTILER_API_KEY"
-        android:value="your_maptiler_key_here"/>
 </application>
 ```
 
@@ -221,29 +216,22 @@ import de.afarber.openmapview.ApiKeyManager
 
 ApiKeyManager.setApiKey("thunderforest", "your_key_here")
 ApiKeyManager.setApiKey("tracestrack", "your_key_here")
-ApiKeyManager.setApiKey("maptiler", "your_key_here")
 ```
 
 ### Obtaining API Keys
 
 All providers offer generous free tiers suitable for development and small-scale production use:
 
-#### Thunderforest (CYCLEMAP, TRANSPORT)
+#### Thunderforest (CYCLEMAP, TRANSPORT, TRANSPORT_DARK)
 - **Website**: https://www.thunderforest.com/pricing/
 - **Free Tier**: 150,000 tiles/month
 - **Sign Up**: Register for free account
-- **One key works for**: Both CYCLEMAP and TRANSPORT
+- **One key works for**: CYCLEMAP, TRANSPORT, and TRANSPORT_DARK
 
 #### Tracestrack (TRACESTRACK_TOPO)
 - **Website**: https://www.tracestrack.com/en/signup
 - **Free Tier**: 100,000 tiles/month
 - **Sign Up**: Register for free account
-
-#### MapTiler (MAPTILER_OMT)
-- **Website**: https://www.maptiler.com/cloud/plans/
-- **Free Tier**: 100,000 tiles/month
-- **Sign Up**: Register for free account
-- **Note**: MAPTILER_OMT not yet supported (vector tiles)
 
 ### Security Best Practices
 
@@ -262,6 +250,7 @@ All providers offer generous free tiers suitable for development and small-scale
 | Cycling/bike app (free) | `CYCLOSM` |
 | Cycling/bike app (premium) | `CYCLEMAP` (requires API key) |
 | Public transit app | `TRANSPORT` (requires API key) |
+| Public transit app (dark mode) | `TRANSPORT_DARK` (requires API key) |
 | German transit app | `OPNVKARTE` |
 | Hiking/outdoor app | `TRACESTRACK_TOPO` (requires API key) |
 | Emergency/humanitarian | `HUMANITARIAN` |
@@ -294,8 +283,8 @@ See `PredefinedTileProviders.kt` for predefined overlay sources, or create custo
 ## Example Usage
 
 See the **Example11MapTypes** sample app for a complete demonstration of all map types with:
-- Buttons to switch between all 10 map types
-- Visual indicators for API key requirements (🔑) and coming soon features (🚧)
+- Buttons to switch between all 9 map types
+- Visual indicators for API key requirements
 - Descriptions of each map type
 - Instructions for API key configuration
 

@@ -10,8 +10,8 @@ package de.afarber.openmapview
 /**
  * Map type constants for OpenMapView.
  *
- * Defines 10 map tile styles matching the openstreetmap.org layer switcher.
- * Six map types work without API keys, four require API keys from third-party providers.
+ * Defines 9 map tile styles matching the openstreetmap.org layer switcher.
+ * Six map types work without API keys, three require API keys from third-party providers.
  *
  * **Free Map Types (No API Key Required):**
  * - [NONE]: No base map tiles
@@ -19,13 +19,12 @@ package de.afarber.openmapview
  * - [CYCLOSM]: Cycling-focused map from OpenStreetMap France
  * - [HUMANITARIAN]: Humanitarian OSM style for emergency response
  * - [OPNVKARTE]: German public transport map
- * - [SHORTBREAD]: Modern vector tile style (not yet supported)
  *
  * **Premium Map Types (API Key Required):**
  * - [CYCLEMAP]: Thunderforest cycling map (requires Thunderforest API key)
  * - [TRANSPORT]: Public transport focused map (requires Thunderforest API key)
+ * - [TRANSPORT_DARK]: Dark mode public transport map (requires Thunderforest API key)
  * - [TRACESTRACK_TOPO]: Topographic with contours (requires Tracestrack API key)
- * - [MAPTILER_OMT]: OpenMapTiles vector style (requires MapTiler API key, not yet supported)
  *
  * ## API Key Configuration
  *
@@ -36,9 +35,6 @@ package de.afarber.openmapview
  *     android:value="your_key_here"/>
  * <meta-data
  *     android:name="de.afarber.openmapview.TRACESTRACK_API_KEY"
- *     android:value="your_key_here"/>
- * <meta-data
- *     android:name="de.afarber.openmapview.MAPTILER_API_KEY"
  *     android:value="your_key_here"/>
  * ```
  *
@@ -51,11 +47,9 @@ package de.afarber.openmapview
  * with an overlay indicating the missing key. The map remains interactive.
  *
  * ## Obtaining API Keys
- * - **Thunderforest** (CYCLEMAP, TRANSPORT): https://www.thunderforest.com/pricing/
+ * - **Thunderforest** (CYCLEMAP, TRANSPORT, TRANSPORT_DARK): https://www.thunderforest.com/pricing/
  *   - Free tier: 150,000 tiles/month
  * - **Tracestrack** (TRACESTRACK_TOPO): https://www.tracestrack.com/en/signup
- *   - Free tier: 100,000 tiles/month
- * - **MapTiler** (MAPTILER_OMT): https://www.maptiler.com/cloud/plans/
  *   - Free tier: 100,000 tiles/month
  *
  * @see OpenMapView.setMapType
@@ -185,38 +179,4 @@ object MapType {
      * - **Use Cases**: German transit apps, ÖPNV journey planning
      */
     const val OPNVKARTE: Int = 8
-
-    /**
-     * Shortbread - Modern vector tile style.
-     *
-     * Modern, clean vector-based map style with smooth rendering and customizable styling.
-     *
-     * **Note**: Vector tiles are not yet supported in OpenMapView. This map type requires
-     * MapLibre GL integration which is planned for a future release. Selecting this type
-     * will display a "not yet supported" overlay.
-     *
-     * - **Tile Server**: vector.openstreetmap.org
-     * - **Max Zoom**: 23
-     * - **API Key**: Not required
-     * - **Status**: Coming soon
-     */
-    const val SHORTBREAD: Int = 9
-
-    /**
-     * MapTiler OMT - OpenMapTiles vector style.
-     *
-     * High-quality vector tile map based on OpenMapTiles schema. Provides smooth
-     * rendering, client-side styling, and excellent performance.
-     *
-     * **Note**: Vector tiles are not yet supported in OpenMapView. This map type requires
-     * MapLibre GL integration and a MapTiler API key. Planned for a future release.
-     *
-     * - **Tile Server**: api.maptiler.com
-     * - **Max Zoom**: 23
-     * - **API Key**: Required (MapTiler)
-     * - **Status**: Coming soon
-     *
-     * @see ApiKeyManager
-     */
-    const val MAPTILER_OMT: Int = 10
 }

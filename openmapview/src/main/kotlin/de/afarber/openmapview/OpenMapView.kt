@@ -444,11 +444,10 @@ class OpenMapView
          * - [MapType.CYCLOSM] - Cycling-focused map style
          * - [MapType.CYCLEMAP] - Thunderforest cycling map (requires API key)
          * - [MapType.TRANSPORT] - Public transport map (requires API key)
+         * - [MapType.TRANSPORT_DARK] - Dark mode public transport map (requires API key)
          * - [MapType.TRACESTRACK_TOPO] - Topographic map with contour lines (requires API key)
          * - [MapType.HUMANITARIAN] - Humanitarian-focused style
          * - [MapType.OPNVKARTE] - German public transport
-         * - [MapType.SHORTBREAD] - Vector tiles (not yet supported)
-         * - [MapType.MAPTILER_OMT] - Vector tiles (not yet supported, requires API key)
          *
          * When the map type changes, the tile cache is cleared and the map is redrawn.
          *
@@ -465,8 +464,8 @@ class OpenMapView
          */
         fun setMapType(type: Int) {
             // Validate map type
-            if (type !in 0..10) {
-                throw IllegalArgumentException("Unknown map type: $type. Must be a valid MapType constant (0-10).")
+            if (type !in 0..8) {
+                throw IllegalArgumentException("Unknown map type: $type. Must be a valid MapType constant (0-8).")
             }
 
             currentMapType = type
@@ -474,7 +473,7 @@ class OpenMapView
 
             // Update attribution for the actual tile source being used
             val source = TileSource.fromMapType(type)
-            if (type != MapType.NONE && source.isSupported()) {
+            if (type != MapType.NONE) {
                 attributionOverlay.setAttributionText(source.attributionText)
                 attributionOverlay.setAttributionUrl(source.attributionUrl)
             }

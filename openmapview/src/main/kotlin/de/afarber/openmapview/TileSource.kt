@@ -148,41 +148,7 @@ enum class TileSource(
         attributionUrl = "https://www.openstreetmap.org/copyright",
         maxZoom = 18,
     ),
-
-    /**
-     * Shortbread vector tile style.
-     *
-     * Modern vector-based map style. Not yet supported (requires MapLibre GL).
-     */
-    SHORTBREAD(
-        urlTemplate = "",
-        attributionText = "© OpenStreetMap contributors",
-        attributionUrl = "https://www.openstreetmap.org/copyright",
-        maxZoom = 23,
-    ),
-
-    /**
-     * MapTiler OpenMapTiles vector style.
-     *
-     * High-quality vector tiles. Not yet supported (requires MapLibre GL and API key).
-     */
-    MAPTILER_OMT(
-        urlTemplate = "",
-        attributionText = "© OpenStreetMap contributors, © MapTiler, © OpenMapTiles contributors",
-        attributionUrl = "https://www.maptiler.com/copyright/",
-        maxZoom = 23,
-        requiresApiKey = true,
-        apiKeyProvider = "maptiler",
-    ),
     ;
-
-    /**
-     * Returns true if this tile source is supported (has non-empty URL template).
-     *
-     * Vector tile sources (SHORTBREAD, MAPTILER_OMT) return false as they
-     * require MapLibre GL integration which is not yet implemented.
-     */
-    fun isSupported(): Boolean = urlTemplate.isNotEmpty()
 
     /**
      * Generates the tile URL for the specified tile coordinate.
@@ -195,11 +161,9 @@ enum class TileSource(
      * API keys are retrieved from ApiKeyManager if required.
      *
      * @param tile The tile coordinate
-     * @return The complete URL for downloading the tile, or empty string if unsupported
+     * @return The complete URL for downloading the tile
      */
     fun getTileUrl(tile: TileCoordinate): String {
-        if (!isSupported()) return ""
-
         var url = urlTemplate
 
         // Replace tile coordinates
@@ -241,7 +205,6 @@ enum class TileSource(
         when (this) {
             CYCLEMAP, TRANSPORT, TRANSPORT_DARK -> "Thunderforest"
             TRACESTRACK_TOPO -> "Tracestrack"
-            MAPTILER_OMT -> "MapTiler"
             else -> "OpenStreetMap"
         }
 
@@ -263,8 +226,6 @@ enum class TileSource(
                 MapType.TRACESTRACK_TOPO -> TRACESTRACK_TOPO
                 MapType.HUMANITARIAN -> HUMANITARIAN
                 MapType.OPNVKARTE -> OPNVKARTE
-                MapType.SHORTBREAD -> SHORTBREAD
-                MapType.MAPTILER_OMT -> MAPTILER_OMT
                 else -> STANDARD // Fallback for unknown types
             }
 
@@ -285,8 +246,6 @@ enum class TileSource(
                 MapType.TRACESTRACK_TOPO -> "Tracestrack Topo"
                 MapType.HUMANITARIAN -> "Humanitarian"
                 MapType.OPNVKARTE -> "OPNVKarte"
-                MapType.SHORTBREAD -> "Shortbread"
-                MapType.MAPTILER_OMT -> "MapTiler OMT"
                 else -> "Unknown"
             }
     }
