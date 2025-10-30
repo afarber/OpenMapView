@@ -16,11 +16,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -88,18 +86,12 @@ fun MapViewScreen() {
                         }
                     }
                 },
-                modifier =
-                Modifier
-                    .weight(1f)
-                    .fillMaxSize(),
+                modifier = Modifier.weight(0.67f),
             )
 
             Surface(
                 color = MaterialTheme.colorScheme.surface,
-                modifier =
-                Modifier
-                    .width(220.dp)
-                    .fillMaxHeight(),
+                modifier = Modifier.weight(0.33f),
             ) {
                 MapTypeControls(
                     currentMapType = currentMapType,
@@ -107,7 +99,7 @@ fun MapViewScreen() {
                         mapView?.setMapType(type)
                         currentMapType = type
                     },
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(8.dp),
                 )
             }
         }
@@ -130,15 +122,12 @@ fun MapViewScreen() {
                         }
                     }
                 },
-                modifier =
-                Modifier
-                    .weight(1f)
-                    .fillMaxSize(),
+                modifier = Modifier.weight(0.67f),
             )
 
             Surface(
                 color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(0.33f),
             ) {
                 MapTypeControls(
                     currentMapType = currentMapType,
@@ -146,7 +135,7 @@ fun MapViewScreen() {
                         mapView?.setMapType(type)
                         currentMapType = type
                     },
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(8.dp),
                 )
             }
         }
@@ -163,18 +152,20 @@ fun MapTypeControls(
         modifier =
         modifier
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
             text = "Current: ${getMapTypeName(currentMapType)}",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
         )
 
         Text(
-            text = "Map Types (${getMapTypeCount()} available)",
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+            text = "${getMapTypeCount()} available",
+            style = MaterialTheme.typography.labelSmall,
+            fontSize = 10.sp,
+            modifier = Modifier.padding(bottom = 4.dp),
         )
 
         // None
@@ -222,6 +213,15 @@ fun MapTypeControls(
             modifier = Modifier.fillMaxWidth(),
         )
 
+        // Transport Dark (requires API key)
+        MapTypeButton(
+            text = "Transport Dark",
+            description = "Dark transit map (API key required)",
+            enabled = currentMapType != MapType.TRANSPORT_DARK,
+            onClick = { onMapTypeChange(MapType.TRANSPORT_DARK) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
         // Tracestrack Topo (requires API key)
         MapTypeButton(
             text = "Tracestrack Topo",
@@ -251,17 +251,11 @@ fun MapTypeControls(
 
         // API Key Info
         Text(
-            text = "API key required map types: Cycle Map, Transport, Tracestrack Topo",
+            text = "API key required: Cycle Map, Transport, Transport Dark, Tracestrack Topo\n\nConfigure in AndroidManifest.xml\nSee docs/API_KEYS.md",
             style = MaterialTheme.typography.bodySmall,
-            fontSize = 11.sp,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-
-        Text(
-            text = "Configure API keys in AndroidManifest.xml\nSee docs/API_KEYS.md for details",
-            style = MaterialTheme.typography.bodySmall,
-            fontSize = 10.sp,
-            lineHeight = 12.sp,
+            fontSize = 9.sp,
+            lineHeight = 11.sp,
+            modifier = Modifier.padding(top = 4.dp),
         )
     }
 }
@@ -279,14 +273,18 @@ fun MapTypeButton(
             onClick = onClick,
             enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp),
         ) {
-            Text(text)
+            Text(
+                text = text,
+                fontSize = 12.sp,
+            )
         }
         Text(
             text = description,
             style = MaterialTheme.typography.bodySmall,
-            fontSize = 11.sp,
-            modifier = Modifier.padding(start = 8.dp, top = 2.dp),
+            fontSize = 9.sp,
+            modifier = Modifier.padding(start = 4.dp, top = 1.dp),
         )
     }
 }
@@ -298,10 +296,11 @@ fun getMapTypeName(type: Int): String =
         MapType.CYCLOSM -> "CyclOSM"
         MapType.CYCLEMAP -> "Cycle Map"
         MapType.TRANSPORT -> "Transport"
+        MapType.TRANSPORT_DARK -> "Transport Dark"
         MapType.TRACESTRACK_TOPO -> "Tracestrack Topo"
         MapType.HUMANITARIAN -> "Humanitarian"
         MapType.OPNVKARTE -> "OPNVKarte"
         else -> "Unknown ($type)"
     }
 
-fun getMapTypeCount(): Int = 8
+fun getMapTypeCount(): Int = 9

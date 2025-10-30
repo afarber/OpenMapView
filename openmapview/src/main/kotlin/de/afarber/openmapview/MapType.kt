@@ -129,6 +129,22 @@ object MapType {
     const val TRANSPORT: Int = 4
 
     /**
+     * Transport Dark Map - Dark mode public transport map.
+     *
+     * Dark variant of the public transport map with bus routes, train lines, tram tracks,
+     * and transit stations rendered in a dark color scheme. Suitable for night mode or
+     * reducing eye strain in low-light conditions.
+     *
+     * - **Tile Server**: tile.thunderforest.com
+     * - **Max Zoom**: 21
+     * - **API Key**: Required (Thunderforest)
+     * - **Use Cases**: Night mode transit apps, low-light journey planning
+     *
+     * @see ApiKeyManager
+     */
+    const val TRANSPORT_DARK: Int = 5
+
+    /**
      * Tracestrack Topo - Topographic map with elevation contours.
      *
      * Detailed topographic map showing elevation contours, hillshading, and terrain features.
@@ -141,7 +157,7 @@ object MapType {
      *
      * @see ApiKeyManager
      */
-    const val TRACESTRACK_TOPO: Int = 5
+    const val TRACESTRACK_TOPO: Int = 6
 
     /**
      * Humanitarian - HOT style for emergency and disaster response.
@@ -155,7 +171,7 @@ object MapType {
      * - **API Key**: Not required
      * - **Use Cases**: Emergency response, disaster management, humanitarian aid
      */
-    const val HUMANITARIAN: Int = 6
+    const val HUMANITARIAN: Int = 7
 
     /**
      * OPNVKarte - German public transport map.
@@ -168,7 +184,7 @@ object MapType {
      * - **API Key**: Not required
      * - **Use Cases**: German transit apps, ÖPNV journey planning
      */
-    const val OPNVKARTE: Int = 7
+    const val OPNVKARTE: Int = 8
 
     /**
      * Shortbread - Modern vector tile style.
@@ -184,7 +200,7 @@ object MapType {
      * - **API Key**: Not required
      * - **Status**: Coming soon
      */
-    const val SHORTBREAD: Int = 8
+    const val SHORTBREAD: Int = 9
 
     /**
      * MapTiler OMT - OpenMapTiles vector style.
@@ -202,5 +218,5 @@ object MapType {
      *
      * @see ApiKeyManager
      */
-    const val MAPTILER_OMT: Int = 9
+    const val MAPTILER_OMT: Int = 10
 }

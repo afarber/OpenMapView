@@ -465,8 +465,8 @@ class OpenMapView
          */
         fun setMapType(type: Int) {
             // Validate map type
-            if (type !in 0..9) {
-                throw IllegalArgumentException("Unknown map type: $type. Must be a valid MapType constant (0-9).")
+            if (type !in 0..10) {
+                throw IllegalArgumentException("Unknown map type: $type. Must be a valid MapType constant (0-10).")
             }
 
             currentMapType = type

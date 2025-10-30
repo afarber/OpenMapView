@@ -93,6 +93,22 @@ enum class TileSource(
     ),
 
     /**
+     * Thunderforest Transport Dark Map.
+     *
+     * Dark variant of the public transport map with bus routes, train lines, tram tracks.
+     * Rendered in a dark color scheme suitable for night mode.
+     * Requires Thunderforest API key.
+     */
+    TRANSPORT_DARK(
+        urlTemplate = "https://{s}.tile.thunderforest.com/transport-dark/{z}/{x}/{y}.png?apikey={apikey}",
+        attributionText = "© OpenStreetMap contributors. Tiles courtesy of Andy Allan",
+        attributionUrl = "https://www.thunderforest.com/",
+        maxZoom = 21,
+        requiresApiKey = true,
+        apiKeyProvider = "thunderforest",
+    ),
+
+    /**
      * Tracestrack Topographic Map.
      *
      * Detailed topographic map with elevation contours and hillshading.
@@ -223,7 +239,7 @@ enum class TileSource(
      */
     fun getProviderName(): String =
         when (this) {
-            CYCLEMAP, TRANSPORT -> "Thunderforest"
+            CYCLEMAP, TRANSPORT, TRANSPORT_DARK -> "Thunderforest"
             TRACESTRACK_TOPO -> "Tracestrack"
             MAPTILER_OMT -> "MapTiler"
             else -> "OpenStreetMap"
@@ -243,6 +259,7 @@ enum class TileSource(
                 MapType.CYCLOSM -> CYCLOSM
                 MapType.CYCLEMAP -> CYCLEMAP
                 MapType.TRANSPORT -> TRANSPORT
+                MapType.TRANSPORT_DARK -> TRANSPORT_DARK
                 MapType.TRACESTRACK_TOPO -> TRACESTRACK_TOPO
                 MapType.HUMANITARIAN -> HUMANITARIAN
                 MapType.OPNVKARTE -> OPNVKARTE
@@ -264,6 +281,7 @@ enum class TileSource(
                 MapType.CYCLOSM -> "CyclOSM"
                 MapType.CYCLEMAP -> "Cycle Map"
                 MapType.TRANSPORT -> "Transport Map"
+                MapType.TRANSPORT_DARK -> "Transport Dark"
                 MapType.TRACESTRACK_TOPO -> "Tracestrack Topo"
                 MapType.HUMANITARIAN -> "Humanitarian"
                 MapType.OPNVKARTE -> "OPNVKarte"

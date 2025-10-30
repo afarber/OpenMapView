@@ -35,11 +35,12 @@ class MapTypeTest {
         assertEquals(2, MapType.CYCLOSM)
         assertEquals(3, MapType.CYCLEMAP)
         assertEquals(4, MapType.TRANSPORT)
-        assertEquals(5, MapType.TRACESTRACK_TOPO)
-        assertEquals(6, MapType.HUMANITARIAN)
-        assertEquals(7, MapType.OPNVKARTE)
-        assertEquals(8, MapType.SHORTBREAD)
-        assertEquals(9, MapType.MAPTILER_OMT)
+        assertEquals(5, MapType.TRANSPORT_DARK)
+        assertEquals(6, MapType.TRACESTRACK_TOPO)
+        assertEquals(7, MapType.HUMANITARIAN)
+        assertEquals(8, MapType.OPNVKARTE)
+        assertEquals(9, MapType.SHORTBREAD)
+        assertEquals(10, MapType.MAPTILER_OMT)
     }
 
     @Test
@@ -75,6 +76,12 @@ class MapTypeTest {
     fun testSetMapType_Transport() {
         mapView.setMapType(MapType.TRANSPORT)
         assertEquals(MapType.TRANSPORT, mapView.getMapType())
+    }
+
+    @Test
+    fun testSetMapType_TransportDark() {
+        mapView.setMapType(MapType.TRANSPORT_DARK)
+        assertEquals(MapType.TRANSPORT_DARK, mapView.getMapType())
     }
 
     @Test
