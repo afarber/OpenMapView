@@ -249,6 +249,60 @@ fun MapTypeControls(
             modifier = Modifier.fillMaxWidth(),
         )
 
+        // OpenTopoMap
+        MapTypeButton(
+            text = "OpenTopoMap",
+            description = "Free topographic map",
+            enabled = currentMapType != MapType.OPENTOPOMAP,
+            onClick = { onMapTypeChange(MapType.OPENTOPOMAP) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Carto Light
+        MapTypeButton(
+            text = "Carto Light",
+            description = "Minimalist light theme",
+            enabled = currentMapType != MapType.CARTO_LIGHT,
+            onClick = { onMapTypeChange(MapType.CARTO_LIGHT) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Carto Dark
+        MapTypeButton(
+            text = "Carto Dark",
+            description = "Dark theme for night mode",
+            enabled = currentMapType != MapType.CARTO_DARK,
+            onClick = { onMapTypeChange(MapType.CARTO_DARK) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Carto Voyager
+        MapTypeButton(
+            text = "Carto Voyager",
+            description = "Modern colorful basemap",
+            enabled = currentMapType != MapType.CARTO_VOYAGER,
+            onClick = { onMapTypeChange(MapType.CARTO_VOYAGER) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Stamen Toner
+        MapTypeButton(
+            text = "Stamen Toner",
+            description = "High-contrast black & white",
+            enabled = currentMapType != MapType.STAMEN_TONER,
+            onClick = { onMapTypeChange(MapType.STAMEN_TONER) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Stamen Watercolor
+        MapTypeButton(
+            text = "Stamen Watercolor",
+            description = "Artistic watercolor rendering",
+            enabled = currentMapType != MapType.STAMEN_WATERCOLOR,
+            onClick = { onMapTypeChange(MapType.STAMEN_WATERCOLOR) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
         // API Key Info
         Text(
             text = "API key required: Cycle Map, Transport, Transport Dark, Tracestrack Topo\n\nConfigure in AndroidManifest.xml\nSee docs/API_KEYS.md",
@@ -300,7 +354,13 @@ fun getMapTypeName(type: Int): String =
         MapType.TRACESTRACK_TOPO -> "Tracestrack Topo"
         MapType.HUMANITARIAN -> "Humanitarian"
         MapType.OPNVKARTE -> "OPNVKarte"
+        MapType.OPENTOPOMAP -> "OpenTopoMap"
+        MapType.CARTO_LIGHT -> "Carto Light"
+        MapType.CARTO_DARK -> "Carto Dark"
+        MapType.CARTO_VOYAGER -> "Carto Voyager"
+        MapType.STAMEN_TONER -> "Stamen Toner"
+        MapType.STAMEN_WATERCOLOR -> "Stamen Watercolor"
         else -> "Unknown ($type)"
     }
 
-fun getMapTypeCount(): Int = 9
+fun getMapTypeCount(): Int = 15

@@ -4,7 +4,7 @@ This guide helps you choose and configure the right map type for your OpenMapVie
 
 ## Quick Start
 
-OpenMapView provides **9 map types** matching the OpenStreetMap.org layer switcher. Six types work without any configuration, while three premium types require free API keys.
+OpenMapView provides **15 map types** from various tile providers. Twelve types work without any configuration, while three premium types require free API keys.
 
 ```kotlin
 val mapView = OpenMapView(context)
@@ -80,7 +80,108 @@ Detailed public transport map focusing on German transit networks.
 mapView.setMapType(MapType.OPNVKARTE)
 ```
 
-#### 5. NONE - No Base Tiles
+#### 5. OPENTOPOMAP - Free Topographic Map
+**`MapType.OPENTOPOMAP`** (constant value: 9)
+
+Worldwide topographic map based on OpenStreetMap and SRTM data.
+
+- **Best for**: Hiking apps, outdoor navigation, terrain visualization
+- **Features**: Elevation contours, hillshading, terrain features
+- **Highlights**: Free alternative to TRACESTRACK_TOPO without API key requirement
+- **Tile Server**: tile.opentopomap.org
+- **Max Zoom**: 17
+- **Attribution**: © OpenStreetMap contributors. Tiles courtesy of OpenTopoMap
+
+```kotlin
+mapView.setMapType(MapType.OPENTOPOMAP)
+```
+
+#### 6. CARTO_LIGHT - Minimalist Light Theme
+**`MapType.CARTO_LIGHT`** (constant value: 10)
+
+Clean, light-colored basemap designed as a neutral background for overlays.
+
+- **Best for**: Data visualization, business intelligence, marker-heavy apps
+- **Features**: Minimal visual clutter, clear labels
+- **Highlights**: Allows markers and data to stand out clearly
+- **Tile Server**: basemaps.cartocdn.com
+- **Max Zoom**: 20
+- **License**: Free for non-commercial use (enterprise license for commercial)
+- **Attribution**: © OpenStreetMap contributors. Tiles © CARTO
+
+```kotlin
+mapView.setMapType(MapType.CARTO_LIGHT)
+```
+
+#### 7. CARTO_DARK - Dark Theme Basemap
+**`MapType.CARTO_DARK`** (constant value: 11)
+
+Dark-colored basemap suitable for night mode and low-light conditions.
+
+- **Best for**: Night mode apps, dark UI themes, reduced eye strain
+- **Features**: Dark color scheme, clear contrast
+- **Highlights**: Free alternative to TRANSPORT_DARK for general-purpose use
+- **Tile Server**: basemaps.cartocdn.com
+- **Max Zoom**: 20
+- **License**: Free for non-commercial use (enterprise license for commercial)
+- **Attribution**: © OpenStreetMap contributors. Tiles © CARTO
+
+```kotlin
+mapView.setMapType(MapType.CARTO_DARK)
+```
+
+#### 8. CARTO_VOYAGER - Modern Colorful Basemap
+**`MapType.CARTO_VOYAGER`** (constant value: 12)
+
+Contemporary design with vibrant colors and clear labels.
+
+- **Best for**: Modern apps, consumer-facing applications, travel apps
+- **Features**: Vibrant colors, updated aesthetics
+- **Highlights**: Modern alternative to STANDARD with contemporary design
+- **Tile Server**: basemaps.cartocdn.com
+- **Max Zoom**: 18
+- **License**: Free for non-commercial use (enterprise license for commercial)
+- **Attribution**: © OpenStreetMap contributors. Tiles © CARTO
+
+```kotlin
+mapView.setMapType(MapType.CARTO_VOYAGER)
+```
+
+#### 9. STAMEN_TONER - High-Contrast Black & White
+**`MapType.STAMEN_TONER`** (constant value: 13)
+
+Stark black and white design with maximum contrast.
+
+- **Best for**: Data visualization, marker overlays, minimalist design
+- **Features**: High contrast, clear roads and boundaries
+- **Highlights**: Most popular Stamen style, ideal for making colored overlays highly visible
+- **Tile Server**: tiles.stadiamaps.com (Stadia Maps)
+- **Max Zoom**: 20
+- **Free Tier**: 200,000 tiles/month for local development
+- **Attribution**: © OpenStreetMap contributors. Tiles © Stamen Design, © Stadia Maps
+
+```kotlin
+mapView.setMapType(MapType.STAMEN_TONER)
+```
+
+#### 10. STAMEN_WATERCOLOR - Artistic Watercolor Rendering
+**`MapType.STAMEN_WATERCOLOR`** (constant value: 14)
+
+Unique hand-painted watercolor aesthetic with soft colors.
+
+- **Best for**: Creative apps, travel journals, artistic visualization
+- **Features**: Hand-painted appearance, soft color palette
+- **Highlights**: Artistic interpretation of geographic features, completely unique style
+- **Tile Server**: tiles.stadiamaps.com (Stadia Maps)
+- **Max Zoom**: 16
+- **Free Tier**: 200,000 tiles/month for local development
+- **Attribution**: © OpenStreetMap contributors. Tiles © Stamen Design, © Stadia Maps
+
+```kotlin
+mapView.setMapType(MapType.STAMEN_WATERCOLOR)
+```
+
+#### 11. NONE - No Base Tiles
 **`MapType.NONE`** (constant value: 0)
 
 No base map tiles displayed (useful for custom tile sources or offline maps).
@@ -97,8 +198,8 @@ These map types require free API keys from third-party tile providers. When an A
 - Keeps the map fully interactive (pan, zoom still work)
 - Logs a warning to help with debugging
 
-#### 6. CYCLEMAP - Professional Cycling Map
-**`MapType.CYCLEMAP`** (constant value: 3) 🔑 **Requires Thunderforest API Key**
+#### 12. CYCLEMAP - Professional Cycling Map
+**`MapType.CYCLEMAP`** (constant value: 3) **Requires Thunderforest API Key**
 
 Professional cycling map with elevation contours and comprehensive infrastructure.
 
@@ -123,8 +224,8 @@ ApiKeyManager.setApiKey("thunderforest", "your_key_here")
 mapView.setMapType(MapType.CYCLEMAP)
 ```
 
-#### 7. TRANSPORT - Public Transit Map
-**`MapType.TRANSPORT`** (constant value: 4) 🔑 **Requires Thunderforest API Key**
+#### 13. TRANSPORT - Public Transit Map
+**`MapType.TRANSPORT`** (constant value: 4) **Requires Thunderforest API Key**
 
 Public transport focused map with comprehensive transit information.
 
@@ -142,7 +243,7 @@ Public transport focused map with comprehensive transit information.
 mapView.setMapType(MapType.TRANSPORT)
 ```
 
-#### 8. TRANSPORT_DARK - Dark Mode Public Transit Map
+#### 14. TRANSPORT_DARK - Dark Mode Public Transit Map
 **`MapType.TRANSPORT_DARK`** (constant value: 5) **Requires Thunderforest API Key**
 
 Dark variant of the public transport map with comprehensive transit information in a dark color scheme.
@@ -161,7 +262,7 @@ Dark variant of the public transport map with comprehensive transit information 
 mapView.setMapType(MapType.TRANSPORT_DARK)
 ```
 
-#### 9. TRACESTRACK_TOPO - Topographic Map
+#### 15. TRACESTRACK_TOPO - Topographic Map
 **`MapType.TRACESTRACK_TOPO`** (constant value: 6) **Requires Tracestrack API Key**
 
 Detailed topographic map with elevation contours and hillshading.
@@ -247,21 +348,28 @@ All providers offer generous free tiers suitable for development and small-scale
 | Use Case | Recommended Map Type |
 |----------|---------------------|
 | General purpose app | `STANDARD` |
+| Modern general purpose app | `CARTO_VOYAGER` |
 | Cycling/bike app (free) | `CYCLOSM` |
 | Cycling/bike app (premium) | `CYCLEMAP` (requires API key) |
 | Public transit app | `TRANSPORT` (requires API key) |
 | Public transit app (dark mode) | `TRANSPORT_DARK` (requires API key) |
 | German transit app | `OPNVKARTE` |
-| Hiking/outdoor app | `TRACESTRACK_TOPO` (requires API key) |
+| Hiking/outdoor app (free) | `OPENTOPOMAP` |
+| Hiking/outdoor app (premium) | `TRACESTRACK_TOPO` (requires API key) |
 | Emergency/humanitarian | `HUMANITARIAN` |
+| Data visualization (light) | `CARTO_LIGHT` |
+| Night mode / dark theme | `CARTO_DARK` |
+| High-contrast data viz | `STAMEN_TONER` |
+| Creative/artistic app | `STAMEN_WATERCOLOR` |
 | Custom tiles only | `NONE` |
 
 ### Performance Considerations
 
-- **Free maps** (STANDARD, CYCLOSM, HUMANITARIAN, OPNVKARTE): No usage limits, best for production apps
-- **Premium maps** with API keys: Monitor monthly tile limits (free tiers: 100k-150k tiles/month)
+- **Free maps without limits** (STANDARD, CYCLOSM, HUMANITARIAN, OPNVKARTE, OPENTOPOMAP): No usage limits, best for production apps
+- **Free maps with generous limits** (CARTO_LIGHT, CARTO_DARK, CARTO_VOYAGER, STAMEN_TONER, STAMEN_WATERCOLOR): Free tiers available (75k-200k tiles/month)
+- **Premium maps** with API keys (CYCLEMAP, TRANSPORT, TRANSPORT_DARK, TRACESTRACK_TOPO): Monitor monthly tile limits (free tiers: 100k-150k tiles/month)
 - **Tile caching**: OpenMapView automatically caches tiles in memory and on disk to minimize requests
-- **Subdomain rotation**: Maps with subdomain support (CYCLOSM, CYCLEMAP, TRANSPORT, HUMANITARIAN) automatically distribute load across multiple servers
+- **Subdomain rotation**: Maps with subdomain support automatically distribute load across multiple servers for better performance
 
 ## Tile Overlays (Additional Layers)
 
@@ -283,7 +391,7 @@ See `PredefinedTileProviders.kt` for predefined overlay sources, or create custo
 ## Example Usage
 
 See the **Example11MapTypes** sample app for a complete demonstration of all map types with:
-- Buttons to switch between all 9 map types
+- Buttons to switch between all 15 map types
 - Visual indicators for API key requirements
 - Descriptions of each map type
 - Instructions for API key configuration

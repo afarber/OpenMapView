@@ -39,6 +39,12 @@ class MapTypeTest {
         assertEquals(6, MapType.TRACESTRACK_TOPO)
         assertEquals(7, MapType.HUMANITARIAN)
         assertEquals(8, MapType.OPNVKARTE)
+        assertEquals(9, MapType.OPENTOPOMAP)
+        assertEquals(10, MapType.CARTO_LIGHT)
+        assertEquals(11, MapType.CARTO_DARK)
+        assertEquals(12, MapType.CARTO_VOYAGER)
+        assertEquals(13, MapType.STAMEN_TONER)
+        assertEquals(14, MapType.STAMEN_WATERCOLOR)
     }
 
     @Test
@@ -102,5 +108,41 @@ class MapTypeTest {
 
         mapView.setMapType(MapType.STANDARD)
         assertEquals(MapType.STANDARD, mapView.getMapType())
+    }
+
+    @Test
+    fun testSetMapType_OpenTopoMap() {
+        mapView.setMapType(MapType.OPENTOPOMAP)
+        assertEquals(MapType.OPENTOPOMAP, mapView.getMapType())
+    }
+
+    @Test
+    fun testSetMapType_CartoLight() {
+        mapView.setMapType(MapType.CARTO_LIGHT)
+        assertEquals(MapType.CARTO_LIGHT, mapView.getMapType())
+    }
+
+    @Test
+    fun testSetMapType_CartoDark() {
+        mapView.setMapType(MapType.CARTO_DARK)
+        assertEquals(MapType.CARTO_DARK, mapView.getMapType())
+    }
+
+    @Test
+    fun testSetMapType_CartoVoyager() {
+        mapView.setMapType(MapType.CARTO_VOYAGER)
+        assertEquals(MapType.CARTO_VOYAGER, mapView.getMapType())
+    }
+
+    @Test
+    fun testSetMapType_StamenToner() {
+        mapView.setMapType(MapType.STAMEN_TONER)
+        assertEquals(MapType.STAMEN_TONER, mapView.getMapType())
+    }
+
+    @Test
+    fun testSetMapType_StamenWatercolor() {
+        mapView.setMapType(MapType.STAMEN_WATERCOLOR)
+        assertEquals(MapType.STAMEN_WATERCOLOR, mapView.getMapType())
     }
 }
