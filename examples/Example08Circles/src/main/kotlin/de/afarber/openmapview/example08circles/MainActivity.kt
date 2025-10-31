@@ -8,7 +8,6 @@
 package de.afarber.openmapview.example08circles
 
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -33,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -83,9 +83,9 @@ fun MapViewScreen() {
                 CircleOptions()
                     .center(bochumCenter)
                     .radius(500f)
-                    .strokeColor(Color.RED)
+                    .strokeColor(Color.Red)
                     .strokeWidth(5f)
-                    .fillColor(Color.argb(64, 255, 0, 0))
+                    .fillColor(Color(red = 255, green = 0, blue = 0, alpha = 64))
                     .clickable(true)
                     .zIndex(2f)
                     .tag("Small Red Circle - 500m"),
@@ -97,9 +97,9 @@ fun MapViewScreen() {
                 CircleOptions()
                     .center(offset1)
                     .radius(1000f)
-                    .strokeColor(Color.BLUE)
+                    .strokeColor(Color.Blue)
                     .strokeWidth(8f)
-                    .fillColor(Color.argb(64, 0, 0, 255))
+                    .fillColor(Color(red = 0, green = 0, blue = 255, alpha = 64))
                     .clickable(true)
                     .zIndex(1f)
                     .tag("Medium Blue Circle - 1000m"),
@@ -111,9 +111,9 @@ fun MapViewScreen() {
                 CircleOptions()
                     .center(offset2)
                     .radius(1500f)
-                    .strokeColor(Color.GREEN)
+                    .strokeColor(Color.Green)
                     .strokeWidth(10f)
-                    .fillColor(Color.argb(64, 0, 255, 0))
+                    .fillColor(Color(red = 0, green = 255, blue = 0, alpha = 64))
                     .clickable(true)
                     .zIndex(0f)
                     .tag("Large Green Circle - 1500m"),
@@ -125,9 +125,9 @@ fun MapViewScreen() {
                 Circle(
                     center = offset3,
                     radius = 750f,
-                    strokeColor = Color.MAGENTA,
+                    strokeColor = Color.Magenta,
                     strokeWidth = 6f,
-                    fillColor = Color.argb(64, 255, 0, 255),
+                    fillColor = Color(red = 255, green = 0, blue = 255, alpha = 64),
                     clickable = true,
                     zIndex = 1.5f,
                     tag = "Kotlin Style Circle - 750m",
@@ -144,7 +144,11 @@ fun MapViewScreen() {
             val randomLat = bochumCenter.latitude + (Random.nextDouble() - 0.5) * 0.03
             val randomLng = bochumCenter.longitude + (Random.nextDouble() - 0.5) * 0.06
             val randomRadius = Random.nextInt(300, 1500).toFloat()
-            val randomColor = Color.rgb(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
+            val randomColor = Color(
+                red = Random.nextInt(256),
+                green = Random.nextInt(256),
+                blue = Random.nextInt(256),
+            )
 
             map.addCircle(
                 CircleOptions()
@@ -152,7 +156,7 @@ fun MapViewScreen() {
                     .radius(randomRadius)
                     .strokeColor(randomColor)
                     .strokeWidth(Random.nextInt(3, 12).toFloat())
-                    .fillColor(Color.argb(64, Color.red(randomColor), Color.green(randomColor), Color.blue(randomColor)))
+                    .fillColor(randomColor.copy(alpha = 64f / 255f))
                     .clickable(true)
                     .zIndex(Random.nextFloat() * 5)
                     .tag("Random Circle ${++circleCount} - ${randomRadius.toInt()}m"),

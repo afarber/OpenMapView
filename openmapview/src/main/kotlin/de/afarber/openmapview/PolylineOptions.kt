@@ -7,7 +7,7 @@
 
 package de.afarber.openmapview
 
-import android.graphics.Color
+import androidx.compose.ui.graphics.Color
 
 /**
  * Builder class for creating Polyline instances with a fluent API.
@@ -18,14 +18,14 @@ import android.graphics.Color
  * val polyline = PolylineOptions()
  *     .add(LatLng(51.5, 0.0))
  *     .add(LatLng(51.6, 0.1))
- *     .color(Color.BLUE)
+ *     .color(Color.Blue)
  *     .width(5f)
  *     .clickable(true)
  * ```
  */
 class PolylineOptions {
     private val points = mutableListOf<LatLng>()
-    private var strokeColor: Int = Color.BLACK
+    private var strokeColor: Color = Color.Black
     private var strokeWidth: Float = 10f
     private var visible: Boolean = true
     private var clickable: Boolean = false
@@ -52,9 +52,9 @@ class PolylineOptions {
 
     /**
      * Sets the stroke color of the polyline.
-     * @param color Color value (e.g., Color.RED)
+     * @param color Color value (e.g., Color.Red)
      */
-    fun color(color: Int): PolylineOptions {
+    fun color(color: Color): PolylineOptions {
         this.strokeColor = color
         return this
     }

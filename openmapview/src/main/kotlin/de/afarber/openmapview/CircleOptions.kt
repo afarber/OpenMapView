@@ -7,7 +7,7 @@
 
 package de.afarber.openmapview
 
-import android.graphics.Color
+import androidx.compose.ui.graphics.Color
 
 /**
  * Builder class for creating Circle instances with a fluent API.
@@ -18,17 +18,17 @@ import android.graphics.Color
  * val circle = CircleOptions()
  *     .center(LatLng(40.7128, -74.0060))
  *     .radius(1000f)
- *     .strokeColor(Color.RED)
- *     .fillColor(Color.argb(128, 255, 0, 0))
+ *     .strokeColor(Color.Red)
+ *     .fillColor(Color(red = 255, green = 0, blue = 0, alpha = 128))
  *     .clickable(true)
  * ```
  */
 class CircleOptions {
     private var center: LatLng? = null
     private var radius: Float? = null
-    private var strokeColor: Int = Color.BLACK
+    private var strokeColor: Color = Color.Black
     private var strokeWidth: Float = 10f
-    private var fillColor: Int = Color.argb(128, 128, 128, 128)
+    private var fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128)
     private var visible: Boolean = true
     private var clickable: Boolean = false
     private var zIndex: Float = 0f
@@ -54,9 +54,9 @@ class CircleOptions {
 
     /**
      * Sets the stroke color of the circle outline.
-     * @param color Color value (e.g., Color.RED)
+     * @param color Color value (e.g., Color.Red)
      */
-    fun strokeColor(color: Int): CircleOptions {
+    fun strokeColor(color: Color): CircleOptions {
         this.strokeColor = color
         return this
     }
@@ -72,9 +72,9 @@ class CircleOptions {
 
     /**
      * Sets the fill color of the circle interior.
-     * @param color Color value (e.g., Color.argb(128, 255, 0, 0))
+     * @param color Color value (e.g., Color(red = 255, green = 0, blue = 0, alpha = 128))
      */
-    fun fillColor(color: Int): CircleOptions {
+    fun fillColor(color: Color): CircleOptions {
         this.fillColor = color
         return this
     }

@@ -8,7 +8,6 @@
 package de.afarber.openmapview.example04polylines
 
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -19,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.LatLng
@@ -66,7 +66,7 @@ fun MapViewScreen() {
                             LatLng(51.4650, 7.2500),
                             LatLng(51.4620, 7.2550),
                         ),
-                        strokeColor = Color.BLUE,
+                        strokeColor = Color.Blue,
                         strokeWidth = 8f,
                         clickable = true,
                         tag = "Blue Route",
@@ -83,7 +83,7 @@ fun MapViewScreen() {
                             LatLng(51.4680, 7.2520),
                             LatLng(51.4700, 7.2550),
                         ),
-                        strokeColor = Color.RED,
+                        strokeColor = Color.Red,
                         strokeWidth = 6f,
                         clickable = true,
                         tag = "Red Path",
@@ -99,9 +99,9 @@ fun MapViewScreen() {
                             LatLng(51.4660, 7.2420),
                             LatLng(51.4640, 7.2420),
                         ),
-                        strokeColor = Color.rgb(0, 128, 0),
+                        strokeColor = Color(red = 0, green = 128, blue = 0),
                         strokeWidth = 4f,
-                        fillColor = Color.argb(100, 0, 255, 0),
+                        fillColor = Color(red = 0, green = 255, blue = 0, alpha = 100),
                         clickable = true,
                         tag = "Green Park",
                     ),
@@ -124,9 +124,9 @@ fun MapViewScreen() {
                                 LatLng(51.4706, 7.2610),
                             ),
                         ),
-                        strokeColor = Color.CYAN,
+                        strokeColor = Color.Cyan,
                         strokeWidth = 4f,
-                        fillColor = Color.argb(100, 0, 255, 255),
+                        fillColor = Color(red = 0, green = 255, blue = 255, alpha = 100),
                         clickable = true,
                         tag = "Cyan Donut",
                     ),

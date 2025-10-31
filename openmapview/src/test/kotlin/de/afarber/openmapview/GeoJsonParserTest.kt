@@ -7,7 +7,6 @@
 
 package de.afarber.openmapview
 
-import android.graphics.Color
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -224,9 +223,9 @@ class GeoJsonParserTest {
 
         assertEquals(1, result.polygons.size)
         val polygon = result.polygons[0]
-        assertEquals(Color.parseColor("#FF0000"), polygon.strokeColor)
+        assertEquals("#FF0000".toComposeColor(), polygon.strokeColor)
         assertEquals(8f, polygon.strokeWidth, 0.001f)
-        assertEquals(Color.parseColor("#00FF00"), polygon.fillColor)
+        assertEquals("#00FF00".toComposeColor(), polygon.fillColor)
     }
 
     @Test

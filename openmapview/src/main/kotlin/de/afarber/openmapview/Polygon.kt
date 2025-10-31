@@ -7,7 +7,7 @@
 
 package de.afarber.openmapview
 
-import android.graphics.Color
+import androidx.compose.ui.graphics.Color
 
 /**
  * Represents a polygon on the map, consisting of a closed shape with optional holes.
@@ -25,9 +25,9 @@ import android.graphics.Color
  */
 data class Polygon(
     val points: List<LatLng>,
-    val strokeColor: Int = Color.BLACK,
+    val strokeColor: Color = Color.Black,
     val strokeWidth: Float = 10f,
-    val fillColor: Int = Color.argb(128, 128, 128, 128),
+    val fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128),
     val holes: List<List<LatLng>> = emptyList(),
     val visible: Boolean = true,
     val clickable: Boolean = false,

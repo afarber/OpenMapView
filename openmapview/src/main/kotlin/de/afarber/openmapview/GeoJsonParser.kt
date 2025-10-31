@@ -7,7 +7,7 @@
 
 package de.afarber.openmapview
 
-import android.graphics.Color
+import androidx.compose.ui.graphics.Color
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -132,7 +132,7 @@ object GeoJsonParser {
         val polyline =
             Polyline(
                 points = points,
-                strokeColor = parseColor(properties?.optString("stroke")) ?: Color.BLUE,
+                strokeColor = parseColor(properties?.optString("stroke")) ?: Color.Blue,
                 strokeWidth = properties?.optDouble("stroke-width", 5.0)?.toFloat() ?: 5f,
                 tag = properties,
             )
@@ -151,7 +151,7 @@ object GeoJsonParser {
                 val polyline =
                     Polyline(
                         points = points,
-                        strokeColor = parseColor(properties?.optString("stroke")) ?: Color.BLUE,
+                        strokeColor = parseColor(properties?.optString("stroke")) ?: Color.Blue,
                         strokeWidth = properties?.optDouble("stroke-width", 5.0)?.toFloat() ?: 5f,
                         tag = properties,
                     )
@@ -184,9 +184,9 @@ object GeoJsonParser {
             Polygon(
                 points = outerRing,
                 holes = holes,
-                strokeColor = parseColor(properties?.optString("stroke")) ?: Color.BLACK,
+                strokeColor = parseColor(properties?.optString("stroke")) ?: Color.Black,
                 strokeWidth = properties?.optDouble("stroke-width", 3.0)?.toFloat() ?: 3f,
-                fillColor = parseColor(properties?.optString("fill")) ?: Color.argb(100, 128, 128, 128),
+                fillColor = parseColor(properties?.optString("fill")) ?: Color(red = 128, green = 128, blue = 128, alpha = 100),
                 tag = properties,
             )
         return GeoJsonResult(polygons = listOf(polygon))
@@ -220,13 +220,9 @@ object GeoJsonParser {
         return points
     }
 
-    private fun parseColor(colorString: String?): Int? {
+    private fun parseColor(colorString: String?): Color? {
         if (colorString == null) return null
-        return try {
-            Color.parseColor(colorString)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
+        return colorString.toComposeColor()
     }
 }
 

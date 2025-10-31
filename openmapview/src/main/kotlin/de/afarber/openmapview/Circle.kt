@@ -7,7 +7,7 @@
 
 package de.afarber.openmapview
 
-import android.graphics.Color
+import androidx.compose.ui.graphics.Color
 
 /**
  * Represents a circle on the map with a center point and radius in meters.
@@ -25,9 +25,9 @@ import android.graphics.Color
 data class Circle(
     val center: LatLng,
     val radius: Float,
-    val strokeColor: Int = Color.BLACK,
+    val strokeColor: Color = Color.Black,
     val strokeWidth: Float = 10f,
-    val fillColor: Int = Color.argb(128, 128, 128, 128),
+    val fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128),
     val visible: Boolean = true,
     val clickable: Boolean = false,
     val zIndex: Float = 0f,

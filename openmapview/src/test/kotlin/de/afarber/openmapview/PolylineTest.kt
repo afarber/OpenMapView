@@ -7,7 +7,7 @@
 
 package de.afarber.openmapview
 
-import android.graphics.Color
+import androidx.compose.ui.graphics.Color
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -25,7 +25,7 @@ class PolylineTest {
         val polyline = Polyline(points = points)
 
         assertEquals(points, polyline.points)
-        assertEquals(Color.BLACK, polyline.strokeColor)
+        assertEquals(Color.Black, polyline.strokeColor)
         assertEquals(10f, polyline.strokeWidth, 0.001f)
         assertNull(polyline.tag)
     }
@@ -41,13 +41,13 @@ class PolylineTest {
         val polyline =
             Polyline(
                 points = points,
-                strokeColor = Color.BLUE,
+                strokeColor = Color.Blue,
                 strokeWidth = 8f,
                 tag = "Route1",
             )
 
         assertEquals(points, polyline.points)
-        assertEquals(Color.BLUE, polyline.strokeColor)
+        assertEquals(Color.Blue, polyline.strokeColor)
         assertEquals(8f, polyline.strokeWidth, 0.001f)
         assertEquals("Route1", polyline.tag)
     }
@@ -89,12 +89,12 @@ class PolylineTest {
         val polyline1 =
             Polyline(
                 points = points,
-                strokeColor = Color.RED,
+                strokeColor = Color.Red,
             )
         val polyline2 =
             Polyline(
                 points = points,
-                strokeColor = Color.RED,
+                strokeColor = Color.Red,
             )
 
         // Polylines with same data should NOT be equal because of unique ID
@@ -160,13 +160,13 @@ class PolylineTest {
                 LatLng(51.4700, 7.2550),
             )
 
-        val redLine = Polyline(points = points, strokeColor = Color.RED)
-        val blueLine = Polyline(points = points, strokeColor = Color.BLUE)
-        val customLine = Polyline(points = points, strokeColor = Color.argb(128, 255, 0, 0))
+        val redLine = Polyline(points = points, strokeColor = Color.Red)
+        val blueLine = Polyline(points = points, strokeColor = Color.Blue)
+        val customLine = Polyline(points = points, strokeColor = Color(red = 255, green = 0, blue = 0, alpha = 128))
 
-        assertEquals(Color.RED, redLine.strokeColor)
-        assertEquals(Color.BLUE, blueLine.strokeColor)
-        assertEquals(Color.argb(128, 255, 0, 0), customLine.strokeColor)
+        assertEquals(Color.Red, redLine.strokeColor)
+        assertEquals(Color.Blue, blueLine.strokeColor)
+        assertEquals(Color(red = 255, green = 0, blue = 0, alpha = 128), customLine.strokeColor)
     }
 
     @Test

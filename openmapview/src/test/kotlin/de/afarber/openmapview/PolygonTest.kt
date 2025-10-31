@@ -7,7 +7,7 @@
 
 package de.afarber.openmapview
 
-import android.graphics.Color
+import androidx.compose.ui.graphics.Color
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -27,9 +27,9 @@ class PolygonTest {
         val polygon = Polygon(points = points)
 
         assertEquals(points, polygon.points)
-        assertEquals(Color.BLACK, polygon.strokeColor)
+        assertEquals(Color.Black, polygon.strokeColor)
         assertEquals(10f, polygon.strokeWidth, 0.001f)
-        assertEquals(Color.argb(128, 128, 128, 128), polygon.fillColor)
+        assertEquals(Color(red = 128, green = 128, blue = 128, alpha = 128), polygon.fillColor)
         assertTrue(polygon.holes.isEmpty())
         assertNull(polygon.tag)
     }
@@ -52,17 +52,17 @@ class PolygonTest {
         val polygon =
             Polygon(
                 points = points,
-                strokeColor = Color.RED,
+                strokeColor = Color.Red,
                 strokeWidth = 5f,
-                fillColor = Color.argb(100, 0, 255, 0),
+                fillColor = Color(red = 0, green = 255, blue = 0, alpha = 100),
                 holes = listOf(hole),
                 tag = "Area1",
             )
 
         assertEquals(points, polygon.points)
-        assertEquals(Color.RED, polygon.strokeColor)
+        assertEquals(Color.Red, polygon.strokeColor)
         assertEquals(5f, polygon.strokeWidth, 0.001f)
-        assertEquals(Color.argb(100, 0, 255, 0), polygon.fillColor)
+        assertEquals(Color(red = 0, green = 255, blue = 0, alpha = 100), polygon.fillColor)
         assertEquals(1, polygon.holes.size)
         assertEquals(hole, polygon.holes[0])
         assertEquals("Area1", polygon.tag)
@@ -127,12 +127,12 @@ class PolygonTest {
         val polygon1 =
             Polygon(
                 points = points,
-                strokeColor = Color.BLUE,
+                strokeColor = Color.Blue,
             )
         val polygon2 =
             Polygon(
                 points = points,
-                strokeColor = Color.BLUE,
+                strokeColor = Color.Blue,
             )
 
         // Polygons with same data should NOT be equal because of unique ID
@@ -211,20 +211,20 @@ class PolygonTest {
         val redPolygon =
             Polygon(
                 points = points,
-                strokeColor = Color.RED,
-                fillColor = Color.argb(80, 255, 0, 0),
+                strokeColor = Color.Red,
+                fillColor = Color(red = 255, green = 0, blue = 0, alpha = 80),
             )
         val bluePolygon =
             Polygon(
                 points = points,
-                strokeColor = Color.BLUE,
-                fillColor = Color.argb(80, 0, 0, 255),
+                strokeColor = Color.Blue,
+                fillColor = Color(red = 0, green = 0, blue = 255, alpha = 80),
             )
 
-        assertEquals(Color.RED, redPolygon.strokeColor)
-        assertEquals(Color.argb(80, 255, 0, 0), redPolygon.fillColor)
-        assertEquals(Color.BLUE, bluePolygon.strokeColor)
-        assertEquals(Color.argb(80, 0, 0, 255), bluePolygon.fillColor)
+        assertEquals(Color.Red, redPolygon.strokeColor)
+        assertEquals(Color(red = 255, green = 0, blue = 0, alpha = 80), redPolygon.fillColor)
+        assertEquals(Color.Blue, bluePolygon.strokeColor)
+        assertEquals(Color(red = 0, green = 0, blue = 255, alpha = 80), bluePolygon.fillColor)
     }
 
     @Test

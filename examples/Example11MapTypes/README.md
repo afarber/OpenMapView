@@ -17,13 +17,13 @@ Demonstrates switching between different map types in OpenMapView.
 
 OpenMapView supports several free OpenStreetMap-based tile sources:
 
-| Type | Constant | Description |
-|------|----------|-------------|
-| Normal | `MapType.NORMAL` | Standard OpenStreetMap road map (default) |
-| Terrain | `MapType.TERRAIN` | OpenTopoMap with elevation contour lines and hillshading |
+| Type         | Constant               | Description                                                          |
+| ------------ | ---------------------- | -------------------------------------------------------------------- |
+| Normal       | `MapType.NORMAL`       | Standard OpenStreetMap road map (default)                            |
+| Terrain      | `MapType.TERRAIN`      | OpenTopoMap with elevation contour lines and hillshading             |
 | Humanitarian | `MapType.HUMANITARIAN` | Humanitarian OSM style emphasizing hospitals, schools, water sources |
-| Cycle | `MapType.CYCLE` | CyclOSM showing bike lanes, paths, parking, and difficulty ratings |
-| None | `MapType.NONE` | No base map tiles displayed |
+| Cycle        | `MapType.CYCLE`        | CyclOSM showing bike lanes, paths, parking, and difficulty ratings   |
+| None         | `MapType.NONE`         | No base map tiles displayed                                          |
 
 ## Usage
 
@@ -51,6 +51,7 @@ try {
 ## Implementation Details
 
 When the map type changes:
+
 1. The tile source is updated in `MapController`
 2. The tile cache is cleared to prevent showing incorrect tiles
 3. Attribution text is updated to match the new tile source

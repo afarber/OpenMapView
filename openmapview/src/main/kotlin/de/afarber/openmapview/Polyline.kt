@@ -7,7 +7,7 @@
 
 package de.afarber.openmapview
 
-import android.graphics.Color
+import androidx.compose.ui.graphics.Color
 
 /**
  * Represents a polyline on the map, consisting of connected line segments.
@@ -22,7 +22,7 @@ import android.graphics.Color
  */
 data class Polyline(
     val points: List<LatLng>,
-    val strokeColor: Int = Color.BLACK,
+    val strokeColor: Color = Color.Black,
     val strokeWidth: Float = 10f,
     val visible: Boolean = true,
     val clickable: Boolean = false,

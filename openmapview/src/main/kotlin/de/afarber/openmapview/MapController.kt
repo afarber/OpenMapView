@@ -13,6 +13,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import androidx.compose.ui.graphics.toArgb
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -978,7 +979,7 @@ class MapController(
         for (polyline in polylines) {
             if (!polyline.visible || polyline.points.size < 2) continue
 
-            paint.color = polyline.strokeColor
+            paint.color = polyline.strokeColor.toArgb()
             paint.strokeWidth = polyline.strokeWidth
 
             val path = android.graphics.Path()
@@ -1019,8 +1020,8 @@ class MapController(
         for (polygon in polygons) {
             if (!polygon.visible || polygon.points.size < 3) continue
 
-            fillPaint.color = polygon.fillColor
-            strokePaint.color = polygon.strokeColor
+            fillPaint.color = polygon.fillColor.toArgb()
+            strokePaint.color = polygon.strokeColor.toArgb()
             strokePaint.strokeWidth = polygon.strokeWidth
 
             val path = android.graphics.Path()
@@ -1084,8 +1085,8 @@ class MapController(
         for (circle in circles) {
             if (!circle.visible || circle.radius <= 0) continue
 
-            fillPaint.color = circle.fillColor
-            strokePaint.color = circle.strokeColor
+            fillPaint.color = circle.fillColor.toArgb()
+            strokePaint.color = circle.strokeColor.toArgb()
             strokePaint.strokeWidth = circle.strokeWidth
 
             // Convert center to screen coordinates
@@ -1258,8 +1259,8 @@ class MapController(
         for (polygon in sortedPolygons) {
             if (polygon.zIndex != zIndex || !polygon.visible || polygon.points.size < 3) continue
 
-            fillPaint.color = polygon.fillColor
-            strokePaint.color = polygon.strokeColor
+            fillPaint.color = polygon.fillColor.toArgb()
+            strokePaint.color = polygon.strokeColor.toArgb()
             strokePaint.strokeWidth = polygon.strokeWidth
 
             val path = android.graphics.Path()
@@ -1319,7 +1320,7 @@ class MapController(
         for (polyline in sortedPolylines) {
             if (polyline.zIndex != zIndex || !polyline.visible || polyline.points.size < 2) continue
 
-            paint.color = polyline.strokeColor
+            paint.color = polyline.strokeColor.toArgb()
             paint.strokeWidth = polyline.strokeWidth
 
             val path = android.graphics.Path()
@@ -1361,8 +1362,8 @@ class MapController(
         for (circle in sortedCircles) {
             if (circle.zIndex != zIndex || !circle.visible || circle.radius <= 0) continue
 
-            fillPaint.color = circle.fillColor
-            strokePaint.color = circle.strokeColor
+            fillPaint.color = circle.fillColor.toArgb()
+            strokePaint.color = circle.strokeColor.toArgb()
             strokePaint.strokeWidth = circle.strokeWidth
 
             val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(circle.center, zoom.toInt())
