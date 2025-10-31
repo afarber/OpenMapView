@@ -1,8 +1,8 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("com.diffplug.spotless")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.spotless)
 }
 
 android {
@@ -49,18 +49,16 @@ android {
 
 dependencies {
     implementation(project(":openmapview"))
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.compose.ui:ui:1.7.5")
-    implementation("androidx.compose.material3:material3:1.3.1")
-    implementation("androidx.compose.ui:ui-viewbinding:1.7.5")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.bundles.compose)
+    implementation(libs.bundles.androidx.lifecycle)
 }
 
 spotless {
     kotlin {
         target("src/**/*.kt")
-        ktlint("1.3.1").editorConfigOverride(
+        ktlint(libs.versions.ktlint.get()).editorConfigOverride(
             mapOf(
                 "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
             ),
@@ -72,6 +70,6 @@ spotless {
     }
     kotlinGradle {
         target("*.kts")
-        ktlint("1.3.1")
+        ktlint(libs.versions.ktlint.get())
     }
 }

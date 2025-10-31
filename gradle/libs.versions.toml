@@ -1,0 +1,83 @@
+[versions]
+# Plugins
+agp = "8.11.1"
+kotlin = "2.2.21"
+spotless = "8.0.0"
+dokka = "2.1.0"
+nmcp = "1.2.0"
+
+# AndroidX Core
+androidx-core = "1.15.0"
+androidx-lifecycle = "2.8.7"
+androidx-activity = "1.9.3"
+androidx-test-core = "1.6.1"
+androidx-test-runner = "1.6.2"
+androidx-test-rules = "1.6.1"
+androidx-test-junit = "1.2.1"
+
+# Compose
+compose-ui = "1.7.5"
+compose-ui-graphics = "1.7.6"
+compose-material3 = "1.3.1"
+
+# Networking
+ktor = "2.3.7"
+
+# Utilities
+disklrucache = "2.0.2"
+
+# Testing
+junit = "4.13.2"
+mockk = "1.13.8"
+robolectric = "4.14"
+kotlinx-coroutines = "1.9.0"
+
+# Code Quality
+ktlint = "1.3.1"
+
+[libraries]
+# AndroidX Core
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity" }
+
+# Compose
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose-ui" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "compose-ui-graphics" }
+androidx-compose-ui-viewbinding = { group = "androidx.compose.ui", name = "ui-viewbinding", version.ref = "compose-ui" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "compose-material3" }
+
+# Networking
+ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
+
+# Utilities
+disklrucache = { group = "com.jakewharton", name = "disklrucache", version.ref = "disklrucache" }
+
+# Testing - Unit
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+androidx-test-core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "androidx-test-core" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+
+# Testing - Instrumentation
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidx-test-runner" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidx-test-rules" }
+androidx-test-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "androidx-test-junit" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+nmcp = { id = "com.gradleup.nmcp.aggregation", version.ref = "nmcp" }
+
+[bundles]
+# Common dependencies for example apps
+compose = ["androidx-compose-ui", "androidx-compose-material3", "androidx-compose-ui-viewbinding"]
+androidx-lifecycle = ["androidx-lifecycle-runtime-ktx", "androidx-lifecycle-runtime-compose"]

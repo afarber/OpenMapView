@@ -1,8 +1,8 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("com.diffplug.spotless")
-    id("org.jetbrains.dokka")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.spotless)
+    alias(libs.plugins.dokka)
     id("maven-publish")
     id("signing")
     id("jacoco")
@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "de.afarber.openmapview"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 23
@@ -62,36 +62,36 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("androidx.compose.ui:ui-graphics:1.7.6")
-    implementation("io.ktor:ktor-client-android:2.3.7")
-    implementation("com.jakewharton:disklrucache:2.0.2")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.ktor.client.android)
+    implementation(libs.disklrucache)
 
     // Unit testing
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.mockk)
     // Robolectric enables Android framework classes (Bitmap, Canvas, etc.) to work in JVM unit tests
     // without requiring an emulator or device. It provides shadow implementations of Android APIs.
-    testImplementation("org.robolectric:robolectric:4.14")
-    testImplementation("androidx.test:core-ktx:1.6.1")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
-    testImplementation("io.ktor:ktor-client-mock:2.3.7")
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core.ktx)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.ktor.client.mock)
 
     // Instrumentation testing
-    androidTestImplementation("androidx.test:core-ktx:1.6.1")
-    androidTestImplementation("androidx.test:runner:1.6.2")
-    androidTestImplementation("androidx.test:rules:1.6.1")
-    androidTestImplementation("androidx.test.ext:junit-ktx:1.2.1")
-    androidTestImplementation("junit:junit:4.13.2")
-    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    androidTestImplementation(libs.androidx.test.core.ktx)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.junit.ktx)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
 
 spotless {
     kotlin {
         target("src/**/*.kt")
-        ktlint("1.3.1")
+        ktlint(libs.versions.ktlint.get())
         trimTrailingWhitespace()
         endWithNewline()
         leadingTabsToSpaces(4)
@@ -99,7 +99,7 @@ spotless {
     }
     kotlinGradle {
         target("*.kts")
-        ktlint("1.3.1")
+        ktlint(libs.versions.ktlint.get())
     }
 }
 
