@@ -58,6 +58,100 @@ This document lists all public non-deprecated methods from Google's MapView and 
 
 ---
 
+## Polyline, Polygon, and Circle Styling
+
+OpenMapView uses Jetpack Compose graphics primitives for advanced stroke styling. This provides better color space support, modern Android API integration, and more flexible styling options.
+
+### Color API
+
+| Google Maps API                | OpenMapView API                                   | Notes                                                 |
+| ------------------------------ | ------------------------------------------------- | ----------------------------------------------------- |
+| `setColor(int)`                | `strokeColor: androidx.compose.ui.graphics.Color` | Uses Compose Color instead of Android Color           |
+| `setFillColor(int)`            | `fillColor: androidx.compose.ui.graphics.Color`   | Uses Compose Color instead of Android Color           |
+| `Color.RED`                    | `Color.Red`                                       | Compose uses capitalized color names                  |
+| `Color.argb(128, 255, 0, 0)`   | `Color(red = 255, green = 0, blue = 0, alpha = 128)` | Named parameters instead of positional            |
+
+**Migration Example:**
+
+```kotlin
+// Google Maps
+import android.graphics.Color
+val polyline = PolylineOptions()
+    .color(Color.RED)
+
+// OpenMapView
+import androidx.compose.ui.graphics.Color
+val polyline = PolylineOptions()
+    .color(Color.Red)
+```
+
+### Stroke Styling API
+
+| Google Maps Property | OpenMapView Equivalent | Notes |
+|---------------------|------------------------|-------|
+| `setWidth(float)` | `strokeWidth: Float` | Same concept, pixels (not dp) |
+| `setPattern(List<PatternItem>)` | `strokePattern: PathEffect?` | Different API: uses Compose PathEffect instead of PatternItem list |
+| `setStartCap(Cap)` / `setEndCap(Cap)` | `strokeCap: StrokeCap` | Single property for both start and end (OpenMapView uses same cap for both) |
+| `setJointType(int)` | `strokeJoin: StrokeJoin` | Uses Compose StrokeJoin enum instead of int constant |
+
+**PathEffect Examples:**
+
+```kotlin
+import androidx.compose.ui.graphics.PathEffect
+
+// Dashed line (20px dash, 10px gap)
+val dashed = PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f)
+Polyline(points = points, strokePattern = dashed)
+
+// Dotted line (2px dot, 8px gap) - use Round cap for circular dots
+val dotted = PathEffect.dashPathEffect(floatArrayOf(2f, 8f), 0f)
+Polyline(points = points, strokePattern = dotted, strokeCap = StrokeCap.Round)
+
+// Chain effects (e.g., railroad tracks)
+val railroad = PathEffect.chainPathEffect(
+    outer = PathEffect.dashPathEffect(floatArrayOf(30f, 15f), 0f),
+    inner = PathEffect.cornerPathEffect(3f)
+)
+Polyline(points = points, strokePattern = railroad)
+```
+
+**StrokeCap Options:**
+
+- `StrokeCap.Butt` - Flat edge at endpoint (default for precision)
+- `StrokeCap.Round` - Rounded cap extending beyond endpoint
+- `StrokeCap.Square` - Square cap extending beyond endpoint
+
+**StrokeJoin Options:**
+
+- `StrokeJoin.Miter` - Sharp pointed corners (can extend on acute angles)
+- `StrokeJoin.Round` - Rounded corners (default for smooth appearance)
+- `StrokeJoin.Bevel` - Flat diagonal cut at corners
+
+**Complete Styling Example:**
+
+```kotlin
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+
+val styledPolyline = Polyline(
+    points = listOf(LatLng(51.5, 0.0), LatLng(51.6, 0.1)),
+    strokeColor = Color(0xFF0066CC),  // Custom blue
+    strokeWidth = 12f,
+    strokePattern = PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f),
+    strokeCap = StrokeCap.Round,
+    strokeJoin = StrokeJoin.Bevel
+)
+```
+
+These properties apply to:
+- `Polyline` - All stroke styling properties
+- `Polygon` - All stroke styling properties (applies to outline)
+- `Circle` - All stroke styling properties (applies to outline)
+
+---
+
 ## GoogleMap Class - View Information
 
 | Method              | Return Type  | Notes |

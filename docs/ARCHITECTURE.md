@@ -237,5 +237,6 @@ This architectural design achieves several goals:
 3. **API Compatibility** - Covers essential functionality for drop-in replacement
 4. **Clean Separation** - Internal MapController handles implementation details
 5. **No Vendor Lock-in** - Uses free, open OpenStreetMap data without restrictions
+6. **Modern Graphics API** - Uses Jetpack Compose graphics primitives (Color, PathEffect, StrokeCap, StrokeJoin) for better integration with modern Android development
 
-The single-class approach combined with OSM tiles makes OpenMapView easier to use and more accessible while maintaining the flexibility to implement the features developers expect in a modern map library.
+The single-class approach combined with OSM tiles and modern Android APIs makes OpenMapView easier to use and more accessible while maintaining the flexibility to implement the features developers expect in a modern map library.

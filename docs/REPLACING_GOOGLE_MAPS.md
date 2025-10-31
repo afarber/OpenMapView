@@ -275,7 +275,174 @@ val marker = mapView.addMarker(
 )
 ```
 
-### Step 7: Update Camera Animations
+### Step 7: Migrate Color and Stroke Styling
+
+OpenMapView uses Jetpack Compose graphics primitives instead of Android graphics APIs. This provides better color space support and is the modern Android standard.
+
+#### Color Migration
+
+**Before (Google Maps):**
+
+```kotlin
+import android.graphics.Color
+
+// Using predefined colors
+val polyline = PolylineOptions()
+    .color(Color.RED)
+    .width(5f)
+
+// Using custom ARGB colors
+val polygon = PolygonOptions()
+    .strokeColor(Color.BLUE)
+    .fillColor(Color.argb(128, 255, 0, 0))  // Semi-transparent red
+```
+
+**After (OpenMapView):**
+
+```kotlin
+import androidx.compose.ui.graphics.Color
+
+// Using predefined colors (capitalized names)
+val polyline = PolylineOptions()
+    .color(Color.Red)
+    .width(5f)
+
+// Using custom colors (named parameters)
+val polygon = PolygonOptions()
+    .strokeColor(Color.Blue)
+    .fillColor(Color(red = 255, green = 0, blue = 0, alpha = 128))
+```
+
+**Key Differences:**
+- Import `androidx.compose.ui.graphics.Color` instead of `android.graphics.Color`
+- Predefined colors use capital case: `Color.Red`, `Color.Blue`, `Color.Green`
+- Custom colors use named parameters: `Color(red = 255, green = 0, blue = 0, alpha = 128)`
+- Hex colors still work: `Color(0xFF0066CC)` or `Color(0x800066CC)` with alpha
+
+#### Pattern/PathEffect Migration
+
+Google Maps uses `PatternItem` lists, OpenMapView uses Compose `PathEffect`.
+
+**Before (Google Maps):**
+
+```kotlin
+import com.google.android.gms.maps.model.Dash
+import com.google.android.gms.maps.model.Gap
+import com.google.android.gms.maps.model.Dot
+
+// Dashed line
+val pattern = listOf(Dash(20f), Gap(10f))
+polylineOptions.pattern(pattern)
+
+// Dotted line
+val dottedPattern = listOf(Dot(), Gap(10f))
+polylineOptions.pattern(dottedPattern)
+```
+
+**After (OpenMapView):**
+
+```kotlin
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+
+// Dashed line (20px dash, 10px gap)
+val pattern = PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f)
+polylineOptions.strokePattern(pattern)
+
+// Dotted line (2px dot, 8px gap) - use Round cap for circular dots
+val dottedPattern = PathEffect.dashPathEffect(floatArrayOf(2f, 8f), 0f)
+polylineOptions
+    .strokePattern(dottedPattern)
+    .strokeCap(StrokeCap.Round)
+```
+
+**Key Differences:**
+- Use `PathEffect.dashPathEffect(intervals, phase)` instead of `PatternItem` lists
+- Intervals array: `[dash1, gap1, dash2, gap2, ...]`
+- For dots: use very short dashes (2px) with `StrokeCap.Round`
+- Phase parameter (usually 0f): offset into the pattern array
+
+#### Stroke Cap/Join Migration
+
+**Before (Google Maps):**
+
+```kotlin
+import com.google.android.gms.maps.model.Cap
+import com.google.android.gms.maps.model.RoundCap
+import com.google.android.gms.maps.model.ButtCap
+import com.google.android.gms.maps.model.SquareCap
+import com.google.android.gms.maps.model.JointType
+
+polylineOptions
+    .startCap(RoundCap())
+    .endCap(RoundCap())
+    .jointType(JointType.ROUND)
+```
+
+**After (OpenMapView):**
+
+```kotlin
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+
+polylineOptions
+    .strokeCap(StrokeCap.Round)     // Single property for both ends
+    .strokeJoin(StrokeJoin.Round)
+```
+
+**Key Differences:**
+- `StrokeCap`: Single property for both start and end (OpenMapView doesn't support different caps)
+- `StrokeCap.Butt` ≈ `ButtCap()`
+- `StrokeCap.Round` ≈ `RoundCap()`
+- `StrokeCap.Square` ≈ `SquareCap()`
+- `StrokeJoin.Miter` ≈ `JointType.DEFAULT`
+- `StrokeJoin.Round` ≈ `JointType.ROUND`
+- `StrokeJoin.Bevel` ≈ `JointType.BEVEL`
+
+#### Complete Migration Example
+
+**Before (Google Maps):**
+
+```kotlin
+import android.graphics.Color
+import com.google.android.gms.maps.model.*
+
+val polyline = googleMap.addPolyline(
+    PolylineOptions()
+        .add(LatLng(51.5, 0.0))
+        .add(LatLng(51.6, 0.1))
+        .color(Color.BLUE)
+        .width(8f)
+        .pattern(listOf(Dash(20f), Gap(10f)))
+        .startCap(RoundCap())
+        .endCap(RoundCap())
+        .jointType(JointType.BEVEL)
+        .clickable(true)
+)
+```
+
+**After (OpenMapView):**
+
+```kotlin
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+
+val polyline = mapView.addPolyline(
+    Polyline(
+        points = listOf(LatLng(51.5, 0.0), LatLng(51.6, 0.1)),
+        strokeColor = Color.Blue,
+        strokeWidth = 8f,
+        strokePattern = PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f),
+        strokeCap = StrokeCap.Round,
+        strokeJoin = StrokeJoin.Bevel,
+        clickable = true
+    )
+)
+```
+
+### Step 8: Update Camera Animations
 
 Camera APIs are nearly identical:
 
