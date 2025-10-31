@@ -8,6 +8,9 @@
 package de.afarber.openmapview
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 
 /**
  * Builder class for creating Polyline instances with a fluent API.
@@ -20,6 +23,7 @@ import androidx.compose.ui.graphics.Color
  *     .add(LatLng(51.6, 0.1))
  *     .color(Color.Blue)
  *     .width(5f)
+ *     .strokePattern(PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f))
  *     .clickable(true)
  * ```
  */
@@ -27,6 +31,9 @@ class PolylineOptions {
     private val points = mutableListOf<LatLng>()
     private var strokeColor: Color = Color.Black
     private var strokeWidth: Float = 10f
+    private var strokePattern: PathEffect? = null
+    private var strokeCap: StrokeCap = StrokeCap.Round
+    private var strokeJoin: StrokeJoin = StrokeJoin.Round
     private var visible: Boolean = true
     private var clickable: Boolean = false
     private var zIndex: Float = 0f
@@ -65,6 +72,33 @@ class PolylineOptions {
      */
     fun width(width: Float): PolylineOptions {
         this.strokeWidth = width
+        return this
+    }
+
+    /**
+     * Sets the stroke pattern of the polyline (dashed, dotted, etc.).
+     * @param pattern PathEffect defining the pattern, or null for solid line
+     */
+    fun strokePattern(pattern: PathEffect?): PolylineOptions {
+        this.strokePattern = pattern
+        return this
+    }
+
+    /**
+     * Sets the stroke cap style for line endpoints.
+     * @param cap StrokeCap style (Butt, Round, or Square)
+     */
+    fun strokeCap(cap: StrokeCap): PolylineOptions {
+        this.strokeCap = cap
+        return this
+    }
+
+    /**
+     * Sets the stroke join style for line corners.
+     * @param join StrokeJoin style (Miter, Round, or Bevel)
+     */
+    fun strokeJoin(join: StrokeJoin): PolylineOptions {
+        this.strokeJoin = join
         return this
     }
 
@@ -113,6 +147,9 @@ class PolylineOptions {
             points = points.toList(),
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
+            strokePattern = strokePattern,
+            strokeCap = strokeCap,
+            strokeJoin = strokeJoin,
             visible = visible,
             clickable = clickable,
             zIndex = zIndex,

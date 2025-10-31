@@ -8,6 +8,9 @@
 package de.afarber.openmapview
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 
 /**
  * Represents a circle on the map with a center point and radius in meters.
@@ -16,6 +19,9 @@ import androidx.compose.ui.graphics.Color
  * @property radius Radius of the circle in meters
  * @property strokeColor Color of the circle outline (default: black)
  * @property strokeWidth Width of the outline in pixels (default: 10f)
+ * @property strokePattern Pattern for the stroke (dashed, dotted, etc.). Null means solid line (default: null)
+ * @property strokeCap Shape of line endpoints (default: Round)
+ * @property strokeJoin Shape of line corners (default: Round)
  * @property fillColor Fill color for the circle interior (default: semi-transparent gray)
  * @property visible Whether the circle is visible. Default is true
  * @property clickable Whether the circle is clickable. Default is false
@@ -27,6 +33,9 @@ data class Circle(
     val radius: Float,
     val strokeColor: Color = Color.Black,
     val strokeWidth: Float = 10f,
+    val strokePattern: PathEffect? = null,
+    val strokeCap: StrokeCap = StrokeCap.Round,
+    val strokeJoin: StrokeJoin = StrokeJoin.Round,
     val fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128),
     val visible: Boolean = true,
     val clickable: Boolean = false,

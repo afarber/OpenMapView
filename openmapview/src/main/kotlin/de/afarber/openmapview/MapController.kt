@@ -13,6 +13,9 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.toArgb
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +27,41 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
+
+/**
+ * Converts Compose PathEffect to Android PathEffect.
+ * PathEffect is already backed by android.graphics.PathEffect internally.
+ * We access it through reflection since it's not directly exposed.
+ */
+private fun PathEffect.asAndroidPathEffect(): android.graphics.PathEffect {
+    // PathEffect in Compose is a wrapper around android.graphics.PathEffect
+    // Access the underlying native instance via reflection
+    val nativeField = this::class.java.getDeclaredField("nativePathEffect")
+    nativeField.isAccessible = true
+    return nativeField.get(this) as android.graphics.PathEffect
+}
+
+/**
+ * Converts Compose StrokeCap to Android Paint.Cap.
+ */
+private fun StrokeCap.toAndroidCap(): Paint.Cap =
+    when (this) {
+        StrokeCap.Butt -> Paint.Cap.BUTT
+        StrokeCap.Round -> Paint.Cap.ROUND
+        StrokeCap.Square -> Paint.Cap.SQUARE
+        else -> Paint.Cap.ROUND // Default fallback
+    }
+
+/**
+ * Converts Compose StrokeJoin to Android Paint.Join.
+ */
+private fun StrokeJoin.toAndroidJoin(): Paint.Join =
+    when (this) {
+        StrokeJoin.Miter -> Paint.Join.MITER
+        StrokeJoin.Round -> Paint.Join.ROUND
+        StrokeJoin.Bevel -> Paint.Join.BEVEL
+        else -> Paint.Join.ROUND // Default fallback
+    }
 
 /**
  * Core controller managing map state, rendering, and interactions.
@@ -972,8 +1010,6 @@ class MapController(
     ) {
         val paint = Paint()
         paint.style = Paint.Style.STROKE
-        paint.strokeCap = Paint.Cap.ROUND
-        paint.strokeJoin = Paint.Join.ROUND
         paint.isAntiAlias = true
 
         for (polyline in polylines) {
@@ -981,6 +1017,9 @@ class MapController(
 
             paint.color = polyline.strokeColor.toArgb()
             paint.strokeWidth = polyline.strokeWidth
+            paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
+            paint.strokeCap = polyline.strokeCap.toAndroidCap()
+            paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
 
             val path = android.graphics.Path()
             var isFirst = true
@@ -1013,8 +1052,6 @@ class MapController(
 
         val strokePaint = Paint()
         strokePaint.style = Paint.Style.STROKE
-        strokePaint.strokeCap = Paint.Cap.ROUND
-        strokePaint.strokeJoin = Paint.Join.ROUND
         strokePaint.isAntiAlias = true
 
         for (polygon in polygons) {
@@ -1023,6 +1060,9 @@ class MapController(
             fillPaint.color = polygon.fillColor.toArgb()
             strokePaint.color = polygon.strokeColor.toArgb()
             strokePaint.strokeWidth = polygon.strokeWidth
+            strokePaint.pathEffect = polygon.strokePattern?.asAndroidPathEffect()
+            strokePaint.strokeCap = polygon.strokeCap.toAndroidCap()
+            strokePaint.strokeJoin = polygon.strokeJoin.toAndroidJoin()
 
             val path = android.graphics.Path()
             path.fillType = android.graphics.Path.FillType.EVEN_ODD
@@ -1079,7 +1119,6 @@ class MapController(
 
         val strokePaint = Paint()
         strokePaint.style = Paint.Style.STROKE
-        strokePaint.strokeCap = Paint.Cap.ROUND
         strokePaint.isAntiAlias = true
 
         for (circle in circles) {
@@ -1088,6 +1127,9 @@ class MapController(
             fillPaint.color = circle.fillColor.toArgb()
             strokePaint.color = circle.strokeColor.toArgb()
             strokePaint.strokeWidth = circle.strokeWidth
+            strokePaint.pathEffect = circle.strokePattern?.asAndroidPathEffect()
+            strokePaint.strokeCap = circle.strokeCap.toAndroidCap()
+            strokePaint.strokeJoin = circle.strokeJoin.toAndroidJoin()
 
             // Convert center to screen coordinates
             val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(circle.center, zoom.toInt())
@@ -1252,8 +1294,6 @@ class MapController(
 
         val strokePaint = Paint()
         strokePaint.style = Paint.Style.STROKE
-        strokePaint.strokeCap = Paint.Cap.ROUND
-        strokePaint.strokeJoin = Paint.Join.ROUND
         strokePaint.isAntiAlias = true
 
         for (polygon in sortedPolygons) {
@@ -1262,6 +1302,9 @@ class MapController(
             fillPaint.color = polygon.fillColor.toArgb()
             strokePaint.color = polygon.strokeColor.toArgb()
             strokePaint.strokeWidth = polygon.strokeWidth
+            strokePaint.pathEffect = polygon.strokePattern?.asAndroidPathEffect()
+            strokePaint.strokeCap = polygon.strokeCap.toAndroidCap()
+            strokePaint.strokeJoin = polygon.strokeJoin.toAndroidJoin()
 
             val path = android.graphics.Path()
             var isFirst = true
@@ -1313,8 +1356,6 @@ class MapController(
     ) {
         val paint = Paint()
         paint.style = Paint.Style.STROKE
-        paint.strokeCap = Paint.Cap.ROUND
-        paint.strokeJoin = Paint.Join.ROUND
         paint.isAntiAlias = true
 
         for (polyline in sortedPolylines) {
@@ -1322,6 +1363,9 @@ class MapController(
 
             paint.color = polyline.strokeColor.toArgb()
             paint.strokeWidth = polyline.strokeWidth
+            paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
+            paint.strokeCap = polyline.strokeCap.toAndroidCap()
+            paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
 
             val path = android.graphics.Path()
             var isFirst = true
@@ -1356,7 +1400,6 @@ class MapController(
 
         val strokePaint = Paint()
         strokePaint.style = Paint.Style.STROKE
-        strokePaint.strokeCap = Paint.Cap.ROUND
         strokePaint.isAntiAlias = true
 
         for (circle in sortedCircles) {
@@ -1365,6 +1408,9 @@ class MapController(
             fillPaint.color = circle.fillColor.toArgb()
             strokePaint.color = circle.strokeColor.toArgb()
             strokePaint.strokeWidth = circle.strokeWidth
+            strokePaint.pathEffect = circle.strokePattern?.asAndroidPathEffect()
+            strokePaint.strokeCap = circle.strokeCap.toAndroidCap()
+            strokePaint.strokeJoin = circle.strokeJoin.toAndroidJoin()
 
             val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(circle.center, zoom.toInt())
             val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()

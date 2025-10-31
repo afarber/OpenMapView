@@ -8,6 +8,9 @@
 package de.afarber.openmapview
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 
 /**
  * Builder class for creating Circle instances with a fluent API.
@@ -28,6 +31,9 @@ class CircleOptions {
     private var radius: Float? = null
     private var strokeColor: Color = Color.Black
     private var strokeWidth: Float = 10f
+    private var strokePattern: PathEffect? = null
+    private var strokeCap: StrokeCap = StrokeCap.Round
+    private var strokeJoin: StrokeJoin = StrokeJoin.Round
     private var fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128)
     private var visible: Boolean = true
     private var clickable: Boolean = false
@@ -67,6 +73,33 @@ class CircleOptions {
      */
     fun strokeWidth(width: Float): CircleOptions {
         this.strokeWidth = width
+        return this
+    }
+
+    /**
+     * Sets the stroke pattern of the circle outline (dashed, dotted, etc.).
+     * @param pattern PathEffect defining the pattern, or null for solid line
+     */
+    fun strokePattern(pattern: PathEffect?): CircleOptions {
+        this.strokePattern = pattern
+        return this
+    }
+
+    /**
+     * Sets the stroke cap style for line endpoints.
+     * @param cap StrokeCap style (Butt, Round, or Square)
+     */
+    fun strokeCap(cap: StrokeCap): CircleOptions {
+        this.strokeCap = cap
+        return this
+    }
+
+    /**
+     * Sets the stroke join style for line corners.
+     * @param join StrokeJoin style (Miter, Round, or Bevel)
+     */
+    fun strokeJoin(join: StrokeJoin): CircleOptions {
+        this.strokeJoin = join
         return this
     }
 
@@ -128,6 +161,9 @@ class CircleOptions {
             radius = radiusValue,
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
+            strokePattern = strokePattern,
+            strokeCap = strokeCap,
+            strokeJoin = strokeJoin,
             fillColor = fillColor,
             visible = visible,
             clickable = clickable,

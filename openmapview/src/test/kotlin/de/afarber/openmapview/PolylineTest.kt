@@ -8,6 +8,9 @@
 package de.afarber.openmapview
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -233,5 +236,103 @@ class PolylineTest {
             )
         val polyline = Polyline(points = points, zIndex = 3.5f)
         assertEquals(3.5f, polyline.zIndex, 0.001f)
+    }
+
+    @Test
+    fun testPolylineStrokePattern_Dashed() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val pattern = PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f)
+        val polyline = Polyline(points = points, strokePattern = pattern)
+
+        assertEquals(pattern, polyline.strokePattern)
+    }
+
+    @Test
+    fun testPolylineStrokePattern_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+
+        assertEquals(null, polyline.strokePattern)
+    }
+
+    @Test
+    fun testPolylineStrokeCap_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+
+        assertEquals(StrokeCap.Round, polyline.strokeCap)
+    }
+
+    @Test
+    fun testPolylineStrokeCap_Custom() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points, strokeCap = StrokeCap.Square)
+
+        assertEquals(StrokeCap.Square, polyline.strokeCap)
+    }
+
+    @Test
+    fun testPolylineStrokeJoin_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+
+        assertEquals(StrokeJoin.Round, polyline.strokeJoin)
+    }
+
+    @Test
+    fun testPolylineStrokeJoin_Custom() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points, strokeJoin = StrokeJoin.Miter)
+
+        assertEquals(StrokeJoin.Miter, polyline.strokeJoin)
+    }
+
+    @Test
+    fun testPolylineWithAllStrokeProperties() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val pattern = PathEffect.dashPathEffect(floatArrayOf(10f, 5f), 0f)
+        val polyline =
+            Polyline(
+                points = points,
+                strokeColor = Color.Blue,
+                strokeWidth = 8f,
+                strokePattern = pattern,
+                strokeCap = StrokeCap.Butt,
+                strokeJoin = StrokeJoin.Bevel,
+            )
+
+        assertEquals(Color.Blue, polyline.strokeColor)
+        assertEquals(8f, polyline.strokeWidth, 0.001f)
+        assertEquals(pattern, polyline.strokePattern)
+        assertEquals(StrokeCap.Butt, polyline.strokeCap)
+        assertEquals(StrokeJoin.Bevel, polyline.strokeJoin)
     }
 }

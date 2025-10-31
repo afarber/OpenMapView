@@ -8,6 +8,9 @@
 package de.afarber.openmapview
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 
 /**
  * Builder class for creating Polygon instances with a fluent API.
@@ -29,6 +32,9 @@ class PolygonOptions {
     private val holes = mutableListOf<List<LatLng>>()
     private var strokeColor: Color = Color.Black
     private var strokeWidth: Float = 10f
+    private var strokePattern: PathEffect? = null
+    private var strokeCap: StrokeCap = StrokeCap.Round
+    private var strokeJoin: StrokeJoin = StrokeJoin.Round
     private var fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128)
     private var visible: Boolean = true
     private var clickable: Boolean = false
@@ -77,6 +83,33 @@ class PolygonOptions {
      */
     fun strokeWidth(width: Float): PolygonOptions {
         this.strokeWidth = width
+        return this
+    }
+
+    /**
+     * Sets the stroke pattern of the polygon outline (dashed, dotted, etc.).
+     * @param pattern PathEffect defining the pattern, or null for solid line
+     */
+    fun strokePattern(pattern: PathEffect?): PolygonOptions {
+        this.strokePattern = pattern
+        return this
+    }
+
+    /**
+     * Sets the stroke cap style for line endpoints.
+     * @param cap StrokeCap style (Butt, Round, or Square)
+     */
+    fun strokeCap(cap: StrokeCap): PolygonOptions {
+        this.strokeCap = cap
+        return this
+    }
+
+    /**
+     * Sets the stroke join style for line corners.
+     * @param join StrokeJoin style (Miter, Round, or Bevel)
+     */
+    fun strokeJoin(join: StrokeJoin): PolygonOptions {
+        this.strokeJoin = join
         return this
     }
 
@@ -134,6 +167,9 @@ class PolygonOptions {
             points = points.toList(),
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
+            strokePattern = strokePattern,
+            strokeCap = strokeCap,
+            strokeJoin = strokeJoin,
             fillColor = fillColor,
             holes = holes.toList(),
             visible = visible,

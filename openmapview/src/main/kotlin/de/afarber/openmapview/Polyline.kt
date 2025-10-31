@@ -8,6 +8,9 @@
 package de.afarber.openmapview
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 
 /**
  * Represents a polyline on the map, consisting of connected line segments.
@@ -15,6 +18,9 @@ import androidx.compose.ui.graphics.Color
  * @property points List of geographic coordinates that define the polyline path
  * @property strokeColor Color of the line stroke (default: black)
  * @property strokeWidth Width of the line in pixels (default: 10f)
+ * @property strokePattern Pattern for the stroke (dashed, dotted, etc.). Null means solid line (default: null)
+ * @property strokeCap Shape of line endpoints (default: Round)
+ * @property strokeJoin Shape of line corners (default: Round)
  * @property visible Whether the polyline is visible. Default is true
  * @property clickable Whether the polyline is clickable. Default is false
  * @property zIndex Draw order. Polylines with higher zIndex are drawn on top. Default is 0.0
@@ -24,6 +30,9 @@ data class Polyline(
     val points: List<LatLng>,
     val strokeColor: Color = Color.Black,
     val strokeWidth: Float = 10f,
+    val strokePattern: PathEffect? = null,
+    val strokeCap: StrokeCap = StrokeCap.Round,
+    val strokeJoin: StrokeJoin = StrokeJoin.Round,
     val visible: Boolean = true,
     val clickable: Boolean = false,
     val zIndex: Float = 0f,
