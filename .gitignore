@@ -24,6 +24,9 @@
 hs_err_pid*
 replay_pid*
 
+# JVM dumps
+*.hprof
+
 # Kotlin Gradle plugin data, see https://kotlinlang.org/docs/whatsnew20.html#new-directory-for-kotlin-data-in-gradle-projects
 .kotlin/
 

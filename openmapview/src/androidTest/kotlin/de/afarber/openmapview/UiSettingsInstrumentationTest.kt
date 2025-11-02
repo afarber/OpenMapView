@@ -24,8 +24,12 @@ class UiSettingsInstrumentationTest {
     @Before
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        openMapView = OpenMapView(context)
-        openMapView.layout(0, 0, 1080, 1920)
+
+        // Create and setup view on main thread to avoid Handler creation issues
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            openMapView = OpenMapView(context)
+            openMapView.layout(0, 0, 1080, 1920)
+        }
 
         controller = openMapView.getMapControllerForTesting()
         controller.setCenter(LatLng(51.4661, 7.2491))
