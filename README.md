@@ -63,7 +63,10 @@ Explore the example applications to see OpenMapView in action:
 
 - [Public API Compatibility](docs/PUBLIC_API.md) - Google MapView API implementation status and compatibility matrix
 - [Architecture](docs/ARCHITECTURE.md) - Architectural design and comparison with Google Maps SDK
+- [Replacing Google Maps](docs/REPLACING_GOOGLE_MAPS.md) - Migration guide for switching from Google Maps SDK to OpenMapView
+- [Map Types](docs/MAP_TYPES.md) - Available map types and tile sources
 - [Map Toolbar](docs/MAP_TOOLBAR.md) - External map app integration using geo: URIs with browser fallback
+- [Performance](docs/PERFORMANCE.md) - Performance optimization and benchmarking
 - [Contributing Guide](docs/CONTRIBUTING.md) - Code quality requirements, formatting, git hooks, and PR process
 - [Lifecycle Management](docs/LIFECYCLE.md) - How OpenMapView handles Android lifecycle events
 - [Publishing Guide](docs/PUBLISHING.md) - Publishing to Maven Central and JitPack
