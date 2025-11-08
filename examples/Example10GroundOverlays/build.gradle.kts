@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "de.afarber.openmapview.example10groundoverlays"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "de.afarber.openmapview.example10groundoverlays"
