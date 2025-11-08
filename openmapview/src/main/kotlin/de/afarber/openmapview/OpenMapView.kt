@@ -105,6 +105,7 @@ class OpenMapView
             controller.setOnTileLoadedCallback {
                 invalidate()
             }
+            attributionOverlay.isGlowEnabled = uiSettings.isAttributionGlowEnabled
         }
 
         override fun dispatchDraw(canvas: Canvas) {
@@ -113,6 +114,7 @@ class OpenMapView
             if (uiSettings.isZoomControlsEnabled) {
                 zoomControlsOverlay.draw(canvas, width, height)
             }
+            attributionOverlay.isGlowEnabled = uiSettings.isAttributionGlowEnabled
             attributionOverlay.draw(canvas, width, height)
         }
 

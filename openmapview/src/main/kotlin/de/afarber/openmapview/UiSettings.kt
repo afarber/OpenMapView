@@ -39,6 +39,13 @@ class UiSettings {
     var isScrollGesturesEnabledDuringRotateOrZoom: Boolean = true
 
     /**
+     * Whether the attribution text glow effect is enabled.
+     * When true, attribution text is rendered with a white glow/halo effect.
+     * Default is true.
+     */
+    var isAttributionGlowEnabled: Boolean = true
+
+    /**
      * Whether rotate gestures are enabled.
      * Currently not implemented, always returns false.
      */
