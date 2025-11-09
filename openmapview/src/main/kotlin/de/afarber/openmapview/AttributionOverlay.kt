@@ -8,7 +8,6 @@
 package de.afarber.openmapview
 
 import android.content.Context
-import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -27,21 +26,11 @@ class AttributionOverlay(
     private var attributionText = "© OpenStreetMap contributors"
     private var attributionUrl = "https://www.openstreetmap.org/copyright"
 
-    private val density = context.resources.displayMetrics.density
-
     private val textPaint =
         TextPaint().apply {
             color = Color.BLACK
-            textSize = 12f * density
+            textSize = 12f * context.resources.displayMetrics.density
             isAntiAlias = true
-        }
-
-    private val glowPaint =
-        TextPaint().apply {
-            color = Color.WHITE
-            textSize = 12f * density
-            isAntiAlias = true
-            maskFilter = BlurMaskFilter(5f * density, BlurMaskFilter.Blur.NORMAL)
         }
 
     private val backgroundPaint =
@@ -51,9 +40,7 @@ class AttributionOverlay(
         }
 
     private var textBounds = Rect()
-    private val padding = (4 * density).toInt()
-
-    var isGlowEnabled: Boolean = true
+    private val padding = (4 * context.resources.displayMetrics.density).toInt()
 
     var onAttributionClickListener: (() -> Unit)? = null
 
@@ -109,9 +96,6 @@ class AttributionOverlay(
         val textX = viewWidth - textWidth - padding
         val textY = viewHeight - padding
 
-        if (isGlowEnabled) {
-            canvas.drawText(attributionText, textX.toFloat(), textY.toFloat(), glowPaint)
-        }
         canvas.drawText(attributionText, textX.toFloat(), textY.toFloat(), textPaint)
     }
 
