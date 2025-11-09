@@ -827,13 +827,6 @@ class MapController(
     }
 
     /**
-     * Returns whether tiles are currently being downloaded.
-     *
-     * @return true if any tiles are actively downloading, false otherwise
-     */
-    fun isDownloadingTiles(): Boolean = downloadingTiles.isNotEmpty()
-
-    /**
      * Updates the temporary pan offset during a drag gesture.
      *
      * The offset accumulates until committed via [commitPan].
