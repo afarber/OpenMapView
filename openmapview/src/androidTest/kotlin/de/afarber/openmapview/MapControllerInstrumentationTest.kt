@@ -34,7 +34,7 @@ class MapControllerInstrumentationTest {
         val canvas = Canvas(bitmap)
 
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
 
         controller.draw(canvas)
 
@@ -50,7 +50,7 @@ class MapControllerInstrumentationTest {
         val canvas = Canvas(bitmap)
 
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
 
         // Add markers at different positions
         controller.addMarker(Marker(LatLng(51.4661, 7.2491)))
@@ -69,7 +69,7 @@ class MapControllerInstrumentationTest {
         val canvas = Canvas(bitmap)
 
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
         controller.draw(canvas)
 
         // Zoom in
@@ -89,7 +89,7 @@ class MapControllerInstrumentationTest {
         val canvas = Canvas(bitmap)
 
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
 
         // Pan the map
         controller.updatePanOffset(100f, 100f)
@@ -110,7 +110,7 @@ class MapControllerInstrumentationTest {
         val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
 
         controller.draw(canvas)
 
@@ -137,7 +137,7 @@ class MapControllerInstrumentationTest {
         val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
 
         controller.draw(canvas)
 
@@ -147,7 +147,7 @@ class MapControllerInstrumentationTest {
     @Test
     fun testLifecycle_OnDestroy() {
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
 
         val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)

@@ -12,7 +12,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
 import io.ktor.client.request.header
-import io.ktor.client.statement.readBytes
+import io.ktor.client.statement.readRawBytes
 
 /**
  * Abstract base class for [TileProvider] implementations that fetch tiles from URLs.
@@ -104,7 +104,7 @@ abstract class UrlTileProvider(
                 client.get(url) {
                     header("User-Agent", getUserAgent())
                 }
-            val bytes = response.readBytes()
+            val bytes = response.readRawBytes()
 
             if (bytes.isEmpty()) {
                 Log.w(TAG, "Empty tile data from $url")
