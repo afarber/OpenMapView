@@ -44,7 +44,7 @@ jobs:
     uses: ./.github/workflows/_build-examples.yml
 
   instrumented-test:
-    name: Instrumentation Tests (PR only)
+    name: Instrumentation Tests
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/_instrumentation.yml
 

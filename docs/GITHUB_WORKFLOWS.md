@@ -71,7 +71,7 @@ Located in `.github/workflows/`:
 - **Runs**: Tests on both phone (Nexus 6) and automotive (automotive_1024p_landscape) profiles
 - **Artifacts**: Uploads test results and reports for both device types
 - **Usage**: Called by daily.yml and ci.yml (PR only)
-- **Duration**: ~10-15 minutes (may vary due to emulator startup and potential flakiness)
+- **Duration**: ~10-15 minutes (may vary due to emulator startup)
 
 #### `_docs.yml`
 - **Purpose**: Build API documentation with Dokka
@@ -123,11 +123,11 @@ instrumented-test (Phone + Automotive)
 5. **coverage** - Checks test coverage meets 20% minimum (depends on format + copyright)
 6. **build-library** - Builds library AAR (depends on format + copyright + test + docs + coverage, runs in parallel with build-examples)
 7. **build-examples** - Builds example APKs (depends on format + copyright + test + docs + coverage, runs in parallel with build-library)
-8. **instrumented-test** - Runs instrumentation tests on phone and automotive emulators (PR only, runs independently)
+8. **instrumented-test** - Runs instrumentation tests on phone and automotive emulators (PR only, required status check)
 
 **Total Duration**:
 - **Maintainer pushes to main**: ~3-4 minutes (no instrumentation tests)
-- **External PRs**: ~10-15 minutes (includes instrumentation tests on phone + automotive)
+- **Pull Requests**: ~10-15 minutes (includes instrumentation tests on phone + automotive)
 
 **Benefits**:
 - Catches formatting issues early (before expensive builds)
@@ -206,14 +206,13 @@ Phone Tests                   Automotive Tests
 **Jobs**:
 1. **instrumented-test** - Calls the reusable `_instrumentation.yml` workflow
 
-**Total Duration**: ~10-15 minutes (may vary due to emulator startup and flakiness)
+**Total Duration**: ~10-15 minutes (may vary due to emulator startup)
 
 **Benefits**:
 - Catches device-specific regressions early
 - Tests on both phone and automotive form factors
-- Runs independently from main CI pipeline
 - Manual trigger available for on-demand testing
-- Acceptable flakiness since it doesn't block development workflow
+- Runs daily for continuous quality monitoring
 
 #### `docs-deploy.yml` - API Documentation Deployment
 **Trigger**: Push to `main` or `master` branch (paths: `openmapview/src/**/*.kt`, `README.md`, `.github/workflows/_docs.yml`, `.github/workflows/docs-deploy.yml`)
@@ -418,7 +417,7 @@ All core checks pass (3-4 min)
 
 Meanwhile (in parallel, PR only):
 instrumented-test: Phone + Automotive tests
-   (10-15 min) - PASS (may be flaky)
+   (10-15 min) - PASS
    |
    v
 All checks complete -> PR is ready to merge
@@ -485,9 +484,8 @@ This single workflow definition powers both daily scheduled tests and PR validat
 
 ### 5. Flexible Testing Strategy
 - **Maintainer commits to main**: Fast feedback (~3-4 min) without instrumentation delays
-- **External PRs**: Comprehensive testing (~10-15 min) including phone and automotive instrumentation tests
+- **Pull Requests**: Comprehensive testing (~10-15 min) including phone and automotive instrumentation tests required for merge
 - **Daily scheduled runs**: Proactive regression detection on both platforms
-- **Test flakiness handled gracefully**: Instrumentation tests run independently and don't block merges
 
 ### 6. Clear Separation of Concerns
 - Format checks catch simple issues fast
