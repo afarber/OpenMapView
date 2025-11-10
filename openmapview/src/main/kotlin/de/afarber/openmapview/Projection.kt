@@ -24,7 +24,7 @@ import android.graphics.Point
 class Projection
     internal constructor(
         private val center: LatLng,
-        private val zoom: Double,
+        private val zoom: Float,
         private val viewWidth: Int,
         private val viewHeight: Int,
         private val panOffsetX: Float,

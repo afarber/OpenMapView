@@ -17,12 +17,12 @@ class CameraPositionTest {
         val position =
             CameraPosition(
                 target = LatLng(51.4661, 7.2491),
-                zoom = 14.0,
+                zoom = 14.0f,
             )
 
         assertEquals(51.4661, position.target.latitude, 0.0001)
         assertEquals(7.2491, position.target.longitude, 0.0001)
-        assertEquals(14.0, position.zoom, 0.0001)
+        assertEquals(14.0f, position.zoom, 0.0001f)
     }
 
     @Test
@@ -30,10 +30,10 @@ class CameraPositionTest {
         val position =
             CameraPosition(
                 target = LatLng(0.0, 0.0),
-                zoom = 2.0,
+                zoom = 2.0f,
             )
 
-        assertEquals(2.0, position.zoom, 0.0001)
+        assertEquals(2.0f, position.zoom, 0.0001f)
     }
 
     @Test
@@ -41,10 +41,10 @@ class CameraPositionTest {
         val position =
             CameraPosition(
                 target = LatLng(0.0, 0.0),
-                zoom = 19.0,
+                zoom = 19.0f,
             )
 
-        assertEquals(19.0, position.zoom, 0.0001)
+        assertEquals(19.0f, position.zoom, 0.0001f)
     }
 
     @Test
@@ -52,7 +52,7 @@ class CameraPositionTest {
         assertFailsWith<IllegalArgumentException> {
             CameraPosition(
                 target = LatLng(0.0, 0.0),
-                zoom = 1.9,
+                zoom = 1.9f,
             )
         }
     }
@@ -62,7 +62,7 @@ class CameraPositionTest {
         assertFailsWith<IllegalArgumentException> {
             CameraPosition(
                 target = LatLng(0.0, 0.0),
-                zoom = 19.1,
+                zoom = 19.1f,
             )
         }
     }
@@ -72,13 +72,13 @@ class CameraPositionTest {
         val position1 =
             CameraPosition(
                 target = LatLng(51.4661, 7.2491),
-                zoom = 14.0,
+                zoom = 14.0f,
             )
 
         val position2 =
             CameraPosition(
                 target = LatLng(51.4661, 7.2491),
-                zoom = 14.0,
+                zoom = 14.0f,
             )
 
         assertEquals(position1, position2)
@@ -89,13 +89,13 @@ class CameraPositionTest {
         val position =
             CameraPosition(
                 target = LatLng(51.4661, 7.2491),
-                zoom = 14.0,
+                zoom = 14.0f,
             )
 
-        val copied = position.copy(zoom = 15.0)
+        val copied = position.copy(zoom = 15.0f)
 
         assertEquals(51.4661, copied.target.latitude, 0.0001)
         assertEquals(7.2491, copied.target.longitude, 0.0001)
-        assertEquals(15.0, copied.zoom, 0.0001)
+        assertEquals(15.0f, copied.zoom, 0.0001f)
     }
 }

@@ -190,7 +190,7 @@ fun MapViewScreen() {
                         mapView = this
                         lifecycleOwner.lifecycle.addObserver(this)
                         setCenter(bochumCenter)
-                        setZoom(12.0)
+                        setZoom(12.0f)
                         setOnAttributionClickListener {
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
                             context.startActivity(intent)
@@ -229,7 +229,7 @@ fun MapViewScreen() {
                         mapView = this
                         lifecycleOwner.lifecycle.addObserver(this)
                         setCenter(bochumCenter)
-                        setZoom(12.0)
+                        setZoom(12.0f)
                         setOnAttributionClickListener {
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
                             context.startActivity(intent)

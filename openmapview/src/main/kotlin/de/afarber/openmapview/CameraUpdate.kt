@@ -28,7 +28,7 @@ sealed class CameraUpdate {
      */
     internal data class NewLatLngZoom(
         val target: LatLng,
-        val zoom: Double,
+        val zoom: Float,
     ) : CameraUpdate()
 
     /**
@@ -52,14 +52,14 @@ sealed class CameraUpdate {
      * Sets zoom to a specific level.
      */
     internal data class ZoomTo(
-        val zoom: Double,
+        val zoom: Float,
     ) : CameraUpdate()
 
     /**
      * Adjusts zoom by a relative amount (positive to zoom in, negative to zoom out).
      */
     internal data class ZoomBy(
-        val amount: Double,
+        val amount: Float,
     ) : CameraUpdate()
 
     /**

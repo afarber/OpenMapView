@@ -13,6 +13,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.widget.EdgeEffect
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -75,8 +76,9 @@ class MapController(
     private val context: Context,
 ) {
     companion object {
-        private const val DEFAULT_MIN_ZOOM = 2.0
-        private const val DEFAULT_MAX_ZOOM = 19.0
+        // Allow internal access for testing
+        internal const val DEFAULT_MIN_ZOOM = 2.0f
+        internal const val DEFAULT_MAX_ZOOM = 19.0f
         private const val TILE_SIZE = 256f
     }
 
@@ -84,7 +86,7 @@ class MapController(
     private var maxZoomPreference = DEFAULT_MAX_ZOOM
     private var cameraTargetBounds: LatLngBounds? = null
 
-    private var zoom = 10.0
+    private var zoom = 10.0f
     private var center = LatLng(0.0, 0.0)
 
     /**
@@ -112,6 +114,13 @@ class MapController(
     private var paddingTop = 0
     private var paddingRight = 0
     private var paddingBottom = 0
+
+    // Edge effects for overzoom visual feedback
+    private val edgeEffectTop = EdgeEffect(context)
+    private val edgeEffectBottom = EdgeEffect(context)
+    private val edgeEffectLeft = EdgeEffect(context)
+    private val edgeEffectRight = EdgeEffect(context)
+    private var uiSettings: UiSettings? = null
 
     private var lastDrawnTiles = mutableSetOf<TileCoordinate>()
 
@@ -214,7 +223,7 @@ class MapController(
      *
      * @param z The desired zoom level (will be clamped to current min/max zoom preferences)
      */
-    fun setZoom(z: Double) {
+    fun setZoom(z: Float) {
         zoom = z.coerceIn(minZoomPreference, maxZoomPreference)
     }
 
@@ -223,7 +232,7 @@ class MapController(
      *
      * @return The current zoom level
      */
-    fun getZoom(): Double = zoom
+    fun getZoom(): Float = zoom
 
     /**
      * Sets the minimum zoom level preference.
@@ -231,7 +240,7 @@ class MapController(
      * @param minZoom The minimum zoom level (will be clamped to 2.0-19.0)
      */
     fun setMinZoomPreference(minZoom: Float) {
-        minZoomPreference = minZoom.toDouble().coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
+        minZoomPreference = minZoom.coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
         zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
     }
 
@@ -241,7 +250,7 @@ class MapController(
      * @param maxZoom The maximum zoom level (will be clamped to 2.0-19.0)
      */
     fun setMaxZoomPreference(maxZoom: Float) {
-        maxZoomPreference = maxZoom.toDouble().coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
+        maxZoomPreference = maxZoom.coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
         zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
     }
 
@@ -250,14 +259,14 @@ class MapController(
      *
      * @return The minimum zoom level
      */
-    fun getMinZoomLevel(): Float = minZoomPreference.toFloat()
+    fun getMinZoomLevel(): Float = minZoomPreference
 
     /**
      * Returns the current maximum zoom level preference.
      *
      * @return The maximum zoom level
      */
-    fun getMaxZoomLevel(): Float = maxZoomPreference.toFloat()
+    fun getMaxZoomLevel(): Float = maxZoomPreference
 
     /**
      * Resets the min/max zoom preferences to their defaults (2.0 - 19.0).
@@ -266,6 +275,114 @@ class MapController(
         minZoomPreference = DEFAULT_MIN_ZOOM
         maxZoomPreference = DEFAULT_MAX_ZOOM
         zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
+    }
+
+    /**
+     * Sets the UiSettings instance for controlling UI behavior.
+     *
+     * @param settings The UiSettings instance
+     */
+    fun setUiSettings(settings: UiSettings) {
+        uiSettings = settings
+    }
+
+    /**
+     * Triggers the edge effect animation when an overzoom attempt occurs.
+     *
+     * @param overzoomAmount The amount of overzoom attempted (positive for zoom in, negative for zoom out)
+     */
+    private fun triggerOverzoomEffect(overzoomAmount: Float) {
+        if (uiSettings?.isZoomEdgeEffectEnabled != true) return
+        if (viewWidth == 0 || viewHeight == 0) return
+
+        // Calculate pull strength based on overzoom magnitude
+        // Normalize to a reasonable range (0.0 - 1.0)
+        val pullStrength = (kotlin.math.abs(overzoomAmount) * 0.5f).coerceIn(0.0f, 1.0f)
+
+        // Pull all four edges
+        // For zoom in (positive overzoom): pull inward (feeling of compression)
+        // For zoom out (negative overzoom): pull outward (feeling of expansion)
+        edgeEffectTop.onPull(pullStrength)
+        edgeEffectBottom.onPull(pullStrength)
+        edgeEffectLeft.onPull(pullStrength)
+        edgeEffectRight.onPull(pullStrength)
+    }
+
+    /**
+     * Checks if any edge effect is currently active (animating).
+     *
+     * @return true if any edge effect is active
+     */
+    fun hasActiveEdgeEffect(): Boolean =
+        !edgeEffectTop.isFinished ||
+            !edgeEffectBottom.isFinished ||
+            !edgeEffectLeft.isFinished ||
+            !edgeEffectRight.isFinished
+
+    /**
+     * Draws the edge effects on the canvas.
+     *
+     * @param canvas The canvas to draw on
+     * @param width The view width
+     * @param height The view height
+     */
+    fun drawEdgeEffects(
+        canvas: Canvas,
+        width: Int,
+        height: Int,
+    ) {
+        if (width == 0 || height == 0) return
+
+        var needsInvalidate = false
+
+        // Draw top edge
+        if (!edgeEffectTop.isFinished) {
+            val saved = canvas.save()
+            canvas.translate(0f, 0f)
+            edgeEffectTop.setSize(width, height)
+            needsInvalidate = edgeEffectTop.draw(canvas) || needsInvalidate
+            canvas.restoreToCount(saved)
+        }
+
+        // Draw bottom edge
+        if (!edgeEffectBottom.isFinished) {
+            val saved = canvas.save()
+            canvas.translate(0f, height.toFloat())
+            canvas.rotate(180f, width / 2f, 0f)
+            edgeEffectBottom.setSize(width, height)
+            needsInvalidate = edgeEffectBottom.draw(canvas) || needsInvalidate
+            canvas.restoreToCount(saved)
+        }
+
+        // Draw left edge
+        if (!edgeEffectLeft.isFinished) {
+            val saved = canvas.save()
+            canvas.translate(0f, height.toFloat())
+            canvas.rotate(-90f, 0f, 0f)
+            edgeEffectLeft.setSize(height, width)
+            needsInvalidate = edgeEffectLeft.draw(canvas) || needsInvalidate
+            canvas.restoreToCount(saved)
+        }
+
+        // Draw right edge
+        if (!edgeEffectRight.isFinished) {
+            val saved = canvas.save()
+            canvas.translate(width.toFloat(), 0f)
+            canvas.rotate(90f, 0f, 0f)
+            edgeEffectRight.setSize(height, width)
+            needsInvalidate = edgeEffectRight.draw(canvas) || needsInvalidate
+            canvas.restoreToCount(saved)
+        }
+    }
+
+    /**
+     * Releases all edge effects, stopping their animations.
+     */
+    fun releaseEdgeEffects() {
+        edgeEffectTop.onRelease()
+        edgeEffectBottom.onRelease()
+        edgeEffectLeft.onRelease()
+        edgeEffectRight.onRelease()
     }
 
     /**
@@ -372,9 +489,15 @@ class MapController(
         focusY: Float,
     ) {
         val oldZoom = zoom
-        val newZoom = (zoom * scaleFactor).coerceIn(minZoomPreference, maxZoomPreference)
+        val requestedZoom = zoom * scaleFactor
+        val newZoom = requestedZoom.coerceIn(minZoomPreference, maxZoomPreference)
 
-        if (oldZoom == newZoom) return // Already at limit
+        if (oldZoom == newZoom) {
+            // Already at limit - trigger overzoom effect
+            val overzoomAmount = (requestedZoom - newZoom).toFloat()
+            triggerOverzoomEffect(overzoomAmount)
+            return
+        }
 
         zoom = newZoom
 
@@ -623,7 +746,7 @@ class MapController(
      */
     private fun applyPaddingOffset(
         target: LatLng,
-        targetZoom: Double,
+        targetZoom: Float,
     ): LatLng {
         // If no padding, return original target
         if (paddingLeft == 0 && paddingTop == 0 && paddingRight == 0 && paddingBottom == 0) {
@@ -636,7 +759,7 @@ class MapController(
 
         // Convert the offset to lat/lng degrees
         // At the target location, calculate the degrees per pixel
-        val scale = 256.0 * 2.0.pow(targetZoom)
+        val scale = 256.0 * 2.0.pow(targetZoom.toDouble())
 
         // Convert pixel offsets to world coordinate offsets
         val worldXOffset = xOffsetPixels * (1.0 / scale) * 360.0
@@ -664,7 +787,7 @@ class MapController(
         bounds: LatLngBounds,
         viewWidth: Int,
         viewHeight: Int,
-    ): Double {
+    ): Float {
         // Ensure we have valid viewport dimensions
         if (viewWidth <= 0 || viewHeight <= 0) {
             return DEFAULT_MIN_ZOOM
@@ -679,7 +802,7 @@ class MapController(
             val boundsHeight = kotlin.math.abs(swY - neY) // Y increases downward
 
             if (boundsWidth <= viewWidth && boundsHeight <= viewHeight) {
-                return zoom.toDouble()
+                return zoom.toFloat()
             }
         }
 
@@ -709,12 +832,12 @@ class MapController(
             is CameraUpdate.ZoomIn ->
                 CameraPosition(
                     target = currentPosition.target,
-                    zoom = (currentPosition.zoom + 1.0).coerceIn(minZoomPreference, maxZoomPreference),
+                    zoom = (currentPosition.zoom + 1.0f).coerceIn(minZoomPreference, maxZoomPreference),
                 )
             is CameraUpdate.ZoomOut ->
                 CameraPosition(
                     target = currentPosition.target,
-                    zoom = (currentPosition.zoom - 1.0).coerceIn(minZoomPreference, maxZoomPreference),
+                    zoom = (currentPosition.zoom - 1.0f).coerceIn(minZoomPreference, maxZoomPreference),
                 )
             is CameraUpdate.ZoomTo ->
                 CameraPosition(
@@ -771,6 +894,12 @@ class MapController(
                 )
             }
         }
+
+    private fun interpolate(
+        start: Float,
+        end: Float,
+        progress: Float,
+    ): Float = start + (end - start) * progress
 
     private fun interpolate(
         start: Double,
@@ -1157,9 +1286,9 @@ class MapController(
     private fun metersToPixels(
         meters: Float,
         latitude: Double,
-        zoom: Double,
+        zoom: Float,
     ): Float {
-        val metersPerPixel = 156543.03392 * cos(latitude * PI / 180.0) / 2.0.pow(zoom)
+        val metersPerPixel = 156543.03392 * cos(latitude * PI / 180.0) / 2.0.pow(zoom.toDouble())
         return (meters / metersPerPixel).toFloat()
     }
 

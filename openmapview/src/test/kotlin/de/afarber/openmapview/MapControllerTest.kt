@@ -27,6 +27,11 @@ class MapControllerTest {
     private lateinit var context: Context
     private lateinit var controller: MapController
 
+    companion object {
+        // Tolerance for floating-point comparisons
+        private const val DELTA = 0.001f
+    }
+
     @Before
     fun setUp() {
         context = RuntimeEnvironment.getApplication()
@@ -36,61 +41,61 @@ class MapControllerTest {
 
     @Test
     fun testSetZoom_WithinBounds() {
-        controller.setZoom(10.0)
-        assertEquals(10.0, controller.getZoom(), 0.001)
+        controller.setZoom(10.0f)
+        assertEquals(10.0f, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testSetZoom_BelowMinimum() {
-        controller.setZoom(0.5)
-        assertEquals(2.0, controller.getZoom(), 0.001)
+        controller.setZoom(0.5f)
+        assertEquals(MapController.DEFAULT_MIN_ZOOM, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testSetZoom_AboveMaximum() {
-        controller.setZoom(25.0)
-        assertEquals(19.0, controller.getZoom(), 0.001)
+        controller.setZoom(25.0f)
+        assertEquals(MapController.DEFAULT_MAX_ZOOM, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testSetZoom_AtMinBoundary() {
-        controller.setZoom(2.0)
-        assertEquals(2.0, controller.getZoom(), 0.001)
+        controller.setZoom(MapController.DEFAULT_MIN_ZOOM)
+        assertEquals(MapController.DEFAULT_MIN_ZOOM, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testSetZoom_AtMaxBoundary() {
-        controller.setZoom(19.0)
-        assertEquals(19.0, controller.getZoom(), 0.001)
+        controller.setZoom(MapController.DEFAULT_MAX_ZOOM)
+        assertEquals(MapController.DEFAULT_MAX_ZOOM, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testZoom_ScaleUp() {
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
         controller.zoom(2.0f, 540f, 960f)
-        assertEquals(19.0, controller.getZoom(), 0.001)
+        assertEquals(MapController.DEFAULT_MAX_ZOOM, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testZoom_ScaleDown() {
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
         controller.zoom(0.5f, 540f, 960f)
-        assertEquals(5.0, controller.getZoom(), 0.001)
+        assertEquals(5.0f, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testZoom_BeyondMaxLimit() {
-        controller.setZoom(18.0)
+        controller.setZoom(18.0f)
         val oldZoom = controller.getZoom()
         controller.zoom(5.0f, 540f, 960f)
-        assertEquals(19.0, controller.getZoom(), 0.001)
+        assertEquals(MapController.DEFAULT_MAX_ZOOM, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testZoom_BeyondMinLimit() {
-        controller.setZoom(3.0)
+        controller.setZoom(3.0f)
         controller.zoom(0.1f, 540f, 960f)
-        assertEquals(2.0, controller.getZoom(), 0.001)
+        assertEquals(MapController.DEFAULT_MIN_ZOOM, controller.getZoom(), DELTA)
     }
 
     @Test
@@ -112,7 +117,7 @@ class MapControllerTest {
     @Test
     fun testCommitPan_WithOffset() {
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
         controller.updatePanOffset(100f, 50f)
         controller.commitPan()
         // After commit, pan offset should be reset to zero
@@ -188,7 +193,7 @@ class MapControllerTest {
     @Test
     fun testHandleMarkerTouch_HitMarker() {
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
 
         val markerPosition = LatLng(51.4661, 7.2491)
         val marker = Marker(markerPosition)
@@ -204,7 +209,7 @@ class MapControllerTest {
     @Test
     fun testHandleMarkerTouch_MissMarker() {
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
 
         val marker = Marker(LatLng(51.4661, 7.2491))
         controller.addMarker(marker)
@@ -218,7 +223,7 @@ class MapControllerTest {
     @Test
     fun testHandleMarkerTouch_ZOrdering() {
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
 
         val marker1 = Marker(LatLng(51.4661, 7.2491))
         val marker2 = Marker(LatLng(51.4661, 7.2491))
@@ -269,7 +274,7 @@ class MapControllerTest {
     fun testDraw_ValidViewport() {
         val canvas = mockk<Canvas>(relaxed = true)
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
         controller.setViewSize(1080, 1920)
 
         controller.draw(canvas)
@@ -509,32 +514,32 @@ class MapControllerTest {
 
     @Test
     fun testSetMinZoomPreference_ConstrainsZoom() {
-        controller.setZoom(5.0)
+        controller.setZoom(5.0f)
         controller.setMinZoomPreference(7.0f)
-        assertEquals(7.0, controller.getZoom(), 0.001)
-        assertEquals(7.0f, controller.getMinZoomLevel(), 0.001f)
+        assertEquals(7.0f, controller.getZoom(), DELTA)
+        assertEquals(7.0f, controller.getMinZoomLevel(), DELTA)
     }
 
     @Test
     fun testSetMaxZoomPreference_ConstrainsZoom() {
-        controller.setZoom(15.0)
+        controller.setZoom(15.0f)
         controller.setMaxZoomPreference(12.0f)
-        assertEquals(12.0, controller.getZoom(), 0.001)
-        assertEquals(12.0f, controller.getMaxZoomLevel(), 0.001f)
+        assertEquals(12.0f, controller.getZoom(), DELTA)
+        assertEquals(12.0f, controller.getMaxZoomLevel(), DELTA)
     }
 
     @Test
     fun testSetZoom_RespectsMinPreference() {
         controller.setMinZoomPreference(5.0f)
-        controller.setZoom(3.0)
-        assertEquals(5.0, controller.getZoom(), 0.001)
+        controller.setZoom(3.0f)
+        assertEquals(5.0f, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testSetZoom_RespectsMaxPreference() {
         controller.setMaxZoomPreference(15.0f)
-        controller.setZoom(18.0)
-        assertEquals(15.0, controller.getZoom(), 0.001)
+        controller.setZoom(18.0f)
+        assertEquals(15.0f, controller.getZoom(), DELTA)
     }
 
     @Test
@@ -542,13 +547,13 @@ class MapControllerTest {
         controller.setMinZoomPreference(5.0f)
         controller.setMaxZoomPreference(15.0f)
         controller.resetMinMaxZoomPreference()
-        assertEquals(2.0f, controller.getMinZoomLevel(), 0.001f)
-        assertEquals(19.0f, controller.getMaxZoomLevel(), 0.001f)
+        assertEquals(MapController.DEFAULT_MIN_ZOOM.toFloat(), controller.getMinZoomLevel(), DELTA)
+        assertEquals(MapController.DEFAULT_MAX_ZOOM.toFloat(), controller.getMaxZoomLevel(), DELTA)
     }
 
     @Test
     fun testZoomPreferences_WorkWithGestures() {
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
         controller.setMaxZoomPreference(12.0f)
         controller.zoom(1.5f, 540f, 960f)
         assertTrue(controller.getZoom() <= 12.0)
@@ -557,24 +562,24 @@ class MapControllerTest {
     @Test
     fun testZoomPreferences_WorkWithCameraAnimations() {
         controller.setMaxZoomPreference(10.0f)
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(LatLng(51.5, -0.1), 15.0)
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(LatLng(51.5, -0.1), 15.0f)
         controller.moveCamera(cameraUpdate)
-        assertEquals(10.0, controller.getZoom(), 0.001)
+        assertEquals(10.0f, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testZoomPreferences_AllowValidRange() {
         controller.setMinZoomPreference(5.0f)
         controller.setMaxZoomPreference(15.0f)
-        controller.setZoom(10.0)
-        assertEquals(10.0, controller.getZoom(), 0.001)
+        controller.setZoom(10.0f)
+        assertEquals(10.0f, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testPolylineClick_NonClickablePolyline() {
         controller.setViewSize(800, 600)
         controller.setCenter(LatLng(51.5, 0.0))
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         val polyline =
             Polyline(
@@ -595,7 +600,7 @@ class MapControllerTest {
     fun testPolylineClick_ClickablePolyline_Hit() {
         controller.setViewSize(800, 600)
         controller.setCenter(LatLng(51.5, 0.0))
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         val polyline =
             Polyline(
@@ -617,7 +622,7 @@ class MapControllerTest {
     fun testPolylineClick_ClickablePolyline_Miss() {
         controller.setViewSize(800, 600)
         controller.setCenter(LatLng(51.5, 0.0))
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         val polyline =
             Polyline(
@@ -638,7 +643,7 @@ class MapControllerTest {
     fun testPolygonClick_NonClickablePolygon() {
         controller.setViewSize(800, 600)
         controller.setCenter(LatLng(51.5, 0.0))
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         val polygon =
             Polygon(
@@ -660,7 +665,7 @@ class MapControllerTest {
     fun testPolygonClick_ClickablePolygon_Hit() {
         controller.setViewSize(800, 600)
         controller.setCenter(LatLng(51.5, 0.0))
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         val polygon =
             Polygon(
@@ -684,7 +689,7 @@ class MapControllerTest {
     fun testPolygonClick_ClickablePolygon_Miss() {
         controller.setViewSize(800, 600)
         controller.setCenter(LatLng(51.5, 0.0))
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         val polygon =
             Polygon(
@@ -706,7 +711,7 @@ class MapControllerTest {
     fun testPolygonClick_PolygonWithHole_HitOutside() {
         controller.setViewSize(800, 600)
         controller.setCenter(LatLng(51.4818, 7.2162))
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
 
         val polygon =
             Polygon(
@@ -738,7 +743,7 @@ class MapControllerTest {
     fun testPolylineClick_MultiplePolylines_ReturnsTopmost() {
         controller.setViewSize(800, 600)
         controller.setCenter(LatLng(51.5, 0.0))
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         val polyline1 =
             Polyline(
@@ -783,7 +788,7 @@ class MapControllerTest {
     @Test
     fun testSetMapPadding_TopPadding() {
         val targetLatLng = LatLng(51.5, 0.0)
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         // Set top padding - camera should move down to compensate
         controller.setMapPadding(0, 200, 0, 0)
@@ -797,7 +802,7 @@ class MapControllerTest {
     @Test
     fun testSetMapPadding_LeftPadding() {
         val targetLatLng = LatLng(51.5, 0.0)
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         // Set left padding - camera should move right to compensate
         controller.setMapPadding(200, 0, 0, 0)
@@ -811,7 +816,7 @@ class MapControllerTest {
     @Test
     fun testSetMapPadding_SymmetricPadding() {
         val targetLatLng = LatLng(51.5, 0.0)
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         // Symmetric padding should not shift the center
         controller.setMapPadding(100, 100, 100, 100)
@@ -826,7 +831,7 @@ class MapControllerTest {
     @Test
     fun testSetMapPadding_UpdatePadding() {
         val targetLatLng = LatLng(51.5, 0.0)
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         // Set initial padding
         controller.setMapPadding(0, 200, 0, 0)
@@ -1050,7 +1055,7 @@ class MapControllerTest {
     @Test
     fun testScrollBy_MovesMapByPixels() {
         controller.setViewSize(1080, 1920)
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
         val startPosition = LatLng(51.5, 0.0)
         controller.setCenter(startPosition)
 
@@ -1062,13 +1067,13 @@ class MapControllerTest {
         assertTrue(startPosition.latitude != endPosition.latitude)
         assertTrue(startPosition.longitude != endPosition.longitude)
         // Zoom should remain the same
-        assertEquals(14.0, controller.getZoom(), 0.001)
+        assertEquals(14.0f, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testScrollBy_NegativeValues() {
         controller.setViewSize(1080, 1920)
-        controller.setZoom(14.0)
+        controller.setZoom(14.0f)
         val startPosition = LatLng(51.5, 0.0)
         controller.setCenter(startPosition)
 
@@ -1079,7 +1084,7 @@ class MapControllerTest {
         // Position should have changed in opposite direction
         assertTrue(startPosition.latitude != endPosition.latitude)
         assertTrue(startPosition.longitude != endPosition.longitude)
-        assertEquals(14.0, controller.getZoom(), 0.001)
+        assertEquals(14.0f, controller.getZoom(), DELTA)
     }
 
     @Test
@@ -1108,8 +1113,8 @@ class MapControllerTest {
 
         val zoom = controller.getZoom()
         // Zoom should be within valid range
-        assertTrue(zoom >= 2.0)
-        assertTrue(zoom <= 19.0)
+        assertTrue(zoom >= MapController.DEFAULT_MIN_ZOOM)
+        assertTrue(zoom <= MapController.DEFAULT_MAX_ZOOM)
         // For this small area, zoom should be relatively high
         assertTrue(zoom >= 10.0)
     }
@@ -1143,7 +1148,7 @@ class MapControllerTest {
 
         val zoom = controller.getZoom()
         // Should use relatively low zoom for large area
-        assertTrue(zoom >= 2.0)
+        assertTrue(zoom >= MapController.DEFAULT_MIN_ZOOM)
         assertTrue(zoom <= 10.0)
     }
 
@@ -1162,8 +1167,8 @@ class MapControllerTest {
         // Should still work with provided dimensions
         assertEquals(boundsCenter.latitude, position.target.latitude, 0.01)
         assertEquals(boundsCenter.longitude, position.target.longitude, 0.01)
-        assertTrue(controller.getZoom() >= 2.0)
-        assertTrue(controller.getZoom() <= 19.0)
+        assertTrue(controller.getZoom() >= MapController.DEFAULT_MIN_ZOOM)
+        assertTrue(controller.getZoom() <= MapController.DEFAULT_MAX_ZOOM)
     }
 
     @Test
@@ -1177,7 +1182,7 @@ class MapControllerTest {
         val zoomWithLargePadding = controller.getZoom()
 
         // Reset
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
 
         // With small padding, should zoom in more
         val updateSmallPadding = CameraUpdateFactory.newLatLngBounds(bounds, 10)
@@ -1191,7 +1196,7 @@ class MapControllerTest {
     @Test
     fun testScrollBy_PreservesZoom() {
         controller.setViewSize(1080, 1920)
-        val initialZoom = 12.5
+        val initialZoom = 12.5f
         controller.setZoom(initialZoom)
         controller.setCenter(LatLng(51.5, 0.0))
 
@@ -1199,6 +1204,134 @@ class MapControllerTest {
         controller.moveCamera(update)
 
         // Zoom must be exactly preserved
-        assertEquals(initialZoom, controller.getZoom(), 0.0001)
+        assertEquals(initialZoom, controller.getZoom(), DELTA)
+    }
+
+    @Test
+    fun testOverzoom_EdgeEffectTriggersWhenZoomAtMaxLimit() {
+        val uiSettings = UiSettings()
+        uiSettings.isZoomEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        controller.setZoom(MapController.DEFAULT_MAX_ZOOM)
+        val initialZoom = controller.getZoom()
+
+        // Try to zoom in beyond max limit
+        controller.zoom(2.0f, 540f, 960f)
+
+        // Zoom should remain at limit
+        assertEquals(MapController.DEFAULT_MAX_ZOOM, controller.getZoom(), DELTA)
+        assertEquals(initialZoom, controller.getZoom(), DELTA)
+
+        // Edge effect should be active
+        assertTrue(controller.hasActiveEdgeEffect())
+    }
+
+    @Test
+    fun testOverzoom_EdgeEffectTriggersWhenZoomAtMinLimit() {
+        val uiSettings = UiSettings()
+        uiSettings.isZoomEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        controller.setZoom(MapController.DEFAULT_MIN_ZOOM)
+        val initialZoom = controller.getZoom()
+
+        // Try to zoom out beyond min limit
+        controller.zoom(0.5f, 540f, 960f)
+
+        // Zoom should remain at limit
+        assertEquals(MapController.DEFAULT_MIN_ZOOM, controller.getZoom(), DELTA)
+        assertEquals(initialZoom, controller.getZoom(), DELTA)
+
+        // Edge effect should be active
+        assertTrue(controller.hasActiveEdgeEffect())
+    }
+
+    @Test
+    fun testOverzoom_EdgeEffectDoesNotTriggerWhenDisabled() {
+        val uiSettings = UiSettings()
+        uiSettings.isZoomEdgeEffectEnabled = false
+        controller.setUiSettings(uiSettings)
+
+        controller.setZoom(MapController.DEFAULT_MAX_ZOOM)
+
+        // Try to zoom in beyond max limit
+        controller.zoom(2.0f, 540f, 960f)
+
+        // Zoom should remain at limit but edge effect should not be active
+        assertEquals(MapController.DEFAULT_MAX_ZOOM, controller.getZoom(), DELTA)
+        assertFalse(controller.hasActiveEdgeEffect())
+    }
+
+    @Test
+    fun testOverzoom_EdgeEffectReleasesCorrectly() {
+        val uiSettings = UiSettings()
+        uiSettings.isZoomEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        controller.setZoom(MapController.DEFAULT_MAX_ZOOM)
+
+        // Trigger edge effect
+        controller.zoom(2.0f, 540f, 960f)
+        assertTrue(controller.hasActiveEdgeEffect())
+
+        // Release edge effects
+        controller.releaseEdgeEffects()
+
+        // After release, effects should finish eventually
+        // Note: EdgeEffect may not finish immediately, but release should be called
+    }
+
+    @Test
+    fun testOverzoom_NormalZoomDoesNotTriggerEdgeEffect() {
+        val uiSettings = UiSettings()
+        uiSettings.isZoomEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        controller.setZoom(10.0f)
+        val initialZoom = controller.getZoom()
+
+        // Normal zoom within limits (10.0 * 1.5 = 15.0, which is within 2.0-19.0 range)
+        controller.zoom(1.5f, 540f, 960f)
+
+        // Zoom should change normally (not clamped)
+        val expectedZoom = initialZoom * 1.5f
+        assertEquals(expectedZoom, controller.getZoom(), DELTA)
+        assertTrue(controller.getZoom() > initialZoom)
+        assertTrue(controller.getZoom() < MapController.DEFAULT_MAX_ZOOM)
+
+        // Edge effect should not be active
+        assertFalse(controller.hasActiveEdgeEffect())
+    }
+
+    @Test
+    fun testOverzoom_EdgeEffectDrawsWithoutCrashing() {
+        val uiSettings = UiSettings()
+        uiSettings.isZoomEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        controller.setZoom(MapController.DEFAULT_MAX_ZOOM)
+        controller.zoom(2.0f, 540f, 960f)
+
+        val canvas = mockk<Canvas>(relaxed = true)
+        controller.drawEdgeEffects(canvas, 1080, 1920)
+
+        // Should not crash
+    }
+
+    @Test
+    fun testOverzoom_EdgeEffectHandlesZeroViewSize() {
+        val uiSettings = UiSettings()
+        uiSettings.isZoomEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+        controller.setViewSize(0, 0)
+
+        controller.setZoom(MapController.DEFAULT_MAX_ZOOM)
+
+        // Try to trigger edge effect with zero view size
+        controller.zoom(2.0f, 0f, 0f)
+
+        // Should not crash and should not trigger effect (view size is zero)
+        assertFalse(controller.hasActiveEdgeEffect())
     }
 }

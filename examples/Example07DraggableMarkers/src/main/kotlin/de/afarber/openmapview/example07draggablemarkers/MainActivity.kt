@@ -101,7 +101,7 @@ fun MapViewScreen() {
                     lifecycleOwner.lifecycle.addObserver(this)
 
                     setCenter(bochumCenter)
-                    setZoom(13.0)
+                    setZoom(13.0f)
 
                     // Set marker drag listener
                     setOnMarkerDragListener(

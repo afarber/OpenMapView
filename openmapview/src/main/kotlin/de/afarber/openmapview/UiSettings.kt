@@ -32,6 +32,14 @@ class UiSettings {
     var isZoomControlsEnabled: Boolean = false
 
     /**
+     * Whether the zoom edge effect (visual glow when attempting to zoom beyond limits) is enabled.
+     * When enabled, a visual EdgeEffect glow appears on all four edges when pinch-zoom gestures
+     * attempt to exceed min/max zoom limits, similar to overscroll behavior.
+     * Default is true.
+     */
+    var isZoomEdgeEffectEnabled: Boolean = true
+
+    /**
      * Whether scroll gestures are enabled during rotate or zoom gestures.
      * When false, panning is disabled while pinch-zooming.
      * Default is true.

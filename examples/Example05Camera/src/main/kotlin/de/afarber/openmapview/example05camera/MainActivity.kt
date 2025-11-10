@@ -73,7 +73,7 @@ fun MapViewScreen() {
                     lifecycleOwner.lifecycle.addObserver(this)
 
                     setCenter(LatLng(51.4620, 7.2480))
-                    setZoom(13.0)
+                    setZoom(13.0f)
 
                     // Enable built-in zoom controls
                     getUiSettings().isZoomControlsEnabled = true
@@ -123,7 +123,7 @@ fun MapViewScreen() {
                 FloatingActionButton(
                     onClick = {
                         mapView?.animateCamera(
-                            CameraUpdateFactory.newLatLngZoom(location1, 15.0),
+                            CameraUpdateFactory.newLatLngZoom(location1, 15.0f),
                             1000,
                             object : CancelableCallback {
                                 override fun onFinish() {
@@ -144,7 +144,7 @@ fun MapViewScreen() {
                 FloatingActionButton(
                     onClick = {
                         mapView?.animateCamera(
-                            CameraUpdateFactory.newLatLngZoom(location2, 15.0),
+                            CameraUpdateFactory.newLatLngZoom(location2, 15.0f),
                             1000,
                         )
                     },
@@ -156,7 +156,7 @@ fun MapViewScreen() {
                 FloatingActionButton(
                     onClick = {
                         mapView?.animateCamera(
-                            CameraUpdateFactory.newLatLngZoom(location3, 15.0),
+                            CameraUpdateFactory.newLatLngZoom(location3, 15.0f),
                             2000,
                         )
                     },

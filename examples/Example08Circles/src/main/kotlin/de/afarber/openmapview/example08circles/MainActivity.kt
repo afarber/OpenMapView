@@ -174,7 +174,7 @@ fun MapViewScreen() {
                     lifecycleOwner.lifecycle.addObserver(this)
 
                     setCenter(bochumCenter)
-                    setZoom(12.0)
+                    setZoom(12.0f)
 
                     // Add initial demonstration circles
                     addDemoCircles()

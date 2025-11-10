@@ -55,7 +55,7 @@ fun MapViewScreen() {
 
                 // Center on Bochum, Germany
                 setCenter(LatLng(51.4661, 7.2491))
-                setZoom(14.0)
+                setZoom(14.0f)
 
                 // Add several markers around Bochum with different colors
                 addMarker(

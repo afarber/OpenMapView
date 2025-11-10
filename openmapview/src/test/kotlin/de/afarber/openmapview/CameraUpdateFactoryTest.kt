@@ -24,13 +24,13 @@ class CameraUpdateFactoryTest {
     @Test
     fun `newLatLngZoom creates NewLatLngZoom update`() {
         val target = LatLng(51.4661, 7.2491)
-        val zoom = 14.0
+        val zoom = 14.0f
         val update = CameraUpdateFactory.newLatLngZoom(target, zoom)
 
         assertTrue(update is CameraUpdate.NewLatLngZoom)
         val newLatLngZoom = update as CameraUpdate.NewLatLngZoom
         assertEquals(target, newLatLngZoom.target)
-        assertEquals(zoom, newLatLngZoom.zoom, 0.0001)
+        assertEquals(zoom, newLatLngZoom.zoom, 0.0001f)
     }
 
     @Test
@@ -38,7 +38,7 @@ class CameraUpdateFactoryTest {
         val position =
             CameraPosition(
                 target = LatLng(51.4661, 7.2491),
-                zoom = 14.0,
+                zoom = 14.0f,
             )
         val update = CameraUpdateFactory.newCameraPosition(position)
 
@@ -62,29 +62,29 @@ class CameraUpdateFactoryTest {
 
     @Test
     fun `zoomTo creates ZoomTo update`() {
-        val zoom = 15.0
+        val zoom = 15.0f
         val update = CameraUpdateFactory.zoomTo(zoom)
 
         assertTrue(update is CameraUpdate.ZoomTo)
-        assertEquals(zoom, (update as CameraUpdate.ZoomTo).zoom, 0.0001)
+        assertEquals(zoom, (update as CameraUpdate.ZoomTo).zoom, 0.0001f)
     }
 
     @Test
     fun `zoomBy creates ZoomBy update with positive amount`() {
-        val amount = 2.5
+        val amount = 2.5f
         val update = CameraUpdateFactory.zoomBy(amount)
 
         assertTrue(update is CameraUpdate.ZoomBy)
-        assertEquals(amount, (update as CameraUpdate.ZoomBy).amount, 0.0001)
+        assertEquals(amount, (update as CameraUpdate.ZoomBy).amount, 0.0001f)
     }
 
     @Test
     fun `zoomBy creates ZoomBy update with negative amount`() {
-        val amount = -1.5
+        val amount = -1.5f
         val update = CameraUpdateFactory.zoomBy(amount)
 
         assertTrue(update is CameraUpdate.ZoomBy)
-        assertEquals(amount, (update as CameraUpdate.ZoomBy).amount, 0.0001)
+        assertEquals(amount, (update as CameraUpdate.ZoomBy).amount, 0.0001f)
     }
 
     @Test

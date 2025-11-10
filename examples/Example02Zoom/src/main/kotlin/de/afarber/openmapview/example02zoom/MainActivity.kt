@@ -63,7 +63,7 @@ fun MapViewScreen() {
                     lifecycleOwner.lifecycle.addObserver(this)
 
                     setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
-                    setZoom(14.0)
+                    setZoom(14.0f)
                     mapView = this
 
                     // Enable built-in zoom controls
