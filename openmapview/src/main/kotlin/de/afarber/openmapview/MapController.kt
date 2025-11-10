@@ -301,20 +301,10 @@ class MapController(
      * @param overzoomAmount The amount of overzoom attempted (positive for zoom in, negative for zoom out)
      */
     private fun triggerOverzoomEffect(overzoomAmount: Float) {
-        Log.d(
-            "MapController",
-            "triggerOverzoomEffect() - isZoomEdgeEffectEnabled: ${uiSettings?.isZoomEdgeEffectEnabled}, overzoomAmount: $overzoomAmount",
-        )
-
-        if (uiSettings?.isZoomEdgeEffectEnabled != true) {
-            Log.d("MapController", "Edge glow disabled, returning")
-            return
-        }
+        if (uiSettings?.isZoomEdgeEffectEnabled != true) return
 
         // Calculate glow strength based on overzoom magnitude
         val glowStrength = (kotlin.math.abs(overzoomAmount) * 2.0f).coerceIn(0.3f, 1.0f)
-
-        Log.d("MapController", "Triggering edge glow with strength: $glowStrength")
 
         // Set glow on all edges
         edgeGlowTop = glowStrength
@@ -350,11 +340,6 @@ class MapController(
 
         if (!hasActiveEdgeEffect()) return
 
-        Log.d(
-            "MapController",
-            "drawEdgeEffects() - glows: top=$edgeGlowTop, bottom=$edgeGlowBottom, left=$edgeGlowLeft, right=$edgeGlowRight",
-        )
-
         // Draw top edge glow
         if (edgeGlowTop > 0.01f) {
             val glowHeight = edgeGlowMaxHeight * edgeGlowTop
@@ -382,7 +367,6 @@ class MapController(
                     isAntiAlias = true
                 }
             canvas.drawRect(0f, 0f, width.toFloat(), glowHeight, paint)
-            Log.d("MapController", "Drew top glow with height $glowHeight")
 
             // Decay the glow
             edgeGlowTop *= edgeGlowDecayRate
@@ -489,7 +473,6 @@ class MapController(
      * Releases all edge glows, allowing them to decay naturally.
      */
     fun releaseEdgeEffects() {
-        Log.d("MapController", "releaseEdgeEffects() called - glows will decay naturally")
         // Edge glows will decay automatically in drawEdgeEffects()
         // No immediate action needed
     }
@@ -601,24 +584,14 @@ class MapController(
         val requestedZoom = zoom * scaleFactor
         val newZoom = requestedZoom.coerceIn(minZoomPreference, maxZoomPreference)
 
-        Log.d(
-            "MapController",
-            "zoom() - scaleFactor: $scaleFactor, oldZoom: $oldZoom, requestedZoom: $requestedZoom, newZoom: $newZoom, min: $minZoomPreference, max: $maxZoomPreference",
-        )
-
-        // TESTING MODE: Trigger edge effect on EVERY zoom attempt for visibility testing
-        val overzoomAmount = (requestedZoom - newZoom).toFloat()
-        Log.d("MapController", "TESTING MODE: Triggering edge effect on every zoom with overzoomAmount: $overzoomAmount")
-        triggerOverzoomEffect(overzoomAmount)
-
         if (oldZoom == newZoom) {
-            // Already at limit - trigger overzoom effect
-            Log.d("MapController", "At zoom limit! Cannot zoom further")
+            // Already at zoom limit - trigger edge glow effect
+            val overzoomAmount = (requestedZoom - newZoom).toFloat()
+            triggerOverzoomEffect(overzoomAmount)
             return
         }
 
         zoom = newZoom
-        Log.d("MapController", "Zoom changed from $oldZoom to $newZoom")
 
         // Adjust center to zoom towards focus point
         val zoomRatio = (newZoom / oldZoom).toFloat()

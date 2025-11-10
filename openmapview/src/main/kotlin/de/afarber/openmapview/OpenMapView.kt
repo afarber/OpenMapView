@@ -11,7 +11,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.util.AttributeSet
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
@@ -94,7 +93,6 @@ class OpenMapView
                         val scaleFactor = detector.scaleFactor
                         val focusX = detector.focusX
                         val focusY = detector.focusY
-                        Log.d("OpenMapView", "onScale() - scaleFactor: $scaleFactor, focusX: $focusX, focusY: $focusY")
                         controller.zoom(scaleFactor, focusX, focusY)
                         invalidate()
                         return true
@@ -124,7 +122,6 @@ class OpenMapView
 
             // Continue invalidating if edge glows are still active
             if (controller.hasActiveEdgeEffect()) {
-                Log.d("OpenMapView", "Edge glows still active, requesting invalidate")
                 invalidate()
             }
         }
@@ -221,8 +218,7 @@ class OpenMapView
                         return true
                     }
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        Log.d("OpenMapView", "Touch UP/CANCEL - Releasing edge effects")
-                        // Release edge effects when touch ends
+                        // Release edge glows when touch ends
                         controller.releaseEdgeEffects()
 
                         // Handle drag end
@@ -254,6 +250,8 @@ class OpenMapView
                                         controller.setZoom(controller.getZoom() - 1.0f)
                                     }
                                     controller.commitPan()
+                                    // Notify camera move listener
+                                    controller.onCameraMoveListener?.onCameraMove()
                                     invalidate()
                                     return true
                                 }
