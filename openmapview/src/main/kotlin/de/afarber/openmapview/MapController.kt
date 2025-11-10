@@ -12,8 +12,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
 import android.graphics.Paint
-import android.widget.EdgeEffect
+import android.graphics.Shader
+import android.util.Log
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -115,11 +117,18 @@ class MapController(
     private var paddingRight = 0
     private var paddingBottom = 0
 
-    // Edge effects for overzoom visual feedback
-    private val edgeEffectTop = EdgeEffect(context)
-    private val edgeEffectBottom = EdgeEffect(context)
-    private val edgeEffectLeft = EdgeEffect(context)
-    private val edgeEffectRight = EdgeEffect(context)
+    // Custom edge glow for overzoom visual feedback
+    // Stores glow intensity for each edge (0.0 = none, 1.0 = full)
+    private var edgeGlowTop = 0f
+    private var edgeGlowBottom = 0f
+    private var edgeGlowLeft = 0f
+    private var edgeGlowRight = 0f
+
+    // Glow parameters
+    private val edgeGlowMaxHeight = 150f // Maximum glow height in pixels
+    private val edgeGlowDecayRate = 0.92f // Decay multiplier per frame (lower = faster fade)
+    private val edgeGlowColor = Color.argb(180, 33, 150, 243) // Semi-transparent blue
+
     private var uiSettings: UiSettings? = null
 
     private var lastDrawnTiles = mutableSetOf<TileCoordinate>()
@@ -287,40 +296,46 @@ class MapController(
     }
 
     /**
-     * Triggers the edge effect animation when an overzoom attempt occurs.
+     * Triggers the edge glow effect when an overzoom attempt occurs.
      *
      * @param overzoomAmount The amount of overzoom attempted (positive for zoom in, negative for zoom out)
      */
     private fun triggerOverzoomEffect(overzoomAmount: Float) {
-        if (uiSettings?.isZoomEdgeEffectEnabled != true) return
-        if (viewWidth == 0 || viewHeight == 0) return
+        Log.d(
+            "MapController",
+            "triggerOverzoomEffect() - isZoomEdgeEffectEnabled: ${uiSettings?.isZoomEdgeEffectEnabled}, overzoomAmount: $overzoomAmount",
+        )
 
-        // Calculate pull strength based on overzoom magnitude
-        // Normalize to a reasonable range (0.0 - 1.0)
-        val pullStrength = (kotlin.math.abs(overzoomAmount) * 0.5f).coerceIn(0.0f, 1.0f)
+        if (uiSettings?.isZoomEdgeEffectEnabled != true) {
+            Log.d("MapController", "Edge glow disabled, returning")
+            return
+        }
 
-        // Pull all four edges
-        // For zoom in (positive overzoom): pull inward (feeling of compression)
-        // For zoom out (negative overzoom): pull outward (feeling of expansion)
-        edgeEffectTop.onPull(pullStrength)
-        edgeEffectBottom.onPull(pullStrength)
-        edgeEffectLeft.onPull(pullStrength)
-        edgeEffectRight.onPull(pullStrength)
+        // Calculate glow strength based on overzoom magnitude
+        val glowStrength = (kotlin.math.abs(overzoomAmount) * 2.0f).coerceIn(0.3f, 1.0f)
+
+        Log.d("MapController", "Triggering edge glow with strength: $glowStrength")
+
+        // Set glow on all edges
+        edgeGlowTop = glowStrength
+        edgeGlowBottom = glowStrength
+        edgeGlowLeft = glowStrength
+        edgeGlowRight = glowStrength
     }
 
     /**
-     * Checks if any edge effect is currently active (animating).
+     * Checks if any edge glow is currently active.
      *
-     * @return true if any edge effect is active
+     * @return true if any edge glow is visible
      */
     fun hasActiveEdgeEffect(): Boolean =
-        !edgeEffectTop.isFinished ||
-            !edgeEffectBottom.isFinished ||
-            !edgeEffectLeft.isFinished ||
-            !edgeEffectRight.isFinished
+        edgeGlowTop > 0.01f ||
+            edgeGlowBottom > 0.01f ||
+            edgeGlowLeft > 0.01f ||
+            edgeGlowRight > 0.01f
 
     /**
-     * Draws the edge effects on the canvas.
+     * Draws the custom edge glow effects on the canvas.
      *
      * @param canvas The canvas to draw on
      * @param width The view width
@@ -333,56 +348,150 @@ class MapController(
     ) {
         if (width == 0 || height == 0) return
 
-        var needsInvalidate = false
+        if (!hasActiveEdgeEffect()) return
 
-        // Draw top edge
-        if (!edgeEffectTop.isFinished) {
-            val saved = canvas.save()
-            canvas.translate(0f, 0f)
-            edgeEffectTop.setSize(width, height)
-            needsInvalidate = edgeEffectTop.draw(canvas) || needsInvalidate
-            canvas.restoreToCount(saved)
+        Log.d(
+            "MapController",
+            "drawEdgeEffects() - glows: top=$edgeGlowTop, bottom=$edgeGlowBottom, left=$edgeGlowLeft, right=$edgeGlowRight",
+        )
+
+        // Draw top edge glow
+        if (edgeGlowTop > 0.01f) {
+            val glowHeight = edgeGlowMaxHeight * edgeGlowTop
+            val gradient =
+                LinearGradient(
+                    0f,
+                    0f,
+                    0f,
+                    glowHeight,
+                    intArrayOf(
+                        Color.argb(
+                            (Color.alpha(edgeGlowColor) * edgeGlowTop).toInt(),
+                            Color.red(edgeGlowColor),
+                            Color.green(edgeGlowColor),
+                            Color.blue(edgeGlowColor),
+                        ),
+                        Color.TRANSPARENT,
+                    ),
+                    null,
+                    Shader.TileMode.CLAMP,
+                )
+            val paint =
+                Paint().apply {
+                    shader = gradient
+                    isAntiAlias = true
+                }
+            canvas.drawRect(0f, 0f, width.toFloat(), glowHeight, paint)
+            Log.d("MapController", "Drew top glow with height $glowHeight")
+
+            // Decay the glow
+            edgeGlowTop *= edgeGlowDecayRate
         }
 
-        // Draw bottom edge
-        if (!edgeEffectBottom.isFinished) {
-            val saved = canvas.save()
-            canvas.translate(0f, height.toFloat())
-            canvas.rotate(180f, width / 2f, 0f)
-            edgeEffectBottom.setSize(width, height)
-            needsInvalidate = edgeEffectBottom.draw(canvas) || needsInvalidate
-            canvas.restoreToCount(saved)
+        // Draw bottom edge glow
+        if (edgeGlowBottom > 0.01f) {
+            val glowHeight = edgeGlowMaxHeight * edgeGlowBottom
+            val gradient =
+                LinearGradient(
+                    0f,
+                    height.toFloat(),
+                    0f,
+                    height - glowHeight,
+                    intArrayOf(
+                        Color.argb(
+                            (Color.alpha(edgeGlowColor) * edgeGlowBottom).toInt(),
+                            Color.red(edgeGlowColor),
+                            Color.green(edgeGlowColor),
+                            Color.blue(edgeGlowColor),
+                        ),
+                        Color.TRANSPARENT,
+                    ),
+                    null,
+                    Shader.TileMode.CLAMP,
+                )
+            val paint =
+                Paint().apply {
+                    shader = gradient
+                    isAntiAlias = true
+                }
+            canvas.drawRect(0f, height - glowHeight, width.toFloat(), height.toFloat(), paint)
+
+            // Decay the glow
+            edgeGlowBottom *= edgeGlowDecayRate
         }
 
-        // Draw left edge
-        if (!edgeEffectLeft.isFinished) {
-            val saved = canvas.save()
-            canvas.translate(0f, height.toFloat())
-            canvas.rotate(-90f, 0f, 0f)
-            edgeEffectLeft.setSize(height, width)
-            needsInvalidate = edgeEffectLeft.draw(canvas) || needsInvalidate
-            canvas.restoreToCount(saved)
+        // Draw left edge glow
+        if (edgeGlowLeft > 0.01f) {
+            val glowWidth = edgeGlowMaxHeight * edgeGlowLeft
+            val gradient =
+                LinearGradient(
+                    0f,
+                    0f,
+                    glowWidth,
+                    0f,
+                    intArrayOf(
+                        Color.argb(
+                            (Color.alpha(edgeGlowColor) * edgeGlowLeft).toInt(),
+                            Color.red(edgeGlowColor),
+                            Color.green(edgeGlowColor),
+                            Color.blue(edgeGlowColor),
+                        ),
+                        Color.TRANSPARENT,
+                    ),
+                    null,
+                    Shader.TileMode.CLAMP,
+                )
+            val paint =
+                Paint().apply {
+                    shader = gradient
+                    isAntiAlias = true
+                }
+            canvas.drawRect(0f, 0f, glowWidth, height.toFloat(), paint)
+
+            // Decay the glow
+            edgeGlowLeft *= edgeGlowDecayRate
         }
 
-        // Draw right edge
-        if (!edgeEffectRight.isFinished) {
-            val saved = canvas.save()
-            canvas.translate(width.toFloat(), 0f)
-            canvas.rotate(90f, 0f, 0f)
-            edgeEffectRight.setSize(height, width)
-            needsInvalidate = edgeEffectRight.draw(canvas) || needsInvalidate
-            canvas.restoreToCount(saved)
+        // Draw right edge glow
+        if (edgeGlowRight > 0.01f) {
+            val glowWidth = edgeGlowMaxHeight * edgeGlowRight
+            val gradient =
+                LinearGradient(
+                    width.toFloat(),
+                    0f,
+                    width - glowWidth,
+                    0f,
+                    intArrayOf(
+                        Color.argb(
+                            (Color.alpha(edgeGlowColor) * edgeGlowRight).toInt(),
+                            Color.red(edgeGlowColor),
+                            Color.green(edgeGlowColor),
+                            Color.blue(edgeGlowColor),
+                        ),
+                        Color.TRANSPARENT,
+                    ),
+                    null,
+                    Shader.TileMode.CLAMP,
+                )
+            val paint =
+                Paint().apply {
+                    shader = gradient
+                    isAntiAlias = true
+                }
+            canvas.drawRect(width - glowWidth, 0f, width.toFloat(), height.toFloat(), paint)
+
+            // Decay the glow
+            edgeGlowRight *= edgeGlowDecayRate
         }
     }
 
     /**
-     * Releases all edge effects, stopping their animations.
+     * Releases all edge glows, allowing them to decay naturally.
      */
     fun releaseEdgeEffects() {
-        edgeEffectTop.onRelease()
-        edgeEffectBottom.onRelease()
-        edgeEffectLeft.onRelease()
-        edgeEffectRight.onRelease()
+        Log.d("MapController", "releaseEdgeEffects() called - glows will decay naturally")
+        // Edge glows will decay automatically in drawEdgeEffects()
+        // No immediate action needed
     }
 
     /**
@@ -492,14 +601,24 @@ class MapController(
         val requestedZoom = zoom * scaleFactor
         val newZoom = requestedZoom.coerceIn(minZoomPreference, maxZoomPreference)
 
+        Log.d(
+            "MapController",
+            "zoom() - scaleFactor: $scaleFactor, oldZoom: $oldZoom, requestedZoom: $requestedZoom, newZoom: $newZoom, min: $minZoomPreference, max: $maxZoomPreference",
+        )
+
+        // TESTING MODE: Trigger edge effect on EVERY zoom attempt for visibility testing
+        val overzoomAmount = (requestedZoom - newZoom).toFloat()
+        Log.d("MapController", "TESTING MODE: Triggering edge effect on every zoom with overzoomAmount: $overzoomAmount")
+        triggerOverzoomEffect(overzoomAmount)
+
         if (oldZoom == newZoom) {
             // Already at limit - trigger overzoom effect
-            val overzoomAmount = (requestedZoom - newZoom).toFloat()
-            triggerOverzoomEffect(overzoomAmount)
+            Log.d("MapController", "At zoom limit! Cannot zoom further")
             return
         }
 
         zoom = newZoom
+        Log.d("MapController", "Zoom changed from $oldZoom to $newZoom")
 
         // Adjust center to zoom towards focus point
         val zoomRatio = (newZoom / oldZoom).toFloat()

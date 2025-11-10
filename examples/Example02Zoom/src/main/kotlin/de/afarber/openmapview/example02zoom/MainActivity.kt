@@ -10,6 +10,7 @@ package de.afarber.openmapview.example02zoom
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -52,7 +53,7 @@ class MainActivity : ComponentActivity() {
 fun MapViewScreen() {
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-    var zoomLevel by remember { mutableStateOf(14.0) }
+    var zoomLevel by remember { mutableStateOf(14.0f) }
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -68,6 +69,13 @@ fun MapViewScreen() {
 
                     // Enable built-in zoom controls
                     getUiSettings().isZoomControlsEnabled = true
+
+                    // Add camera move listener to update zoom label
+                    setOnCameraMoveListener {
+                        val currentZoom = getZoom()
+                        Log.d("Example02Zoom", "Camera moved - zoom: $currentZoom")
+                        zoomLevel = currentZoom
+                    }
 
                     // Set attribution click listener to open OSM copyright page
                     setOnAttributionClickListener {

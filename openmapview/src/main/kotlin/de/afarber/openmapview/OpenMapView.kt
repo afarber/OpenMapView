@@ -11,6 +11,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.util.AttributeSet
+import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
@@ -93,6 +94,7 @@ class OpenMapView
                         val scaleFactor = detector.scaleFactor
                         val focusX = detector.focusX
                         val focusY = detector.focusY
+                        Log.d("OpenMapView", "onScale() - scaleFactor: $scaleFactor, focusX: $focusX, focusY: $focusY")
                         controller.zoom(scaleFactor, focusX, focusY)
                         invalidate()
                         return true
@@ -112,16 +114,17 @@ class OpenMapView
             super.dispatchDraw(canvas)
             controller.draw(canvas)
 
-            // Draw edge effects for overzoom feedback
-            controller.drawEdgeEffects(canvas, width, height)
-
             if (uiSettings.isZoomControlsEnabled) {
                 zoomControlsOverlay.draw(canvas, width, height)
             }
             attributionOverlay.draw(canvas, width, height)
 
-            // Continue invalidating if edge effects are still animating
+            // Draw custom edge glow effects LAST to ensure they're on top
+            controller.drawEdgeEffects(canvas, width, height)
+
+            // Continue invalidating if edge glows are still active
             if (controller.hasActiveEdgeEffect()) {
+                Log.d("OpenMapView", "Edge glows still active, requesting invalidate")
                 invalidate()
             }
         }
@@ -218,6 +221,7 @@ class OpenMapView
                         return true
                     }
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        Log.d("OpenMapView", "Touch UP/CANCEL - Releasing edge effects")
                         // Release edge effects when touch ends
                         controller.releaseEdgeEffects()
 
