@@ -302,6 +302,7 @@ class MapController(
      */
     private fun triggerOverzoomEffect(overzoomAmount: Float) {
         if (uiSettings?.isZoomEdgeEffectEnabled != true) return
+        if (viewWidth == 0 || viewHeight == 0) return
 
         // Calculate glow strength based on overzoom magnitude
         val glowStrength = (kotlin.math.abs(overzoomAmount) * 2.0f).coerceIn(0.3f, 1.0f)
