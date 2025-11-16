@@ -12,7 +12,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.Shader
+import android.util.Log
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -75,8 +78,9 @@ class MapController(
     private val context: Context,
 ) {
     companion object {
-        private const val DEFAULT_MIN_ZOOM = 2.0
-        private const val DEFAULT_MAX_ZOOM = 19.0
+        // Allow internal access for testing
+        internal const val DEFAULT_MIN_ZOOM = 2.0f
+        internal const val DEFAULT_MAX_ZOOM = 19.0f
         private const val TILE_SIZE = 256f
     }
 
@@ -84,7 +88,7 @@ class MapController(
     private var maxZoomPreference = DEFAULT_MAX_ZOOM
     private var cameraTargetBounds: LatLngBounds? = null
 
-    private var zoom = 10.0
+    private var zoom = 10.0f
     private var center = LatLng(0.0, 0.0)
 
     /**
@@ -112,6 +116,20 @@ class MapController(
     private var paddingTop = 0
     private var paddingRight = 0
     private var paddingBottom = 0
+
+    // Custom edge glow for overzoom visual feedback
+    // Stores glow intensity for each edge (0.0 = none, 1.0 = full)
+    private var edgeGlowTop = 0f
+    private var edgeGlowBottom = 0f
+    private var edgeGlowLeft = 0f
+    private var edgeGlowRight = 0f
+
+    // Glow parameters
+    private val edgeGlowMaxHeight = 150f // Maximum glow height in pixels
+    private val edgeGlowDecayRate = 0.92f // Decay multiplier per frame (lower = faster fade)
+    private val edgeGlowColor = Color.argb(180, 33, 150, 243) // Semi-transparent blue
+
+    private var uiSettings: UiSettings? = null
 
     private var lastDrawnTiles = mutableSetOf<TileCoordinate>()
 
@@ -214,7 +232,7 @@ class MapController(
      *
      * @param z The desired zoom level (will be clamped to current min/max zoom preferences)
      */
-    fun setZoom(z: Double) {
+    fun setZoom(z: Float) {
         zoom = z.coerceIn(minZoomPreference, maxZoomPreference)
     }
 
@@ -223,7 +241,7 @@ class MapController(
      *
      * @return The current zoom level
      */
-    fun getZoom(): Double = zoom
+    fun getZoom(): Float = zoom
 
     /**
      * Sets the minimum zoom level preference.
@@ -231,7 +249,7 @@ class MapController(
      * @param minZoom The minimum zoom level (will be clamped to 2.0-19.0)
      */
     fun setMinZoomPreference(minZoom: Float) {
-        minZoomPreference = minZoom.toDouble().coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
+        minZoomPreference = minZoom.coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
         zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
     }
 
@@ -241,7 +259,7 @@ class MapController(
      * @param maxZoom The maximum zoom level (will be clamped to 2.0-19.0)
      */
     fun setMaxZoomPreference(maxZoom: Float) {
-        maxZoomPreference = maxZoom.toDouble().coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
+        maxZoomPreference = maxZoom.coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
         zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
     }
 
@@ -250,14 +268,14 @@ class MapController(
      *
      * @return The minimum zoom level
      */
-    fun getMinZoomLevel(): Float = minZoomPreference.toFloat()
+    fun getMinZoomLevel(): Float = minZoomPreference
 
     /**
      * Returns the current maximum zoom level preference.
      *
      * @return The maximum zoom level
      */
-    fun getMaxZoomLevel(): Float = maxZoomPreference.toFloat()
+    fun getMaxZoomLevel(): Float = maxZoomPreference
 
     /**
      * Resets the min/max zoom preferences to their defaults (2.0 - 19.0).
@@ -266,6 +284,198 @@ class MapController(
         minZoomPreference = DEFAULT_MIN_ZOOM
         maxZoomPreference = DEFAULT_MAX_ZOOM
         zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
+    }
+
+    /**
+     * Sets the UiSettings instance for controlling UI behavior.
+     *
+     * @param settings The UiSettings instance
+     */
+    fun setUiSettings(settings: UiSettings) {
+        uiSettings = settings
+    }
+
+    /**
+     * Triggers the edge glow effect when an overzoom attempt occurs.
+     *
+     * @param overzoomAmount The amount of overzoom attempted (positive for zoom in, negative for zoom out)
+     */
+    private fun triggerOverzoomEffect(overzoomAmount: Float) {
+        if (uiSettings?.isZoomEdgeEffectEnabled != true) return
+        if (viewWidth == 0 || viewHeight == 0) return
+
+        // Calculate glow strength based on overzoom magnitude
+        val glowStrength = (kotlin.math.abs(overzoomAmount) * 2.0f).coerceIn(0.3f, 1.0f)
+
+        // Set glow on all edges
+        edgeGlowTop = glowStrength
+        edgeGlowBottom = glowStrength
+        edgeGlowLeft = glowStrength
+        edgeGlowRight = glowStrength
+    }
+
+    /**
+     * Checks if any edge glow is currently active.
+     *
+     * @return true if any edge glow is visible
+     */
+    fun hasActiveEdgeEffect(): Boolean =
+        edgeGlowTop > 0.01f ||
+            edgeGlowBottom > 0.01f ||
+            edgeGlowLeft > 0.01f ||
+            edgeGlowRight > 0.01f
+
+    /**
+     * Draws the custom edge glow effects on the canvas.
+     *
+     * @param canvas The canvas to draw on
+     * @param width The view width
+     * @param height The view height
+     */
+    fun drawEdgeEffects(
+        canvas: Canvas,
+        width: Int,
+        height: Int,
+    ) {
+        if (width == 0 || height == 0) return
+
+        if (!hasActiveEdgeEffect()) return
+
+        // Draw top edge glow
+        if (edgeGlowTop > 0.01f) {
+            val glowHeight = edgeGlowMaxHeight * edgeGlowTop
+            val gradient =
+                LinearGradient(
+                    0f,
+                    0f,
+                    0f,
+                    glowHeight,
+                    intArrayOf(
+                        Color.argb(
+                            (Color.alpha(edgeGlowColor) * edgeGlowTop).toInt(),
+                            Color.red(edgeGlowColor),
+                            Color.green(edgeGlowColor),
+                            Color.blue(edgeGlowColor),
+                        ),
+                        Color.TRANSPARENT,
+                    ),
+                    null,
+                    Shader.TileMode.CLAMP,
+                )
+            val paint =
+                Paint().apply {
+                    shader = gradient
+                    isAntiAlias = true
+                }
+            canvas.drawRect(0f, 0f, width.toFloat(), glowHeight, paint)
+
+            // Decay the glow
+            edgeGlowTop *= edgeGlowDecayRate
+        }
+
+        // Draw bottom edge glow
+        if (edgeGlowBottom > 0.01f) {
+            val glowHeight = edgeGlowMaxHeight * edgeGlowBottom
+            val gradient =
+                LinearGradient(
+                    0f,
+                    height.toFloat(),
+                    0f,
+                    height - glowHeight,
+                    intArrayOf(
+                        Color.argb(
+                            (Color.alpha(edgeGlowColor) * edgeGlowBottom).toInt(),
+                            Color.red(edgeGlowColor),
+                            Color.green(edgeGlowColor),
+                            Color.blue(edgeGlowColor),
+                        ),
+                        Color.TRANSPARENT,
+                    ),
+                    null,
+                    Shader.TileMode.CLAMP,
+                )
+            val paint =
+                Paint().apply {
+                    shader = gradient
+                    isAntiAlias = true
+                }
+            canvas.drawRect(0f, height - glowHeight, width.toFloat(), height.toFloat(), paint)
+
+            // Decay the glow
+            edgeGlowBottom *= edgeGlowDecayRate
+        }
+
+        // Draw left edge glow
+        if (edgeGlowLeft > 0.01f) {
+            val glowWidth = edgeGlowMaxHeight * edgeGlowLeft
+            val gradient =
+                LinearGradient(
+                    0f,
+                    0f,
+                    glowWidth,
+                    0f,
+                    intArrayOf(
+                        Color.argb(
+                            (Color.alpha(edgeGlowColor) * edgeGlowLeft).toInt(),
+                            Color.red(edgeGlowColor),
+                            Color.green(edgeGlowColor),
+                            Color.blue(edgeGlowColor),
+                        ),
+                        Color.TRANSPARENT,
+                    ),
+                    null,
+                    Shader.TileMode.CLAMP,
+                )
+            val paint =
+                Paint().apply {
+                    shader = gradient
+                    isAntiAlias = true
+                }
+            canvas.drawRect(0f, 0f, glowWidth, height.toFloat(), paint)
+
+            // Decay the glow
+            edgeGlowLeft *= edgeGlowDecayRate
+        }
+
+        // Draw right edge glow
+        if (edgeGlowRight > 0.01f) {
+            val glowWidth = edgeGlowMaxHeight * edgeGlowRight
+            val gradient =
+                LinearGradient(
+                    width.toFloat(),
+                    0f,
+                    width - glowWidth,
+                    0f,
+                    intArrayOf(
+                        Color.argb(
+                            (Color.alpha(edgeGlowColor) * edgeGlowRight).toInt(),
+                            Color.red(edgeGlowColor),
+                            Color.green(edgeGlowColor),
+                            Color.blue(edgeGlowColor),
+                        ),
+                        Color.TRANSPARENT,
+                    ),
+                    null,
+                    Shader.TileMode.CLAMP,
+                )
+            val paint =
+                Paint().apply {
+                    shader = gradient
+                    isAntiAlias = true
+                }
+            canvas.drawRect(width - glowWidth, 0f, width.toFloat(), height.toFloat(), paint)
+
+            // Decay the glow
+            edgeGlowRight *= edgeGlowDecayRate
+        }
+    }
+
+    /**
+     * Releases all edge glows, allowing them to decay naturally.
+     */
+    fun releaseEdgeEffects() {
+        // Edge glows will decay automatically in drawEdgeEffects()
+        // No immediate action needed
     }
 
     /**
@@ -372,9 +582,15 @@ class MapController(
         focusY: Float,
     ) {
         val oldZoom = zoom
-        val newZoom = (zoom * scaleFactor).coerceIn(minZoomPreference, maxZoomPreference)
+        val requestedZoom = zoom * scaleFactor
+        val newZoom = requestedZoom.coerceIn(minZoomPreference, maxZoomPreference)
 
-        if (oldZoom == newZoom) return // Already at limit
+        if (oldZoom == newZoom) {
+            // Already at zoom limit - trigger edge glow effect
+            val overzoomAmount = (requestedZoom - newZoom).toFloat()
+            triggerOverzoomEffect(overzoomAmount)
+            return
+        }
 
         zoom = newZoom
 
@@ -623,7 +839,7 @@ class MapController(
      */
     private fun applyPaddingOffset(
         target: LatLng,
-        targetZoom: Double,
+        targetZoom: Float,
     ): LatLng {
         // If no padding, return original target
         if (paddingLeft == 0 && paddingTop == 0 && paddingRight == 0 && paddingBottom == 0) {
@@ -636,7 +852,7 @@ class MapController(
 
         // Convert the offset to lat/lng degrees
         // At the target location, calculate the degrees per pixel
-        val scale = 256.0 * 2.0.pow(targetZoom)
+        val scale = 256.0 * 2.0.pow(targetZoom.toDouble())
 
         // Convert pixel offsets to world coordinate offsets
         val worldXOffset = xOffsetPixels * (1.0 / scale) * 360.0
@@ -664,7 +880,7 @@ class MapController(
         bounds: LatLngBounds,
         viewWidth: Int,
         viewHeight: Int,
-    ): Double {
+    ): Float {
         // Ensure we have valid viewport dimensions
         if (viewWidth <= 0 || viewHeight <= 0) {
             return DEFAULT_MIN_ZOOM
@@ -679,7 +895,7 @@ class MapController(
             val boundsHeight = kotlin.math.abs(swY - neY) // Y increases downward
 
             if (boundsWidth <= viewWidth && boundsHeight <= viewHeight) {
-                return zoom.toDouble()
+                return zoom.toFloat()
             }
         }
 
@@ -709,12 +925,12 @@ class MapController(
             is CameraUpdate.ZoomIn ->
                 CameraPosition(
                     target = currentPosition.target,
-                    zoom = (currentPosition.zoom + 1.0).coerceIn(minZoomPreference, maxZoomPreference),
+                    zoom = (currentPosition.zoom + 1.0f).coerceIn(minZoomPreference, maxZoomPreference),
                 )
             is CameraUpdate.ZoomOut ->
                 CameraPosition(
                     target = currentPosition.target,
-                    zoom = (currentPosition.zoom - 1.0).coerceIn(minZoomPreference, maxZoomPreference),
+                    zoom = (currentPosition.zoom - 1.0f).coerceIn(minZoomPreference, maxZoomPreference),
                 )
             is CameraUpdate.ZoomTo ->
                 CameraPosition(
@@ -771,6 +987,12 @@ class MapController(
                 )
             }
         }
+
+    private fun interpolate(
+        start: Float,
+        end: Float,
+        progress: Float,
+    ): Float = start + (end - start) * progress
 
     private fun interpolate(
         start: Double,
@@ -1157,9 +1379,9 @@ class MapController(
     private fun metersToPixels(
         meters: Float,
         latitude: Double,
-        zoom: Double,
+        zoom: Float,
     ): Float {
-        val metersPerPixel = 156543.03392 * cos(latitude * PI / 180.0) / 2.0.pow(zoom)
+        val metersPerPixel = 156543.03392 * cos(latitude * PI / 180.0) / 2.0.pow(zoom.toDouble())
         return (meters / metersPerPixel).toFloat()
     }
 

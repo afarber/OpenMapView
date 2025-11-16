@@ -77,7 +77,7 @@ fun MapWithToolbarScreen() {
 
                         // Set initial location (Bochum, Germany)
                         setCenter(LatLng(51.4661, 7.2491))
-                        setZoom(14.0)
+                        setZoom(14.0f)
 
                         // Long-press to open location in external app
                         setOnMapLongClickListener { latLng ->

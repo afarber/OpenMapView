@@ -33,7 +33,7 @@ object CameraUpdateFactory {
      */
     fun newLatLngZoom(
         target: LatLng,
-        zoom: Double,
+        zoom: Float,
     ): CameraUpdate = CameraUpdate.NewLatLngZoom(target, zoom)
 
     /**
@@ -64,7 +64,7 @@ object CameraUpdateFactory {
      * @param zoom The target zoom level (2.0 to 19.0)
      * @return A CameraUpdate for the specified zoom level
      */
-    fun zoomTo(zoom: Double): CameraUpdate = CameraUpdate.ZoomTo(zoom)
+    fun zoomTo(zoom: Float): CameraUpdate = CameraUpdate.ZoomTo(zoom)
 
     /**
      * Returns a CameraUpdate that adjusts the zoom level by the specified amount.
@@ -74,7 +74,7 @@ object CameraUpdateFactory {
      * @param amount The amount to adjust the zoom level (e.g., 1.5 or -2.0)
      * @return A CameraUpdate for the relative zoom adjustment
      */
-    fun zoomBy(amount: Double): CameraUpdate = CameraUpdate.ZoomBy(amount)
+    fun zoomBy(amount: Float): CameraUpdate = CameraUpdate.ZoomBy(amount)
 
     /**
      * Returns a CameraUpdate that scrolls the map by the specified pixel amounts.

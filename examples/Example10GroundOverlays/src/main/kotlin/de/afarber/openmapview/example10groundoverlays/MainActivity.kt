@@ -199,7 +199,7 @@ fun MapViewScreen() {
                         mapView = this
                         lifecycleOwner.lifecycle.addObserver(this)
                         setCenter(bochumCenter)
-                        setZoom(13.0)
+                        setZoom(13.0f)
                         setOnGroundOverlayClickListener { groundOverlay ->
                             Toast.makeText(context, "Clicked: ${groundOverlay.tag}", Toast.LENGTH_SHORT).show()
                         }
@@ -237,7 +237,7 @@ fun MapViewScreen() {
                         mapView = this
                         lifecycleOwner.lifecycle.addObserver(this)
                         setCenter(bochumCenter)
-                        setZoom(13.0)
+                        setZoom(13.0f)
                         setOnGroundOverlayClickListener { groundOverlay ->
                             Toast.makeText(context, "Clicked: ${groundOverlay.tag}", Toast.LENGTH_SHORT).show()
                         }

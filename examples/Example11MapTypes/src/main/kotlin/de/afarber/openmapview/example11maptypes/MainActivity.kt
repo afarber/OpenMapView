@@ -74,7 +74,7 @@ fun MapViewScreen() {
                     OpenMapView(ctx).apply {
                         lifecycleOwner.lifecycle.addObserver(this)
                         setCenter(LatLng(46.8182, 8.2275))
-                        setZoom(12.0)
+                        setZoom(12.0f)
                         mapView = this
                         setOnAttributionClickListener {
                             val intent =
@@ -110,7 +110,7 @@ fun MapViewScreen() {
                     OpenMapView(ctx).apply {
                         lifecycleOwner.lifecycle.addObserver(this)
                         setCenter(LatLng(46.8182, 8.2275))
-                        setZoom(12.0)
+                        setZoom(12.0f)
                         mapView = this
                         setOnAttributionClickListener {
                             val intent =

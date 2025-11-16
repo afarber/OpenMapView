@@ -34,13 +34,13 @@ import android.util.Log
  */
 fun openLocationInExternalApp(
     latLng: LatLng,
-    zoom: Double,
+    zoom: Float,
     context: Context,
     label: String? = null,
 ): Boolean =
     try {
         // Clamp zoom to valid range for map applications
-        val clampedZoom = zoom.coerceIn(2.0, 19.0).toInt()
+        val clampedZoom = zoom.coerceIn(2.0f, 19.0f).toInt()
 
         // Build geo URI based on whether label is provided
         val geoUri =

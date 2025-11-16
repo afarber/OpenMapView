@@ -102,6 +102,7 @@ class OpenMapView
 
         init {
             setWillNotDraw(false)
+            controller.setUiSettings(uiSettings)
             controller.setOnTileLoadedCallback {
                 invalidate()
             }
@@ -110,10 +111,19 @@ class OpenMapView
         override fun dispatchDraw(canvas: Canvas) {
             super.dispatchDraw(canvas)
             controller.draw(canvas)
+
             if (uiSettings.isZoomControlsEnabled) {
                 zoomControlsOverlay.draw(canvas, width, height)
             }
             attributionOverlay.draw(canvas, width, height)
+
+            // Draw custom edge glow effects LAST to ensure they're on top
+            controller.drawEdgeEffects(canvas, width, height)
+
+            // Continue invalidating if edge glows are still active
+            if (controller.hasActiveEdgeEffect()) {
+                invalidate()
+            }
         }
 
         override fun onSizeChanged(
@@ -208,6 +218,9 @@ class OpenMapView
                         return true
                     }
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        // Release edge glows when touch ends
+                        controller.releaseEdgeEffects()
+
                         // Handle drag end
                         if (isDragging && draggedMarker != null) {
                             onMarkerDragListener?.onMarkerDragEnd(draggedMarker!!)
@@ -232,11 +245,13 @@ class OpenMapView
                                 val zoomAction = zoomControlsOverlay.handleTouch(event.x, event.y)
                                 if (zoomAction != 0) {
                                     if (zoomAction > 0) {
-                                        controller.setZoom(controller.getZoom() + 1.0)
+                                        controller.setZoom(controller.getZoom() + 1.0f)
                                     } else {
-                                        controller.setZoom(controller.getZoom() - 1.0)
+                                        controller.setZoom(controller.getZoom() - 1.0f)
                                     }
                                     controller.commitPan()
+                                    // Notify camera move listener
+                                    controller.onCameraMoveListener?.onCameraMove()
                                     invalidate()
                                     return true
                                 }
@@ -344,7 +359,7 @@ class OpenMapView
          *
          * @param zoom The target zoom level
          */
-        fun setZoom(zoom: Double) {
+        fun setZoom(zoom: Float) {
             controller.setZoom(zoom)
             invalidate()
         }
@@ -354,7 +369,7 @@ class OpenMapView
          *
          * @return The current zoom level (2.0 to 19.0)
          */
-        fun getZoom(): Double = controller.getZoom()
+        fun getZoom(): Float = controller.getZoom()
 
         /**
          * Sets the minimum zoom level preference.

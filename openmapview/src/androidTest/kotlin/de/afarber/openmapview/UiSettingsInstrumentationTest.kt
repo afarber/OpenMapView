@@ -33,7 +33,7 @@ class UiSettingsInstrumentationTest {
 
         controller = openMapView.getMapControllerForTesting()
         controller.setCenter(LatLng(51.4661, 7.2491))
-        controller.setZoom(10.0)
+        controller.setZoom(10.0f)
     }
 
     @Test
@@ -106,7 +106,7 @@ class UiSettingsInstrumentationTest {
         pointer1Up.recycle()
 
         val finalZoom = controller.getZoom()
-        assertEquals(initialZoom, finalZoom, 0.001)
+        assertEquals(initialZoom, finalZoom, 0.001f)
     }
 
     @Test
@@ -208,7 +208,7 @@ class UiSettingsInstrumentationTest {
         val finalZoom = controller.getZoom()
         val finalCenter = controller.getCenter()
 
-        assertEquals(initialZoom, finalZoom, 0.001)
+        assertEquals(initialZoom, finalZoom, 0.001f)
         assertEquals(initialCenter.latitude, finalCenter.latitude, 0.0001)
         assertEquals(initialCenter.longitude, finalCenter.longitude, 0.0001)
     }

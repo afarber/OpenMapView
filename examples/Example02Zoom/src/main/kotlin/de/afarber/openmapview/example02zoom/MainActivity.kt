@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
 fun MapViewScreen() {
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-    var zoomLevel by remember { mutableStateOf(14.0) }
+    var zoomLevel by remember { mutableStateOf(14.0f) }
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -63,11 +63,16 @@ fun MapViewScreen() {
                     lifecycleOwner.lifecycle.addObserver(this)
 
                     setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
-                    setZoom(14.0)
+                    setZoom(14.0f)
                     mapView = this
 
                     // Enable built-in zoom controls
                     getUiSettings().isZoomControlsEnabled = true
+
+                    // Add camera move listener to update zoom label
+                    setOnCameraMoveListener {
+                        zoomLevel = getZoom()
+                    }
 
                     // Set attribution click listener to open OSM copyright page
                     setOnAttributionClickListener {

@@ -19,7 +19,7 @@ package de.afarber.openmapview
  */
 data class CameraPosition(
     val target: LatLng,
-    val zoom: Double,
+    val zoom: Float,
 ) {
     init {
         require(zoom >= MIN_ZOOM) { "Zoom level must be at least $MIN_ZOOM" }
@@ -27,7 +27,7 @@ data class CameraPosition(
     }
 
     companion object {
-        private const val MIN_ZOOM = 2.0
-        private const val MAX_ZOOM = 19.0
+        private const val MIN_ZOOM = 2.0f
+        private const val MAX_ZOOM = 19.0f
     }
 }
