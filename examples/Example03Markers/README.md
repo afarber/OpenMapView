@@ -1,5 +1,7 @@
 # Example03Markers - Marker Overlays and Click Handling
 
+[Back to README](../../README.md)
+
 This example demonstrates the marker system in OpenMapView, including marker rendering, touch detection, and click event handling.
 
 ## Features Demonstrated
@@ -166,15 +168,6 @@ Click detection uses:
 - Bounding box hit testing on marker icons
 - Reverse z-order checking (top markers checked first)
 - Configurable movement threshold (10px) to distinguish clicks from drags
-
-## Next Steps
-
-- Try [Example01Pan](../Example01Pan) for basic map panning
-- Try [Example02Zoom](../Example02Zoom) for zoom controls
-- Try [Example04Polylines](../Example04Polylines) for vector shapes
-- Try [Example05Camera](../Example05Camera) for camera animations
-- Modify marker positions to show your own locations
-- Add custom marker icons from your app resources
 
 ## Map Location
 

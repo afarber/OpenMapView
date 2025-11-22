@@ -1,8 +1,8 @@
 # Example10GroundOverlays - Ground Overlay Images on Map
 
-This example demonstrates ground overlays in OpenMapView, showing how to add images positioned on the map with support for rotation and transparency.
+[Back to README](../../README.md)
 
-![Example10GroundOverlays Demo](screenshot.gif)
+This example demonstrates ground overlays in OpenMapView, showing how to add images positioned on the map with support for rotation and transparency.
 
 ## Features Demonstrated
 
@@ -15,6 +15,10 @@ This example demonstrates ground overlays in OpenMapView, showing how to add ima
 - Z-index ordering for multiple overlays
 - Dynamic overlay toggling (show/hide)
 - Jetpack Compose UI with Material3
+
+## Screenshot
+
+![Example10GroundOverlays Demo](screenshot.gif)
 
 ## Quick Start
 

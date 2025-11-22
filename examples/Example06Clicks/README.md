@@ -1,5 +1,7 @@
 # Example06Clicks - Map Click Listeners
 
+[Back to README](../../README.md)
+
 This example demonstrates map click and long-click event handling in OpenMapView, showing how to detect user taps on the map and convert screen coordinates to geographic coordinates.
 
 ## Features Demonstrated
@@ -235,17 +237,6 @@ mapView.setOnMarkerClickListener { marker ->
 When a marker is clicked:
 - If marker listener returns `true`, event is consumed (map click not fired)
 - If marker listener returns `false`, event propagates to map click listener
-
-## Next Steps
-
-- Try [Example01Pan](../Example01Pan) for basic map panning
-- Try [Example02Zoom](../Example02Zoom) for zoom controls
-- Try [Example03Markers](../Example03Markers) for marker overlays
-- Try [Example04Polylines](../Example04Polylines) for vector shapes
-- Try [Example05Camera](../Example05Camera) for camera animations
-- Experiment with adding markers on tap
-- Build a distance measurement tool
-- Create custom context menus on long-press
 
 ## Map Location
 

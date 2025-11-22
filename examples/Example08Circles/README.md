@@ -1,5 +1,7 @@
 # Example08Circles - Circle Overlays with Meter-Based Radius
 
+[Back to README](../../README.md)
+
 This example demonstrates the circle system in OpenMapView, including circle rendering with meter-based radius, styling options, z-index ordering, and both API patterns.
 
 ## Features Demonstrated
@@ -189,15 +191,6 @@ The floating action button (+) adds random circles:
 ### Clear All Circles
 
 The floating action button (×) removes all circles from the map.
-
-## Next Steps
-
-- Try [Example03Markers](../Example03Markers) for marker overlays
-- Try [Example04Polylines](../Example04Polylines) for polylines and polygons
-- Try [Example06Clicks](../Example06Clicks) for map click listeners
-- Modify circle radii to experiment with different sizes
-- Try overlapping circles to see z-index ordering in action
-- Add circles at your own locations
 
 ## Map Location
 

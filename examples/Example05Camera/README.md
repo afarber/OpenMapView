@@ -1,5 +1,7 @@
 # Example05Camera - Camera Animations
 
+[Back to README](../../README.md)
+
 This example demonstrates smooth camera animations in OpenMapView, showing how to animate map position and zoom level changes with customizable durations and completion callbacks.
 
 ## Features Demonstrated
@@ -216,15 +218,6 @@ mapView.animateCamera(
     CameraUpdateFactory.newLatLngBounds(bounds, padding)
 )
 ```
-
-## Next Steps
-
-- Try [Example01Pan](../Example01Pan) for basic map panning
-- Try [Example02Zoom](../Example02Zoom) for zoom controls
-- Try [Example03Markers](../Example03Markers) for marker overlays
-- Try [Example04Polylines](../Example04Polylines) for vector shapes
-- Experiment with different animation durations
-- Add your own markers and create navigation sequences
 
 ## Map Location
 
