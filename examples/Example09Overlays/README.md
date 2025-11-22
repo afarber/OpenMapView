@@ -1,8 +1,8 @@
 # Example09Overlays - Tile Overlay Layers from Public OSM Services
 
-This example demonstrates the tile overlay system in OpenMapView, showing how to add multiple tile layers on top of the base map from public OpenStreetMap services.
+[Back to README](../../README.md)
 
-![Example09Overlays Demo](screenshot.gif)
+This example demonstrates the tile overlay system in OpenMapView, showing how to add multiple tile layers on top of the base map from public OpenStreetMap services.
 
 ## Features Demonstrated
 
@@ -14,6 +14,10 @@ This example demonstrates the tile overlay system in OpenMapView, showing how to
 - Interactive Material3 control panel with Compose
 - Real-time overlay property updates
 - Overlay caching and tile downloading
+
+## Screenshot
+
+![Example09Overlays Demo](screenshot.gif)
 
 ## Quick Start
 
@@ -262,16 +266,6 @@ Material3 card with:
 ### Clear All Button
 
 Floating action button (×) removes all overlays and resets transparency to 0%.
-
-## Next Steps
-
-- Try [Example03Markers](../Example03Markers) for marker overlays
-- Try [Example08Circles](../Example08Circles) for circle overlays
-- Try [Example04Polylines](../Example04Polylines) for polylines and polygons
-- Experiment with different overlay combinations
-- Adjust transparency to see layering effects
-- Test with different z-index values
-- Add your own custom URL tile provider
 
 ## Map Location
 

@@ -1,5 +1,7 @@
 # Example04Polylines - Polylines and Polygons
 
+[Back to README](../../README.md)
+
 This example demonstrates drawing vector shapes (polylines and polygons) on OpenMapView, including styled lines, filled areas, and polygons with holes.
 
 ## Features Demonstrated
@@ -225,15 +227,6 @@ removePolyline(polyline)
 clearPolylines()
 clearPolygons()
 ```
-
-## Next Steps
-
-- Try [Example01Pan](../Example01Pan) for basic map panning
-- Try [Example02Zoom](../Example02Zoom) for zoom controls
-- Try [Example03Markers](../Example03Markers) for marker overlays
-- Try [Example05Camera](../Example05Camera) for camera animations
-- Add your own geographic data (routes, boundaries, zones)
-- Experiment with different colors and transparency levels
 
 ## Map Location
 

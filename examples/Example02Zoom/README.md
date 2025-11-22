@@ -1,5 +1,7 @@
 # Example02Zoom - Zoom Controls and Gestures
 
+[Back to README](../../README.md)
+
 This example demonstrates zoom functionality in OpenMapView, including both programmatic zoom controls and pinch-to-zoom gestures.
 
 ## Features Demonstrated
@@ -99,13 +101,6 @@ OpenMapView uses:
 - `ScaleGestureDetector` for pinch-to-zoom
 - Fractional zoom (Double) for smooth transitions
 - Web Mercator projection for tile calculation
-
-## Next Steps
-
-- Try [Example01Pan](../Example01Pan) for basic panning without zoom controls
-- Try [Example03Markers](../Example03Markers) for marker overlays
-- Try [Example04Polylines](../Example04Polylines) for vector shapes
-- Try [Example05Camera](../Example05Camera) for camera animations
 
 ## Map Location
 

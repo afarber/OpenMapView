@@ -1,5 +1,7 @@
 # Example01Pan - Basic Map Panning
 
+[Back to README](../../README.md)
+
 This example demonstrates the core functionality of OpenMapView: displaying OpenStreetMap tiles and responding to touch pan gestures.
 
 ## Features Demonstrated
@@ -63,13 +65,6 @@ fun MapViewScreen() {
 1. **Pan the map** by dragging with your finger/mouse
 2. **Observe tiles loading** as you pan to new areas
 3. **Check smooth rendering** - map should update in real-time without lag
-
-## Next Steps
-
-- Try [Example02Zoom](../Example02Zoom) for zoom controls and pinch-to-zoom gestures
-- Try [Example03Markers](../Example03Markers) for marker overlays
-- Try [Example04Polylines](../Example04Polylines) for vector shapes
-- Try [Example05Camera](../Example05Camera) for camera animations
 
 ## Map Location
 
