@@ -20,6 +20,22 @@ dependencies {
 
 The library is available on [Maven Central](https://central.sonatype.com/artifact/de.afarber/openmapview). Alternative distribution via [JitPack](https://jitpack.io/#afarber/OpenMapView) is also supported.
 
+## License Compliance
+
+OpenMapView is licensed under the **MIT License** - use freely in commercial apps.
+
+**Dependency Licenses:**
+- All runtime dependencies use Apache 2.0 or MIT licenses (business-friendly)
+- View complete [Dependency License Report](https://afarber.github.io/OpenMapView/licenses/)
+- No GPL or restrictive copyleft licenses
+
+**Dependencies (5 total):**
+- androidx.core:core-ktx (Apache 2.0)
+- androidx.lifecycle:lifecycle-runtime-ktx (Apache 2.0)
+- androidx.compose.ui:ui-graphics (Apache 2.0)
+- io.ktor:ktor-client-android (Apache 2.0)
+- com.jakewharton:disklrucache (Apache 2.0)
+
 ## Features
 
 - Drop-in compatible with Google `MapView` (non-deprecated methods only)

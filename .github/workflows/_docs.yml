@@ -39,6 +39,14 @@ jobs:
       - name: Build documentation
         run: ./gradlew dokkaGenerate --no-daemon
 
+      - name: Generate License Report
+        run: ./gradlew generateLicenseReport --no-daemon
+
+      - name: Copy License Report to Docs
+        run: |
+          mkdir -p openmapview/build/dokka/html/licenses
+          cp openmapview/build/reports/licenses/licenses.html openmapview/build/dokka/html/licenses/index.html
+
       - name: Upload documentation artifact
         uses: actions/upload-artifact@v4
         with:

@@ -51,6 +51,38 @@ Running `./gradlew spotlessApply` automatically adds this header to any files mi
 
 The CI pipeline includes a copyright check that will fail if any `.kt` files are missing the required header.
 
+### 3. Dependency Management
+
+Before adding new dependencies to OpenMapView, verify the following:
+
+1. **License Compatibility**: Only add dependencies with permissive licenses
+   - Preferred: Apache 2.0, MIT, BSD
+   - Prohibited: GPL, AGPL (would affect library users)
+   - Consult before adding: LGPL, EPL, MPL
+
+2. **Verify License**: Run the license report to check all dependencies
+   ```bash
+   ./gradlew generateLicenseReport
+   ```
+   View the report at: `openmapview/build/reports/licenses/licenses.html`
+
+3. **Minimal Footprint**: Keep dependencies minimal
+   - OpenMapView currently has only 5 runtime dependencies
+   - New dependencies must provide essential functionality
+   - Avoid bloat - see [ARCHITECTURE.md](ARCHITECTURE.md) for philosophy
+
+4. **Auto-Publishing**: License reports automatically publish to the documentation site
+   - URL: https://afarber.github.io/OpenMapView/licenses/
+   - Updated on every docs deployment
+   - No manual maintenance needed
+
+**Current Dependencies** (all Apache 2.0 or MIT):
+- androidx.core:core-ktx
+- androidx.lifecycle:lifecycle-runtime-ktx
+- androidx.compose.ui:ui-graphics
+- io.ktor:ktor-client-android
+- com.jakewharton:disklrucache
+
 ## Automated Git Hooks (Recommended)
 
 Git hooks can automatically check formatting and copyright headers before commits, preventing CI failures.
