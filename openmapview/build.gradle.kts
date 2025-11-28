@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.spotless)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.license.report)
     id("maven-publish")
     id("signing")
     id("jacoco")
@@ -229,6 +230,21 @@ signing {
         System.getenv("SIGNING_PASSWORD"),
     )
     sign(publishing.publications)
+}
+
+licenseReport {
+    // Include only runtime dependencies (exclude test deps)
+    configurations = arrayOf("releaseRuntimeClasspath")
+
+    // Generate HTML report
+    renderers =
+        arrayOf(
+            com.github.jk1.license.render
+                .InventoryHtmlReportRenderer("licenses.html", "Dependency Licenses"),
+        )
+
+    // Output directory
+    outputDir = "${layout.buildDirectory.get()}/reports/licenses"
 }
 
 dokka {
