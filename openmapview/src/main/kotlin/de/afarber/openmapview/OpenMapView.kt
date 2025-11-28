@@ -68,6 +68,8 @@ class OpenMapView
         private var paddingBottom = 0
         private var lastTouchX = 0f
         private var lastTouchY = 0f
+        private var initialTouchX = 0f
+        private var initialTouchY = 0f
         private var onMapClickListener: OnMapClickListener? = null
         private var onMapLongClickListener: OnMapLongClickListener? = null
         private var onMarkerDragListener: OnMarkerDragListener? = null
@@ -154,6 +156,8 @@ class OpenMapView
                     MotionEvent.ACTION_DOWN -> {
                         lastTouchX = event.x
                         lastTouchY = event.y
+                        initialTouchX = event.x
+                        initialTouchY = event.y
                         // Check if touch is on a draggable marker
                         val touchedMarker = controller.handleMarkerTouch(event.x, event.y)
                         if (touchedMarker != null && touchedMarker.draggable) {
@@ -235,8 +239,8 @@ class OpenMapView
                         isDragging = false
 
                         // Check if touch is on a marker (only if there was minimal movement)
-                        val dx = event.x - lastTouchX
-                        val dy = event.y - lastTouchY
+                        val dx = event.x - initialTouchX
+                        val dy = event.y - initialTouchY
                         val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
 
                         if (movementDistance < 10) {
