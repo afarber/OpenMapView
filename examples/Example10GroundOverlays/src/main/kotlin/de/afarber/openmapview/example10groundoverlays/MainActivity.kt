@@ -48,12 +48,12 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.graphics.createBitmap
 import de.afarber.openmapview.BitmapDescriptor
 import de.afarber.openmapview.GroundOverlay
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.LatLngBounds
 import de.afarber.openmapview.OpenMapView
-import androidx.core.graphics.createBitmap
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

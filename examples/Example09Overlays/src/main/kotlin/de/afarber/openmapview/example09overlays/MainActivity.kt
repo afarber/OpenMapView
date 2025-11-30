@@ -9,7 +9,6 @@ package de.afarber.openmapview.example09overlays
 
 import android.content.Intent
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -46,11 +45,11 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.net.toUri
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
 import de.afarber.openmapview.PredefinedTileProviders
 import de.afarber.openmapview.TileOverlay
-import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -193,8 +192,10 @@ fun MapViewScreen() {
                         setCenter(bochumCenter)
                         setZoom(12.0f)
                         setOnAttributionClickListener {
-                            val intent = Intent(Intent.ACTION_VIEW,
-                                "https://www.openstreetmap.org/copyright".toUri())
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                "https://www.openstreetmap.org/copyright".toUri(),
+                            )
                             context.startActivity(intent)
                         }
                     }
@@ -233,8 +234,10 @@ fun MapViewScreen() {
                         setCenter(bochumCenter)
                         setZoom(12.0f)
                         setOnAttributionClickListener {
-                            val intent = Intent(Intent.ACTION_VIEW,
-                                "https://www.openstreetmap.org/copyright".toUri())
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                "https://www.openstreetmap.org/copyright".toUri(),
+                            )
                             context.startActivity(intent)
                         }
                     }

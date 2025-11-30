@@ -8,7 +8,6 @@
 package de.afarber.openmapview.example07draggablemarkers
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -35,12 +34,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.net.toUri
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.Marker
 import de.afarber.openmapview.OnMarkerDragListener
 import de.afarber.openmapview.OpenMapView
 import kotlin.random.Random
-import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,8 +141,10 @@ fun MapViewScreen() {
 
                     // Set attribution click listener
                     setOnAttributionClickListener {
-                        val intent = Intent(Intent.ACTION_VIEW,
-                            "https://www.openstreetmap.org/copyright".toUri())
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            "https://www.openstreetmap.org/copyright".toUri(),
+                        )
                         context.startActivity(intent)
                     }
                 }
