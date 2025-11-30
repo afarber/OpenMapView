@@ -40,6 +40,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.MapType
 import de.afarber.openmapview.OpenMapView
+import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,7 +81,7 @@ fun MapViewScreen() {
                             val intent =
                                 Intent(
                                     Intent.ACTION_VIEW,
-                                    Uri.parse(getAttributionUrl()),
+                                    getAttributionUrl().toUri(),
                                 )
                             context.startActivity(intent)
                         }
@@ -116,7 +117,7 @@ fun MapViewScreen() {
                             val intent =
                                 Intent(
                                     Intent.ACTION_VIEW,
-                                    Uri.parse(getAttributionUrl()),
+                                    getAttributionUrl().toUri(),
                                 )
                             context.startActivity(intent)
                         }

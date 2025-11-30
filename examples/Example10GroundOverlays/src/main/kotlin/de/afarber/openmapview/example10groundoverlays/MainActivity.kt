@@ -53,6 +53,7 @@ import de.afarber.openmapview.GroundOverlay
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.LatLngBounds
 import de.afarber.openmapview.OpenMapView
+import androidx.core.graphics.createBitmap
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -336,7 +337,7 @@ private fun createSampleBitmap(
     label: String,
 ): Bitmap {
     val size = 256
-    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(size, size)
     val canvas = Canvas(bitmap)
 
     val paint =

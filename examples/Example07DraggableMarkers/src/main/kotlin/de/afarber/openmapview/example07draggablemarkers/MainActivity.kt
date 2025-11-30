@@ -40,6 +40,7 @@ import de.afarber.openmapview.Marker
 import de.afarber.openmapview.OnMarkerDragListener
 import de.afarber.openmapview.OpenMapView
 import kotlin.random.Random
+import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -141,7 +142,8 @@ fun MapViewScreen() {
 
                     // Set attribution click listener
                     setOnAttributionClickListener {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
+                        val intent = Intent(Intent.ACTION_VIEW,
+                            "https://www.openstreetmap.org/copyright".toUri())
                         context.startActivity(intent)
                     }
                 }

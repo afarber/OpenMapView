@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
+import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +55,8 @@ fun MapViewScreen() {
 
                 // Set attribution click listener to open OSM copyright page
                 setOnAttributionClickListener {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/copyright"))
+                    val intent = Intent(Intent.ACTION_VIEW,
+                        "https://www.openstreetmap.org/copyright".toUri())
                     context.startActivity(intent)
                 }
             }
