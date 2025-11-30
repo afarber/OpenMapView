@@ -7,7 +7,6 @@
 
 package de.afarber.openmapview.example11maptypes
 
-import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -36,7 +35,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.net.toUri
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.MapType
 import de.afarber.openmapview.OpenMapView
@@ -76,14 +74,6 @@ fun MapViewScreen() {
                         setCenter(LatLng(46.8182, 8.2275))
                         setZoom(12.0f)
                         mapView = this
-                        setOnAttributionClickListener {
-                            val intent =
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    getAttributionUrl().toUri(),
-                                )
-                            context.startActivity(intent)
-                        }
                     }
                 },
                 modifier = Modifier.weight(0.67f),
@@ -112,14 +102,6 @@ fun MapViewScreen() {
                         setCenter(LatLng(46.8182, 8.2275))
                         setZoom(12.0f)
                         mapView = this
-                        setOnAttributionClickListener {
-                            val intent =
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    getAttributionUrl().toUri(),
-                                )
-                            context.startActivity(intent)
-                        }
                     }
                 },
                 modifier = Modifier.weight(0.67f),

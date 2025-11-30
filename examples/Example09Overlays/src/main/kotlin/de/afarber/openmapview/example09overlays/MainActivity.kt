@@ -70,6 +70,7 @@ class MainActivity : ComponentActivity() {
 data class OverlayState(
     val name: String,
     val overlay: TileOverlay,
+    val attribution: String,
     var isVisible: Boolean = false,
     var transparency: Float = 0.5f,
 )
@@ -91,6 +92,7 @@ fun MapViewScreen() {
                         zIndex = 1f,
                         visible = false,
                     ),
+                    "© OpenSeaMap",
                 ),
                 OverlayState(
                     "OpenRailwayMap",
@@ -99,6 +101,7 @@ fun MapViewScreen() {
                         zIndex = 2f,
                         visible = false,
                     ),
+                    "© OpenRailwayMap",
                 ),
                 OverlayState(
                     "Hiking Trails",
@@ -107,6 +110,7 @@ fun MapViewScreen() {
                         zIndex = 3f,
                         visible = false,
                     ),
+                    "© Waymarked Trails",
                 ),
                 OverlayState(
                     "OpenSnowMap",
@@ -115,6 +119,7 @@ fun MapViewScreen() {
                         zIndex = 4f,
                         visible = false,
                     ),
+                    "© OpenSnowMap",
                 ),
             ),
         )
@@ -130,6 +135,19 @@ fun MapViewScreen() {
             "Toggle overlays and adjust transparency.\nSwitch between different tile layers",
             Toast.LENGTH_LONG,
         ).show()
+    }
+
+    fun updateAttributions() {
+        mapView?.let { map ->
+            val activeAttributions: List<String> = overlays.filter { it.isVisible }.map { it.attribution }
+            if (activeAttributions.isNotEmpty()) {
+                val combinedAttribution = "© OpenStreetMap contributors | ${activeAttributions.joinToString(" | ")}"
+                map.setAttributionText(combinedAttribution)
+            } else {
+                // Reset to default when no overlays active
+                map.setAttributionText("© OpenStreetMap contributors")
+            }
+        }
     }
 
     fun toggleOverlay(
@@ -154,6 +172,7 @@ fun MapViewScreen() {
             }
 
             overlays = updated
+            updateAttributions()
         }
     }
 
@@ -218,6 +237,7 @@ fun MapViewScreen() {
                         mapView?.clearTileOverlays()
                         overlays = overlays.map { state -> state.copy(isVisible = false) }
                         transparency = 0.5f
+                        updateAttributions()
                         Toast.makeText(context, "All overlays cleared", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.padding(16.dp),
@@ -258,6 +278,7 @@ fun MapViewScreen() {
                         mapView?.clearTileOverlays()
                         overlays = overlays.map { state -> state.copy(isVisible = false) }
                         transparency = 0.5f
+                        updateAttributions()
                         Toast.makeText(context, "All overlays cleared", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.padding(16.dp),

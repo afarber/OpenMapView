@@ -1474,6 +1474,16 @@ class OpenMapView
          */
         fun getAttributionUrl(): String = attributionOverlay.getAttributionUrl()
 
+        /**
+         * Sets custom attribution text to be displayed.
+         *
+         * @param text The attribution text to display
+         */
+        fun setAttributionText(text: String) {
+            attributionOverlay.setAttributionText(text)
+            invalidate()
+        }
+
         override fun onResume(owner: LifecycleOwner) {
             controller.onResume()
         }
