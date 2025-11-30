@@ -7,7 +7,6 @@
 
 package de.afarber.openmapview.example02zoom
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.net.toUri
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
 import kotlin.math.roundToInt
@@ -72,15 +70,6 @@ fun MapViewScreen() {
                     // Add camera move listener to update zoom label
                     setOnCameraMoveListener {
                         zoomLevel = getZoom()
-                    }
-
-                    // Set attribution click listener to open OSM copyright page
-                    setOnAttributionClickListener {
-                        val intent = Intent(
-                            Intent.ACTION_VIEW,
-                            "https://www.openstreetmap.org/copyright".toUri(),
-                        )
-                        context.startActivity(intent)
                     }
                 }
             },

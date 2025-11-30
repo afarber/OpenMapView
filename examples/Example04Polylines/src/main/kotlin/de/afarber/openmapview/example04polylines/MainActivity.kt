@@ -7,7 +7,6 @@
 
 package de.afarber.openmapview.example04polylines
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -20,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.net.toUri
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
 import de.afarber.openmapview.Polygon
@@ -139,15 +137,6 @@ fun MapViewScreen() {
 
                 setOnPolygonClickListener { polygon ->
                     Toast.makeText(context, "Clicked: ${polygon.tag}", Toast.LENGTH_SHORT).show()
-                }
-
-                // Set attribution click listener to open OSM copyright page
-                setOnAttributionClickListener {
-                    val intent = Intent(
-                        Intent.ACTION_VIEW,
-                        "https://www.openstreetmap.org/copyright".toUri(),
-                    )
-                    context.startActivity(intent)
                 }
             }
         },

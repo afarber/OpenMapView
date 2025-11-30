@@ -7,7 +7,6 @@
 
 package de.afarber.openmapview.example06clicks
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -20,7 +19,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.net.toUri
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OnMapClickListener
 import de.afarber.openmapview.OnMapLongClickListener
@@ -88,15 +86,6 @@ fun MapViewScreen() {
                         ).show()
                     },
                 )
-
-                // Set attribution click listener to open OSM copyright page
-                setOnAttributionClickListener {
-                    val intent = Intent(
-                        Intent.ACTION_VIEW,
-                        "https://www.openstreetmap.org/copyright".toUri(),
-                    )
-                    context.startActivity(intent)
-                }
             }
         },
         modifier = Modifier.fillMaxSize(),

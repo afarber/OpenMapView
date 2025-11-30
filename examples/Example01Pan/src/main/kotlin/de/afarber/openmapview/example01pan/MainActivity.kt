@@ -7,7 +7,6 @@
 
 package de.afarber.openmapview.example01pan
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.net.toUri
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
 
@@ -51,15 +49,6 @@ fun MapViewScreen() {
 
                 setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
                 setZoom(14.0f)
-
-                // Set attribution click listener to open OSM copyright page
-                setOnAttributionClickListener {
-                    val intent = Intent(
-                        Intent.ACTION_VIEW,
-                        "https://www.openstreetmap.org/copyright".toUri(),
-                    )
-                    context.startActivity(intent)
-                }
             }
         },
         modifier = Modifier.fillMaxSize(),
