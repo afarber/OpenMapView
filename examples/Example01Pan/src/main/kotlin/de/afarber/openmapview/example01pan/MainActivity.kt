@@ -15,23 +15,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowLeft
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -43,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.CameraUpdateFactory
@@ -166,7 +154,18 @@ fun MapViewScreen() {
             onRightClick = { mapView?.moveCamera(CameraUpdateFactory.scrollBy(100f, 0f)) },
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 16.dp)
+                .padding(start = 16.dp, bottom = 16.dp),
+        )
+
+        // Location toolbar at top right
+        LocationToolbar(
+            locations = listOf(location1, location2, location3),
+            onLocationClick = { location ->
+                mapView?.animateCamera(CameraUpdateFactory.newLatLng(location), 500)
+            },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 8.dp, end = 8.dp),
         )
 
         // Control panel at bottom
@@ -177,36 +176,6 @@ fun MapViewScreen() {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Row 2: Preset location buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                Button(
-                    onClick = {
-                        mapView?.animateCamera(CameraUpdateFactory.newLatLng(location1), 500)
-                    },
-                ) {
-                    Text("Loc 1", style = MaterialTheme.typography.bodySmall)
-                }
-                Button(
-                    onClick = {
-                        mapView?.animateCamera(CameraUpdateFactory.newLatLng(location2), 500)
-                    },
-                ) {
-                    Text("Loc 2", style = MaterialTheme.typography.bodySmall)
-                }
-                Button(
-                    onClick = {
-                        mapView?.animateCamera(CameraUpdateFactory.newLatLng(location3), 500)
-                    },
-                ) {
-                    Text("Loc 3", style = MaterialTheme.typography.bodySmall)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
             // Row 3: Bounds toggle and Reset
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -244,65 +213,6 @@ fun MapViewScreen() {
                 ) {
                     Text("Reset", style = MaterialTheme.typography.bodySmall)
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun ArrowToolbar(
-    onLeftClick: () -> Unit,
-    onUpClick: () -> Unit,
-    onDownClick: () -> Unit,
-    onRightClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
-        shadowElevation = 6.dp,
-        color = MaterialTheme.colorScheme.surface
-    ) {
-        Row {
-            FilledIconButton(
-                onClick = onLeftClick,
-                modifier = Modifier.size(56.dp),
-                shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Icon(Icons.Default.KeyboardDoubleArrowLeft, contentDescription = "Left")
-            }
-            FilledIconButton(
-                onClick = onUpClick,
-                modifier = Modifier.size(56.dp),
-                shape = RectangleShape,
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Icon(Icons.Default.KeyboardDoubleArrowUp, contentDescription = "Up")
-            }
-            FilledIconButton(
-                onClick = onDownClick,
-                modifier = Modifier.size(56.dp),
-                shape = RectangleShape,
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Icon(Icons.Default.KeyboardDoubleArrowDown, contentDescription = "Down")
-            }
-            FilledIconButton(
-                onClick = onRightClick,
-                modifier = Modifier.size(56.dp),
-                shape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Icon(Icons.Default.KeyboardDoubleArrowRight, contentDescription = "Right")
             }
         }
     }
