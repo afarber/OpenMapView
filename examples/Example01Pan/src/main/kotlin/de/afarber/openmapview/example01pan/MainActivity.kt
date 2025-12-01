@@ -22,9 +22,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowLeft
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.CameraUpdateFactory
@@ -150,6 +158,17 @@ fun MapViewScreen() {
             )
         }
 
+        // Arrow toolbar at bottom left
+        ArrowToolbar(
+            onLeftClick = { mapView?.moveCamera(CameraUpdateFactory.scrollBy(-100f, 0f)) },
+            onUpClick = { mapView?.moveCamera(CameraUpdateFactory.scrollBy(0f, -100f)) },
+            onDownClick = { mapView?.moveCamera(CameraUpdateFactory.scrollBy(0f, 100f)) },
+            onRightClick = { mapView?.moveCamera(CameraUpdateFactory.scrollBy(100f, 0f)) },
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 16.dp, bottom = 16.dp)
+        )
+
         // Control panel at bottom
         Column(
             modifier = Modifier
@@ -158,56 +177,6 @@ fun MapViewScreen() {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Row 1: Direction buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                FloatingActionButton(
-                    onClick = { mapView?.moveCamera(CameraUpdateFactory.scrollBy(0f, -100f)) },
-                    modifier = Modifier.size(48.dp),
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                ) {
-                    Text("↑", style = MaterialTheme.typography.titleLarge)
-                }
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                FloatingActionButton(
-                    onClick = { mapView?.moveCamera(CameraUpdateFactory.scrollBy(-100f, 0f)) },
-                    modifier = Modifier.size(48.dp),
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                ) {
-                    Text("←", style = MaterialTheme.typography.titleLarge)
-                }
-                Spacer(modifier = Modifier.size(56.dp))
-                FloatingActionButton(
-                    onClick = { mapView?.moveCamera(CameraUpdateFactory.scrollBy(100f, 0f)) },
-                    modifier = Modifier.size(48.dp),
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                ) {
-                    Text("→", style = MaterialTheme.typography.titleLarge)
-                }
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                FloatingActionButton(
-                    onClick = { mapView?.moveCamera(CameraUpdateFactory.scrollBy(0f, 100f)) },
-                    modifier = Modifier.size(48.dp),
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                ) {
-                    Text("↓", style = MaterialTheme.typography.titleLarge)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
             // Row 2: Preset location buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -275,6 +244,65 @@ fun MapViewScreen() {
                 ) {
                     Text("Reset", style = MaterialTheme.typography.bodySmall)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun ArrowToolbar(
+    onLeftClick: () -> Unit,
+    onUpClick: () -> Unit,
+    onDownClick: () -> Unit,
+    onRightClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(8.dp),
+        shadowElevation = 6.dp,
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Row {
+            FilledIconButton(
+                onClick = onLeftClick,
+                modifier = Modifier.size(56.dp),
+                shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Icon(Icons.Default.KeyboardDoubleArrowLeft, contentDescription = "Left")
+            }
+            FilledIconButton(
+                onClick = onUpClick,
+                modifier = Modifier.size(56.dp),
+                shape = RectangleShape,
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Icon(Icons.Default.KeyboardDoubleArrowUp, contentDescription = "Up")
+            }
+            FilledIconButton(
+                onClick = onDownClick,
+                modifier = Modifier.size(56.dp),
+                shape = RectangleShape,
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Icon(Icons.Default.KeyboardDoubleArrowDown, contentDescription = "Down")
+            }
+            FilledIconButton(
+                onClick = onRightClick,
+                modifier = Modifier.size(56.dp),
+                shape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Icon(Icons.Default.KeyboardDoubleArrowRight, contentDescription = "Right")
             }
         }
     }
