@@ -21,6 +21,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+/**
+ * A vertical toolbar with map control buttons.
+ *
+ * Contains a bounds toggle button and a reset button, using OSM water blue background.
+ *
+ * @param boundsEnabled Whether camera bounds constraint is currently enabled.
+ * @param onBoundsClick Callback invoked when the bounds toggle button is clicked.
+ * @param onResetClick Callback invoked when the reset button is clicked.
+ * @param modifier Modifier to be applied to the toolbar.
+ */
 @Composable
 fun ControlToolbar(
     boundsEnabled: Boolean,

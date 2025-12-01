@@ -26,6 +26,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 
+/**
+ * A horizontal toolbar with four arrow buttons for panning the map.
+ *
+ * Displays left, up, down, and right arrow buttons in a row with OSM park green background.
+ *
+ * @param onLeftClick Callback invoked when the left arrow button is clicked.
+ * @param onUpClick Callback invoked when the up arrow button is clicked.
+ * @param onDownClick Callback invoked when the down arrow button is clicked.
+ * @param onRightClick Callback invoked when the right arrow button is clicked.
+ * @param modifier Modifier to be applied to the toolbar.
+ */
 @Composable
 fun ArrowToolbar(
     onLeftClick: () -> Unit,

@@ -23,6 +23,15 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import de.afarber.openmapview.LatLng
 
+/**
+ * A vertical toolbar displaying buttons for navigating to preset locations.
+ *
+ * Each button is labeled "Loc 1", "Loc 2", etc. and uses OSM highway pink background.
+ *
+ * @param locations List of [LatLng] positions to display as buttons.
+ * @param onLocationClick Callback invoked when a location button is clicked, receiving the [LatLng].
+ * @param modifier Modifier to be applied to the toolbar.
+ */
 @Composable
 fun LocationToolbar(
     locations: List<LatLng>,
