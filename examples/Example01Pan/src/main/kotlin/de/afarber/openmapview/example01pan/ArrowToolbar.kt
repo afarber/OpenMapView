@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 
@@ -35,7 +36,7 @@ fun ArrowToolbar(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(ToolbarCornerRadius),
         shadowElevation = 6.dp,
         color = MaterialTheme.colorScheme.surface,
     ) {
@@ -43,9 +44,10 @@ fun ArrowToolbar(
             FilledIconButton(
                 onClick = onLeftClick,
                 modifier = Modifier.size(56.dp),
-                shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp),
+                shape = RoundedCornerShape(topStart = ToolbarCornerRadius, bottomStart = ToolbarCornerRadius),
                 colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    containerColor = OsmParkGreen,
+                    contentColor = Color.Black,
                 ),
             ) {
                 Icon(Icons.Default.KeyboardDoubleArrowLeft, contentDescription = "Left")
@@ -55,7 +57,8 @@ fun ArrowToolbar(
                 modifier = Modifier.size(56.dp),
                 shape = RectangleShape,
                 colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    containerColor = OsmParkGreen,
+                    contentColor = Color.Black,
                 ),
             ) {
                 Icon(Icons.Default.KeyboardDoubleArrowUp, contentDescription = "Up")
@@ -65,7 +68,8 @@ fun ArrowToolbar(
                 modifier = Modifier.size(56.dp),
                 shape = RectangleShape,
                 colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    containerColor = OsmParkGreen,
+                    contentColor = Color.Black,
                 ),
             ) {
                 Icon(Icons.Default.KeyboardDoubleArrowDown, contentDescription = "Down")
@@ -73,9 +77,10 @@ fun ArrowToolbar(
             FilledIconButton(
                 onClick = onRightClick,
                 modifier = Modifier.size(56.dp),
-                shape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
+                shape = RoundedCornerShape(topEnd = ToolbarCornerRadius, bottomEnd = ToolbarCornerRadius),
                 colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    containerColor = OsmParkGreen,
+                    contentColor = Color.Black,
                 ),
             ) {
                 Icon(Icons.Default.KeyboardDoubleArrowRight, contentDescription = "Right")
