@@ -72,19 +72,23 @@ class MainActivity : ComponentActivity() {
 fun MapViewScreen() {
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Initial location: Bochum, Germany
-    val initialLocation = LatLng(51.4661, 7.2491)
+    // Irregular quadrilateral around Bochum (not a rectangle)
+    val bochumCorners = listOf(
+        LatLng(51.4850, 7.2100), // North-West
+        LatLng(51.4800, 7.2900), // North-East
+        LatLng(51.4450, 7.2800), // South-East
+        LatLng(51.4500, 7.2100), // South-West
+    )
+
+    // Initial location: center of the quadrilateral
+    val initialLocation = LatLng(
+        bochumCorners.map { it.latitude }.average(),
+        bochumCorners.map { it.longitude }.average(),
+    )
     val initialZoom = 14.0f
 
-    // Irregular quadrilateral around Bochum (not a rectangle)
     val bochumOutline = Polyline(
-        points = listOf(
-            LatLng(51.4850, 7.2100), // North-West
-            LatLng(51.4800, 7.2900), // North-East
-            LatLng(51.4450, 7.2800), // South-East
-            LatLng(51.4500, 7.2100), // South-West
-            LatLng(51.4850, 7.2100), // Close the shape
-        ),
+        points = bochumCorners + bochumCorners.first(), // Close the shape
         strokeColor = Color.Red,
         strokeWidth = 4f,
     )
