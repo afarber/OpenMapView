@@ -642,10 +642,13 @@ class MapController(
         val requestedZoom = zoom * scaleFactor
         val newZoom = requestedZoom.coerceIn(minZoomPreference, maxZoomPreference)
 
-        if (oldZoom == newZoom) {
-            // Already at zoom limit - trigger edge glow effect
+        // Trigger edge effect only when actually trying to exceed zoom limits
+        if (requestedZoom < minZoomPreference || requestedZoom > maxZoomPreference) {
             val overzoomAmount = (requestedZoom - newZoom).toFloat()
             triggerOverzoomEffect(overzoomAmount)
+        }
+
+        if (oldZoom == newZoom) {
             return
         }
 
