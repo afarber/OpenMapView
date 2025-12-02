@@ -1210,7 +1210,7 @@ class MapControllerTest {
     @Test
     fun testOverzoom_EdgeEffectTriggersWhenZoomAtMaxLimit() {
         val uiSettings = UiSettings()
-        uiSettings.isZoomEdgeEffectEnabled = true
+        uiSettings.isEdgeEffectEnabled = true
         controller.setUiSettings(uiSettings)
 
         controller.setZoom(MapController.DEFAULT_MAX_ZOOM)
@@ -1230,7 +1230,7 @@ class MapControllerTest {
     @Test
     fun testOverzoom_EdgeEffectTriggersWhenZoomAtMinLimit() {
         val uiSettings = UiSettings()
-        uiSettings.isZoomEdgeEffectEnabled = true
+        uiSettings.isEdgeEffectEnabled = true
         controller.setUiSettings(uiSettings)
 
         controller.setZoom(MapController.DEFAULT_MIN_ZOOM)
@@ -1250,7 +1250,7 @@ class MapControllerTest {
     @Test
     fun testOverzoom_EdgeEffectDoesNotTriggerWhenDisabled() {
         val uiSettings = UiSettings()
-        uiSettings.isZoomEdgeEffectEnabled = false
+        uiSettings.isEdgeEffectEnabled = false
         controller.setUiSettings(uiSettings)
 
         controller.setZoom(MapController.DEFAULT_MAX_ZOOM)
@@ -1266,7 +1266,7 @@ class MapControllerTest {
     @Test
     fun testOverzoom_EdgeEffectReleasesCorrectly() {
         val uiSettings = UiSettings()
-        uiSettings.isZoomEdgeEffectEnabled = true
+        uiSettings.isEdgeEffectEnabled = true
         controller.setUiSettings(uiSettings)
 
         controller.setZoom(MapController.DEFAULT_MAX_ZOOM)
@@ -1285,7 +1285,7 @@ class MapControllerTest {
     @Test
     fun testOverzoom_NormalZoomDoesNotTriggerEdgeEffect() {
         val uiSettings = UiSettings()
-        uiSettings.isZoomEdgeEffectEnabled = true
+        uiSettings.isEdgeEffectEnabled = true
         controller.setUiSettings(uiSettings)
 
         controller.setZoom(10.0f)
@@ -1307,7 +1307,7 @@ class MapControllerTest {
     @Test
     fun testOverzoom_EdgeEffectDrawsWithoutCrashing() {
         val uiSettings = UiSettings()
-        uiSettings.isZoomEdgeEffectEnabled = true
+        uiSettings.isEdgeEffectEnabled = true
         controller.setUiSettings(uiSettings)
 
         controller.setZoom(MapController.DEFAULT_MAX_ZOOM)
@@ -1322,7 +1322,7 @@ class MapControllerTest {
     @Test
     fun testOverzoom_EdgeEffectHandlesZeroViewSize() {
         val uiSettings = UiSettings()
-        uiSettings.isZoomEdgeEffectEnabled = true
+        uiSettings.isEdgeEffectEnabled = true
         controller.setUiSettings(uiSettings)
         controller.setViewSize(0, 0)
 
@@ -1332,6 +1332,120 @@ class MapControllerTest {
         controller.zoom(2.0f, 0f, 0f)
 
         // Should not crash and should not trigger effect (view size is zero)
+        assertFalse(controller.hasActiveEdgeEffect())
+    }
+
+    // Tests for triggerEdgeEffect() API
+
+    @Test
+    fun testTriggerEdgeEffect_SingleEdge() {
+        val uiSettings = UiSettings()
+        uiSettings.isEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        controller.triggerEdgeEffect(setOf(Edge.TOP))
+
+        assertTrue(controller.hasActiveEdgeEffect())
+    }
+
+    @Test
+    fun testTriggerEdgeEffect_MultipleEdges() {
+        val uiSettings = UiSettings()
+        uiSettings.isEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        controller.triggerEdgeEffect(setOf(Edge.TOP, Edge.RIGHT))
+
+        assertTrue(controller.hasActiveEdgeEffect())
+    }
+
+    @Test
+    fun testTriggerEdgeEffect_AllEdges() {
+        val uiSettings = UiSettings()
+        uiSettings.isEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        controller.triggerEdgeEffect(setOf(Edge.TOP, Edge.BOTTOM, Edge.LEFT, Edge.RIGHT))
+
+        assertTrue(controller.hasActiveEdgeEffect())
+    }
+
+    @Test
+    fun testTriggerEdgeEffect_EmptySet() {
+        val uiSettings = UiSettings()
+        uiSettings.isEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        controller.triggerEdgeEffect(emptySet())
+
+        // Empty set should not trigger any edge effect
+        assertFalse(controller.hasActiveEdgeEffect())
+    }
+
+    @Test
+    fun testTriggerEdgeEffect_Disabled() {
+        val uiSettings = UiSettings()
+        uiSettings.isEdgeEffectEnabled = false
+        controller.setUiSettings(uiSettings)
+
+        controller.triggerEdgeEffect(setOf(Edge.TOP, Edge.BOTTOM))
+
+        // Should not trigger when disabled
+        assertFalse(controller.hasActiveEdgeEffect())
+    }
+
+    @Test
+    fun testTriggerEdgeEffect_CustomIntensity() {
+        val uiSettings = UiSettings()
+        uiSettings.isEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        controller.triggerEdgeEffect(setOf(Edge.LEFT), 0.5f)
+
+        assertTrue(controller.hasActiveEdgeEffect())
+    }
+
+    // Tests for pan bounds edge effect
+
+    @Test
+    fun testPanBounds_EdgeEffectTriggersOnBoundHit() {
+        val uiSettings = UiSettings()
+        uiSettings.isEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        // Set bounds - small area around lat 51.5
+        val bounds =
+            LatLngBounds(
+                southwest = LatLng(51.4, 7.0),
+                northeast = LatLng(51.6, 8.0),
+            )
+        controller.setLatLngBoundsForCameraTarget(bounds)
+
+        // Set center in middle of bounds
+        controller.setCenter(LatLng(51.5, 7.5))
+        controller.setZoom(14.0f) // Higher zoom for more precise pixel movement
+
+        // Pan far north (negative Y moves camera north, which will hit the north bound)
+        // At zoom 14, -10000 pixels is a significant movement
+        controller.updatePanOffset(0f, -10000f)
+
+        // Edge effect should be triggered
+        assertTrue(controller.hasActiveEdgeEffect())
+    }
+
+    @Test
+    fun testPanBounds_NoEdgeEffectWithoutBounds() {
+        val uiSettings = UiSettings()
+        uiSettings.isEdgeEffectEnabled = true
+        controller.setUiSettings(uiSettings)
+
+        // No bounds set
+        controller.setCenter(LatLng(51.5, 7.5))
+
+        // Pan far
+        controller.updatePanOffset(0f, -10000f)
+
+        // Edge effect should not be triggered without bounds
         assertFalse(controller.hasActiveEdgeEffect())
     }
 }
