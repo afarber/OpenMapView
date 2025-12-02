@@ -626,6 +626,34 @@ class OpenMapView
         fun getUiSettings(): UiSettings = uiSettings
 
         /**
+         * Triggers the edge glow effect on specified edges.
+         *
+         * Use this method to provide visual feedback when the camera cannot move further
+         * in a direction, such as when a button press would exceed the camera bounds.
+         *
+         * The edge effect respects the [UiSettings.isEdgeEffectEnabled] setting.
+         *
+         * Example:
+         * ```kotlin
+         * // Trigger effect on the right edge when a "move right" button is pressed at bounds
+         * mapView.triggerEdgeEffect(setOf(Edge.RIGHT))
+         *
+         * // Trigger effect on multiple edges with custom intensity
+         * mapView.triggerEdgeEffect(setOf(Edge.TOP, Edge.RIGHT), 0.5f)
+         * ```
+         *
+         * @param edges The set of edges to trigger the effect on
+         * @param intensity The glow intensity from 0.0 (none) to 1.0 (full), default 0.8
+         */
+        fun triggerEdgeEffect(
+            edges: Set<Edge>,
+            intensity: Float = 0.8f,
+        ) {
+            controller.triggerEdgeEffect(edges, intensity)
+            invalidate()
+        }
+
+        /**
          * Sets padding on the map.
          *
          * This padding affects the logical viewport of the map - it adjusts where the map

@@ -99,13 +99,49 @@ class MapController(
      * @param latLng The coordinate to clamp
      * @return The clamped coordinate
      */
-    private fun clampToTargetBounds(latLng: LatLng): LatLng {
-        val bounds = cameraTargetBounds ?: return latLng
+    private fun clampToTargetBounds(latLng: LatLng): LatLng = clampToTargetBoundsWithEdges(latLng).first
 
-        val clampedLat = latLng.latitude.coerceIn(bounds.southwest.latitude, bounds.northeast.latitude)
-        val clampedLng = latLng.longitude.coerceIn(bounds.southwest.longitude, bounds.northeast.longitude)
+    /**
+     * Clamps a LatLng coordinate to remain within the camera target bounds,
+     * and returns which edges were hit during clamping.
+     *
+     * If no bounds are set, returns the input unchanged with an empty edge set.
+     *
+     * @param latLng The coordinate to clamp
+     * @return A pair of the clamped coordinate and the set of edges that were hit
+     */
+    private fun clampToTargetBoundsWithEdges(latLng: LatLng): Pair<LatLng, Set<Edge>> {
+        val bounds = cameraTargetBounds ?: return Pair(latLng, emptySet())
 
-        return LatLng(clampedLat, clampedLng)
+        val hitEdges = mutableSetOf<Edge>()
+
+        val clampedLat =
+            when {
+                latLng.latitude < bounds.southwest.latitude -> {
+                    hitEdges.add(Edge.BOTTOM)
+                    bounds.southwest.latitude
+                }
+                latLng.latitude > bounds.northeast.latitude -> {
+                    hitEdges.add(Edge.TOP)
+                    bounds.northeast.latitude
+                }
+                else -> latLng.latitude
+            }
+
+        val clampedLng =
+            when {
+                latLng.longitude < bounds.southwest.longitude -> {
+                    hitEdges.add(Edge.LEFT)
+                    bounds.southwest.longitude
+                }
+                latLng.longitude > bounds.northeast.longitude -> {
+                    hitEdges.add(Edge.RIGHT)
+                    bounds.northeast.longitude
+                }
+                else -> latLng.longitude
+            }
+
+        return Pair(LatLng(clampedLat, clampedLng), hitEdges)
     }
 
     private var viewWidth = 0
@@ -301,17 +337,38 @@ class MapController(
      * @param overzoomAmount The amount of overzoom attempted (positive for zoom in, negative for zoom out)
      */
     private fun triggerOverzoomEffect(overzoomAmount: Float) {
-        if (uiSettings?.isZoomEdgeEffectEnabled != true) return
+        if (uiSettings?.isEdgeEffectEnabled != true) return
         if (viewWidth == 0 || viewHeight == 0) return
 
         // Calculate glow strength based on overzoom magnitude
         val glowStrength = (kotlin.math.abs(overzoomAmount) * 2.0f).coerceIn(0.3f, 1.0f)
 
-        // Set glow on all edges
-        edgeGlowTop = glowStrength
-        edgeGlowBottom = glowStrength
-        edgeGlowLeft = glowStrength
-        edgeGlowRight = glowStrength
+        // Trigger edge effect on all edges
+        triggerEdgeEffect(setOf(Edge.TOP, Edge.BOTTOM, Edge.LEFT, Edge.RIGHT), glowStrength)
+    }
+
+    /**
+     * Triggers the edge glow effect on specified edges.
+     *
+     * This method can be called by app developers from button handlers or other UI controls
+     * to provide visual feedback when the camera cannot move further in a direction.
+     *
+     * @param edges The set of edges to trigger the effect on
+     * @param intensity The glow intensity from 0.0 (none) to 1.0 (full), default 0.8
+     */
+    fun triggerEdgeEffect(
+        edges: Set<Edge>,
+        intensity: Float = 0.8f,
+    ) {
+        if (uiSettings?.isEdgeEffectEnabled != true) return
+        if (viewWidth == 0 || viewHeight == 0) return
+
+        val clampedIntensity = intensity.coerceIn(0.0f, 1.0f)
+
+        if (Edge.TOP in edges) edgeGlowTop = clampedIntensity
+        if (Edge.BOTTOM in edges) edgeGlowBottom = clampedIntensity
+        if (Edge.LEFT in edges) edgeGlowLeft = clampedIntensity
+        if (Edge.RIGHT in edges) edgeGlowRight = clampedIntensity
     }
 
     /**
@@ -1052,6 +1109,8 @@ class MapController(
      * Updates the temporary pan offset during a drag gesture.
      *
      * The offset accumulates until committed via [commitPan].
+     * If camera target bounds are set and the pan would exceed them,
+     * triggers the edge effect on the appropriate edges.
      *
      * @param dx The horizontal movement in pixels
      * @param dy The vertical movement in pixels
@@ -1060,8 +1119,24 @@ class MapController(
         dx: Float,
         dy: Float,
     ) {
-        panOffsetX -= dx
-        panOffsetY -= dy
+        val newPanOffsetX = panOffsetX - dx
+        val newPanOffsetY = panOffsetY - dy
+
+        // Check if bounds are set and detect edge hits during panning
+        if (cameraTargetBounds != null) {
+            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+            val newCenterPixelX = (centerPixelX + newPanOffsetX).toInt()
+            val newCenterPixelY = (centerPixelY + newPanOffsetY).toInt()
+            val newCenter = ProjectionUtils.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom.toInt())
+
+            val (_, hitEdges) = clampToTargetBoundsWithEdges(newCenter)
+            if (hitEdges.isNotEmpty()) {
+                triggerEdgeEffect(hitEdges, 0.6f)
+            }
+        }
+
+        panOffsetX = newPanOffsetX
+        panOffsetY = newPanOffsetY
     }
 
     /**
