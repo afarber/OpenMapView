@@ -23,5 +23,5 @@ val OsmHighwayPink = Color(0xFFE892A2)
 /** Blue color used by OpenStreetMap for water areas (lakes, rivers). */
 val OsmWaterBlue = Color(0xFFAAD3DF)
 
-/** Shared corner radius for all toolbar components. */
-val ToolbarCornerRadius = 8.dp
+/** Shared corner radius for all toolbar components (matches Material3 FAB). */
+val ToolbarCornerRadius = 16.dp

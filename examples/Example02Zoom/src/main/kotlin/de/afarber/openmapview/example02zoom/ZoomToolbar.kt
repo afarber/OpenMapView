@@ -50,7 +50,7 @@ fun ZoomToolbar(
                 modifier = Modifier.size(56.dp),
                 shape = RoundedCornerShape(topStart = ToolbarCornerRadius, bottomStart = ToolbarCornerRadius),
                 colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = OsmParkGreen,
+                    containerColor = OsmWaterBlue,
                     contentColor = Color.Black,
                 ),
             ) {
@@ -61,7 +61,7 @@ fun ZoomToolbar(
                 modifier = Modifier.size(56.dp),
                 shape = RoundedCornerShape(topEnd = ToolbarCornerRadius, bottomEnd = ToolbarCornerRadius),
                 colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = OsmParkGreen,
+                    containerColor = OsmWaterBlue,
                     contentColor = Color.Black,
                 ),
             ) {

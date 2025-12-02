@@ -74,10 +74,10 @@ fun MapViewScreen() {
 
     // Irregular quadrilateral around Bochum (not a rectangle)
     val bochumCorners = listOf(
-        LatLng(51.4850, 7.2100), // North-West
-        LatLng(51.4800, 7.2900), // North-East
-        LatLng(51.4450, 7.2800), // South-East
-        LatLng(51.4500, 7.2100), // South-West
+        LatLng(51.4873, 7.2050), // North-West
+        LatLng(51.4764, 7.2159), // South-West
+        LatLng(51.4824, 7.2290), // South-East
+        LatLng(51.4890, 7.2166), // North-East
     )
 
     // Initial location: center of the quadrilateral
@@ -174,7 +174,7 @@ fun MapViewScreen() {
                 )
             },
             containerColor = OsmHighwayPink,
-            contentColor = Color.White,
+            contentColor = Color.Black,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
