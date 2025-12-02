@@ -34,6 +34,7 @@ import de.afarber.openmapview.CameraUpdateFactory
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OnCameraMoveStartedListener
 import de.afarber.openmapview.OpenMapView
+import de.afarber.openmapview.Polyline
 
 /**
  * Main activity demonstrating OpenMapView zoom controls.
@@ -75,6 +76,19 @@ fun MapViewScreen() {
     val initialLocation = LatLng(51.4661, 7.2491)
     val initialZoom = 14.0f
 
+    // Irregular quadrilateral around Bochum (not a rectangle)
+    val bochumOutline = Polyline(
+        points = listOf(
+            LatLng(51.4850, 7.2100), // North-West
+            LatLng(51.4800, 7.2900), // North-East
+            LatLng(51.4450, 7.2800), // South-East
+            LatLng(51.4500, 7.2100), // South-West
+            LatLng(51.4850, 7.2100), // Close the shape
+        ),
+        strokeColor = Color.Red,
+        strokeWidth = 4f,
+    )
+
     // State variables
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
     var zoomLevel by remember { mutableStateOf("%.1f".format(initialZoom)) }
@@ -89,6 +103,9 @@ fun MapViewScreen() {
 
                     setCenter(initialLocation)
                     setZoom(initialZoom)
+
+                    // Add the red polyline outline
+                    addPolyline(bochumOutline)
 
                     // Camera move started listener
                     setOnCameraMoveStartedListener { reason ->
@@ -152,7 +169,7 @@ fun MapViewScreen() {
                     500,
                 )
             },
-            containerColor = Color.Red,
+            containerColor = OsmHighwayPink,
             contentColor = Color.White,
             modifier = Modifier
                 .align(Alignment.BottomEnd)

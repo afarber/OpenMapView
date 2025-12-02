@@ -7,25 +7,24 @@
 
 package de.afarber.openmapview.example02zoom
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 /**
- * A vertical toolbar with zoom in (+) and zoom out (-) buttons.
+ * A horizontal toolbar with zoom in (+) and zoom out (-) buttons.
  *
  * Uses OSM park green background color for visual consistency.
  *
@@ -39,36 +38,35 @@ fun ZoomToolbar(
     onZoomOutClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(ToolbarCornerRadius))
-            .background(OsmParkGreen),
-        verticalAlignment = Alignment.CenterVertically,
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(ToolbarCornerRadius),
+        shadowElevation = 6.dp,
+        color = MaterialTheme.colorScheme.surface,
     ) {
-        // Zoom In button
-        Text(
-            text = "+",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .size(56.dp)
-                .clickable(onClick = onZoomInClick)
-                .padding(8.dp),
-        )
-
-        // Zoom Out button
-        Text(
-            text = "-",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .size(56.dp)
-                .clickable(onClick = onZoomOutClick)
-                .padding(8.dp),
-        )
+        Row {
+            FilledIconButton(
+                onClick = onZoomInClick,
+                modifier = Modifier.size(56.dp),
+                shape = RoundedCornerShape(topStart = ToolbarCornerRadius, bottomStart = ToolbarCornerRadius),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = OsmParkGreen,
+                    contentColor = Color.Black,
+                ),
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Zoom In")
+            }
+            FilledIconButton(
+                onClick = onZoomOutClick,
+                modifier = Modifier.size(56.dp),
+                shape = RoundedCornerShape(topEnd = ToolbarCornerRadius, bottomEnd = ToolbarCornerRadius),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = OsmParkGreen,
+                    contentColor = Color.Black,
+                ),
+            ) {
+                Icon(Icons.Default.Remove, contentDescription = "Zoom Out")
+            }
+        }
     }
 }
