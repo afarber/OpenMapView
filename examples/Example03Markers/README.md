@@ -1,20 +1,19 @@
-# Example03Markers - Marker Overlays and Click Handling
+# Example03Markers - Marker Overlays and Interactive Management
 
 [Back to README](../../README.md)
 
-This example demonstrates the marker system in OpenMapView, including marker rendering, touch detection, and click event handling.
+This example demonstrates the marker system in OpenMapView, including marker rendering, touch detection, info windows, and interactive marker management.
 
 ## Features Demonstrated
 
-- Multiple markers at different geographic locations
-- Default red teardrop marker icons with color variations
+- Multiple markers at real Bochum landmark locations
+- Default teardrop marker icons with color variations
 - Both API styles: Kotlin direct instantiation and Google Maps builder pattern
-- Marker click detection and callbacks
-- Toast notifications on marker click
-- Markers with title and snippet metadata
-- Marker positioning with proper anchor points
-- Markers that stay fixed during pan and zoom
+- Marker click detection and selection tracking
 - Info windows showing marker titles and snippets
+- Interactive marker management (add, remove, clear)
+- Real-time status display (marker count, selection, camera state)
+- Reset functionality to restore initial state
 
 ## Screenshot
 
@@ -39,30 +38,68 @@ This example demonstrates the marker system in OpenMapView, including marker ren
 adb shell am start -n de.afarber.openmapview.example03markers/.MainActivity
 ```
 
+## Project Structure
+
+```
+example03markers/
+├── MainActivity.kt      # Main activity and MapViewScreen composable
+├── MarkerToolbar.kt     # Horizontal toolbar with add/remove/clear buttons
+├── StatusToolbar.kt     # Status overlay showing marker count and selection
+└── Colors.kt            # OSM-inspired colors and shared dimensions
+```
+
 ## Code Highlights
+
+### MainActivity.kt
+
+```kotlin
+@Composable
+fun MapViewScreen() {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var mapView: OpenMapView? by remember { mutableStateOf(null) }
+    var markerCount by remember { mutableIntStateOf(6) }
+    var selectedMarker: Marker? by remember { mutableStateOf(null) }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(
+            factory = { ctx ->
+                OpenMapView(ctx).apply {
+                    lifecycleOwner.lifecycle.addObserver(this)
+                    setCenter(initialLocation)
+                    setZoom(13.0f)
+
+                    setOnMarkerClickListener { marker ->
+                        selectedMarker = marker
+                        true
+                    }
+                    mapView = this
+                }
+            },
+            modifier = Modifier.fillMaxSize(),
+        )
+
+        StatusToolbar(markerCount = markerCount, selectedMarkerTitle = selectedMarker?.title, ...)
+        MarkerToolbar(onAddClick = { ... }, onRemoveClick = { ... }, onClearClick = { ... })
+    }
+}
+```
 
 ### Adding Markers - Kotlin Style
 
 ```kotlin
-OpenMapView(context).apply {
-    setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
-    setZoom(14.0)
-
-    // Kotlin-style direct instantiation
-    addMarker(
-        Marker(
-            position = LatLng(51.4661, 7.2491),
-            title = "Bochum City Center",
-            snippet = "Welcome to Bochum!",
-        )
+addMarker(
+    Marker(
+        position = LatLng(51.4783, 7.2231),
+        title = "Bochum Hauptbahnhof",
+        snippet = "Main railway station",
+        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
     )
-}
+)
 ```
 
 ### Adding Markers - Google Maps Style
 
 ```kotlin
-// Google Maps API builder pattern
 addMarker(
     MarkerOptions()
         .position(LatLng(51.4650, 7.2500))
@@ -72,20 +109,12 @@ addMarker(
 )
 ```
 
-### Click Listener
+### OSM-Inspired Colors (Colors.kt)
 
 ```kotlin
-setOnMarkerClickListener { marker ->
-    val message = buildString {
-        append(marker.title ?: "Marker")
-        if (marker.snippet != null) {
-            append("\n")
-            append(marker.snippet)
-        }
-    }
-    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    true // Consume the click event
-}
+val OsmParkGreen = Color(0xFFAAD3A2)   // Add button
+val OsmHighwayPink = Color(0xFFE892A2)  // Remove button, Reset FAB
+val OsmWaterBlue = Color(0xFFAAD3DF)    // Clear button
 ```
 
 ### Key Concepts
@@ -94,35 +123,37 @@ setOnMarkerClickListener { marker ->
 - **addMarker()**: Add a marker to the map
 - **removeMarker()**: Remove a specific marker
 - **clearMarkers()**: Remove all markers
+- **getMarkers()**: Get list of all markers
 - **setOnMarkerClickListener()**: Handle marker click events
-- **Default icon**: Red teardrop shape generated via MarkerIconFactory
-- **Custom icons**: Provide your own Bitmap via the `icon` parameter
+- **setOnInfoWindowClickListener()**: Handle info window click events
 
 ## What to Test
 
-1. **Launch the app** - you should see 5 red markers around Bochum
-2. **Click a marker** - Toast message shows title and snippet
-3. **Pan the map** - markers stay at correct geographic positions
-4. **Zoom in/out** - markers remain properly positioned
-5. **Click different markers** - each shows its own title/snippet
+1. **Launch the app** - you should see 6 colored markers at Bochum landmarks
+2. **Tap a marker** - info window shows title and snippet, status shows selection
+3. **Tap info window** - toast message confirms the click
+4. **Tap + button** - adds new marker at map center
+5. **Tap - button** - removes currently selected marker
+6. **Tap trash button** - clears all markers
+7. **Tap reset FAB** - restores initial markers and camera position
+8. **Pan/zoom the map** - markers stay at correct geographic positions
 
 ## Marker Locations
 
-This example displays 5 markers:
+This example displays 6 markers at notable Bochum landmarks:
 
-| Location | Coordinates         | Description        |
-| -------- | ------------------- | ------------------ |
-| Center   | 51.4661°N, 7.2491°E | Bochum City Center |
-| North    | 51.4700°N, 7.2550°E | North Location     |
-| South    | 51.4620°N, 7.2430°E | South Location     |
-| West     | 51.4680°N, 7.2380°E | West Location      |
-| East     | 51.4640°N, 7.2600°E | East Location      |
-
-**Note on marker positioning:** While the 4 outer markers are placed on N, S, W, E sides of the central marker (by adjusting latitude/longitude), they do not appear strictly above, below, left, right on the screen. This is due to the Web Mercator projection used by OpenStreetMap, which distorts distances and angles, especially at higher latitudes. The further from the equator, the more pronounced this distortion becomes.
+| Location          | Coordinates         | Description          |
+| ----------------- | ------------------- | -------------------- |
+| Hauptbahnhof      | 51.4783°N, 7.2231°E | Main railway station |
+| Ruhr University   | 51.4452°N, 7.2622°E | Ruhr-Universitat     |
+| Rathaus           | 51.4816°N, 7.2166°E | City Hall            |
+| Bermuda3eck       | 51.4807°N, 7.2222°E | Entertainment dist.  |
+| Bergbau-Museum    | 51.4892°N, 7.2174°E | Mining Museum        |
+| Starlight Express | 51.4649°N, 7.2043°E | Musical theater      |
 
 ## Custom Marker Icons
 
-To use custom marker icons instead of the default red teardrop:
+To use custom marker icons instead of the default teardrop:
 
 ```kotlin
 // Create custom bitmap (e.g., from resources)
@@ -171,6 +202,6 @@ Click detection uses:
 
 ## Map Location
 
-**Default Center:** Bochum, Germany (51.4661°N, 7.2491°E) at zoom 14.0
+**Default Center:** Calculated from marker positions (~51.47°N, 7.22°E) at zoom 13.0
 
-All 5 markers are positioned around Bochum within ~1km radius.
+All 6 markers are positioned around Bochum at real landmark locations.
