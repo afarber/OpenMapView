@@ -62,12 +62,12 @@ internal object ProjectionUtils {
     fun latLngToPixel(
         latLng: LatLng,
         zoom: Int,
-    ): Pair<Double, Double> {
+    ): Pair<Float, Float> {
         val n = 2.0.pow(zoom)
         val xPixel = (latLng.longitude + 180.0) / 360.0 * n * TILE_SIZE
         val latRad = latLng.latitude * PI / 180.0
         val yPixel = (1.0 - ln(tan(latRad) + 1.0 / cos(latRad)) / PI) / 2.0 * n * TILE_SIZE
-        return Pair(xPixel, yPixel)
+        return Pair(xPixel.toFloat(), yPixel.toFloat())
     }
 
     /**

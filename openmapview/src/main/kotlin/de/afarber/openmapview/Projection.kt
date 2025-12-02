@@ -71,8 +71,8 @@ class Projection
             val adjustedScreenX = screenX - paddingOffsetX
             val adjustedScreenY = screenY - paddingOffsetY
 
-            val pixelX = (centerPixelX + (adjustedScreenX - viewWidth / 2 + panOffsetX).toDouble()).toInt()
-            val pixelY = (centerPixelY + (adjustedScreenY - viewHeight / 2 + panOffsetY).toDouble()).toInt()
+            val pixelX = (centerPixelX + adjustedScreenX - viewWidth / 2 + panOffsetX).toInt()
+            val pixelY = (centerPixelY + adjustedScreenY - viewHeight / 2 + panOffsetY).toInt()
 
             return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom.toInt())
         }
