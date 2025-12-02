@@ -73,7 +73,7 @@ Explore the example applications to see OpenMapView in action:
 - [Example11MapTypes](examples/Example11MapTypes) - Switching between 5 map types (Normal, Terrain, Humanitarian, Cycle, None)
 - [Example12Toolbar](examples/Example12Toolbar) - Open location in external map apps via geo: URI with OpenStreetMap browser fallback
 
-![Example05Camera Demo](examples/Example05Camera/screenshot.gif)
+![Example01Pan Demo](examples/Example01Pan/screenshot.gif)
 
 ## Documentation
 

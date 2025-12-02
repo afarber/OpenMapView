@@ -60,7 +60,7 @@ data class TileOverlay(
     val fadeIn: Boolean = false,
     val tag: Any? = null,
 ) {
-    internal val id: String = "tileoverlay_${System.nanoTime()}_${System.identityHashCode(this)}"
+    internal val id: String = "tileOverlay_${System.nanoTime()}_${System.identityHashCode(this)}"
 
     init {
         require(transparency in 0f..1f) {

@@ -1305,8 +1305,8 @@ class MapController(
 
     private fun drawPolylines(
         canvas: Canvas,
-        centerPixelX: Double,
-        centerPixelY: Double,
+        centerPixelX: Float,
+        centerPixelY: Float,
     ) {
         val paint = Paint()
         paint.style = Paint.Style.STROKE
@@ -1343,8 +1343,8 @@ class MapController(
 
     private fun drawPolygons(
         canvas: Canvas,
-        centerPixelX: Double,
-        centerPixelY: Double,
+        centerPixelX: Float,
+        centerPixelY: Float,
     ) {
         val fillPaint = Paint()
         fillPaint.style = Paint.Style.FILL
@@ -1410,8 +1410,8 @@ class MapController(
 
     private fun drawCircles(
         canvas: Canvas,
-        centerPixelX: Double,
-        centerPixelY: Double,
+        centerPixelX: Float,
+        centerPixelY: Float,
     ) {
         val fillPaint = Paint()
         fillPaint.style = Paint.Style.FILL
@@ -1465,8 +1465,8 @@ class MapController(
 
     private fun drawMarkers(
         canvas: Canvas,
-        centerPixelX: Double,
-        centerPixelY: Double,
+        centerPixelX: Float,
+        centerPixelY: Float,
     ) {
         for (marker in markers) {
             // Skip invisible markers
@@ -1503,8 +1503,8 @@ class MapController(
 
     private fun drawGroundOverlay(
         canvas: Canvas,
-        centerPixelX: Double,
-        centerPixelY: Double,
+        centerPixelX: Float,
+        centerPixelY: Float,
         groundOverlay: GroundOverlay,
     ) {
         val bitmap = loadBitmap(groundOverlay.image)
@@ -1583,8 +1583,8 @@ class MapController(
 
     private fun drawPolygonsByZIndex(
         canvas: Canvas,
-        centerPixelX: Double,
-        centerPixelY: Double,
+        centerPixelX: Float,
+        centerPixelY: Float,
         zIndex: Float,
         sortedPolygons: List<Polygon>,
     ) {
@@ -1649,8 +1649,8 @@ class MapController(
 
     private fun drawPolylinesByZIndex(
         canvas: Canvas,
-        centerPixelX: Double,
-        centerPixelY: Double,
+        centerPixelX: Float,
+        centerPixelY: Float,
         zIndex: Float,
         sortedPolylines: List<Polyline>,
     ) {
@@ -1689,8 +1689,8 @@ class MapController(
 
     private fun drawCirclesByZIndex(
         canvas: Canvas,
-        centerPixelX: Double,
-        centerPixelY: Double,
+        centerPixelX: Float,
+        centerPixelY: Float,
         zIndex: Float,
         sortedCircles: List<Circle>,
     ) {
@@ -1725,8 +1725,8 @@ class MapController(
 
     private fun drawMarkersByZIndex(
         canvas: Canvas,
-        centerPixelX: Double,
-        centerPixelY: Double,
+        centerPixelX: Float,
+        centerPixelY: Float,
         zIndex: Float,
         sortedMarkers: List<Marker>,
     ) {
@@ -1754,8 +1754,8 @@ class MapController(
 
     private fun drawInfoWindows(
         canvas: Canvas,
-        centerPixelX: Double,
-        centerPixelY: Double,
+        centerPixelX: Float,
+        centerPixelY: Float,
     ) {
         val backgroundPaint =
             Paint().apply {
@@ -1888,8 +1888,8 @@ class MapController(
     private fun drawTileOverlay(
         canvas: Canvas,
         visibleTiles: List<TileCoordinate>,
-        centerPixelX: Double,
-        centerPixelY: Double,
+        centerPixelX: Float,
+        centerPixelY: Float,
         overlay: TileOverlay,
     ) {
         val cache = overlayTileCaches[overlay.id] ?: return
