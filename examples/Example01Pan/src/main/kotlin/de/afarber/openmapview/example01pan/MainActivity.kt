@@ -68,17 +68,22 @@ class MainActivity : ComponentActivity() {
 fun MapViewScreen() {
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
-    // Preset locations around Bochum city, Germany
-    val initialLocation = LatLng(51.4661, 7.2491)
-    val location1 = LatLng(51.4700, 7.2400) // North-West
-    val location2 = LatLng(51.4620, 7.2600) // East
-    val location3 = LatLng(51.4550, 7.2350) // South-West
-
     // Bochum area bounds for constraint demo
     val bochumBounds = LatLngBounds(
         southwest = LatLng(51.4400, 7.1800),
         northeast = LatLng(51.5000, 7.3200),
     )
+
+    // Initial location: center of the bounds
+    val initialLocation = LatLng(
+        (bochumBounds.southwest.latitude + bochumBounds.northeast.latitude) / 2,
+        (bochumBounds.southwest.longitude + bochumBounds.northeast.longitude) / 2,
+    )
+
+    // Preset locations around Bochum city, Germany
+    val location1 = LatLng(51.4700, 7.2400) // North-West
+    val location2 = LatLng(51.4620, 7.2600) // East
+    val location3 = LatLng(51.4550, 7.2350) // South-West
 
     // State variables
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
