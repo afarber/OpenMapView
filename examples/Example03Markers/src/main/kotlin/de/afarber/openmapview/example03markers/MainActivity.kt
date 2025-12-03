@@ -39,7 +39,6 @@ import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.Marker
 import de.afarber.openmapview.OnCameraMoveStartedListener
 import de.afarber.openmapview.OpenMapView
-import de.afarber.openmapview.Polyline
 
 /**
  * Main activity demonstrating OpenMapView marker management.
@@ -155,13 +154,6 @@ fun MapViewScreen() {
     )
     val initialZoom = 13.0f
 
-    // Red polyline outline connecting marker positions
-    val markerOutline = Polyline(
-        points = initialMarkerData.map { it.position } + initialMarkerData.first().position,
-        strokeColor = Color.Red,
-        strokeWidth = 4f,
-    )
-
     // State variables
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
     var markerCount by remember { mutableIntStateOf(initialMarkerData.size) }
@@ -196,9 +188,6 @@ fun MapViewScreen() {
 
                     setCenter(initialLocation)
                     setZoom(initialZoom)
-
-                    // Add the red polyline outline
-                    addPolyline(markerOutline)
 
                     // Create initial markers
                     createInitialMarkers(this)
