@@ -7,6 +7,8 @@
 
 package de.afarber.openmapview
 
+import kotlin.time.Duration
+
 /**
  * Settings for the map user interface controls and gestures.
  *
@@ -87,6 +89,23 @@ class UiSettings {
      * Always returns false.
      */
     val isMapToolbarEnabled: Boolean = false
+
+    /**
+     * Duration after which info windows automatically dismiss.
+     * Set to Duration.ZERO to disable auto-dismiss (default).
+     * Non-positive values are normalized to Duration.ZERO (disabled).
+     *
+     * Example:
+     * ```kotlin
+     * import kotlin.time.Duration.Companion.seconds
+     *
+     * mapView.uiSettings.infoWindowAutoDismiss = 3.seconds
+     * ```
+     */
+    var infoWindowAutoDismiss: Duration = Duration.ZERO
+        set(value) {
+            field = if (value.isPositive()) value else Duration.ZERO
+        }
 
     /**
      * Enables or disables all gestures.

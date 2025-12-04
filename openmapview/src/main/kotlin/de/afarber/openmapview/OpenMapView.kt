@@ -10,6 +10,8 @@ package de.afarber.openmapview
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -17,6 +19,7 @@ import android.view.ScaleGestureDetector
 import android.widget.FrameLayout
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import kotlin.time.Duration
 
 /**
  * A MapView powered by OpenStreetMap tiles.
@@ -75,6 +78,8 @@ class OpenMapView
         private var onMarkerDragListener: OnMarkerDragListener? = null
         private var draggedMarker: Marker? = null
         private var isDragging = false
+        private val infoWindowHandler = Handler(Looper.getMainLooper())
+        private var infoWindowDismissRunnable: Runnable? = null
 
         private val gestureDetector =
             GestureDetector(
@@ -280,11 +285,18 @@ class OpenMapView
                             // Check for marker touch
                             val touchedMarker = controller.handleMarkerTouch(event.x, event.y)
                             if (touchedMarker != null) {
-                                // Hide all other info windows (only one can be shown at a time)
-                                controller.getMarkers().forEach { it.hideInfoWindow() }
-                                // Show info window for clicked marker if it has title or snippet
-                                if (touchedMarker.title != null || touchedMarker.snippet != null) {
-                                    touchedMarker.showInfoWindow()
+                                // Toggle info window if clicking same marker, otherwise show new one
+                                if (touchedMarker.isInfoWindowShown) {
+                                    touchedMarker.hideInfoWindow()
+                                    cancelInfoWindowAutoDismiss()
+                                } else {
+                                    // Hide all other info windows (only one can be shown at a time)
+                                    controller.getMarkers().forEach { it.hideInfoWindow() }
+                                    // Show info window for clicked marker if it has title or snippet
+                                    if (touchedMarker.title != null || touchedMarker.snippet != null) {
+                                        touchedMarker.showInfoWindow()
+                                        scheduleInfoWindowAutoDismiss()
+                                    }
                                 }
 
                                 val consumed = controller.onMarkerClickListener?.onMarkerClick(touchedMarker) ?: false
@@ -1512,6 +1524,37 @@ class OpenMapView
             invalidate()
         }
 
+        /**
+         * Schedules auto-dismiss of info windows if enabled in UiSettings.
+         *
+         * Called when an info window is shown. Only starts the timer if
+         * infoWindowAutoDismiss is positive; Duration.ZERO means disabled.
+         */
+        private fun scheduleInfoWindowAutoDismiss() {
+            infoWindowDismissRunnable?.let { infoWindowHandler.removeCallbacks(it) }
+            val duration = uiSettings.infoWindowAutoDismiss
+            if (duration == Duration.ZERO) return
+            val runnable =
+                Runnable {
+                    controller.getMarkers().forEach { it.hideInfoWindow() }
+                    // OpenMapView is a traditional Android View (not Compose), so we must
+                    // call invalidate() to trigger a redraw after hiding info windows
+                    invalidate()
+                }
+            infoWindowDismissRunnable = runnable
+            infoWindowHandler.postDelayed(runnable, duration.inWholeMilliseconds)
+        }
+
+        /**
+         * Cancels any pending auto-dismiss of info windows.
+         *
+         * Called when an info window is manually hidden by the user.
+         */
+        private fun cancelInfoWindowAutoDismiss() {
+            infoWindowDismissRunnable?.let { infoWindowHandler.removeCallbacks(it) }
+            infoWindowDismissRunnable = null
+        }
+
         override fun onResume(owner: LifecycleOwner) {
             controller.onResume()
         }
@@ -1521,6 +1564,7 @@ class OpenMapView
         }
 
         override fun onDestroy(owner: LifecycleOwner) {
+            cancelInfoWindowAutoDismiss()
             controller.onDestroy()
         }
     }

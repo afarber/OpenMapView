@@ -222,6 +222,7 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 | `setMapToolbarEnabled(boolean)`                       | `void`      | Not implemented - use openInExternalApp() instead (see External Map Integration section) |
 | `isMapToolbarEnabled()`                               | `boolean`   | Always returns false                                                                     |
 | `setAllGesturesEnabled(boolean)`                      | `void`      |                                                                                          |
+| `infoWindowAutoDismiss`                               | `Duration`  | OpenMapView-specific: auto-dismiss info windows after duration (ZERO = disabled)         |
 
 ---
 

@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2025 Alexander Farber
+ * SPDX-License-Identifier: MIT
+ *
+ * This file is part of the OpenMapView project (https://github.com/afarber/OpenMapView)
+ */
+
 package de.afarber.openmapview.example03markers
 
 import de.afarber.openmapview.BitmapDescriptorFactory
@@ -29,7 +36,7 @@ val initialMarkerData = listOf(
     MarkerData(
         position = LatLng(51.4452, 7.2622),
         title = "Ruhr University",
-        snippet = "Ruhr-Universitat Bochum",
+        snippet = "Ruhr-Universität Bochum",
         hue = BitmapDescriptorFactory.HUE_BLUE,
     ),
     MarkerData(
