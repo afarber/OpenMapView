@@ -158,11 +158,11 @@ fun MapViewScreen() {
 
         // Status overlay at top
         StatusToolbar(
-            markerCount = mapView?.getMarkers()?.size ?: 0,
+            selectedIndex = selectedIndex,
             selectedMarkerTitle = selectedMarker?.title,
             cameraState = cameraState,
             modifier = Modifier
-                .align(Alignment.TopCenter)
+                .align(Alignment.CenterStart)
                 .padding(16.dp),
         )
 

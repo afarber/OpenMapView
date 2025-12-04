@@ -22,16 +22,16 @@ import androidx.compose.ui.unit.dp
 /**
  * A status overlay displaying current marker and camera state information.
  *
- * Shows the total marker count, currently selected marker name, and camera state.
+ * Shows the currently selected marker index and name, and camera state.
  *
- * @param markerCount Total number of markers currently on the map.
+ * @param selectedIndex The index of the currently selected marker.
  * @param selectedMarkerTitle Title of the currently selected marker, or null if none selected.
  * @param cameraState Current camera state description (e.g., "Idle", "Moving (gesture)").
  * @param modifier Modifier to be applied to the status overlay.
  */
 @Composable
 fun StatusToolbar(
-    markerCount: Int,
+    selectedIndex: Int,
     selectedMarkerTitle: String?,
     cameraState: String,
     modifier: Modifier = Modifier,
@@ -44,7 +44,7 @@ fun StatusToolbar(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "Markers: $markerCount",
+            text = "Marker #${selectedIndex + 1}",
             color = Color.Black,
         )
         Text(
