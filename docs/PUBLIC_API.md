@@ -43,6 +43,18 @@ This document lists all public non-deprecated methods from Google's MapView and 
 | -------------------------- | ----------- | ----- |
 | `addMarker(MarkerOptions)` | `Marker`    |       |
 | `clear()`                  | `void`      |       |
+| `showInfoWindow(Marker)`   | `void`      | Shows marker's info window with auto-dismiss support |
+| `hideInfoWindow(Marker)`   | `void`      | Hides marker's info window and cancels auto-dismiss  |
+
+---
+
+## Marker Class
+
+| Method             | Return Type | Notes                                                                |
+| ------------------ | ----------- | -------------------------------------------------------------------- |
+| `showInfoWindow()` | `void`      | Shows this marker's info window (auto-dismiss if configured via UiSettings) |
+| `hideInfoWindow()` | `void`      | Hides this marker's info window                                      |
+| `isInfoWindowShown`| `Boolean`   | Returns whether this marker's info window is currently shown         |
 
 ---
 
