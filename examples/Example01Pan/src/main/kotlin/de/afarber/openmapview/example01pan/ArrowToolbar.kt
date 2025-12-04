@@ -90,7 +90,7 @@ fun ArrowToolbar(
                 modifier = Modifier.size(56.dp),
                 shape = RoundedCornerShape(topEnd = ToolbarCornerRadius, bottomEnd = ToolbarCornerRadius),
                 colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = OsmParkGreen,
+                    containerColor = OsmHighwayPink,
                     contentColor = Color.Black,
                 ),
             ) {

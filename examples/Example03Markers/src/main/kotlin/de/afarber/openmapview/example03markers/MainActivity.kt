@@ -14,10 +14,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -28,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -39,14 +34,16 @@ import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.Marker
 import de.afarber.openmapview.OnCameraMoveStartedListener
 import de.afarber.openmapview.OpenMapView
+import kotlin.time.Duration.Companion.seconds
 
 /**
- * Main activity demonstrating OpenMapView marker management.
+ * Main activity demonstrating OpenMapView marker navigation.
  *
  * This example showcases:
- * - Adding markers with different colors at real Bochum locations
- * - Marker click listener and info window display
- * - Interactive marker management (add, remove, clear)
+ * - Displaying markers with different colors at real Bochum locations
+ * - Navigating between markers with prev/next buttons
+ * - Toggling info windows on selected markers
+ * - Camera animation when centering on markers
  * - Real-time marker count and selection tracking
  * - Camera state monitoring
  */
@@ -67,11 +64,11 @@ class MainActivity : ComponentActivity() {
 }
 
 /**
- * Main composable screen containing the map and marker controls.
+ * Main composable screen containing the map and marker navigation controls.
  *
  * Displays an OpenMapView with markers at notable Bochum locations,
  * a status toolbar showing marker count and selection state,
- * and a marker toolbar for adding, removing, and clearing markers.
+ * and a marker toolbar for navigating between markers and toggling info windows.
  */
 @Composable
 fun MapViewScreen() {
@@ -87,13 +84,12 @@ fun MapViewScreen() {
 
     // State variables
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
-    var markerCount by remember { mutableIntStateOf(initialMarkerData.size) }
+    var selectedIndex by remember { mutableIntStateOf(0) }
     var selectedMarker: Marker? by remember { mutableStateOf(null) }
     var cameraState by remember { mutableStateOf("Idle") }
-    var addedMarkerCounter by remember { mutableIntStateOf(0) }
 
     /**
-     * Creates initial markers on the map.
+     * Creates initial markers on the map and selects the first one.
      */
     fun createInitialMarkers(map: OpenMapView) {
         initialMarkerData.forEach { data ->
@@ -106,8 +102,8 @@ fun MapViewScreen() {
                 ),
             )
         }
-        markerCount = map.getMarkers().size
-        selectedMarker = null
+        selectedIndex = 0
+        selectedMarker = map.getMarkers().firstOrNull()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -119,6 +115,7 @@ fun MapViewScreen() {
 
                     setCenter(initialLocation)
                     setZoom(initialZoom)
+                    getUiSettings().infoWindowAutoDismiss = 10.seconds
 
                     // Create initial markers
                     createInitialMarkers(this)
@@ -141,6 +138,10 @@ fun MapViewScreen() {
                     // Marker click listener - tracks selection and shows info window
                     setOnMarkerClickListener { marker ->
                         selectedMarker = marker
+                        val index = getMarkers().indexOf(marker)
+                        if (index >= 0) {
+                            selectedIndex = index
+                        }
                         true // Consume the click event (info window will still show)
                     }
 
@@ -157,7 +158,7 @@ fun MapViewScreen() {
 
         // Status overlay at top
         StatusToolbar(
-            markerCount = markerCount,
+            markerCount = mapView?.getMarkers()?.size ?: 0,
             selectedMarkerTitle = selectedMarker?.title,
             cameraState = cameraState,
             modifier = Modifier
@@ -167,68 +168,37 @@ fun MapViewScreen() {
 
         // Marker toolbar at bottom
         MarkerToolbar(
-            onAddClick = {
+            onPrevClick = {
                 mapView?.apply {
-                    val center = getCameraPosition().target
-                    val hue = markerHues[addedMarkerCounter % markerHues.size]
-                    addedMarkerCounter++
-                    val newMarker = addMarker(
-                        Marker(
-                            position = center,
-                            title = "Marker $addedMarkerCounter",
-                            snippet = "Added at map center",
-                            icon = BitmapDescriptorFactory.defaultMarker(hue),
-                        ),
-                    )
-                    markerCount = getMarkers().size
-                    selectedMarker = newMarker
-                }
-            },
-            onRemoveClick = {
-                mapView?.apply {
-                    selectedMarker?.let { marker ->
-                        removeMarker(marker)
-                        markerCount = getMarkers().size
-                        selectedMarker = null
+                    val markers = getMarkers()
+                    if (markers.isNotEmpty()) {
+                        selectedIndex = (selectedIndex - 1 + markers.size) % markers.size
+                        val marker = markers[selectedIndex]
+                        selectedMarker = marker
+                        animateCamera(CameraUpdateFactory.newLatLng(marker.position), 500)
                     }
                 }
             },
-            onClearClick = {
+            onNextClick = {
                 mapView?.apply {
-                    clearMarkers()
-                    markerCount = 0
-                    selectedMarker = null
-                    addedMarkerCounter = 0
+                    val markers = getMarkers()
+                    if (markers.isNotEmpty()) {
+                        selectedIndex = (selectedIndex + 1) % markers.size
+                        val marker = markers[selectedIndex]
+                        selectedMarker = marker
+                        animateCamera(CameraUpdateFactory.newLatLng(marker.position), 500)
+                    }
+                }
+            },
+            onInfoClick = {
+                selectedMarker?.let { marker ->
+                    marker.showInfoWindow()
+                    mapView?.animateCamera(CameraUpdateFactory.newLatLng(marker.position), 500)
                 }
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 16.dp),
         )
-
-        // Reset FAB at bottom-end
-        FloatingActionButton(
-            onClick = {
-                mapView?.apply {
-                    clearMarkers()
-                    createInitialMarkers(this)
-                    addedMarkerCounter = 0
-                    animateCamera(
-                        CameraUpdateFactory.newLatLngZoom(initialLocation, initialZoom),
-                        500,
-                    )
-                }
-            },
-            containerColor = OsmHighwayPink,
-            contentColor = Color.Black,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Default.Refresh,
-                contentDescription = "Reset",
-            )
-        }
     }
 }

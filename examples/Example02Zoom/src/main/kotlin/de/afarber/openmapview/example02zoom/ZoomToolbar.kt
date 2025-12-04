@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.ZoomIn
+import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -54,7 +54,7 @@ fun ZoomToolbar(
                     contentColor = Color.Black,
                 ),
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Zoom In")
+                Icon(Icons.Default.ZoomIn, contentDescription = "Zoom In")
             }
             FilledIconButton(
                 onClick = onZoomOutClick,
@@ -65,7 +65,7 @@ fun ZoomToolbar(
                     contentColor = Color.Black,
                 ),
             ) {
-                Icon(Icons.Default.Remove, contentDescription = "Zoom Out")
+                Icon(Icons.Default.ZoomOut, contentDescription = "Zoom Out")
             }
         }
     }

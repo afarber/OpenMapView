@@ -64,17 +64,3 @@ val initialMarkerData = listOf(
         hue = BitmapDescriptorFactory.HUE_CYAN,
     ),
 )
-
-/** Color hues for dynamically added markers, cycling through available colors. */
-val markerHues = listOf(
-    BitmapDescriptorFactory.HUE_RED,
-    BitmapDescriptorFactory.HUE_BLUE,
-    BitmapDescriptorFactory.HUE_GREEN,
-    BitmapDescriptorFactory.HUE_ORANGE,
-    BitmapDescriptorFactory.HUE_MAGENTA,
-    BitmapDescriptorFactory.HUE_CYAN,
-    BitmapDescriptorFactory.HUE_YELLOW,
-    BitmapDescriptorFactory.HUE_VIOLET,
-    BitmapDescriptorFactory.HUE_ROSE,
-    BitmapDescriptorFactory.HUE_AZURE,
-)
