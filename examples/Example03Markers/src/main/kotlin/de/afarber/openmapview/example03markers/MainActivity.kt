@@ -200,14 +200,18 @@ fun MapViewScreen() {
                 .padding(bottom = 16.dp),
         )
 
-
         FloatingActionButton(
             onClick = {
                 selectedMarker?.let { marker ->
-                    marker.showInfoWindow()
-                    mapView?.animateCamera(CameraUpdateFactory.newLatLng(marker.position), 500)
+                    if (marker.isInfoWindowShown) {
+                        marker.hideInfoWindow()
+                    } else {
+                        marker.showInfoWindow()
+                        mapView?.animateCamera(CameraUpdateFactory.newLatLng(marker.position), 500)
+                    }
                 }
             },
+
             containerColor = OsmHighwayPink,
             contentColor = Color.Black,
             modifier = Modifier

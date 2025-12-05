@@ -48,7 +48,7 @@ fun StatusToolbar(
             color = Color.Black,
         )
         Text(
-            text = "Selected: ${selectedMarkerTitle ?: "None"}",
+            text = selectedMarkerTitle ?: "None",
             color = Color.Black,
         )
         Text(
