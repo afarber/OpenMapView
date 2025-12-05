@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -25,7 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * A horizontal toolbar with buttons to navigate markers and toggle info windows.
+ * A horizontal toolbar with buttons to navigate markers.
  *
  * Uses OSM-inspired colors for visual consistency:
  * - Previous button: OsmParkGreen
@@ -34,14 +33,12 @@ import androidx.compose.ui.unit.dp
  *
  * @param onPrevClick Callback invoked when the previous marker button is clicked.
  * @param onNextClick Callback invoked when the next marker button is clicked.
- * @param onInfoClick Callback invoked when the info window toggle button is clicked.
  * @param modifier Modifier to be applied to the toolbar.
  */
 @Composable
 fun MarkerToolbar(
     onPrevClick: () -> Unit,
     onNextClick: () -> Unit,
-    onInfoClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -65,24 +62,13 @@ fun MarkerToolbar(
             FilledIconButton(
                 onClick = onNextClick,
                 modifier = Modifier.size(56.dp),
-                shape = RoundedCornerShape(0.dp),
+                shape = RoundedCornerShape(topEnd = ToolbarCornerRadius, bottomEnd = ToolbarCornerRadius),
                 colors = IconButtonDefaults.filledIconButtonColors(
                     containerColor = OsmParkGreen,
                     contentColor = Color.Black,
                 ),
             ) {
                 Icon(Icons.Default.KeyboardDoubleArrowRight, contentDescription = "Next Marker")
-            }
-            FilledIconButton(
-                onClick = onInfoClick,
-                modifier = Modifier.size(56.dp),
-                shape = RoundedCornerShape(topEnd = ToolbarCornerRadius, bottomEnd = ToolbarCornerRadius),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = OsmWaterBlue,
-                    contentColor = Color.Black,
-                ),
-            ) {
-                Icon(Icons.Default.LocationOn, contentDescription = "Show Marker Info")
             }
         }
     }
