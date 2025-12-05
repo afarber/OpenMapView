@@ -300,7 +300,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 | `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | Not implemented - tiles load asynchronously, callback could be added |
 | `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | Not implemented - custom adapters not yet implemented                |
 | `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           |                                                                      |
-| `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | Not implemented                                                      |
+| `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | Called when info window is closed (manual or auto-dismiss)           |
 | `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | Not implemented                                                      |
 | `setOnMyLocationButtonClickListener(OnMyLocationButtonClickListener)` | `void`           | Not implemented                                                      |
 | `setOnMyLocationClickListener(OnMyLocationClickListener)`             | `void`           | Not implemented                                                      |

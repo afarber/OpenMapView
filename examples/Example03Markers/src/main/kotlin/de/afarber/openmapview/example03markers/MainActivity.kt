@@ -92,6 +92,7 @@ fun MapViewScreen() {
     var selectedIndex by remember { mutableIntStateOf(0) }
     var selectedMarker: Marker? by remember { mutableStateOf(null) }
     var cameraState by remember { mutableStateOf("Idle") }
+    var isInfoWindowShown by remember { mutableStateOf(false) }
 
     /**
      * Creates initial markers on the map and selects the first one.
@@ -143,6 +144,7 @@ fun MapViewScreen() {
                     // Marker click listener - tracks selection and shows info window
                     setOnMarkerClickListener { marker ->
                         selectedMarker = marker
+                        isInfoWindowShown = true
                         val index = getMarkers().indexOf(marker)
                         if (index >= 0) {
                             selectedIndex = index
@@ -153,6 +155,11 @@ fun MapViewScreen() {
                     // Info window click listener
                     setOnInfoWindowClickListener { marker ->
                         Toast.makeText(context, "Clicked: ${marker.title}", Toast.LENGTH_SHORT).show()
+                    }
+
+                    // Info window close listener - updates state when closed (manual or auto-dismiss)
+                    setOnInfoWindowCloseListener {
+                        isInfoWindowShown = false
                     }
 
                     mapView = this
@@ -166,6 +173,7 @@ fun MapViewScreen() {
             selectedIndex = selectedIndex,
             selectedMarkerTitle = selectedMarker?.title,
             cameraState = cameraState,
+            isInfoWindowShown = isInfoWindowShown,
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .padding(16.dp),
@@ -207,11 +215,11 @@ fun MapViewScreen() {
                         marker.hideInfoWindow()
                     } else {
                         marker.showInfoWindow()
+                        isInfoWindowShown = true
                         mapView?.animateCamera(CameraUpdateFactory.newLatLng(marker.position), 500)
                     }
                 }
             },
-
             containerColor = OsmHighwayPink,
             contentColor = Color.Black,
             modifier = Modifier

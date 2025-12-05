@@ -289,9 +289,15 @@ class OpenMapView
                                 if (touchedMarker.isInfoWindowShown) {
                                     touchedMarker.setInfoWindowShownInternal(false)
                                     cancelInfoWindowAutoDismiss()
+                                    controller.onInfoWindowCloseListener?.onInfoWindowClose(touchedMarker)
                                 } else {
                                     // Hide all other info windows (only one can be shown at a time)
-                                    controller.getMarkers().forEach { it.setInfoWindowShownInternal(false) }
+                                    controller.getMarkers().forEach { marker ->
+                                        if (marker.isInfoWindowShown) {
+                                            marker.setInfoWindowShownInternal(false)
+                                            controller.onInfoWindowCloseListener?.onInfoWindowClose(marker)
+                                        }
+                                    }
                                     // Show info window for clicked marker if it has title or snippet
                                     if (touchedMarker.title != null || touchedMarker.snippet != null) {
                                         touchedMarker.setInfoWindowShownInternal(true)
@@ -1015,8 +1021,12 @@ class OpenMapView
          * @see showInfoWindow
          */
         fun hideInfoWindow(marker: Marker) {
+            val wasShown = marker.isInfoWindowShown
             marker.setInfoWindowShownInternal(false)
             cancelInfoWindowAutoDismiss()
+            if (wasShown) {
+                controller.onInfoWindowCloseListener?.onInfoWindowClose(marker)
+            }
             invalidate()
         }
 
@@ -1054,6 +1064,27 @@ class OpenMapView
          */
         fun setOnInfoWindowClickListener(listener: OnInfoWindowClickListener?) {
             controller.onInfoWindowClickListener = listener
+        }
+
+        /**
+         * Sets a listener to handle info window close events.
+         *
+         * Called when an info window is closed, either manually via hideInfoWindow()
+         * or automatically via the auto-dismiss timer.
+         *
+         * Example:
+         * ```kotlin
+         * mapView.setOnInfoWindowCloseListener { marker ->
+         *     Log.d("Map", "Info window closed: ${marker.title}")
+         * }
+         * ```
+         *
+         * @param listener The listener to receive info window close events, or null to clear the listener
+         * @see hideInfoWindow
+         * @see UiSettings.infoWindowAutoDismiss
+         */
+        fun setOnInfoWindowCloseListener(listener: OnInfoWindowCloseListener?) {
+            controller.onInfoWindowCloseListener = listener
         }
 
         /**
@@ -1587,7 +1618,12 @@ class OpenMapView
             if (duration == Duration.ZERO) return
             val runnable =
                 Runnable {
-                    controller.getMarkers().forEach { it.setInfoWindowShownInternal(false) }
+                    controller.getMarkers().forEach { marker ->
+                        if (marker.isInfoWindowShown) {
+                            marker.setInfoWindowShownInternal(false)
+                            controller.onInfoWindowCloseListener?.onInfoWindowClose(marker)
+                        }
+                    }
                     // OpenMapView is a traditional Android View (not Compose), so we must
                     // call invalidate() to trigger a redraw after hiding info windows
                     invalidate()

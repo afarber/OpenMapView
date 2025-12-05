@@ -23,10 +23,12 @@ import androidx.compose.ui.unit.dp
  * A status overlay displaying current marker and camera state information.
  *
  * Shows the currently selected marker index and name, and camera state.
+ * The marker number text turns red when an info window is shown.
  *
  * @param selectedIndex The index of the currently selected marker.
  * @param selectedMarkerTitle Title of the currently selected marker, or null if none selected.
  * @param cameraState Current camera state description (e.g., "Idle", "Moving (gesture)").
+ * @param isInfoWindowShown Whether an info window is currently shown.
  * @param modifier Modifier to be applied to the status overlay.
  */
 @Composable
@@ -34,6 +36,7 @@ fun StatusToolbar(
     selectedIndex: Int,
     selectedMarkerTitle: String?,
     cameraState: String,
+    isInfoWindowShown: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -45,7 +48,7 @@ fun StatusToolbar(
     ) {
         Text(
             text = "Marker #${selectedIndex + 1}",
-            color = Color.Black,
+            color = if (isInfoWindowShown) Color.Red else Color.Black,
         )
         Text(
             text = selectedMarkerTitle ?: "None",
