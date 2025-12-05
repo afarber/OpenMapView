@@ -144,7 +144,7 @@ fun MapViewScreen() {
                     // Marker click listener - tracks selection and shows info window
                     setOnMarkerClickListener { marker ->
                         selectedMarker = marker
-                        isInfoWindowShown = true
+                        isInfoWindowShown = marker.isInfoWindowShown
                         val index = getMarkers().indexOf(marker)
                         if (index >= 0) {
                             selectedIndex = index
