@@ -7,9 +7,13 @@
 
 package de.afarber.openmapview
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class UiSettingsTest {
     @Test
@@ -168,5 +172,49 @@ class UiSettingsTest {
     fun testIsMapToolbarEnabled_ReturnsFalse() {
         val uiSettings = UiSettings()
         assertFalse(uiSettings.isMapToolbarEnabled)
+    }
+
+    @Test
+    fun testInfoWindowAutoDismiss_DefaultZero() {
+        val uiSettings = UiSettings()
+        assertEquals(Duration.ZERO, uiSettings.infoWindowAutoDismiss)
+    }
+
+    @Test
+    fun testInfoWindowAutoDismiss_SetSeconds() {
+        val uiSettings = UiSettings()
+        uiSettings.infoWindowAutoDismiss = 3.seconds
+        assertEquals(3000L, uiSettings.infoWindowAutoDismiss.inWholeMilliseconds)
+    }
+
+    @Test
+    fun testInfoWindowAutoDismiss_SetMilliseconds() {
+        val uiSettings = UiSettings()
+        uiSettings.infoWindowAutoDismiss = 500.milliseconds
+        assertEquals(500L, uiSettings.infoWindowAutoDismiss.inWholeMilliseconds)
+    }
+
+    @Test
+    fun testInfoWindowAutoDismiss_SetToZero() {
+        val uiSettings = UiSettings()
+        uiSettings.infoWindowAutoDismiss = 3.seconds
+        assertEquals(3000L, uiSettings.infoWindowAutoDismiss.inWholeMilliseconds)
+
+        uiSettings.infoWindowAutoDismiss = Duration.ZERO
+        assertEquals(Duration.ZERO, uiSettings.infoWindowAutoDismiss)
+    }
+
+    @Test
+    fun testInfoWindowAutoDismiss_NegativeNormalizedToZero() {
+        val uiSettings = UiSettings()
+        uiSettings.infoWindowAutoDismiss = (-3).seconds
+        assertEquals(Duration.ZERO, uiSettings.infoWindowAutoDismiss)
+    }
+
+    @Test
+    fun testInfoWindowAutoDismiss_ZeroStaysZero() {
+        val uiSettings = UiSettings()
+        uiSettings.infoWindowAutoDismiss = 0.seconds
+        assertEquals(Duration.ZERO, uiSettings.infoWindowAutoDismiss)
     }
 }

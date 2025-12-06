@@ -43,6 +43,18 @@ This document lists all public non-deprecated methods from Google's MapView and 
 | -------------------------- | ----------- | ----- |
 | `addMarker(MarkerOptions)` | `Marker`    |       |
 | `clear()`                  | `void`      |       |
+| `showInfoWindow(Marker)`   | `void`      | Shows marker's info window with auto-dismiss support |
+| `hideInfoWindow(Marker)`   | `void`      | Hides marker's info window and cancels auto-dismiss  |
+
+---
+
+## Marker Class
+
+| Method             | Return Type | Notes                                                                |
+| ------------------ | ----------- | -------------------------------------------------------------------- |
+| `showInfoWindow()` | `void`      | Shows this marker's info window (auto-dismiss if configured via UiSettings) |
+| `hideInfoWindow()` | `void`      | Hides this marker's info window                                      |
+| `isInfoWindowShown`| `Boolean`   | Returns whether this marker's info window is currently shown         |
 
 ---
 
@@ -222,6 +234,7 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 | `setMapToolbarEnabled(boolean)`                       | `void`      | Not implemented - use openInExternalApp() instead (see External Map Integration section) |
 | `isMapToolbarEnabled()`                               | `boolean`   | Always returns false                                                                     |
 | `setAllGesturesEnabled(boolean)`                      | `void`      |                                                                                          |
+| `infoWindowAutoDismiss`                               | `Duration`  | OpenMapView-specific: auto-dismiss info windows after duration (ZERO = disabled)         |
 
 ---
 
@@ -287,7 +300,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 | `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | Not implemented - tiles load asynchronously, callback could be added |
 | `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | Not implemented - custom adapters not yet implemented                |
 | `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           |                                                                      |
-| `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | Not implemented                                                      |
+| `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | Called when info window is closed (manual or auto-dismiss)           |
 | `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | Not implemented                                                      |
 | `setOnMyLocationButtonClickListener(OnMyLocationButtonClickListener)` | `void`           | Not implemented                                                      |
 | `setOnMyLocationClickListener(OnMyLocationClickListener)`             | `void`           | Not implemented                                                      |

@@ -173,6 +173,7 @@ class MapController(
     private val defaultMarkerIcon by lazy { MarkerIconFactory.getDefaultIcon() }
     var onMarkerClickListener: OnMarkerClickListener? = null
     var onInfoWindowClickListener: OnInfoWindowClickListener? = null
+    var onInfoWindowCloseListener: OnInfoWindowCloseListener? = null
 
     private val polylines = mutableListOf<Polyline>()
     private val polygons = mutableListOf<Polygon>()

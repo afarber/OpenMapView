@@ -45,23 +45,53 @@ data class Marker(
     internal val id: String = "marker_${System.nanoTime()}_${System.identityHashCode(this)}"
 
     /**
-     * Whether the info window is currently shown for this marker.
+     * Reference to the parent map view.
+     * Set when the marker is added to a map, cleared when removed.
      */
-    internal var isInfoWindowShown: Boolean = false
+    internal var mapView: OpenMapView? = null
+
+    /**
+     * Whether the info window is currently shown for this marker.
+     *
+     * Use [showInfoWindow] and [hideInfoWindow] to change this state.
+     */
+    var isInfoWindowShown: Boolean
+        get() = _isInfoWindowShown
+        private set(value) {
+            _isInfoWindowShown = value
+        }
+
+    private var _isInfoWindowShown: Boolean = false
 
     /**
      * Shows the info window for this marker.
+     *
      * The info window displays the marker's title and snippet text.
+     * If [UiSettings.infoWindowAutoDismiss] is set to a positive duration on the map,
+     * the info window will be automatically hidden after that duration.
+     *
+     * Only one info window can be shown at a time - showing this marker's info window
+     * will hide any other currently shown info window.
      */
     fun showInfoWindow() {
-        isInfoWindowShown = true
+        mapView?.showInfoWindow(this) ?: run { _isInfoWindowShown = true }
     }
 
     /**
      * Hides the info window for this marker.
+     *
+     * Also cancels any pending auto-dismiss timer.
      */
     fun hideInfoWindow() {
-        isInfoWindowShown = false
+        mapView?.hideInfoWindow(this) ?: run { _isInfoWindowShown = false }
+    }
+
+    /**
+     * Internal method to set the info window shown state without triggering map updates.
+     * Used by OpenMapView to avoid infinite recursion.
+     */
+    internal fun setInfoWindowShownInternal(shown: Boolean) {
+        _isInfoWindowShown = shown
     }
 
     override fun equals(other: Any?): Boolean {
