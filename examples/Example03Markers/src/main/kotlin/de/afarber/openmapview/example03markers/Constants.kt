@@ -13,7 +13,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * OSM-inspired colors and shared dimensions for the Example03Markers app.
+ * Constants for the Example03Markers app: colors, dimensions, and durations.
  */
 
 /** Green color used by OpenStreetMap for parks and forests. */

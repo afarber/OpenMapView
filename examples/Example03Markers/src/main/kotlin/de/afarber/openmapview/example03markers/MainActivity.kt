@@ -83,7 +83,7 @@ fun MapViewScreen() {
         poiMarkers.map { it.position.latitude }.average(),
         poiMarkers.map { it.position.longitude }.average(),
     )
-    val initialZoom = 13.0f
+    val initialZoom = 14.0f
 
     // State variables - mapView is nullable because AndroidView.factory runs after first composition
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
@@ -91,7 +91,7 @@ fun MapViewScreen() {
     var cameraState by remember { mutableStateOf("Idle") }
     var isInfoWindowShown by remember { mutableStateOf(false) }
 
-    // Derived state - selectedMarker is computed from mapView and selectedIndex (SSOT)
+    // Derived state - selectedMarker is computed from mapView and selectedIndex
     val selectedMarker: Marker? = mapView?.getMarkers()?.getOrNull(selectedIndex)
 
     /**
@@ -139,6 +139,7 @@ fun MapViewScreen() {
                     setOnMarkerClickListener { marker ->
                         isInfoWindowShown = marker.isInfoWindowShown
                         selectedIndex = getMarkers().indexOf(marker).coerceAtLeast(0)
+                        animateCamera(CameraUpdateFactory.newLatLng(marker.position), 500)
                         true
                     }
 

@@ -45,8 +45,8 @@ example03markers/
 ├── MainActivity.kt      # Main activity and MapViewScreen composable
 ├── MarkerToolbar.kt     # Horizontal toolbar with prev/next navigation buttons
 ├── StatusToolbar.kt     # Status overlay showing selection index and camera state
-├── MarkerData.kt        # Marker data class and initial Bochum locations
-└── Colors.kt            # OSM-inspired colors and shared dimensions
+├── MarkerData.kt        # Marker data class and Bochum POI locations
+└── Constants.kt         # Colors, dimensions, and durations
 ```
 
 ## Code Highlights
@@ -116,7 +116,7 @@ addMarker(
 )
 ```
 
-### OSM-Inspired Colors (Colors.kt)
+### OSM-Inspired Colors (Constants.kt)
 
 ```kotlin
 val OsmParkGreen = Color(0xFFAAD3A2)   // Navigation buttons (prev/next)
