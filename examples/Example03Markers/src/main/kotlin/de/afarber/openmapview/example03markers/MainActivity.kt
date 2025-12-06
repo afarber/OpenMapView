@@ -39,7 +39,6 @@ import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.Marker
 import de.afarber.openmapview.OnCameraMoveStartedListener
 import de.afarber.openmapview.OpenMapView
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * Main activity demonstrating OpenMapView marker navigation.
@@ -120,7 +119,7 @@ fun MapViewScreen() {
 
                     setCenter(initialLocation)
                     setZoom(initialZoom)
-                    getUiSettings().infoWindowAutoDismiss = 10.seconds
+                    getUiSettings().infoWindowAutoDismiss = InfoWindowAutoDismissDuration
 
                     createMarkers(this)
 
