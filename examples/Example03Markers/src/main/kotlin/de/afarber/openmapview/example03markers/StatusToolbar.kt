@@ -20,10 +20,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * A status overlay displaying current marker and camera state information.
+ * A status overlay displaying current marker selection and camera state.
  *
- * Shows the currently selected marker index and name, and camera state.
- * The marker number text turns red when an info window is shown.
+ * Shows the currently selected marker index, name, and camera state.
+ * The marker index text turns red when an info window is shown.
  *
  * @param selectedIndex The index of the currently selected marker.
  * @param selectedMarkerTitle Title of the currently selected marker, or null if none selected.

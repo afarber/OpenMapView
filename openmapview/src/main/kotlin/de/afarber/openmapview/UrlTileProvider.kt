@@ -62,7 +62,7 @@ abstract class UrlTileProvider(
      *
      * @return User-Agent string
      */
-    protected open fun getUserAgent(): String = "OpenMapView/0.11.0 (https://github.com/afarber/OpenMapView)"
+    protected open fun getUserAgent(): String = "OpenMapView/0.12.0 (https://github.com/afarber/OpenMapView)"
 
     /**
      * Builds the URL for the specified tile coordinates by replacing placeholders

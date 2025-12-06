@@ -47,9 +47,9 @@ import kotlin.time.Duration.Companion.seconds
  * This example showcases:
  * - Displaying markers with different colors at real Bochum locations
  * - Navigating between markers with prev/next buttons
- * - Toggling info windows on selected markers
+ * - Toggling info windows via FAB or marker tap
  * - Camera animation when centering on markers
- * - Real-time marker count and selection tracking
+ * - Real-time selection index and info window state tracking
  * - Camera state monitoring
  */
 class MainActivity : ComponentActivity() {
@@ -228,7 +228,7 @@ fun MapViewScreen() {
         ) {
             Icon(
                 imageVector = Icons.Default.LocationOn,
-                contentDescription = "Reset",
+                contentDescription = "Toggle Info Window",
             )
         }
     }

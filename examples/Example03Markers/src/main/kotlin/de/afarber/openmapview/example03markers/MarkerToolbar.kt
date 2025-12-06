@@ -24,12 +24,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * A horizontal toolbar with buttons to navigate markers.
+ * A horizontal toolbar with buttons to navigate between markers.
  *
- * Uses OSM-inspired colors for visual consistency:
- * - Previous button: OsmParkGreen
- * - Next button: OsmParkGreen
- * - Info button: OsmWaterBlue
+ * Both buttons use OsmParkGreen for visual consistency with OSM styling.
  *
  * @param onPrevClick Callback invoked when the previous marker button is clicked.
  * @param onNextClick Callback invoked when the next marker button is clicked.
