@@ -25,8 +25,8 @@ data class MarkerData(
     val hue: Float,
 )
 
-/** Initial markers at notable Bochum locations. */
-val initialMarkerData = listOf(
+/** Points of interest at notable Bochum locations. */
+val poiMarkers = listOf(
     MarkerData(
         position = LatLng(51.4783, 7.2231),
         title = "Bochum Hauptbahnhof",

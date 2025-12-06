@@ -72,33 +72,34 @@ class MainActivity : ComponentActivity() {
  * Main composable screen containing the map and marker navigation controls.
  *
  * Displays an OpenMapView with markers at notable Bochum locations,
- * a status toolbar showing marker count and selection state,
- * and a marker toolbar for navigating between markers and toggling info windows.
+ * a status toolbar showing selection state, and a marker toolbar for navigation.
  */
 @Composable
 fun MapViewScreen() {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Calculate initial location from marker positions (Single Source of Truth)
+    // Calculate initial location from POI marker positions
     val initialLocation = LatLng(
-        initialMarkerData.map { it.position.latitude }.average(),
-        initialMarkerData.map { it.position.longitude }.average(),
+        poiMarkers.map { it.position.latitude }.average(),
+        poiMarkers.map { it.position.longitude }.average(),
     )
     val initialZoom = 13.0f
 
-    // State variables
+    // State variables - mapView is nullable because AndroidView.factory runs after first composition
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
     var selectedIndex by remember { mutableIntStateOf(0) }
-    var selectedMarker: Marker? by remember { mutableStateOf(null) }
     var cameraState by remember { mutableStateOf("Idle") }
     var isInfoWindowShown by remember { mutableStateOf(false) }
 
+    // Derived state - selectedMarker is computed from mapView and selectedIndex (SSOT)
+    val selectedMarker: Marker? = mapView?.getMarkers()?.getOrNull(selectedIndex)
+
     /**
-     * Creates initial markers on the map and selects the first one.
+     * Creates POI markers on the map.
      */
-    fun createInitialMarkers(map: OpenMapView) {
-        initialMarkerData.forEach { data ->
+    fun createMarkers(map: OpenMapView) {
+        poiMarkers.forEach { data ->
             map.addMarker(
                 Marker(
                     position = data.position,
@@ -108,8 +109,6 @@ fun MapViewScreen() {
                 ),
             )
         }
-        selectedIndex = 0
-        selectedMarker = map.getMarkers().firstOrNull()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -123,10 +122,8 @@ fun MapViewScreen() {
                     setZoom(initialZoom)
                     getUiSettings().infoWindowAutoDismiss = 10.seconds
 
-                    // Create initial markers
-                    createInitialMarkers(this)
+                    createMarkers(this)
 
-                    // Camera move started listener
                     setOnCameraMoveStartedListener { reason ->
                         cameraState = when (reason) {
                             OnCameraMoveStartedListener.REASON_GESTURE -> "Moving (gesture)"
@@ -136,28 +133,20 @@ fun MapViewScreen() {
                         }
                     }
 
-                    // Camera idle listener
                     setOnCameraIdleListener {
                         cameraState = "Idle"
                     }
 
-                    // Marker click listener - tracks selection and shows info window
                     setOnMarkerClickListener { marker ->
-                        selectedMarker = marker
                         isInfoWindowShown = marker.isInfoWindowShown
-                        val index = getMarkers().indexOf(marker)
-                        if (index >= 0) {
-                            selectedIndex = index
-                        }
-                        true // Consume the click event (info window will still show)
+                        selectedIndex = getMarkers().indexOf(marker).coerceAtLeast(0)
+                        true
                     }
 
-                    // Info window click listener
                     setOnInfoWindowClickListener { marker ->
                         Toast.makeText(context, "Clicked: ${marker.title}", Toast.LENGTH_SHORT).show()
                     }
 
-                    // Info window close listener - updates state when closed (manual or auto-dismiss)
                     setOnInfoWindowCloseListener {
                         isInfoWindowShown = false
                     }
@@ -186,9 +175,7 @@ fun MapViewScreen() {
                     val markers = getMarkers()
                     if (markers.isNotEmpty()) {
                         selectedIndex = (selectedIndex - 1 + markers.size) % markers.size
-                        val marker = markers[selectedIndex]
-                        selectedMarker = marker
-                        animateCamera(CameraUpdateFactory.newLatLng(marker.position), 500)
+                        animateCamera(CameraUpdateFactory.newLatLng(markers[selectedIndex].position), 500)
                     }
                 }
             },
@@ -197,9 +184,7 @@ fun MapViewScreen() {
                     val markers = getMarkers()
                     if (markers.isNotEmpty()) {
                         selectedIndex = (selectedIndex + 1) % markers.size
-                        val marker = markers[selectedIndex]
-                        selectedMarker = marker
-                        animateCamera(CameraUpdateFactory.newLatLng(marker.position), 500)
+                        animateCamera(CameraUpdateFactory.newLatLng(markers[selectedIndex].position), 500)
                     }
                 }
             },
