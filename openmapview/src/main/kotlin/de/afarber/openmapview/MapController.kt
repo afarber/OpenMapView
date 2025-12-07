@@ -1316,29 +1316,119 @@ class MapController(
         for (polyline in polylines) {
             if (!polyline.visible || polyline.points.size < 2) continue
 
-            paint.color = polyline.strokeColor.toArgb()
-            paint.strokeWidth = polyline.strokeWidth
-            paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
-            paint.strokeCap = polyline.strokeCap.toAndroidCap()
-            paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
-
-            val path = android.graphics.Path()
-            var isFirst = true
-
-            for (point in polyline.points) {
-                val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
-                val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
-                val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
-
-                if (isFirst) {
-                    path.moveTo(screenX, screenY)
-                    isFirst = false
+            // Expand points with geodesic interpolation if needed
+            val points =
+                if (polyline.geodesic) {
+                    GeodesicUtils.expandWithGeodesicPoints(polyline.points)
                 } else {
-                    path.lineTo(screenX, screenY)
+                    polyline.points
                 }
-            }
 
-            canvas.drawPath(path, paint)
+            // Handle spans (multi-color segments) or single color
+            if (polyline.spans.isNotEmpty()) {
+                drawPolylineWithSpans(canvas, polyline, points, centerPixelX, centerPixelY)
+            } else {
+                paint.color = polyline.strokeColor.toArgb()
+                paint.strokeWidth = polyline.strokeWidth
+                paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
+                paint.strokeCap = polyline.startCap.toAndroidCap() // Use startCap for full path
+                paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
+
+                val path = android.graphics.Path()
+                var isFirst = true
+
+                for (point in points) {
+                    val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
+                    val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                    val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                    if (isFirst) {
+                        path.moveTo(screenX, screenY)
+                        isFirst = false
+                    } else {
+                        path.lineTo(screenX, screenY)
+                    }
+                }
+
+                canvas.drawPath(path, paint)
+            }
+        }
+    }
+
+    private fun drawPolylineWithSpans(
+        canvas: Canvas,
+        polyline: Polyline,
+        points: List<LatLng>,
+        centerPixelX: Float,
+        centerPixelY: Float,
+    ) {
+        val paint = Paint()
+        paint.style = Paint.Style.STROKE
+        paint.isAntiAlias = true
+        paint.strokeWidth = polyline.strokeWidth
+        paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
+        paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
+
+        var segmentIndex = 0
+        val totalSegments = points.size - 1
+
+        for (span in polyline.spans) {
+            if (segmentIndex >= totalSegments) break
+
+            paint.color = span.color.toArgb()
+
+            for (i in 0 until span.segments) {
+                if (segmentIndex >= totalSegments) break
+
+                val isFirstSegment = segmentIndex == 0
+                val isLastSegment = segmentIndex == totalSegments - 1
+
+                // Apply appropriate cap
+                paint.strokeCap =
+                    when {
+                        isFirstSegment -> polyline.startCap.toAndroidCap()
+                        isLastSegment -> polyline.endCap.toAndroidCap()
+                        else -> Paint.Cap.BUTT
+                    }
+
+                val from = points[segmentIndex]
+                val to = points[segmentIndex + 1]
+
+                val (fromPixelX, fromPixelY) = ProjectionUtils.latLngToPixel(from, zoom.toInt())
+                val fromScreenX = (fromPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val fromScreenY = (fromPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                val (toPixelX, toPixelY) = ProjectionUtils.latLngToPixel(to, zoom.toInt())
+                val toScreenX = (toPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val toScreenY = (toPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                canvas.drawLine(fromScreenX, fromScreenY, toScreenX, toScreenY, paint)
+                segmentIndex++
+            }
+        }
+
+        // Draw remaining segments with default color
+        if (segmentIndex < totalSegments) {
+            paint.color = polyline.strokeColor.toArgb()
+
+            while (segmentIndex < totalSegments) {
+                val isLastSegment = segmentIndex == totalSegments - 1
+                paint.strokeCap = if (isLastSegment) polyline.endCap.toAndroidCap() else Paint.Cap.BUTT
+
+                val from = points[segmentIndex]
+                val to = points[segmentIndex + 1]
+
+                val (fromPixelX, fromPixelY) = ProjectionUtils.latLngToPixel(from, zoom.toInt())
+                val fromScreenX = (fromPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val fromScreenY = (fromPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                val (toPixelX, toPixelY) = ProjectionUtils.latLngToPixel(to, zoom.toInt())
+                val toScreenX = (toPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val toScreenY = (toPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                canvas.drawLine(fromScreenX, fromScreenY, toScreenX, toScreenY, paint)
+                segmentIndex++
+            }
         }
     }
 
@@ -1358,6 +1448,14 @@ class MapController(
         for (polygon in polygons) {
             if (!polygon.visible || polygon.points.size < 3) continue
 
+            // Expand points with geodesic interpolation if needed
+            val points =
+                if (polygon.geodesic) {
+                    GeodesicUtils.expandWithGeodesicPoints(polygon.points)
+                } else {
+                    polygon.points
+                }
+
             fillPaint.color = polygon.fillColor.toArgb()
             strokePaint.color = polygon.strokeColor.toArgb()
             strokePaint.strokeWidth = polygon.strokeWidth
@@ -1370,7 +1468,7 @@ class MapController(
 
             // Draw main polygon outline
             var isFirst = true
-            for (point in polygon.points) {
+            for (point in points) {
                 val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
                 val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
                 val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
@@ -1387,8 +1485,15 @@ class MapController(
             // Draw holes
             for (hole in polygon.holes) {
                 if (hole.size < 3) continue
+                // Expand hole points with geodesic interpolation if needed
+                val holePoints =
+                    if (polygon.geodesic) {
+                        GeodesicUtils.expandWithGeodesicPoints(hole)
+                    } else {
+                        hole
+                    }
                 isFirst = true
-                for (point in hole) {
+                for (point in holePoints) {
                     val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
                     val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
                     val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
@@ -1600,6 +1705,14 @@ class MapController(
         for (polygon in sortedPolygons) {
             if (polygon.zIndex != zIndex || !polygon.visible || polygon.points.size < 3) continue
 
+            // Expand points with geodesic interpolation if needed
+            val points =
+                if (polygon.geodesic) {
+                    GeodesicUtils.expandWithGeodesicPoints(polygon.points)
+                } else {
+                    polygon.points
+                }
+
             fillPaint.color = polygon.fillColor.toArgb()
             strokePaint.color = polygon.strokeColor.toArgb()
             strokePaint.strokeWidth = polygon.strokeWidth
@@ -1610,7 +1723,7 @@ class MapController(
             val path = android.graphics.Path()
             var isFirst = true
 
-            for (point in polygon.points) {
+            for (point in points) {
                 val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
                 val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
                 val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
@@ -1626,8 +1739,15 @@ class MapController(
 
             for (hole in polygon.holes) {
                 if (hole.size < 3) continue
+                // Expand hole points with geodesic interpolation if needed
+                val holePoints =
+                    if (polygon.geodesic) {
+                        GeodesicUtils.expandWithGeodesicPoints(hole)
+                    } else {
+                        hole
+                    }
                 var isFirstHole = true
-                for (point in hole) {
+                for (point in holePoints) {
                     val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
                     val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
                     val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
@@ -1662,29 +1782,119 @@ class MapController(
         for (polyline in sortedPolylines) {
             if (polyline.zIndex != zIndex || !polyline.visible || polyline.points.size < 2) continue
 
-            paint.color = polyline.strokeColor.toArgb()
-            paint.strokeWidth = polyline.strokeWidth
-            paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
-            paint.strokeCap = polyline.strokeCap.toAndroidCap()
-            paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
-
-            val path = android.graphics.Path()
-            var isFirst = true
-
-            for (point in polyline.points) {
-                val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
-                val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
-                val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
-
-                if (isFirst) {
-                    path.moveTo(screenX, screenY)
-                    isFirst = false
+            // Expand points with geodesic interpolation if needed
+            val points =
+                if (polyline.geodesic) {
+                    GeodesicUtils.expandWithGeodesicPoints(polyline.points)
                 } else {
-                    path.lineTo(screenX, screenY)
+                    polyline.points
                 }
-            }
 
-            canvas.drawPath(path, paint)
+            // Handle spans (multi-color segments) or single color
+            if (polyline.spans.isNotEmpty()) {
+                drawPolylineWithSpansZIndex(canvas, polyline, points, centerPixelX, centerPixelY)
+            } else {
+                paint.color = polyline.strokeColor.toArgb()
+                paint.strokeWidth = polyline.strokeWidth
+                paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
+                paint.strokeCap = polyline.startCap.toAndroidCap() // Use startCap for full path
+                paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
+
+                val path = android.graphics.Path()
+                var isFirst = true
+
+                for (point in points) {
+                    val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
+                    val screenX = (pixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                    val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                    if (isFirst) {
+                        path.moveTo(screenX, screenY)
+                        isFirst = false
+                    } else {
+                        path.lineTo(screenX, screenY)
+                    }
+                }
+
+                canvas.drawPath(path, paint)
+            }
+        }
+    }
+
+    private fun drawPolylineWithSpansZIndex(
+        canvas: Canvas,
+        polyline: Polyline,
+        points: List<LatLng>,
+        centerPixelX: Float,
+        centerPixelY: Float,
+    ) {
+        val paint = Paint()
+        paint.style = Paint.Style.STROKE
+        paint.isAntiAlias = true
+        paint.strokeWidth = polyline.strokeWidth
+        paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
+        paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
+
+        var segmentIndex = 0
+        val totalSegments = points.size - 1
+
+        for (span in polyline.spans) {
+            if (segmentIndex >= totalSegments) break
+
+            paint.color = span.color.toArgb()
+
+            for (i in 0 until span.segments) {
+                if (segmentIndex >= totalSegments) break
+
+                val isFirstSegment = segmentIndex == 0
+                val isLastSegment = segmentIndex == totalSegments - 1
+
+                // Apply appropriate cap
+                paint.strokeCap =
+                    when {
+                        isFirstSegment -> polyline.startCap.toAndroidCap()
+                        isLastSegment -> polyline.endCap.toAndroidCap()
+                        else -> Paint.Cap.BUTT
+                    }
+
+                val from = points[segmentIndex]
+                val to = points[segmentIndex + 1]
+
+                val (fromPixelX, fromPixelY) = ProjectionUtils.latLngToPixel(from, zoom.toInt())
+                val fromScreenX = (fromPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val fromScreenY = (fromPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                val (toPixelX, toPixelY) = ProjectionUtils.latLngToPixel(to, zoom.toInt())
+                val toScreenX = (toPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val toScreenY = (toPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                canvas.drawLine(fromScreenX, fromScreenY, toScreenX, toScreenY, paint)
+                segmentIndex++
+            }
+        }
+
+        // Draw remaining segments with default color
+        if (segmentIndex < totalSegments) {
+            paint.color = polyline.strokeColor.toArgb()
+
+            while (segmentIndex < totalSegments) {
+                val isLastSegment = segmentIndex == totalSegments - 1
+                paint.strokeCap = if (isLastSegment) polyline.endCap.toAndroidCap() else Paint.Cap.BUTT
+
+                val from = points[segmentIndex]
+                val to = points[segmentIndex + 1]
+
+                val (fromPixelX, fromPixelY) = ProjectionUtils.latLngToPixel(from, zoom.toInt())
+                val fromScreenX = (fromPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val fromScreenY = (fromPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                val (toPixelX, toPixelY) = ProjectionUtils.latLngToPixel(to, zoom.toInt())
+                val toScreenX = (toPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
+                val toScreenY = (toPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
+
+                canvas.drawLine(fromScreenX, fromScreenY, toScreenX, toScreenY, paint)
+                segmentIndex++
+            }
         }
     }
 

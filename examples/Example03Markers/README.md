@@ -46,7 +46,7 @@ example03markers/
 ├── MarkerToolbar.kt     # Horizontal toolbar with prev/next navigation buttons
 ├── StatusToolbar.kt     # Status overlay showing selection index and camera state
 ├── MarkerData.kt        # Marker data class and Bochum POI locations
-└── Constants.kt         # Colors, dimensions, and durations
+└── Colors.kt            # OSM-inspired colors and shared dimensions
 ```
 
 ## Code Highlights
@@ -68,8 +68,8 @@ fun MapViewScreen() {
                 OpenMapView(ctx).apply {
                     lifecycleOwner.lifecycle.addObserver(this)
                     setCenter(initialLocation)
-                    setZoom(13.0f)
-                    getUiSettings().infoWindowAutoDismiss = 10.seconds
+                    setZoom(15.0f)
+                    getUiSettings().infoWindowAutoDismiss = 5.seconds
 
                     setOnMarkerClickListener { marker ->
                         selectedMarker = marker
@@ -98,7 +98,7 @@ addMarker(
     Marker(
         position = LatLng(51.4783, 7.2231),
         title = "Bochum Hauptbahnhof",
-        snippet = "Main railway station",
+        snippet = "Main Railway Station",
         icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
     )
 )
@@ -116,14 +116,6 @@ addMarker(
 )
 ```
 
-### OSM-Inspired Colors (Constants.kt)
-
-```kotlin
-val OsmParkGreen = Color(0xFFAAD3A2)   // Navigation buttons (prev/next)
-val OsmHighwayPink = Color(0xFFE892A2)  // Info window toggle FAB
-val OsmWaterBlue = Color(0xFFAAD3DF)    // Reserved for future use
-```
-
 ### Key Concepts
 
 - **Marker**: Data class with position, title, snippet, icon, anchor, and tag
@@ -132,7 +124,6 @@ val OsmWaterBlue = Color(0xFFAAD3DF)    // Reserved for future use
 - **setOnMarkerClickListener()**: Handle marker click events
 - **setOnInfoWindowClickListener()**: Handle info window click events
 - **setOnInfoWindowCloseListener()**: Handle info window close events (manual or auto-dismiss)
-- **infoWindowAutoDismiss**: Auto-dismiss info windows after a duration
 
 ## What to Test
 
@@ -144,19 +135,6 @@ val OsmWaterBlue = Color(0xFFAAD3DF)    // Reserved for future use
 6. **Tap the FAB** - toggles info window on selected marker
 7. **Wait 10 seconds** - info window auto-dismisses, status text turns black
 8. **Pan/zoom the map** - markers stay at correct geographic positions
-
-## Marker Locations
-
-This example displays 6 markers at notable Bochum landmarks:
-
-| Location          | Coordinates         | Description          |
-| ----------------- | ------------------- | -------------------- |
-| Hauptbahnhof      | 51.4783°N, 7.2231°E | Main railway station |
-| Ruhr University   | 51.4452°N, 7.2622°E | Ruhr-Universitat     |
-| Rathaus           | 51.4816°N, 7.2166°E | City Hall            |
-| Bermuda3eck       | 51.4807°N, 7.2222°E | Entertainment dist.  |
-| Bergbau-Museum    | 51.4892°N, 7.2174°E | Mining Museum        |
-| Starlight Express | 51.4649°N, 7.2043°E | Musical theater      |
 
 ## Custom Marker Icons
 
@@ -211,4 +189,5 @@ Click detection uses:
 
 **Default Center:** Calculated from marker positions (~51.47°N, 7.22°E) at zoom 13.0
 
-All 6 markers are positioned around Bochum at real landmark locations.
+All 8 markers are positioned around Bochum at real landmark locations.
+

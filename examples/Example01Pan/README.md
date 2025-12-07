@@ -64,7 +64,7 @@ fun MapViewScreen() {
             factory = { ctx ->
                 OpenMapView(ctx).apply {
                     lifecycleOwner.lifecycle.addObserver(this)
-                    setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
+                    setCenter(LatLng(51.4661, 7.2491))
                     setZoom(14.0f)
                     mapView = this
                 }
@@ -79,14 +79,6 @@ fun MapViewScreen() {
         ControlToolbar(...)
     }
 }
-```
-
-### OSM-Inspired Colors (Colors.kt)
-
-```kotlin
-val OsmParkGreen = Color(0xFFAAD3A2)   // Parks and forests
-val OsmHighwayPink = Color(0xFFE892A2)  // Highways and roads
-val OsmWaterBlue = Color(0xFFAAD3DF)    // Water areas
 ```
 
 ### Key Concepts
@@ -117,3 +109,4 @@ val OsmWaterBlue = Color(0xFFAAD3DF)    // Water areas
 - Location 2 (Green marker): East of center
 - Location 3 (Magenta marker): South-West of center
 - Initial (Cyan marker): Center position
+

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
  * Shows the currently selected marker index, name, and camera state.
  * The marker index text turns red when an info window is shown.
  *
+ * @param totalCount Total number of markers.
  * @param selectedIndex The index of the currently selected marker.
  * @param selectedMarkerTitle Title of the currently selected marker, or null if none selected.
  * @param cameraState Current camera state description (e.g., "Idle", "Moving (gesture)").
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun StatusToolbar(
+    totalCount: Int,
     selectedIndex: Int,
     selectedMarkerTitle: String?,
     cameraState: String,
@@ -47,7 +49,7 @@ fun StatusToolbar(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "Marker #${selectedIndex + 1}",
+            text = "Marker #${selectedIndex + 1} of $totalCount",
             color = if (isInfoWindowShown) Color.Red else Color.Black,
         )
         Text(

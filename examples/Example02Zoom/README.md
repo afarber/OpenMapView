@@ -62,7 +62,7 @@ fun MapViewScreen() {
             factory = { ctx ->
                 OpenMapView(ctx).apply {
                     lifecycleOwner.lifecycle.addObserver(this)
-                    setCenter(LatLng(51.4661, 7.2491)) // Bochum, Germany
+                    setCenter(LatLng(51.4661, 7.2491))
                     setZoom(14.0f)
                     mapView = this
                 }
@@ -74,14 +74,6 @@ fun MapViewScreen() {
         ZoomToolbar(onZoomInClick = { ... }, onZoomOutClick = { ... }, ...)
     }
 }
-```
-
-### OSM-Inspired Colors (Colors.kt)
-
-```kotlin
-val OsmParkGreen = Color(0xFFAAD3A2)   // Parks and forests
-val OsmHighwayPink = Color(0xFFE892A2)  // Highways and roads
-val OsmWaterBlue = Color(0xFFAAD3DF)    // Water areas
 ```
 
 ### Key Concepts
@@ -122,3 +114,4 @@ OpenMapView uses:
 ## Map Location
 
 **Default Center:** Bochum, Germany (51.4661N, 7.2491E) at zoom 14.0
+

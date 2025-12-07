@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.LocationSearching
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +39,7 @@ import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.Marker
 import de.afarber.openmapview.OnCameraMoveStartedListener
 import de.afarber.openmapview.OpenMapView
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Main activity demonstrating OpenMapView marker navigation.
@@ -83,7 +84,7 @@ fun MapViewScreen() {
         poiMarkers.map { it.position.latitude }.average(),
         poiMarkers.map { it.position.longitude }.average(),
     )
-    val initialZoom = 14.0f
+    val initialZoom = 15.0f
 
     // State variables - mapView is nullable because AndroidView.factory runs after first composition
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
@@ -119,7 +120,7 @@ fun MapViewScreen() {
 
                     setCenter(initialLocation)
                     setZoom(initialZoom)
-                    getUiSettings().infoWindowAutoDismiss = InfoWindowAutoDismissDuration
+                    getUiSettings().infoWindowAutoDismiss = 5.seconds
 
                     createMarkers(this)
 
@@ -159,6 +160,7 @@ fun MapViewScreen() {
 
         // Status overlay at top
         StatusToolbar(
+            totalCount = poiMarkers.size,
             selectedIndex = selectedIndex,
             selectedMarkerTitle = selectedMarker?.title,
             cameraState = cameraState,
@@ -212,7 +214,7 @@ fun MapViewScreen() {
                 .padding(16.dp),
         ) {
             Icon(
-                imageVector = Icons.Default.LocationOn,
+                imageVector = Icons.Default.LocationSearching,
                 contentDescription = "Toggle Info Window",
             )
         }
