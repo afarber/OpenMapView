@@ -27,6 +27,7 @@ interface OverlayData {
  * @param points List of coordinates defining the polyline path.
  * @param color Stroke color for the polyline.
  * @param width Stroke width in pixels.
+ * @param geodesic Whether segments are drawn as geodesics (great-circle paths).
  */
 data class PolylineData(
     override val title: String,
@@ -34,6 +35,7 @@ data class PolylineData(
     override val points: List<LatLng>,
     val color: Color,
     val width: Float,
+    val geodesic: Boolean = false,
 ) : OverlayData
 
 /**
@@ -67,6 +69,30 @@ data class PolygonData(
  * - Ruhr University campus
  */
 val poiOverlays: List<OverlayData> = listOf(
+    // Ruhr University Campus - first in the list (polygon with hole)
+    PolygonData(
+        title = "Ruhr University Campus",
+        snippet = "University grounds with lake",
+        points = listOf(
+            LatLng(51.4410, 7.2550),
+            LatLng(51.4480, 7.2540),
+            LatLng(51.4500, 7.2620),
+            LatLng(51.4490, 7.2720),
+            LatLng(51.4420, 7.2730),
+            LatLng(51.4400, 7.2650),
+        ),
+        holes = listOf(
+            // Kemnader See (lake) as a hole
+            listOf(
+                LatLng(51.4440, 7.2620),
+                LatLng(51.4460, 7.2615),
+                LatLng(51.4465, 7.2660),
+                LatLng(51.4445, 7.2665),
+            ),
+        ),
+        strokeColor = Color(0xFF3F51B5), // Indigo
+        fillColor = Color(0x663F51B5), // Semi-transparent indigo
+    ),
     // Polylines - Real Bochum routes
     PolylineData(
         title = "Springorum Radweg",
@@ -108,6 +134,18 @@ val poiOverlays: List<OverlayData> = listOf(
         color = Color(0xFFFF5722), // Deep Orange
         width = 7f,
     ),
+    // Geodesic polyline - Long distance route (demonstrates curved great-circle path)
+    PolylineData(
+        title = "Bochum to Berlin",
+        snippet = "Geodesic (great-circle) path",
+        points = listOf(
+            LatLng(51.4818, 7.2162), // Bochum
+            LatLng(52.5200, 13.4050), // Berlin
+        ),
+        color = Color(0xFFE91E63), // Pink
+        width = 5f,
+        geodesic = true,
+    ),
     // Polygons - Real Bochum areas
     PolygonData(
         title = "Stadtpark",
@@ -136,28 +174,5 @@ val poiOverlays: List<OverlayData> = listOf(
         ),
         strokeColor = Color(0xFF8BC34A), // Light Green
         fillColor = Color(0x668BC34A), // Semi-transparent light green
-    ),
-    PolygonData(
-        title = "Ruhr University Campus",
-        snippet = "University grounds with lake",
-        points = listOf(
-            LatLng(51.4410, 7.2550),
-            LatLng(51.4480, 7.2540),
-            LatLng(51.4500, 7.2620),
-            LatLng(51.4490, 7.2720),
-            LatLng(51.4420, 7.2730),
-            LatLng(51.4400, 7.2650),
-        ),
-        holes = listOf(
-            // Kemnader See (lake) as a hole
-            listOf(
-                LatLng(51.4440, 7.2620),
-                LatLng(51.4460, 7.2615),
-                LatLng(51.4465, 7.2660),
-                LatLng(51.4445, 7.2665),
-            ),
-        ),
-        strokeColor = Color(0xFF3F51B5), // Indigo
-        fillColor = Color(0x663F51B5), // Semi-transparent indigo
     ),
 )

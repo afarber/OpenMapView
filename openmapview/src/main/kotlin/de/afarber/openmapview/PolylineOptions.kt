@@ -32,8 +32,11 @@ class PolylineOptions {
     private var strokeColor: Color = Color.Black
     private var strokeWidth: Float = 10f
     private var strokePattern: PathEffect? = null
-    private var strokeCap: StrokeCap = StrokeCap.Round
+    private var startCap: StrokeCap = StrokeCap.Butt
+    private var endCap: StrokeCap = StrokeCap.Butt
     private var strokeJoin: StrokeJoin = StrokeJoin.Round
+    private var geodesic: Boolean = false
+    private var spans: List<StyleSpan> = emptyList()
     private var visible: Boolean = true
     private var clickable: Boolean = false
     private var zIndex: Float = 0f
@@ -85,11 +88,38 @@ class PolylineOptions {
     }
 
     /**
-     * Sets the stroke cap style for line endpoints.
+     * Sets the stroke cap style for the start of the polyline.
      * @param cap StrokeCap style (Butt, Round, or Square)
      */
-    fun strokeCap(cap: StrokeCap): PolylineOptions {
-        this.strokeCap = cap
+    fun startCap(cap: StrokeCap): PolylineOptions {
+        this.startCap = cap
+        return this
+    }
+
+    /**
+     * Sets the stroke cap style for the end of the polyline.
+     * @param cap StrokeCap style (Butt, Round, or Square)
+     */
+    fun endCap(cap: StrokeCap): PolylineOptions {
+        this.endCap = cap
+        return this
+    }
+
+    /**
+     * Sets whether segments are drawn as geodesics (great-circle paths).
+     * @param geodesic true for geodesic paths, false for straight Mercator lines
+     */
+    fun geodesic(geodesic: Boolean): PolylineOptions {
+        this.geodesic = geodesic
+        return this
+    }
+
+    /**
+     * Sets style spans for multi-colored polylines.
+     * @param spans List of StyleSpan defining colors and segment counts
+     */
+    fun spans(spans: List<StyleSpan>): PolylineOptions {
+        this.spans = spans
         return this
     }
 
@@ -148,8 +178,11 @@ class PolylineOptions {
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
             strokePattern = strokePattern,
-            strokeCap = strokeCap,
+            startCap = startCap,
+            endCap = endCap,
             strokeJoin = strokeJoin,
+            geodesic = geodesic,
+            spans = spans,
             visible = visible,
             clickable = clickable,
             zIndex = zIndex,

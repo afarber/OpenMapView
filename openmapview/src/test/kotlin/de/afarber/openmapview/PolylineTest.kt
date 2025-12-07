@@ -264,7 +264,7 @@ class PolylineTest {
     }
 
     @Test
-    fun testPolylineStrokeCap_Default() {
+    fun testPolylineStartCap_Default() {
         val points =
             listOf(
                 LatLng(51.4661, 7.2491),
@@ -272,19 +272,56 @@ class PolylineTest {
             )
         val polyline = Polyline(points = points)
 
-        assertEquals(StrokeCap.Round, polyline.strokeCap)
+        assertEquals(StrokeCap.Butt, polyline.startCap)
     }
 
     @Test
-    fun testPolylineStrokeCap_Custom() {
+    fun testPolylineStartCap_Custom() {
         val points =
             listOf(
                 LatLng(51.4661, 7.2491),
                 LatLng(51.4700, 7.2550),
             )
-        val polyline = Polyline(points = points, strokeCap = StrokeCap.Square)
+        val polyline = Polyline(points = points, startCap = StrokeCap.Round)
 
-        assertEquals(StrokeCap.Square, polyline.strokeCap)
+        assertEquals(StrokeCap.Round, polyline.startCap)
+    }
+
+    @Test
+    fun testPolylineEndCap_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+
+        assertEquals(StrokeCap.Butt, polyline.endCap)
+    }
+
+    @Test
+    fun testPolylineEndCap_Custom() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points, endCap = StrokeCap.Square)
+
+        assertEquals(StrokeCap.Square, polyline.endCap)
+    }
+
+    @Test
+    fun testPolylineStartCapAndEndCap_Different() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points, startCap = StrokeCap.Round, endCap = StrokeCap.Square)
+
+        assertEquals(StrokeCap.Round, polyline.startCap)
+        assertEquals(StrokeCap.Square, polyline.endCap)
     }
 
     @Test
@@ -325,14 +362,93 @@ class PolylineTest {
                 strokeColor = Color.Blue,
                 strokeWidth = 8f,
                 strokePattern = pattern,
-                strokeCap = StrokeCap.Butt,
+                startCap = StrokeCap.Round,
+                endCap = StrokeCap.Square,
                 strokeJoin = StrokeJoin.Bevel,
             )
 
         assertEquals(Color.Blue, polyline.strokeColor)
         assertEquals(8f, polyline.strokeWidth, 0.001f)
         assertEquals(pattern, polyline.strokePattern)
-        assertEquals(StrokeCap.Butt, polyline.strokeCap)
+        assertEquals(StrokeCap.Round, polyline.startCap)
+        assertEquals(StrokeCap.Square, polyline.endCap)
         assertEquals(StrokeJoin.Bevel, polyline.strokeJoin)
+    }
+
+    @Test
+    fun testPolylineGeodesic_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+
+        assertEquals(false, polyline.geodesic)
+    }
+
+    @Test
+    fun testPolylineGeodesic_SetToTrue() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points, geodesic = true)
+
+        assertEquals(true, polyline.geodesic)
+    }
+
+    @Test
+    fun testPolylineSpans_Default() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+            )
+        val polyline = Polyline(points = points)
+
+        assertEquals(emptyList<StyleSpan>(), polyline.spans)
+    }
+
+    @Test
+    fun testPolylineSpans_WithMultipleColors() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+                LatLng(51.4750, 7.2600),
+            )
+        val spans =
+            listOf(
+                StyleSpan(Color.Red, 1),
+                StyleSpan(Color.Blue, 1),
+            )
+        val polyline = Polyline(points = points, spans = spans)
+
+        assertEquals(2, polyline.spans.size)
+        assertEquals(Color.Red, polyline.spans[0].color)
+        assertEquals(Color.Blue, polyline.spans[1].color)
+    }
+
+    @Test
+    fun testPolylineSpans_WithMultipleSegments() {
+        val points =
+            listOf(
+                LatLng(51.4661, 7.2491),
+                LatLng(51.4700, 7.2550),
+                LatLng(51.4750, 7.2600),
+                LatLng(51.4800, 7.2650),
+            )
+        val spans =
+            listOf(
+                StyleSpan(Color.Green, 2),
+                StyleSpan(Color.Yellow, 1),
+            )
+        val polyline = Polyline(points = points, spans = spans)
+
+        assertEquals(2, polyline.spans.size)
+        assertEquals(2, polyline.spans[0].segments)
+        assertEquals(1, polyline.spans[1].segments)
     }
 }

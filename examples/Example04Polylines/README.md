@@ -7,11 +7,12 @@ This example demonstrates drawing vector shapes (polylines and polygons) on Open
 ## Features Demonstrated
 
 - Polylines with custom stroke colors and widths
+- Geodesic polylines (great-circle paths for long distances)
 - Filled polygons with stroke and fill colors
 - Polygons with holes (donut shapes)
 - Navigation between overlays with prev/next buttons
 - Click handling on polylines and polygons
-- Highlight toggle for selected overlay (thicker stroke)
+- Highlight toggle for selected overlay (thicker stroke with dashed pattern)
 - Camera animation when selecting overlays
 - Real-time status display showing selection and camera state
 
@@ -57,6 +58,7 @@ data class PolylineData(
     override val points: List<LatLng>,
     val color: Color,
     val width: Float,
+    val geodesic: Boolean = false,  // Draw as great-circle path
 ) : OverlayData
 
 data class PolygonData(
@@ -80,6 +82,7 @@ poiOverlays.forEach { data ->
                     points = data.points,
                     strokeColor = data.color,
                     strokeWidth = data.width,
+                    geodesic = data.geodesic,
                     clickable = true,
                     tag = data.title,
                 )
@@ -135,7 +138,7 @@ fun updateHighlight(map: OpenMapView, highlighted: Boolean, highlightIndex: Int)
 
 ## What to Test
 
-1. **Launch the app** - you should see 3 polylines and 3 polygons
+1. **Launch the app** - you should see 4 polylines (including 1 geodesic) and 3 polygons
 2. **Navigate overlays** - use prev/next buttons at the bottom
 3. **Click overlays** - tap any polyline or polygon to select it
 4. **Toggle highlight** - tap FAB to highlight selected overlay (thicker stroke)
@@ -163,6 +166,9 @@ fun updateHighlight(map: OpenMapView, highlighted: Boolean, highlightIndex: Int)
 - **points**: List of LatLng coordinates (minimum 2 points)
 - **strokeColor**: Line color (Compose Color)
 - **strokeWidth**: Line width in pixels (Float)
+- **geodesic**: Draw as great-circle path instead of straight Mercator line (Boolean)
+- **startCap/endCap**: Shape of line endpoints (StrokeCap: Butt, Round, Square)
+- **spans**: List of StyleSpan for multi-colored segments
 - **clickable**: Enable click handling (Boolean)
 - **tag**: Optional user data (Any?)
 
@@ -173,6 +179,7 @@ fun updateHighlight(map: OpenMapView, highlighted: Boolean, highlightIndex: Int)
 - **strokeWidth**: Outline width in pixels (Float)
 - **fillColor**: Interior fill color with alpha channel support
 - **holes**: List of hole definitions, each a List<LatLng> (minimum 3 points per hole)
+- **geodesic**: Draw edges as great-circle paths (Boolean)
 - **clickable**: Enable click handling (Boolean)
 - **tag**: Optional user data (Any?)
 

@@ -16,11 +16,16 @@ import androidx.compose.ui.graphics.StrokeJoin
  * Represents a polyline on the map, consisting of connected line segments.
  *
  * @property points List of geographic coordinates that define the polyline path
- * @property strokeColor Color of the line stroke (default: black)
+ * @property strokeColor Color of the line stroke (default: black). Used when spans is empty.
  * @property strokeWidth Width of the line in pixels (default: 10f)
  * @property strokePattern Pattern for the stroke (dashed, dotted, etc.). Null means solid line (default: null)
- * @property strokeCap Shape of line endpoints (default: Round)
+ * @property startCap Shape of the start endpoint (default: Butt)
+ * @property endCap Shape of the end endpoint (default: Butt)
  * @property strokeJoin Shape of line corners (default: Round)
+ * @property geodesic Whether segments are drawn as geodesics (great-circle paths) instead of straight
+ *                    lines on the Mercator projection. Default is false.
+ * @property spans List of style spans for multi-colored polylines. When provided, overrides strokeColor
+ *                 for the specified segments. Default is empty (use strokeColor for all segments).
  * @property visible Whether the polyline is visible. Default is true
  * @property clickable Whether the polyline is clickable. Default is false
  * @property zIndex Draw order. Polylines with higher zIndex are drawn on top. Default is 0.0
@@ -31,8 +36,11 @@ data class Polyline(
     val strokeColor: Color = Color.Black,
     val strokeWidth: Float = 10f,
     val strokePattern: PathEffect? = null,
-    val strokeCap: StrokeCap = StrokeCap.Round,
+    val startCap: StrokeCap = StrokeCap.Butt,
+    val endCap: StrokeCap = StrokeCap.Butt,
     val strokeJoin: StrokeJoin = StrokeJoin.Round,
+    val geodesic: Boolean = false,
+    val spans: List<StyleSpan> = emptyList(),
     val visible: Boolean = true,
     val clickable: Boolean = false,
     val zIndex: Float = 0f,

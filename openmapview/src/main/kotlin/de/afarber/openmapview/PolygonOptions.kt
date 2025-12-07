@@ -33,9 +33,10 @@ class PolygonOptions {
     private var strokeColor: Color = Color.Black
     private var strokeWidth: Float = 10f
     private var strokePattern: PathEffect? = null
-    private var strokeCap: StrokeCap = StrokeCap.Round
+    private var strokeCap: StrokeCap = StrokeCap.Butt
     private var strokeJoin: StrokeJoin = StrokeJoin.Round
     private var fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128)
+    private var geodesic: Boolean = false
     private var visible: Boolean = true
     private var clickable: Boolean = false
     private var zIndex: Float = 0f
@@ -123,6 +124,15 @@ class PolygonOptions {
     }
 
     /**
+     * Sets whether segments are drawn as geodesics (great-circle paths).
+     * @param geodesic true for geodesic paths, false for straight Mercator lines
+     */
+    fun geodesic(geodesic: Boolean): PolygonOptions {
+        this.geodesic = geodesic
+        return this
+    }
+
+    /**
      * Sets whether the polygon is visible.
      * @param visible true to show the polygon, false to hide it
      */
@@ -172,6 +182,7 @@ class PolygonOptions {
             strokeJoin = strokeJoin,
             fillColor = fillColor,
             holes = holes.toList(),
+            geodesic = geodesic,
             visible = visible,
             clickable = clickable,
             zIndex = zIndex,

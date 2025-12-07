@@ -20,10 +20,12 @@ import androidx.compose.ui.graphics.StrokeJoin
  * @property strokeColor Color of the polygon outline (default: black)
  * @property strokeWidth Width of the outline in pixels (default: 10f)
  * @property strokePattern Pattern for the stroke (dashed, dotted, etc.). Null means solid line (default: null)
- * @property strokeCap Shape of line endpoints (default: Round)
+ * @property strokeCap Shape of line endpoints (default: Butt)
  * @property strokeJoin Shape of line corners (default: Round)
  * @property fillColor Fill color for the polygon interior (default: semi-transparent gray)
  * @property holes List of hole definitions, where each hole is a list of LatLng points
+ * @property geodesic Whether segments are drawn as geodesics (great-circle paths) instead of straight
+ *                    lines on the Mercator projection. Default is false.
  * @property visible Whether the polygon is visible. Default is true
  * @property clickable Whether the polygon is clickable. Default is false
  * @property zIndex Draw order. Polygons with higher zIndex are drawn on top. Default is 0.0
@@ -34,10 +36,11 @@ data class Polygon(
     val strokeColor: Color = Color.Black,
     val strokeWidth: Float = 10f,
     val strokePattern: PathEffect? = null,
-    val strokeCap: StrokeCap = StrokeCap.Round,
+    val strokeCap: StrokeCap = StrokeCap.Butt,
     val strokeJoin: StrokeJoin = StrokeJoin.Round,
     val fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128),
     val holes: List<List<LatLng>> = emptyList(),
+    val geodesic: Boolean = false,
     val visible: Boolean = true,
     val clickable: Boolean = false,
     val zIndex: Float = 0f,

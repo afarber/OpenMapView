@@ -67,6 +67,34 @@ class MainActivity : ComponentActivity() {
 }
 
 /**
+ * Calculates the center point of an overlay.
+ */
+private fun getOverlayCenter(overlay: OverlayData): LatLng = LatLng(
+    overlay.points.map { it.latitude }.average(),
+    overlay.points.map { it.longitude }.average(),
+)
+
+/**
+ * Calculates an appropriate zoom level to fit the overlay on screen.
+ */
+private fun getOverlayZoom(overlay: OverlayData): Float {
+    val latitudes = overlay.points.map { it.latitude }
+    val longitudes = overlay.points.map { it.longitude }
+    val latSpan = latitudes.max() - latitudes.min()
+    val lonSpan = longitudes.max() - longitudes.min()
+    val maxSpan = maxOf(latSpan, lonSpan)
+
+    // Calculate zoom level based on geographic span
+    return when {
+        maxSpan > 5.0 -> 6f // Very large (e.g., Bochum to Berlin)
+        maxSpan > 1.0 -> 8f
+        maxSpan > 0.1 -> 12f
+        maxSpan > 0.01 -> 14f
+        else -> 15f
+    }
+}
+
+/**
  * Main composable screen containing the map and overlay navigation controls.
  *
  * Displays an OpenMapView with polylines and polygons at notable Bochum locations,
@@ -76,13 +104,9 @@ class MainActivity : ComponentActivity() {
 fun MapViewScreen() {
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Calculate initial location from all overlay points
-    val allPoints = poiOverlays.flatMap { it.points }
-    val initialLocation = LatLng(
-        allPoints.map { it.latitude }.average(),
-        allPoints.map { it.longitude }.average(),
-    )
-    val initialZoom = 13.0f
+    // Initial location centered on the first overlay
+    val initialLocation = getOverlayCenter(poiOverlays.first())
+    val initialZoom = 14.0f
 
     // State variables
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
@@ -115,6 +139,7 @@ fun MapViewScreen() {
                         strokeColor = data.color,
                         strokeWidth = data.width * strokeMultiplier,
                         strokePattern = if (isThisHighlighted) PathEffect.dashPathEffect(floatArrayOf(40f, 20f)) else null,
+                        geodesic = data.geodesic,
                         clickable = true,
                         tag = data.title,
                     )
@@ -152,14 +177,6 @@ fun MapViewScreen() {
         // Recreate with new highlight state
         createOverlays(map, highlighted, highlightIndex)
     }
-
-    /**
-     * Calculates the center point of an overlay.
-     */
-    fun getOverlayCenter(overlay: OverlayData): LatLng = LatLng(
-        overlay.points.map { it.latitude }.average(),
-        overlay.points.map { it.longitude }.average(),
-    )
 
     /**
      * Gets the overlay type as a string.
@@ -210,7 +227,11 @@ fun MapViewScreen() {
                             }
                         }
                         selectedIndex = newIndex
-                        animateCamera(CameraUpdateFactory.newLatLng(getOverlayCenter(poiOverlays[newIndex])), 500)
+                        val overlay = poiOverlays[newIndex]
+                        animateCamera(
+                            CameraUpdateFactory.newLatLngZoom(getOverlayCenter(overlay), getOverlayZoom(overlay)),
+                            500,
+                        )
                     }
 
                     setOnPolygonClickListener { polygon ->
@@ -224,7 +245,11 @@ fun MapViewScreen() {
                             }
                         }
                         selectedIndex = newIndex
-                        animateCamera(CameraUpdateFactory.newLatLng(getOverlayCenter(poiOverlays[newIndex])), 500)
+                        val overlay = poiOverlays[newIndex]
+                        animateCamera(
+                            CameraUpdateFactory.newLatLngZoom(getOverlayCenter(overlay), getOverlayZoom(overlay)),
+                            500,
+                        )
                     }
 
                     mapView = this
@@ -255,8 +280,9 @@ fun MapViewScreen() {
                     mapView?.let { updateHighlight(it, false, -1) }
                 }
                 selectedIndex = newIndex
+                val overlay = poiOverlays[newIndex]
                 mapView?.animateCamera(
-                    CameraUpdateFactory.newLatLng(getOverlayCenter(poiOverlays[newIndex])),
+                    CameraUpdateFactory.newLatLngZoom(getOverlayCenter(overlay), getOverlayZoom(overlay)),
                     500,
                 )
             },
@@ -267,8 +293,9 @@ fun MapViewScreen() {
                     mapView?.let { updateHighlight(it, false, -1) }
                 }
                 selectedIndex = newIndex
+                val overlay = poiOverlays[newIndex]
                 mapView?.animateCamera(
-                    CameraUpdateFactory.newLatLng(getOverlayCenter(poiOverlays[newIndex])),
+                    CameraUpdateFactory.newLatLngZoom(getOverlayCenter(overlay), getOverlayZoom(overlay)),
                     500,
                 )
             },
@@ -281,7 +308,14 @@ fun MapViewScreen() {
         FloatingActionButton(
             onClick = {
                 isHighlighted = !isHighlighted
-                mapView?.let { updateHighlight(it, isHighlighted, selectedIndex) }
+                val overlay = poiOverlays[selectedIndex]
+                mapView?.let {
+                    updateHighlight(it, isHighlighted, selectedIndex)
+                    it.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(getOverlayCenter(overlay), getOverlayZoom(overlay)),
+                        500,
+                    )
+                }
             },
             containerColor = if (isHighlighted) OsmHighwayPink else OsmWaterBlue,
             contentColor = Color.Black,
