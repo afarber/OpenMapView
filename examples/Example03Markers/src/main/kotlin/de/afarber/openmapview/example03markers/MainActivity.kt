@@ -160,6 +160,7 @@ fun MapViewScreen() {
 
         // Status overlay at top
         StatusToolbar(
+            totalCount = poiMarkers.size,
             selectedIndex = selectedIndex,
             selectedMarkerTitle = selectedMarker?.title,
             cameraState = cameraState,

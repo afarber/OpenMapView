@@ -5,7 +5,7 @@
  * This file is part of the OpenMapView project (https://github.com/afarber/OpenMapView)
  */
 
-package de.afarber.openmapview.example03markers
+package de.afarber.openmapview.example04polylines
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -20,25 +20,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * A status overlay displaying current marker selection and camera state.
+ * A status overlay displaying current overlay selection and camera state.
  *
- * Shows the currently selected marker index, name, and camera state.
- * The marker index text turns red when an info window is shown.
+ * Shows the currently selected overlay index, title, type, and camera state.
+ * The index text turns red when the overlay is highlighted.
  *
- * @param totalCount Total number of markers.
- * @param selectedIndex The index of the currently selected marker.
- * @param selectedMarkerTitle Title of the currently selected marker, or null if none selected.
+ * @param totalCount Total number of overlays.
+ * @param selectedIndex The index of the currently selected overlay.
+ * @param overlayTitle Title of the currently selected overlay.
+ * @param overlayType Type of overlay ("Polyline" or "Polygon").
  * @param cameraState Current camera state description (e.g., "Idle", "Moving (gesture)").
- * @param isInfoWindowShown Whether an info window is currently shown.
+ * @param isHighlighted Whether the overlay is currently highlighted.
  * @param modifier Modifier to be applied to the status overlay.
  */
 @Composable
 fun StatusToolbar(
     totalCount: Int,
     selectedIndex: Int,
-    selectedMarkerTitle: String?,
+    overlayTitle: String,
+    overlayType: String,
     cameraState: String,
-    isInfoWindowShown: Boolean,
+    isHighlighted: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -49,12 +51,16 @@ fun StatusToolbar(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "Marker #${selectedIndex + 1} of $totalCount",
-            color = if (isInfoWindowShown) Color.Red else Color.Black,
+            text = "Overlay #${selectedIndex + 1} of $totalCount",
+            color = if (isHighlighted) Color.Red else Color.Black,
         )
         Text(
-            text = selectedMarkerTitle ?: "None",
+            text = overlayTitle,
             color = Color.Black,
+        )
+        Text(
+            text = overlayType,
+            color = Color.Gray,
         )
         Text(
             text = "Camera: $cameraState",
