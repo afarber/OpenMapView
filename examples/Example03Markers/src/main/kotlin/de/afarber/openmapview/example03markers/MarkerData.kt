@@ -30,13 +30,13 @@ val poiMarkers = listOf(
     MarkerData(
         position = LatLng(51.4783, 7.2231),
         title = "Bochum Hauptbahnhof",
-        snippet = "Main railway station",
+        snippet = "Main Railway Station",
         hue = BitmapDescriptorFactory.HUE_RED,
     ),
     MarkerData(
         position = LatLng(51.4452, 7.2622),
         title = "Ruhr University",
-        snippet = "Ruhr-Universität Bochum",
+        snippet = "Ruhr-University Bochum",
         hue = BitmapDescriptorFactory.HUE_BLUE,
     ),
     MarkerData(
@@ -46,9 +46,9 @@ val poiMarkers = listOf(
         hue = BitmapDescriptorFactory.HUE_GREEN,
     ),
     MarkerData(
-        position = LatLng(51.4807, 7.2222),
+        position = LatLng(51.4761, 7.2161),
         title = "Bermuda3eck",
-        snippet = "Entertainment district",
+        snippet = "Entertainment District",
         hue = BitmapDescriptorFactory.HUE_ORANGE,
     ),
     MarkerData(
@@ -58,9 +58,21 @@ val poiMarkers = listOf(
         hue = BitmapDescriptorFactory.HUE_MAGENTA,
     ),
     MarkerData(
-        position = LatLng(51.4649, 7.2043),
+        position = LatLng(51.4927, 7.2342),
         title = "Starlight Express",
-        snippet = "Musical theater",
+        snippet = "Musical Theater",
         hue = BitmapDescriptorFactory.HUE_CYAN,
+    ),
+    MarkerData(
+        position = LatLng(51.4722, 7.2177),
+        title = "Schauspielhaus Bochum",
+        snippet = "Drama Theater",
+        hue = BitmapDescriptorFactory.HUE_YELLOW,
+    ),
+    MarkerData(
+        position = LatLng(51.4854, 7.2278),
+        title = "Zeiss Planetarium",
+        snippet = "Domed Astronomy Center",
+        hue = BitmapDescriptorFactory.HUE_VIOLET,
     ),
 )
