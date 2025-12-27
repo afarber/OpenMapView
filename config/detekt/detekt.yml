@@ -1,34 +1,63 @@
 build:
   maxIssues: 0
 
-formatting:
-  active: false
-
 complexity:
   active: true
   LongMethod:
-    threshold: 60
+    threshold: 200
   LongParameterList:
-    threshold: 6
-  ComplexMethod:
-    threshold: 15
+    functionThreshold: 10
+    constructorThreshold: 12
+  CyclomaticComplexMethod:
+    threshold: 50
+  TooManyFunctions:
+    thresholdInClasses: 100
+    thresholdInObjects: 20
+  LargeClass:
+    threshold: 3000
+  ComplexCondition:
+    threshold: 5
+  NestedBlockDepth:
+    threshold: 8
 
 style:
   active: true
   MagicNumber:
-    ignoreNumbers:
-      - '-1'
-      - '0'
-      - '1'
-      - '2'
-    ignorePropertyDeclaration: true
-    ignoreAnnotation: true
+    active: false
+  MaxLineLength:
+    maxLineLength: 140
+  ReturnCount:
+    max: 15
+  FunctionOnlyReturningConstant:
+    active: false
+  LoopWithTooManyJumpStatements:
+    active: false
+  UseRequire:
+    active: true
+  UnusedPrivateMember:
+    active: false
 
 naming:
   active: true
+  FunctionNaming:
+    ignoreAnnotated:
+      - Composable
 
-potential-bugs:
+empty-blocks:
   active: true
+
+comments:
+  active: false
 
 performance:
   active: true
+
+coroutines:
+  active: true
+
+exceptions:
+  active: true
+  SwallowedException:
+    active: false
+  TooGenericExceptionCaught:
+    active: false

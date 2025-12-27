@@ -305,7 +305,7 @@ class OpenMapView
                                     }
                                 }
 
-                                val consumed = controller.onMarkerClickListener?.onMarkerClick(touchedMarker) ?: false
+                                controller.onMarkerClickListener?.onMarkerClick(touchedMarker)
                                 controller.commitPan()
                                 invalidate()
                                 return true
@@ -500,10 +500,7 @@ class OpenMapView
          * @see getMapType
          */
         fun setMapType(type: Int) {
-            // Validate map type
-            if (type !in 0..14) {
-                throw IllegalArgumentException("Unknown map type: $type. Must be a valid MapType constant (0-14).")
-            }
+            require(type in 0..14) { "Unknown map type: $type. Must be a valid MapType constant (0-14)." }
 
             currentMapType = type
             controller.setMapType(type)

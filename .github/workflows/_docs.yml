@@ -47,6 +47,14 @@ jobs:
           mkdir -p openmapview/build/dokka/html/licenses
           cp openmapview/build/reports/licenses/licenses.html openmapview/build/dokka/html/licenses/index.html
 
+      - name: Run Detekt Analysis
+        run: ./gradlew detekt --no-daemon
+
+      - name: Copy Detekt Report to Docs
+        run: |
+          mkdir -p openmapview/build/dokka/html/detekt
+          cp openmapview/build/reports/detekt/detekt.html openmapview/build/dokka/html/detekt/index.html
+
       - name: Upload documentation artifact
         uses: actions/upload-artifact@v4
         with:

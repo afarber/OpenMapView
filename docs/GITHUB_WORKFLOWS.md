@@ -81,11 +81,15 @@ Located in `.github/workflows/`:
 - **Duration**: ~10-15 minutes (may vary due to emulator startup)
 
 #### `_docs.yml`
-- **Purpose**: Build API documentation with Dokka
-- **Runs**: `./gradlew dokkaGenerate`
-- **Artifacts**: Uploads generated HTML documentation
+- **Purpose**: Build API documentation with Dokka, license report, and Detekt report
+- **Runs**: `./gradlew dokkaGenerate`, `./gradlew generateLicenseReport`, `./gradlew detekt`
+- **Artifacts**: Uploads generated HTML documentation with license and Detekt reports
 - **Usage**: Called by CI for validation and docs-deploy for publishing
-- **Duration**: ~1-2 minutes
+- **Duration**: ~2-3 minutes
+- **Published URLs**:
+  - API docs: https://afarber.github.io/OpenMapView/
+  - Licenses: https://afarber.github.io/OpenMapView/licenses/
+  - Detekt: https://afarber.github.io/OpenMapView/detekt/
 
 ### Main Workflows
 

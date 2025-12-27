@@ -30,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,7 +56,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MapViewScreen() {
-    val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val configuration = LocalConfiguration.current
     var currentMapType by remember { mutableStateOf(MapType.STANDARD) }
@@ -287,7 +285,8 @@ fun MapTypeControls(
 
         // API Key Info
         Text(
-            text = "API key required: Cycle Map, Transport, Transport Dark, Tracestrack Topo\n\nConfigure in AndroidManifest.xml\nSee docs/API_KEYS.md",
+            text = "API key required: Cycle Map, Transport, Transport Dark, " +
+                "Tracestrack Topo\n\nConfigure in AndroidManifest.xml\nSee docs/API_KEYS.md",
             style = MaterialTheme.typography.bodySmall,
             fontSize = 9.sp,
             lineHeight = 11.sp,
