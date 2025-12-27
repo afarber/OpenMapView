@@ -13,25 +13,29 @@ jobs:
     name: Check Formatting
     uses: ./.github/workflows/_format.yml
 
+  detekt:
+    name: Static Analysis
+    uses: ./.github/workflows/_detekt.yml
+
   test:
     name: Unit Tests
-    needs: format
+    needs: [format, detekt]
     uses: ./.github/workflows/_test.yml
 
   build-library:
     name: Build Library
-    needs: [format, test]
+    needs: [format, detekt, test]
     uses: ./.github/workflows/_build-library.yml
 
   build-examples:
     name: Build Examples
-    needs: [format, test]
+    needs: [format, detekt, test]
     uses: ./.github/workflows/_build-examples.yml
 
   publish:
     name: Publish to Maven Central
     runs-on: ubuntu-latest
-    needs: [format, test, build-library, build-examples]
+    needs: [format, detekt, test, build-library, build-examples]
 
     steps:
       - name: Checkout repository
