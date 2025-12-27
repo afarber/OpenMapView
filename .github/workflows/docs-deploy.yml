@@ -6,6 +6,7 @@ on:
     paths:
       - 'openmapview/src/**/*.kt'
       - 'README.md'
+      - 'config/detekt/detekt.yml'
       - '.github/workflows/_docs.yml'
       - '.github/workflows/docs-deploy.yml'
 

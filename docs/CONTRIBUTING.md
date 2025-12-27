@@ -51,7 +51,28 @@ Running `./gradlew spotlessApply` automatically adds this header to any files mi
 
 The CI pipeline includes a copyright check that will fail if any `.kt` files are missing the required header.
 
-### 3. Dependency Management
+### 3. Static Code Analysis
+
+All code must pass Detekt static analysis checks. Detekt analyzes code for:
+- Code complexity and potential bugs
+- Naming conventions
+- Performance issues
+- Code smells
+
+**Run static analysis:**
+
+```bash
+./gradlew detekt
+```
+
+The CI pipeline will fail if Detekt finds any issues. View the HTML report at:
+```
+openmapview/build/reports/detekt/detekt.html
+```
+
+The Detekt report is also published at https://afarber.github.io/OpenMapView/detekt/
+
+### 4. Dependency Management
 
 Before adding new dependencies to OpenMapView, verify the following:
 
@@ -98,8 +119,8 @@ From the repository root, run:
 This installs a pre-commit hook that automatically:
 1. Checks code formatting with `./scripts/check-format.sh`
 2. Checks copyright headers with `./scripts/check-copyright.sh`
-3. Blocks the commit if any issues are found
-4. Provides instructions to run `./gradlew spotlessApply` to fix issues
+3. Runs Detekt static analysis with `./scripts/check-detekt.sh`
+4. Blocks the commit if any issues are found
 
 ### What Happens on Commit
 
@@ -112,6 +133,8 @@ Running pre-commit checks...
    Code formatting: OK
 2. Checking copyright headers...
    Copyright headers: OK
+3. Running Detekt static analysis...
+   Static analysis: OK
 
 All pre-commit checks passed!
 ```
@@ -190,10 +213,11 @@ The CI pipeline runs automatically on all pull requests and includes:
 
 1. **Format Check** - Verifies Spotless formatting
 2. **Copyright Check** - Verifies MIT license headers
-3. **Unit Tests** - Runs all JVM unit tests
-4. **Test Coverage** - Ensures minimum 20% code coverage
-5. **Build Library** - Builds the OpenMapView AAR
-6. **Build Examples** - Builds all example applications
+3. **Static Analysis** - Runs Detekt code analysis
+4. **Unit Tests** - Runs all JVM unit tests
+5. **Test Coverage** - Ensures minimum 20% code coverage
+6. **Build Library** - Builds the OpenMapView AAR
+7. **Build Examples** - Builds all example applications
 
 All checks must pass before merging.
 
@@ -205,6 +229,9 @@ All checks must pass before merging.
 
 # Check formatting
 ./gradlew spotlessCheck
+
+# Run static analysis
+./gradlew detekt
 
 # Run unit tests
 ./gradlew :openmapview:test

@@ -86,7 +86,6 @@ class MapControllerTest {
     @Test
     fun testZoom_BeyondMaxLimit() {
         controller.setZoom(18.0f)
-        val oldZoom = controller.getZoom()
         controller.zoom(5.0f, 540f, 960f)
         assertEquals(MapController.DEFAULT_MAX_ZOOM, controller.getZoom(), DELTA)
     }

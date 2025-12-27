@@ -213,13 +213,6 @@ class MapController(
             strokeWidth = 2f
         }
 
-    private val tileTextPaint =
-        Paint().apply {
-            color = Color.BLACK
-            textSize = 24f
-            textAlign = Paint.Align.CENTER
-        }
-
     private val tilePlaceholderPaint =
         Paint().apply {
             style = Paint.Style.FILL

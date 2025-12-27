@@ -49,6 +49,20 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "   Copyright headers: OK"
+
+# Check detekt static analysis
+echo "3. Running Detekt static analysis..."
+./scripts/check-detekt.sh > /dev/null 2>&1
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "Detekt static analysis failed!"
+    echo "Run './gradlew detekt' to see issues."
+    echo ""
+    exit 1
+fi
+
+echo "   Static analysis: OK"
 echo ""
 echo "All pre-commit checks passed!"
 EOF
@@ -61,6 +75,6 @@ echo ""
 echo "Pre-commit hook will now:"
 echo "  - Check code formatting before each commit"
 echo "  - Check copyright headers on all Kotlin files"
+echo "  - Run Detekt static analysis"
 echo "  - Block commits if issues are found"
-echo "  - Prompt to run './gradlew spotlessApply' to fix issues"
 echo ""

@@ -38,6 +38,13 @@ Located in `.github/workflows/`:
 - **Usage**: Called by CI and Release workflows
 - **Fast**: ~30 seconds
 
+#### `_detekt.yml`
+- **Purpose**: Run Detekt static code analysis
+- **Runs**: `./gradlew detekt`
+- **Usage**: Called by CI and Release workflows
+- **Duration**: ~1-2 minutes
+- **Reports**: HTML, XML, and SARIF reports generated
+
 #### `_coverage.yml`
 - **Purpose**: Check test coverage meets minimum threshold
 - **Runs**: `./scripts/check-coverage.sh` (minimum threshold defined in [Contributing Guide](CONTRIBUTING.md#test-coverage))
@@ -74,11 +81,15 @@ Located in `.github/workflows/`:
 - **Duration**: ~10-15 minutes (may vary due to emulator startup)
 
 #### `_docs.yml`
-- **Purpose**: Build API documentation with Dokka
-- **Runs**: `./gradlew dokkaGenerate`
-- **Artifacts**: Uploads generated HTML documentation
+- **Purpose**: Build API documentation with Dokka, license report, and Detekt report
+- **Runs**: `./gradlew dokkaGenerate`, `./gradlew generateLicenseReport`, `./gradlew detekt`
+- **Artifacts**: Uploads generated HTML documentation with license and Detekt reports
 - **Usage**: Called by CI for validation and docs-deploy for publishing
-- **Duration**: ~1-2 minutes
+- **Duration**: ~2-3 minutes
+- **Published URLs**:
+  - API docs: https://afarber.github.io/OpenMapView/
+  - Licenses: https://afarber.github.io/OpenMapView/licenses/
+  - Detekt: https://afarber.github.io/OpenMapView/detekt/
 
 ### Main Workflows
 
@@ -89,41 +100,26 @@ Located in `.github/workflows/`:
 
 **Execution Flow**:
 ```
-format (Check formatting)
-   |
-   v
-copyright (Check headers)
-   |
-   v
-   +----------------+----------------+----------------+
-   |                |                                 |
-   v                v                                 v
-test            docs                       coverage
-(Unit tests)    (Build API docs)           (Test coverage)
-   |                |                                 |
-   +----------------+----------------+----------------+
-                              |
-   +--------------------------+-------------------------+
-   |                                                    |
-   v                                                    v
-build-library                                  build-examples
-(Build AAR)                                    (Build 3 APKs)
+format ────┐
+           │
+copyright ─┼──→ test/coverage/docs ──→ build-library
+           │                          │
+detekt ────┘                          └──→ build-examples
 
 For Pull Requests only:
-   v
-instrumented-test (Phone + Automotive)
-(Runs in parallel, not blocking)
+instrumented-test (Phone + Automotive) runs in parallel
 ```
 
 **Jobs**:
 1. **format** - Runs Spotless formatting check
 2. **copyright** - Verifies MIT license headers
-3. **test** - Runs unit tests (depends on format + copyright)
-4. **docs** - Builds API documentation with Dokka (depends on format + copyright)
-5. **coverage** - Checks test coverage meets 20% minimum (depends on format + copyright)
-6. **build-library** - Builds library AAR (depends on format + copyright + test + docs + coverage, runs in parallel with build-examples)
-7. **build-examples** - Builds example APKs (depends on format + copyright + test + docs + coverage, runs in parallel with build-library)
-8. **instrumented-test** - Runs instrumentation tests on phone and automotive emulators (PR only, required status check)
+3. **detekt** - Runs Detekt static code analysis
+4. **test** - Runs unit tests (depends on format + copyright + detekt)
+5. **docs** - Builds API documentation with Dokka (depends on format + copyright + detekt)
+6. **coverage** - Checks test coverage meets 20% minimum (depends on format + copyright + detekt)
+7. **build-library** - Builds library AAR (depends on all above, runs in parallel with build-examples)
+8. **build-examples** - Builds example APKs (depends on all above, runs in parallel with build-library)
+9. **instrumented-test** - Runs instrumentation tests on phone and automotive emulators (PR only)
 
 **Total Duration**:
 - **Maintainer pushes to main**: ~3-4 minutes (no instrumentation tests)
@@ -143,30 +139,19 @@ instrumented-test (Phone + Automotive)
 
 **Execution Flow**:
 ```
-format (Check formatting)
-   |
-   v
-test (Run unit tests)
-   |
-   v
-   +----------------+----------------+
-   |                                 |
-   v                                 v
-build-library              build-examples
-   |                                 |
-   +-----------------+---------------+
-                     |
-                     v
-                 publish
-      (Maven Central + GitHub Release)
+format ────┐
+           ├──→ test ──→ build-library ──┐
+detekt ────┘           │                 ├──→ publish
+                       └──→ build-examples ──┘
 ```
 
 **Jobs**:
 1. **format** - Runs Spotless formatting check
-2. **test** - Runs unit tests (depends on format)
-3. **build-library** - Builds library AAR (depends on format + test)
-4. **build-examples** - Builds example APKs (depends on format + test)
-5. **publish** - Publishes to Maven Central and creates GitHub Release (depends on all above)
+2. **detekt** - Runs Detekt static code analysis
+3. **test** - Runs unit tests (depends on format + detekt)
+4. **build-library** - Builds library AAR (depends on format + detekt + test)
+5. **build-examples** - Builds example APKs (depends on format + detekt + test)
+6. **publish** - Publishes to Maven Central and creates GitHub Release (depends on all above)
 
 **Publish Job Details**:
 - Validates tag format (must be `vMAJOR.MINOR.PATCH`)
@@ -310,6 +295,9 @@ Before pushing, developers can run the same checks locally:
 # Auto-fix formatting
 ./gradlew spotlessApply
 
+# Static analysis
+./gradlew detekt
+
 # Run unit tests
 ./gradlew :openmapview:test
 
@@ -375,6 +363,7 @@ Artifacts are retained for 30 days.
 
 **Common Failures**:
 - **Format check fails**: Run `./gradlew spotlessApply` locally and commit
+- **Detekt fails**: Run `./gradlew detekt` locally to see issues
 - **Test fails**: Run `./gradlew :openmapview:test` locally to debug
 - **Build fails**: Check for compilation errors in logs
 - **Publish fails**: Verify GitHub Secrets are configured correctly
@@ -390,34 +379,19 @@ Developer creates PR with code changes
 GitHub triggers ci.yml workflow
    |
    v
-format job: Check Spotless formatting (30 sec) - PASS
+format/copyright/detekt jobs run in parallel (30-60 sec each) - PASS
    |
    v
-copyright job: Check license headers (30 sec) - PASS
+test/coverage/docs jobs run (1-2 min each) - PASS
    |
    v
-   +-------------+--------------+
-   |                            |
-   v                            v
-test job: Unit tests       coverage job: Test coverage
-   (1 min) - PASS               (1 min) - PASS (>20%)
-   |                            |
-   +-------------+--------------+
-                 |
-   +-------------+--------------+
-   |                            |
-   v                            v
-build-library: Build AAR  build-examples: Build 3 APKs
-   (2 min) - PASS               (3 min) - PASS
-   |                            |
-   +-------------+--------------+
-                 |
-                 v
+build-library + build-examples run in parallel (2-3 min) - PASS
+   |
+   v
 All core checks pass (3-4 min)
 
 Meanwhile (in parallel, PR only):
-instrumented-test: Phone + Automotive tests
-   (10-15 min) - PASS
+instrumented-test: Phone + Automotive tests (10-15 min) - PASS
    |
    v
 All checks complete -> PR is ready to merge
@@ -432,21 +406,15 @@ Developer tags v0.2.0 and pushes
 GitHub triggers release.yml workflow
    |
    v
-format job: Check Spotless formatting - PASS
+format + detekt jobs run in parallel - PASS
    |
    v
 test job: Run unit tests - PASS
    |
    v
-   +-------------+--------------+
-   |                            |
-   v                            v
-build-library: Build AAR  build-examples: Build 3 APKs
-   - PASS                       - PASS
-   |                            |
-   +-------------+--------------+
-                 |
-                 v
+build-library + build-examples run in parallel - PASS
+   |
+   v
 publish job:
    - Validate tag format - PASS
    - Sign artifacts with GPG - PASS
