@@ -235,7 +235,7 @@ class MapController(
                 MarkerIconFactory.getDefaultIcon(descriptor.hue)
             }
             is BitmapDescriptor.BitmapMarker -> {
-                descriptor.bitmap
+                descriptor.bitmap.takeUnless { it.isRecycled } ?: defaultMarkerIcon
             }
             is BitmapDescriptor.ResourceMarker -> {
                 try {

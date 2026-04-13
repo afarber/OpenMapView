@@ -269,7 +269,7 @@ HttpClient(Android) {
 All requests include a user-agent header as required by OSM tile usage policy:
 
 ```kotlin
-header("User-Agent", "OpenMapView/0.13.0 (https://github.com/afarber/OpenMapView)")
+header("User-Agent", "OpenMapView/0.13.1 (https://github.com/afarber/OpenMapView)")
 ```
 
 ### Coroutine-Based Downloads

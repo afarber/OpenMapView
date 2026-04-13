@@ -34,16 +34,23 @@ internal object MarkerIconFactory {
         // Normalize hue to 0-360 range
         val normalizedHue = hue % 360f
 
-        // Return cached icon if available
-        iconCache[normalizedHue]?.let { return it }
+        // Return cached icon if available. If a recycled bitmap somehow ended up in cache,
+        // drop it and regenerate below.
+        iconCache[normalizedHue]?.let { cached ->
+            if (!cached.isRecycled) {
+                return cached
+            }
+            iconCache.remove(normalizedHue)
+        }
 
         // Create new icon
         val bitmap = createMarkerIcon(normalizedHue)
 
-        // Add to cache with LRU eviction
+        // Add to cache with LRU eviction.
+        // Do not call recycle() here: returned icons may still be used by active map instances.
         if (iconCache.size >= MAX_CACHE_SIZE) {
             val firstKey = iconCache.keys.first()
-            iconCache.remove(firstKey)?.recycle()
+            iconCache.remove(firstKey)
         }
         iconCache[normalizedHue] = bitmap
 
@@ -109,10 +116,12 @@ internal object MarkerIconFactory {
     }
 
     /**
-     * Clears all cached icons to free memory.
+     * Clears all cached icons by dropping references only.
+     *
+     * We intentionally avoid recycling cached bitmaps because references can still be held
+     * by active map instances and recycled bitmaps would crash canvas drawing.
      */
     fun clearCache() {
-        iconCache.values.forEach { it.recycle() }
         iconCache.clear()
     }
 }
