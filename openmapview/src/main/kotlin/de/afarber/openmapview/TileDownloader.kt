@@ -33,7 +33,7 @@ class TileDownloader {
         try {
             val response =
                 client.get(url) {
-                    header("User-Agent", "OpenMapView/0.13.2 (https://github.com/afarber/OpenMapView)")
+                    header("User-Agent", "OpenMapView/0.13.3 (https://github.com/afarber/OpenMapView)")
                 }
             val bytes = response.readRawBytes()
             // Decode with RGB_565 to reduce memory usage (2 bytes per pixel vs 4 bytes for ARGB_8888)

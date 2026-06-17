@@ -14,7 +14,7 @@ Add to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("de.afarber:openmapview:0.13.2")
+    implementation("de.afarber:openmapview:0.13.3")
 }
 ```
 

@@ -2067,15 +2067,16 @@ class MapController(
         scope.launch(Dispatchers.IO) {
             var bitmap: Bitmap? = null
             try {
-                bitmap = tileDownloadSemaphore.withPermit {
-                    val cachedBitmap = tileCache.get(tile)
-                    if (cachedBitmap != null) {
-                        cachedBitmap
-                    } else {
-                        val source = tileSource ?: return@withPermit null
-                        tileDownloader.downloadTile(source.getTileUrl(tile))
+                bitmap =
+                    tileDownloadSemaphore.withPermit {
+                        val cachedBitmap = tileCache.get(tile)
+                        if (cachedBitmap != null) {
+                            cachedBitmap
+                        } else {
+                            val source = tileSource ?: return@withPermit null
+                            tileDownloader.downloadTile(source.getTileUrl(tile))
+                        }
                     }
-                }
                 bitmap?.let { tileCache.put(tile, it) }
             } finally {
                 launch(Dispatchers.Main) {
@@ -2149,24 +2150,25 @@ class MapController(
             var bitmap: Bitmap? = null
             try {
                 val cache = overlayTileCaches[overlay.id]
-                bitmap = tileDownloadSemaphore.withPermit {
-                    val cachedBitmap = cache?.get(tile)
-                    if (cachedBitmap != null) {
-                        cachedBitmap
-                    } else {
-                        val tileData = overlay.tileProvider.getTile(tile.x, tile.y, tile.zoom)
-                        if (tileData != null) {
-                            val options =
-                                BitmapFactory.Options().apply {
-                                    inPreferredConfig = Bitmap.Config.ARGB_8888 // Support transparency
-                                    inScaled = false
-                                }
-                            BitmapFactory.decodeByteArray(tileData.data, 0, tileData.data.size, options)
+                bitmap =
+                    tileDownloadSemaphore.withPermit {
+                        val cachedBitmap = cache?.get(tile)
+                        if (cachedBitmap != null) {
+                            cachedBitmap
                         } else {
-                            null
+                            val tileData = overlay.tileProvider.getTile(tile.x, tile.y, tile.zoom)
+                            if (tileData != null) {
+                                val options =
+                                    BitmapFactory.Options().apply {
+                                        inPreferredConfig = Bitmap.Config.ARGB_8888 // Support transparency
+                                        inScaled = false
+                                    }
+                                BitmapFactory.decodeByteArray(tileData.data, 0, tileData.data.size, options)
+                            } else {
+                                null
+                            }
                         }
                     }
-                }
                 bitmap?.let { cache?.put(tile, it) }
             } finally {
                 launch(Dispatchers.Main) {
