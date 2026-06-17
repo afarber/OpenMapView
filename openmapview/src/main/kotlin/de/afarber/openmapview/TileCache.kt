@@ -64,7 +64,7 @@ class TileCache(
 
     fun get(tile: TileCoordinate): Bitmap? {
         // Check memory cache first for fastest access
-        val memoryBitmap = memoryCache.get(tile)
+        val memoryBitmap = getMemory(tile)
         if (memoryBitmap != null) {
             return memoryBitmap
         }
@@ -79,6 +79,8 @@ class TileCache(
 
         return null
     }
+
+    fun getMemory(tile: TileCoordinate): Bitmap? = memoryCache.get(tile)
 
     fun put(
         tile: TileCoordinate,

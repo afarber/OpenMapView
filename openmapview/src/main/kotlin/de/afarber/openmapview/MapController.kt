@@ -25,6 +25,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import java.io.IOException
 import kotlin.math.PI
 import kotlin.math.cos
@@ -82,6 +84,7 @@ class MapController(
         internal const val DEFAULT_MIN_ZOOM = 2.0f
         internal const val DEFAULT_MAX_ZOOM = 19.0f
         private const val TILE_SIZE = 256f
+        private const val MAX_CONCURRENT_TILE_DOWNLOADS = 4
     }
 
     private var minZoomPreference = DEFAULT_MIN_ZOOM
@@ -197,6 +200,7 @@ class MapController(
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val tileDownloader = TileDownloader()
     private val tileCache = TileCache(context)
+    private val tileDownloadSemaphore = Semaphore(MAX_CONCURRENT_TILE_DOWNLOADS)
     private var tileSource: TileSource? = TileSource.STANDARD
     private val downloadingTiles = mutableSetOf<TileCoordinate>()
     private var onTileLoadedCallback: (() -> Unit)? = null
@@ -1204,7 +1208,7 @@ class MapController(
             val screenX = (tilePixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
             val screenY = (tilePixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
-            val cachedBitmap = tileCache.get(tile)
+            val cachedBitmap = tileCache.getMemory(tile)
             if (cachedBitmap != null) {
                 canvas.drawBitmap(cachedBitmap, screenX, screenY, null)
             } else {
@@ -1224,7 +1228,7 @@ class MapController(
         }
 
         // Prefetch adjacent tiles only when viewport changes to avoid excessive downloads
-        if (lastDrawnTiles != visibleTiles.toSet()) {
+        if (!isCameraMoving && lastDrawnTiles != visibleTiles.toSet()) {
             prefetchAdjacentTiles(visibleTiles)
             lastDrawnTiles = visibleTiles.toMutableSet()
         }
@@ -1290,7 +1294,7 @@ class MapController(
 
         // Download tiles that are adjacent but not yet visible
         for (tile in prefetchTiles) {
-            if (!visibleTiles.contains(tile) && !downloadingTiles.contains(tile) && tileCache.get(tile) == null) {
+            if (!visibleTiles.contains(tile) && !downloadingTiles.contains(tile) && tileCache.getMemory(tile) == null) {
                 downloadingTiles.add(tile)
                 downloadTile(tile, lowPriority = true)
             }
@@ -2061,21 +2065,25 @@ class MapController(
         lowPriority: Boolean = false,
     ) {
         scope.launch(Dispatchers.IO) {
-            val source = tileSource ?: return@launch
-            val url = source.getTileUrl(tile)
-            val bitmap = tileDownloader.downloadTile(url)
-            if (bitmap != null) {
-                tileCache.put(tile, bitmap)
-                downloadingTiles.remove(tile)
-                // Only trigger redraw for visible tiles to avoid excessive invalidations
-                // during prefetching
-                if (!lowPriority) {
-                    launch(Dispatchers.Main) {
+            var bitmap: Bitmap? = null
+            try {
+                bitmap = tileDownloadSemaphore.withPermit {
+                    val cachedBitmap = tileCache.get(tile)
+                    if (cachedBitmap != null) {
+                        cachedBitmap
+                    } else {
+                        val source = tileSource ?: return@withPermit null
+                        tileDownloader.downloadTile(source.getTileUrl(tile))
+                    }
+                }
+                bitmap?.let { tileCache.put(tile, it) }
+            } finally {
+                launch(Dispatchers.Main) {
+                    downloadingTiles.remove(tile)
+                    if (bitmap != null && !lowPriority) {
                         onTileLoadedCallback?.invoke()
                     }
                 }
-            } else {
-                downloadingTiles.remove(tile)
             }
         }
     }
@@ -2115,7 +2123,7 @@ class MapController(
             val screenX = (tilePixelX - centerPixelX + viewWidth / 2 - panOffsetX).toFloat()
             val screenY = (tilePixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
-            val cachedBitmap = cache.get(tile)
+            val cachedBitmap = cache.getMemory(tile)
             if (cachedBitmap != null) {
                 canvas.drawBitmap(cachedBitmap, screenX, screenY, paint)
             } else {
@@ -2138,30 +2146,35 @@ class MapController(
         overlay: TileOverlay,
     ) {
         scope.launch(Dispatchers.IO) {
-            val tileData = overlay.tileProvider.getTile(tile.x, tile.y, tile.zoom)
-            if (tileData != null) {
-                // Decode tile data to bitmap
-                val options =
-                    BitmapFactory.Options().apply {
-                        inPreferredConfig = Bitmap.Config.ARGB_8888 // Support transparency
-                        inScaled = false
+            var bitmap: Bitmap? = null
+            try {
+                val cache = overlayTileCaches[overlay.id]
+                bitmap = tileDownloadSemaphore.withPermit {
+                    val cachedBitmap = cache?.get(tile)
+                    if (cachedBitmap != null) {
+                        cachedBitmap
+                    } else {
+                        val tileData = overlay.tileProvider.getTile(tile.x, tile.y, tile.zoom)
+                        if (tileData != null) {
+                            val options =
+                                BitmapFactory.Options().apply {
+                                    inPreferredConfig = Bitmap.Config.ARGB_8888 // Support transparency
+                                    inScaled = false
+                                }
+                            BitmapFactory.decodeByteArray(tileData.data, 0, tileData.data.size, options)
+                        } else {
+                            null
+                        }
                     }
-                val bitmap = BitmapFactory.decodeByteArray(tileData.data, 0, tileData.data.size, options)
-
-                if (bitmap != null) {
-                    val cache = overlayTileCaches[overlay.id]
-                    cache?.put(tile, bitmap)
-
+                }
+                bitmap?.let { cache?.put(tile, it) }
+            } finally {
+                launch(Dispatchers.Main) {
                     overlayDownloadingTiles[overlay.id]?.remove(tile)
-
-                    launch(Dispatchers.Main) {
+                    if (bitmap != null) {
                         onTileLoadedCallback?.invoke()
                     }
-                } else {
-                    overlayDownloadingTiles[overlay.id]?.remove(tile)
                 }
-            } else {
-                overlayDownloadingTiles[overlay.id]?.remove(tile)
             }
         }
     }
