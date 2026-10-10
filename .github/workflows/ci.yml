@@ -52,3 +52,18 @@ jobs:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/_instrumentation.yml
 
+  # Single status for the branch ruleset: the matrix jobs above report as
+  # "Instrumentation Tests / Run Instrumentation Tests (<device>)", which can't
+  # match the required check name "Instrumentation Tests"
+  instrumented-test-status:
+    name: Instrumentation Tests
+    if: always() && github.event_name == 'pull_request'
+    needs: [instrumented-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check instrumentation test results
+        env:
+          RESULT: ${{ needs.instrumented-test.result }}
+        run: |
+          echo "Instrumentation tests result: $RESULT"
+          test "$RESULT" = "success"
