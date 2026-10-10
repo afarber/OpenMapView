@@ -106,6 +106,25 @@ class MapControllerTest {
     }
 
     @Test
+    fun testCommitPan_PastEastEdge_StopsAtAntimeridian() {
+        controller.setZoom(2.0f)
+        controller.setCenter(LatLng(0.0, 170.0))
+        // Negative dx moves the camera east, far beyond the 1024 px wide world at zoom 2
+        controller.updatePanOffset(-100_000f, 0f)
+        controller.commitPan()
+        assertEquals(180.0, controller.getCenter().longitude, 0.5)
+    }
+
+    @Test
+    fun testCommitPan_PastWestEdge_StopsAtAntimeridian() {
+        controller.setZoom(2.0f)
+        controller.setCenter(LatLng(0.0, -170.0))
+        controller.updatePanOffset(100_000f, 0f)
+        controller.commitPan()
+        assertEquals(-180.0, controller.getCenter().longitude, 0.5)
+    }
+
+    @Test
     fun testCommitPan_NoOffset() {
         val originalCenter = LatLng(51.4661, 7.2491)
         controller.setCenter(originalCenter)

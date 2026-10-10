@@ -1125,10 +1125,7 @@ class MapController(
 
         // Check if bounds are set and detect edge hits during panning
         if (cameraTargetBounds != null) {
-            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
-            val newCenterPixelX = (centerPixelX + newPanOffsetX).toInt()
-            val newCenterPixelY = (centerPixelY + newPanOffsetY).toInt()
-            val newCenter = ProjectionUtils.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom.toInt())
+            val newCenter = pannedCenter(newPanOffsetX, newPanOffsetY)
 
             val (_, hitEdges) = clampToTargetBoundsWithEdges(newCenter)
             if (hitEdges.isNotEmpty()) {
@@ -1141,6 +1138,24 @@ class MapController(
     }
 
     /**
+     * Returns the map center shifted by the given pan offset.
+     *
+     * The horizontal position is kept inside the world, so panning past the
+     * left or right edge stops at longitude -180 or 180 instead of wrapping
+     * around to the other side of the map.
+     */
+    private fun pannedCenter(
+        offsetX: Float,
+        offsetY: Float,
+    ): LatLng {
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+        val worldSize = (TILE_SIZE * 2.0.pow(zoom.toInt())).toInt()
+        val newCenterPixelX = (centerPixelX + offsetX).toInt().coerceIn(0, worldSize)
+        val newCenterPixelY = (centerPixelY + offsetY).toInt()
+        return ProjectionUtils.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom.toInt())
+    }
+
+    /**
      * Commits accumulated pan offsets to the map center.
      *
      * Converts the temporary pan offset to a new center location and resets the offset.
@@ -1150,11 +1165,7 @@ class MapController(
         if (panOffsetX == 0f && panOffsetY == 0f) return
 
         // Convert accumulated pan offset to new center
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
-        val newCenterPixelX = (centerPixelX + panOffsetX).toInt()
-        val newCenterPixelY = (centerPixelY + panOffsetY).toInt()
-
-        setCenter(ProjectionUtils.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom.toInt()))
+        setCenter(pannedCenter(panOffsetX, panOffsetY))
 
         // Reset pan offset
         panOffsetX = 0f
