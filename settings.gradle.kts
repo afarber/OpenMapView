@@ -14,7 +14,8 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "OpenMapView"
+// Must differ from ":openmapview" (case-insensitively), which nmcp rejects as a duplicate project name
+rootProject.name = "OpenMapView-root"
 
 include(":openmapview")
 include(":examples:Example01Pan")

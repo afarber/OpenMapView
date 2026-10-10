@@ -23,7 +23,7 @@ Both repositories are automatically updated when pushing a version tag.
 - **Namespace**: `de.afarber` (verified with Sonatype)
 - **Group ID**: `de.afarber`
 - **Artifact ID**: `openmapview`
-- **Publishing Plugin**: `com.gradleup.nmcp` v0.1.2
+- **Publishing Plugin**: `com.gradleup.nmcp.aggregation` (version in `gradle/libs.versions.toml`)
 - **GPG Signing Key**: `8334881A009EB69E5B5BDBF189999F05686CE169` (Ed25519, expires 2028-10-24)
 
 ### GitHub Secrets
@@ -316,17 +316,21 @@ The release process is orchestrated by reusable GitHub Actions workflows:
 
 As of June 30, 2025, the legacy OSSRH service (oss.sonatype.org and s01.oss.sonatype.org) has reached end-of-life. All publishing now goes through the Central Portal at https://central.sonatype.com/.
 
-The project uses the `com.gradleup.nmcp` plugin v0.1.2 for Central Portal publishing:
+The project uses the `com.gradleup.nmcp.aggregation` plugin for Central Portal publishing (root `build.gradle.kts`):
 
 ```kotlin
-nmcp {
-    publishAllProjectsProbablyBreakingProjectIsolation {
+nmcpAggregation {
+    centralPortal {
         username = System.getenv("OSSRH_USERNAME") ?: ""
         password = System.getenv("OSSRH_PASSWORD") ?: ""
-        publicationType = "AUTOMATIC"
+        publishingType = "AUTOMATIC"
     }
+
+    publishAllProjectsProbablyBreakingProjectIsolation()
 }
 ```
+
+nmcp rejects builds where two projects have the same name, compared case-insensitively. That's why the root project is named `OpenMapView-root` in `settings.gradle.kts` rather than `OpenMapView`, which would clash with the `:openmapview` module.
 
 GitHub Actions workflow uses: `./gradlew publishAggregationToCentralPortal`
 
