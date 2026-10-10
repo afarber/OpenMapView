@@ -62,6 +62,46 @@ android {
     }
 }
 
+// Generates LibraryVersion.kt so the User-Agent always carries the published version (from the Git tag)
+@CacheableTask
+abstract class GenerateLibraryVersionTask : DefaultTask() {
+    @get:Input
+    abstract val libraryVersion: Property<String>
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun generate() {
+        val file = outputDir.file("de/afarber/openmapview/LibraryVersion.kt").get().asFile
+        file.parentFile.mkdirs()
+        file.writeText(
+            """
+            |package de.afarber.openmapview
+            |
+            |internal const val LIBRARY_VERSION = "${libraryVersion.get()}"
+            |
+            |internal const val USER_AGENT = "OpenMapView/${'$'}LIBRARY_VERSION (https://github.com/afarber/OpenMapView)"
+            |
+            """.trimMargin(),
+        )
+    }
+}
+
+val generateLibraryVersion =
+    tasks.register<GenerateLibraryVersionTask>("generateLibraryVersion") {
+        libraryVersion.set(rootProject.ext["libVersion"] as String)
+    }
+
+androidComponents {
+    onVariants { variant ->
+        variant.sources.java?.addGeneratedSourceDirectory(
+            generateLibraryVersion,
+            GenerateLibraryVersionTask::outputDir,
+        )
+    }
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
