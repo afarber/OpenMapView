@@ -16,7 +16,9 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -50,6 +52,32 @@ class TileDownloaderTest {
                 assert(it.width == 256) { "Bitmap width should be 256" }
                 assert(it.height == 256) { "Bitmap height should be 256" }
             }
+            downloader.close()
+        }
+
+    @Test
+    fun testDownloadTile_SendsVersionedUserAgent() =
+        runTest {
+            var userAgent: String? = null
+            val mockEngine =
+                MockEngine { request ->
+                    userAgent = request.headers[HttpHeaders.UserAgent]
+                    respond(
+                        content = ByteReadChannel(createMockPngBytes()),
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "image/png"),
+                    )
+                }
+
+            val downloader = TileDownloader()
+            val reflectionField = TileDownloader::class.java.getDeclaredField("client")
+            reflectionField.isAccessible = true
+            reflectionField.set(downloader, HttpClient(mockEngine))
+
+            downloader.downloadTile("https://example.com/tile.png")
+
+            assertTrue("Library version should not be blank", LIBRARY_VERSION.isNotBlank())
+            assertEquals("OpenMapView/$LIBRARY_VERSION (https://github.com/afarber/OpenMapView)", userAgent)
             downloader.close()
         }
 

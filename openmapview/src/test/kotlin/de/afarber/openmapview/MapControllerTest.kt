@@ -546,8 +546,8 @@ class MapControllerTest {
         controller.setMinZoomPreference(5.0f)
         controller.setMaxZoomPreference(15.0f)
         controller.resetMinMaxZoomPreference()
-        assertEquals(MapController.DEFAULT_MIN_ZOOM.toFloat(), controller.getMinZoomLevel(), DELTA)
-        assertEquals(MapController.DEFAULT_MAX_ZOOM.toFloat(), controller.getMaxZoomLevel(), DELTA)
+        assertEquals(MapController.DEFAULT_MIN_ZOOM, controller.getMinZoomLevel(), DELTA)
+        assertEquals(MapController.DEFAULT_MAX_ZOOM, controller.getMaxZoomLevel(), DELTA)
     }
 
     @Test
