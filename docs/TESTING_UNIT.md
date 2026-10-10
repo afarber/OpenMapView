@@ -18,10 +18,10 @@ openmapview/src/test/kotlin/de/afarber/openmapview/
 |-----------|---------|---------|
 | **JUnit** | 4.13.2 | Test runner and assertions |
 | **Kotlin Test** | (inherited) | Kotlin-specific test utilities |
-| **MockK** | 1.13.8 | Mocking framework for Kotlin |
-| **Robolectric** | 4.14 | Android framework shadow implementations |
-| **Ktor Client Mock** | 2.3.7 | HTTP client mocking for network tests |
-| **Coroutines Test** | 1.9.0 | Testing coroutines and async code |
+| **MockK** | 1.14.11 | Mocking framework for Kotlin |
+| **Robolectric** | 4.17 | Android framework shadow implementations |
+| **Ktor Client Mock** | 3.6.0 | HTTP client mocking for network tests |
+| **Coroutines Test** | 1.11.0 | Testing coroutines and async code |
 
 ## Running Tests
 

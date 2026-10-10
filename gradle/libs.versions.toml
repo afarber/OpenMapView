@@ -1,42 +1,42 @@
 [versions]
 # Plugins
-agp = "8.11.1"
-kotlin = "2.2.21"
-spotless = "8.1.0"
-dokka = "2.1.0"
+agp = "8.13.2"
+kotlin = "2.3.21"
+spotless = "8.9.0"
+dokka = "2.2.0"
 nmcp = "1.3.0"
 
 # AndroidX Core
-androidx-core = "1.17.0"
+androidx-core = "1.18.0"
 androidx-lifecycle = "2.10.0"
-androidx-activity = "1.12.0"
+androidx-activity = "1.13.0"
 androidx-test-core = "1.7.0"
 androidx-test-runner = "1.7.0"
 androidx-test-rules = "1.7.0"
 androidx-test-junit = "1.3.0"
 
 # Compose
-compose-ui = "1.9.5"
-compose-ui-graphics = "1.9.5"
+compose-ui = "1.11.4"
+compose-ui-graphics = "1.11.4"
 compose-material3 = "1.4.0"
 compose-material-icons = "1.7.8"
 
 # Networking
-ktor = "3.3.3"
+ktor = "3.6.0"
 
 # Utilities
 disklrucache = "2.0.2"
 
 # Testing
 junit = "4.13.2"
-mockk = "1.14.6"
-robolectric = "4.16"
-kotlinx-coroutines = "1.10.2"
+mockk = "1.14.11"
+robolectric = "4.17"
+kotlinx-coroutines = "1.11.0"
 
 # Code Quality
 ktlint = "1.3.1"
-license-report = "3.0.1"
-detekt = "1.23.7"
+license-report = "3.1.4"
+detekt = "1.23.8"
 
 [libraries]
 # AndroidX Core
