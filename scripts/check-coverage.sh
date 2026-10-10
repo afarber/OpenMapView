@@ -19,7 +19,8 @@ fi
 
 # Extract coverage percentage from XML report
 # Format: <counter type="INSTRUCTION" missed="X" covered="Y"/>
-INSTRUCTIONS=$(grep -A 1 '<counter type="INSTRUCTION"' "$COVERAGE_FILE" | tail -1)
+# The report is a single line; the last INSTRUCTION counter is the report-level total
+INSTRUCTIONS=$(grep -o '<counter type="INSTRUCTION"[^>]*>' "$COVERAGE_FILE" | tail -1)
 MISSED=$(echo "$INSTRUCTIONS" | sed -n 's/.*missed="\([0-9]*\)".*/\1/p')
 COVERED=$(echo "$INSTRUCTIONS" | sed -n 's/.*covered="\([0-9]*\)".*/\1/p')
 
