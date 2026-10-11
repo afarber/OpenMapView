@@ -444,6 +444,10 @@ To upgrade Java version or change Gradle cache settings:
 - Update in one reusable workflow file
 - Automatically applies to CI and Release workflows
 
+Every workflow sets up Gradle with the official `gradle/actions/setup-gradle` action, which caches dependencies and validates the Gradle wrapper checksum.
+
+Dependabot (`.github/dependabot.yml`) opens weekly grouped pull requests for the version catalog, the Gradle wrapper and the GitHub Actions used here, so CI checks every update before it is merged.
+
 ### 4. Composability
 The reusable `_instrumentation.yml` workflow demonstrates this principle:
 ```yaml
