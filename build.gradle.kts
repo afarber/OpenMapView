@@ -25,7 +25,6 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.spotless) apply false
     alias(libs.plugins.dokka) apply false
-    alias(libs.plugins.detekt) apply false
     alias(libs.plugins.nmcp)
 }
 
@@ -38,25 +37,3 @@ nmcpAggregation {
 
     publishAllProjectsProbablyBreakingProjectIsolation()
 }
-
-subprojects {
-    afterEvaluate {
-        if (plugins.hasPlugin("com.android.base")) {
-            apply(plugin = "io.gitlab.arturbosch.detekt")
-
-            extensions.configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
-                buildUponDefaultConfig = true
-                config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
-            }
-
-            tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
-                reports {
-                    html.required.set(true)
-                    xml.required.set(true)
-                    sarif.required.set(true)
-                }
-            }
-        }
-    }
-}
-

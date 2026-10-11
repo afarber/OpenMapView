@@ -38,12 +38,12 @@ Located in `.github/workflows/`:
 - **Usage**: Called by CI and Release workflows
 - **Fast**: ~30 seconds
 
-#### `_detekt.yml`
-- **Purpose**: Run Detekt static code analysis
-- **Runs**: `./gradlew detekt`
+#### `_lint.yml`
+- **Purpose**: Run Android Lint on the library
+- **Runs**: `./gradlew :openmapview:lintRelease`
 - **Usage**: Called by CI and Release workflows
 - **Duration**: ~1-2 minutes
-- **Reports**: HTML, XML, and SARIF reports generated
+- **Reports**: HTML report uploaded as an artifact; existing warnings are listed in `openmapview/lint-baseline.xml`
 
 #### `_coverage.yml`
 - **Purpose**: Check test coverage meets minimum threshold
@@ -81,15 +81,15 @@ Located in `.github/workflows/`:
 - **Duration**: ~10-15 minutes (may vary due to emulator startup)
 
 #### `_docs.yml`
-- **Purpose**: Build API documentation with Dokka, license report, and Detekt report
-- **Runs**: `./gradlew dokkaGenerate`, `./gradlew generateLicenseReport`, `./gradlew detekt`
-- **Artifacts**: Uploads generated HTML documentation with license and Detekt reports
+- **Purpose**: Build API documentation with Dokka, license report, and Lint report
+- **Runs**: `./gradlew dokkaGenerate`, `./gradlew generateLicenseReport`, `./gradlew :openmapview:lintRelease`
+- **Artifacts**: Uploads generated HTML documentation with license and Lint reports
 - **Usage**: Called by CI for validation and docs-deploy for publishing
 - **Duration**: ~2-3 minutes
 - **Published URLs**:
   - API docs: https://afarber.github.io/OpenMapView/
   - Licenses: https://afarber.github.io/OpenMapView/licenses/
-  - Detekt: https://afarber.github.io/OpenMapView/detekt/
+  - Lint: https://afarber.github.io/OpenMapView/lint/
 
 ### Main Workflows
 
@@ -104,7 +104,7 @@ format ────┐
            │
 copyright ─┼──→ test/coverage/docs ──→ build-library
            │                          │
-detekt ────┘                          └──→ build-examples
+lint ──────┘                          └──→ build-examples
 
 For Pull Requests only:
 instrumented-test (Phone + Automotive) runs in parallel
@@ -113,10 +113,10 @@ instrumented-test (Phone + Automotive) runs in parallel
 **Jobs**:
 1. **format** - Runs Spotless formatting check
 2. **copyright** - Verifies MIT license headers
-3. **detekt** - Runs Detekt static code analysis
-4. **test** - Runs unit tests (depends on format + copyright + detekt)
-5. **docs** - Builds API documentation with Dokka (depends on format + copyright + detekt)
-6. **coverage** - Checks test coverage meets 20% minimum (depends on format + copyright + detekt)
+3. **lint** - Runs Android Lint
+4. **test** - Runs unit tests (depends on format + copyright + lint)
+5. **docs** - Builds API documentation with Dokka (depends on format + copyright + lint)
+6. **coverage** - Checks test coverage meets 20% minimum (depends on format + copyright + lint)
 7. **build-library** - Builds library AAR (depends on all above, runs in parallel with build-examples)
 8. **build-examples** - Builds example APKs (depends on all above, runs in parallel with build-library)
 9. **instrumented-test** - Runs instrumentation tests on phone and automotive emulators (PR only)
@@ -141,16 +141,16 @@ instrumented-test (Phone + Automotive) runs in parallel
 ```
 format ────┐
            ├──→ test ──→ build-library ──┐
-detekt ────┘           │                 ├──→ publish
+lint ──────┘           │                 ├──→ publish
                        └──→ build-examples ──┘
 ```
 
 **Jobs**:
 1. **format** - Runs Spotless formatting check
-2. **detekt** - Runs Detekt static code analysis
-3. **test** - Runs unit tests (depends on format + detekt)
-4. **build-library** - Builds library AAR (depends on format + detekt + test)
-5. **build-examples** - Builds example APKs (depends on format + detekt + test)
+2. **lint** - Runs Android Lint
+3. **test** - Runs unit tests (depends on format + lint)
+4. **build-library** - Builds library AAR (depends on format + lint + test)
+5. **build-examples** - Builds example APKs (depends on format + lint + test)
 6. **publish** - Publishes to Maven Central and creates GitHub Release (depends on all above)
 
 **Publish Job Details**:
@@ -296,7 +296,7 @@ Before pushing, developers can run the same checks locally:
 ./gradlew spotlessApply
 
 # Static analysis
-./gradlew detekt
+./gradlew :openmapview:lintRelease
 
 # Run unit tests
 ./gradlew :openmapview:test
@@ -367,7 +367,7 @@ Artifacts are retained for 30 days.
 
 **Common Failures**:
 - **Format check fails**: Run `./gradlew spotlessApply` locally and commit
-- **Detekt fails**: Run `./gradlew detekt` locally to see issues
+- **Lint fails**: Run `./gradlew :openmapview:lintRelease` locally and open the HTML report
 - **Test fails**: Run `./gradlew :openmapview:test` locally to debug
 - **Build fails**: Check for compilation errors in logs
 - **Publish fails**: Verify GitHub Secrets are configured correctly
@@ -383,7 +383,7 @@ Developer creates PR with code changes
 GitHub triggers ci.yml workflow
    |
    v
-format/copyright/detekt jobs run in parallel (30-60 sec each) - PASS
+format/copyright/lint jobs run in parallel (30-60 sec each) - PASS
    |
    v
 test/coverage/docs jobs run (1-2 min each) - PASS
@@ -410,7 +410,7 @@ Developer tags v0.2.0 and pushes
 GitHub triggers release.yml workflow
    |
    v
-format + detekt jobs run in parallel - PASS
+format + lint jobs run in parallel - PASS
    |
    v
 test job: Run unit tests - PASS
