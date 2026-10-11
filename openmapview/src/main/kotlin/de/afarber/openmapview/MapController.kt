@@ -124,11 +124,15 @@ class MapController(
                     hitEdges.add(Edge.BOTTOM)
                     bounds.southwest.latitude
                 }
+
                 latLng.latitude > bounds.northeast.latitude -> {
                     hitEdges.add(Edge.TOP)
                     bounds.northeast.latitude
                 }
-                else -> latLng.latitude
+
+                else -> {
+                    latLng.latitude
+                }
             }
 
         val clampedLng =
@@ -137,11 +141,15 @@ class MapController(
                     hitEdges.add(Edge.LEFT)
                     bounds.southwest.longitude
                 }
+
                 latLng.longitude > bounds.northeast.longitude -> {
                     hitEdges.add(Edge.RIGHT)
                     bounds.northeast.longitude
                 }
-                else -> latLng.longitude
+
+                else -> {
+                    latLng.longitude
+                }
             }
 
         return Pair(LatLng(clampedLat, clampedLng), hitEdges)
@@ -238,9 +246,11 @@ class MapController(
             is BitmapDescriptor.DefaultMarker -> {
                 MarkerIconFactory.getDefaultIcon(descriptor.hue)
             }
+
             is BitmapDescriptor.BitmapMarker -> {
                 descriptor.bitmap.takeUnless { it.isRecycled } ?: defaultMarkerIcon
             }
+
             is BitmapDescriptor.ResourceMarker -> {
                 try {
                     BitmapFactory.decodeResource(context.resources, descriptor.resourceId)
@@ -249,6 +259,7 @@ class MapController(
                     defaultMarkerIcon
                 }
             }
+
             is BitmapDescriptor.AssetMarker -> {
                 try {
                     context.assets.open(descriptor.assetName).use { stream ->
@@ -966,40 +977,54 @@ class MapController(
         currentPosition: CameraPosition,
     ): CameraPosition =
         when (cameraUpdate) {
-            is CameraUpdate.NewLatLng ->
+            is CameraUpdate.NewLatLng -> {
                 CameraPosition(
                     target = cameraUpdate.target,
                     zoom = currentPosition.zoom,
                 )
-            is CameraUpdate.NewLatLngZoom ->
+            }
+
+            is CameraUpdate.NewLatLngZoom -> {
                 CameraPosition(
                     target = cameraUpdate.target,
                     zoom = cameraUpdate.zoom.coerceIn(minZoomPreference, maxZoomPreference),
                 )
-            is CameraUpdate.NewCameraPosition ->
+            }
+
+            is CameraUpdate.NewCameraPosition -> {
                 cameraUpdate.position.copy(
                     zoom = cameraUpdate.position.zoom.coerceIn(minZoomPreference, maxZoomPreference),
                 )
-            is CameraUpdate.ZoomIn ->
+            }
+
+            is CameraUpdate.ZoomIn -> {
                 CameraPosition(
                     target = currentPosition.target,
                     zoom = (currentPosition.zoom + 1.0f).coerceIn(minZoomPreference, maxZoomPreference),
                 )
-            is CameraUpdate.ZoomOut ->
+            }
+
+            is CameraUpdate.ZoomOut -> {
                 CameraPosition(
                     target = currentPosition.target,
                     zoom = (currentPosition.zoom - 1.0f).coerceIn(minZoomPreference, maxZoomPreference),
                 )
-            is CameraUpdate.ZoomTo ->
+            }
+
+            is CameraUpdate.ZoomTo -> {
                 CameraPosition(
                     target = currentPosition.target,
                     zoom = cameraUpdate.zoom.coerceIn(minZoomPreference, maxZoomPreference),
                 )
-            is CameraUpdate.ZoomBy ->
+            }
+
+            is CameraUpdate.ZoomBy -> {
                 CameraPosition(
                     target = currentPosition.target,
                     zoom = (currentPosition.zoom + cameraUpdate.amount).coerceIn(minZoomPreference, maxZoomPreference),
                 )
+            }
+
             is CameraUpdate.ScrollBy -> {
                 // Convert current center to pixel coordinates
                 val (centerPixelX, centerPixelY) =
@@ -1020,6 +1045,7 @@ class MapController(
                     zoom = currentPosition.zoom,
                 )
             }
+
             is CameraUpdate.NewLatLngBounds -> {
                 val zoom =
                     calculateZoomForBounds(
@@ -1032,6 +1058,7 @@ class MapController(
                     zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference),
                 )
             }
+
             is CameraUpdate.NewLatLngBoundsWithSize -> {
                 val zoom =
                     calculateZoomForBounds(

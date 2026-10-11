@@ -171,6 +171,7 @@ class OpenMapView
                         }
                         return true
                     }
+
                     MotionEvent.ACTION_MOVE -> {
                         val dx = event.x - lastTouchX
                         val dy = event.y - lastTouchY
@@ -226,6 +227,7 @@ class OpenMapView
                         }
                         return true
                     }
+
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                         // Release edge glows when touch ends
                         controller.releaseEdgeEffects()

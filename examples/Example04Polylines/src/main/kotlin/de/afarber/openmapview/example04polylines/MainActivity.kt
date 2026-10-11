@@ -86,10 +86,15 @@ private fun getOverlayZoom(overlay: OverlayData): Float {
 
     // Calculate zoom level based on geographic span
     return when {
-        maxSpan > 5.0 -> 6f // Very large (e.g., Bochum to Berlin)
+        // Very large (e.g., Bochum to Berlin)
+        maxSpan > 5.0 -> 6f
+
         maxSpan > 1.0 -> 8f
+
         maxSpan > 0.1 -> 12f
+
         maxSpan > 0.01 -> 14f
+
         else -> 15f
     }
 }
@@ -146,6 +151,7 @@ fun MapViewScreen() {
                     map.addPolyline(polyline)
                     polylines.add(polyline)
                 }
+
                 is PolygonData -> {
                     val polygon = Polygon(
                         points = data.points,
