@@ -10,7 +10,7 @@ package de.afarber.openmapview.example01pan
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-/**
+/*
  * OSM-inspired colors and shared dimensions for the Example01Pan app.
  */
 

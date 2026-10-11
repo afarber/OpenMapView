@@ -303,21 +303,37 @@ enum class TileSource(
          */
         fun fromMapType(mapType: Int): TileSource =
             when (mapType) {
-                MapType.NONE -> STANDARD // NONE uses STANDARD but doesn't render
+                // NONE uses STANDARD but doesn't render
+                MapType.NONE -> STANDARD
+
                 MapType.STANDARD -> STANDARD
+
                 MapType.CYCLOSM -> CYCLOSM
+
                 MapType.CYCLEMAP -> CYCLEMAP
+
                 MapType.TRANSPORT -> TRANSPORT
+
                 MapType.TRANSPORT_DARK -> TRANSPORT_DARK
+
                 MapType.TRACESTRACK_TOPO -> TRACESTRACK_TOPO
+
                 MapType.HUMANITARIAN -> HUMANITARIAN
+
                 MapType.OPNVKARTE -> OPNVKARTE
+
                 MapType.OPENTOPOMAP -> OPENTOPOMAP
+
                 MapType.CARTO_LIGHT -> CARTO_LIGHT
+
                 MapType.CARTO_DARK -> CARTO_DARK
+
                 MapType.CARTO_VOYAGER -> CARTO_VOYAGER
+
                 MapType.STAMEN_TONER -> STAMEN_TONER
+
                 MapType.STAMEN_WATERCOLOR -> STAMEN_WATERCOLOR
+
                 else -> STANDARD // Fallback for unknown types
             }
 

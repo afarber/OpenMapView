@@ -10,7 +10,7 @@ package de.afarber.openmapview.example03markers
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-/**
+/*
  * Constants for the Example03Markers app: colors, dimensions, and durations.
  */
 

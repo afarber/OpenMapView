@@ -10,7 +10,7 @@ package de.afarber.openmapview.example02zoom
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-/**
+/*
  * OSM-inspired colors and shared dimensions for the Example02Zoom app.
  */
 

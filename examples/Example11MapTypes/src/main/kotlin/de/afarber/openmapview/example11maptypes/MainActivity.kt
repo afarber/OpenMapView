@@ -324,24 +324,23 @@ fun MapTypeButton(
     }
 }
 
-fun getMapTypeName(type: Int): String =
-    when (type) {
-        MapType.NONE -> "None"
-        MapType.STANDARD -> "Standard"
-        MapType.CYCLOSM -> "CyclOSM"
-        MapType.CYCLEMAP -> "Cycle Map"
-        MapType.TRANSPORT -> "Transport"
-        MapType.TRANSPORT_DARK -> "Transport Dark"
-        MapType.TRACESTRACK_TOPO -> "Tracestrack Topo"
-        MapType.HUMANITARIAN -> "Humanitarian"
-        MapType.OPNVKARTE -> "OPNVKarte"
-        MapType.OPENTOPOMAP -> "OpenTopoMap"
-        MapType.CARTO_LIGHT -> "Carto Light"
-        MapType.CARTO_DARK -> "Carto Dark"
-        MapType.CARTO_VOYAGER -> "Carto Voyager"
-        MapType.STAMEN_TONER -> "Stamen Toner"
-        MapType.STAMEN_WATERCOLOR -> "Stamen Watercolor"
-        else -> "Unknown ($type)"
-    }
+fun getMapTypeName(type: Int): String = when (type) {
+    MapType.NONE -> "None"
+    MapType.STANDARD -> "Standard"
+    MapType.CYCLOSM -> "CyclOSM"
+    MapType.CYCLEMAP -> "Cycle Map"
+    MapType.TRANSPORT -> "Transport"
+    MapType.TRANSPORT_DARK -> "Transport Dark"
+    MapType.TRACESTRACK_TOPO -> "Tracestrack Topo"
+    MapType.HUMANITARIAN -> "Humanitarian"
+    MapType.OPNVKARTE -> "OPNVKarte"
+    MapType.OPENTOPOMAP -> "OpenTopoMap"
+    MapType.CARTO_LIGHT -> "Carto Light"
+    MapType.CARTO_DARK -> "Carto Dark"
+    MapType.CARTO_VOYAGER -> "Carto Voyager"
+    MapType.STAMEN_TONER -> "Stamen Toner"
+    MapType.STAMEN_WATERCOLOR -> "Stamen Watercolor"
+    else -> "Unknown ($type)"
+}
 
 fun getMapTypeCount(): Int = 15
