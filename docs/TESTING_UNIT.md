@@ -383,20 +383,20 @@ Check Robolectric version compatibility with CI's JDK version. The project uses:
 
 ## Test Coverage
 
-OpenMapView uses JaCoCo for test coverage measurement. For coverage requirements and thresholds, see the [Contributing Guide](CONTRIBUTING.md#test-coverage).
+OpenMapView measures test coverage with the Android Gradle Plugin's built-in JaCoCo support. For coverage requirements and thresholds, see the [Contributing Guide](CONTRIBUTING.md#test-coverage).
 
 ### Generating Coverage Reports
 
 Run tests and generate coverage:
 
 ```bash
-./gradlew :openmapview:testDebugUnitTest jacocoTestReport
+./gradlew :openmapview:createDebugUnitTestCoverageReport
 ```
 
 View HTML coverage report:
 
 ```
-openmapview/build/reports/jacoco/jacocoTestReport/html/index.html
+openmapview/build/reports/coverage/test/debug/index.html
 ```
 
 Check coverage meets minimum threshold:
@@ -407,11 +407,9 @@ Check coverage meets minimum threshold:
 
 ### Coverage Configuration
 
-JaCoCo is configured in `openmapview/build.gradle.kts` with exclusions for:
+Coverage is enabled with `enableUnitTestCoverage = true` for the debug build type in `openmapview/build.gradle.kts`. The only extra setting is `isIncludeNoLocationClasses = true` on the test tasks, so classes loaded by Robolectric's instrumenting class loader are counted.
 
-- Generated code (R.class, BuildConfig)
-- Test files
-- Android framework classes
+`./scripts/check-coverage.sh` deletes the previous report, runs the tests and fails if they fail, so it never judges a stale report.
 
 ### Current Coverage Areas
 
@@ -434,11 +432,10 @@ The test suite currently covers:
 ### Coverage in CI
 
 The `.github/workflows/_coverage.yml` workflow:
-1. Runs all unit tests
-2. Generates JaCoCo coverage report
+1. Runs all unit tests and generates the coverage report (`./scripts/check-coverage.sh`)
+2. Checks coverage meets minimum threshold
 3. Uploads coverage to Codecov
-4. Checks coverage meets minimum threshold
-5. Uploads HTML and XML reports as artifacts
+4. Uploads HTML and XML reports as artifacts
 
 Coverage results are available:
 - On Codecov: https://codecov.io/gh/afarber/OpenMapView
