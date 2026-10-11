@@ -26,6 +26,15 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    lint {
+        abortOnError = true
+        warningsAsErrors = true
+        // Dependency updates come from Dependabot; these checks need network access and fail at random
+        disable += setOf("NewerVersionAvailable", "GradleDependency", "AndroidGradlePluginVersion")
+        // Existing warnings are recorded here; regenerate with ./gradlew :openmapview:updateLintBaseline
+        baseline = file("lint-baseline.xml")
+    }
+
     testOptions {
         unitTests {
             isReturnDefaultValues = true
@@ -45,6 +54,12 @@ android {
             withSourcesJar()
             withJavadocJar()
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        allWarningsAsErrors = true
     }
 }
 

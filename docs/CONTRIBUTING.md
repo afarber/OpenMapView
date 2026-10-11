@@ -53,24 +53,28 @@ The CI pipeline includes a copyright check that will fail if any `.kt` files are
 
 ### 3. Static Code Analysis
 
-All code must pass Detekt static analysis checks. Detekt analyzes code for:
-- Code complexity and potential bugs
-- Naming conventions
-- Performance issues
+All code must pass Android Lint. Lint checks the library for:
+- API calls above the minimum SDK (23)
+- Manifest, resource and accessibility problems
+- Common Android, AndroidX and Kotlin pitfalls
+
+Kotlin compiler warnings are treated as errors in the library, so new warnings fail the build as well.
 - Code smells
 
 **Run static analysis:**
 
 ```bash
-./gradlew detekt
+./gradlew :openmapview:lintRelease
 ```
 
-The CI pipeline will fail if Detekt finds any issues. View the HTML report at:
+The CI pipeline will fail if Lint finds any new issues. View the HTML report at:
 ```
-openmapview/build/reports/detekt/detekt.html
+openmapview/build/reports/lint-results-release.html
 ```
 
-The Detekt report is also published at https://afarber.github.io/OpenMapView/detekt/
+Existing warnings are recorded in `openmapview/lint-baseline.xml` and do not fail the build. After fixing one of them, regenerate the baseline with `./gradlew :openmapview:updateLintBaseline`.
+
+The Lint report is also published at https://afarber.github.io/OpenMapView/lint/
 
 ### 4. Dependency Management
 
@@ -119,8 +123,9 @@ From the repository root, run:
 This installs a pre-commit hook that automatically:
 1. Checks code formatting with `./scripts/check-format.sh`
 2. Checks copyright headers with `./scripts/check-copyright.sh`
-3. Runs Detekt static analysis with `./scripts/check-detekt.sh`
-4. Blocks the commit if any issues are found
+3. Blocks the commit if any issues are found
+
+Android Lint is not part of the hook because it takes too long per commit; CI runs it on every pull request.
 
 ### What Happens on Commit
 
@@ -133,8 +138,6 @@ Running pre-commit checks...
    Code formatting: OK
 2. Checking copyright headers...
    Copyright headers: OK
-3. Running Detekt static analysis...
-   Static analysis: OK
 
 All pre-commit checks passed!
 ```
@@ -213,7 +216,7 @@ The CI pipeline runs automatically on all pull requests and includes:
 
 1. **Format Check** - Verifies Spotless formatting
 2. **Copyright Check** - Verifies MIT license headers
-3. **Static Analysis** - Runs Detekt code analysis
+3. **Static Analysis** - Runs Android Lint
 4. **Unit Tests** - Runs all JVM unit tests
 5. **Test Coverage** - Ensures minimum 20% code coverage
 6. **Build Library** - Builds the OpenMapView AAR
@@ -231,7 +234,7 @@ All checks must pass before merging.
 ./gradlew spotlessCheck
 
 # Run static analysis
-./gradlew detekt
+./gradlew :openmapview:lintRelease
 
 # Run unit tests
 ./gradlew :openmapview:test

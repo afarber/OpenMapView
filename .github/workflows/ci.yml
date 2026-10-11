@@ -18,33 +18,33 @@ jobs:
     name: Check Copyright Headers
     uses: ./.github/workflows/_copyright.yml
 
-  detekt:
+  lint:
     name: Static Analysis
-    uses: ./.github/workflows/_detekt.yml
+    uses: ./.github/workflows/_lint.yml
 
   test:
     name: Unit Tests
-    needs: [format, copyright, detekt]
+    needs: [format, copyright, lint]
     uses: ./.github/workflows/_test.yml
 
   coverage:
     name: Test Coverage
-    needs: [format, copyright, detekt]
+    needs: [format, copyright, lint]
     uses: ./.github/workflows/_coverage.yml
 
   docs:
     name: Documentation
-    needs: [format, copyright, detekt]
+    needs: [format, copyright, lint]
     uses: ./.github/workflows/_docs.yml
 
   build-library:
     name: Build Library
-    needs: [format, copyright, detekt, test, coverage, docs]
+    needs: [format, copyright, lint, test, coverage, docs]
     uses: ./.github/workflows/_build-library.yml
 
   build-examples:
     name: Build Examples
-    needs: [format, copyright, detekt, test, coverage, docs]
+    needs: [format, copyright, lint, test, coverage, docs]
     uses: ./.github/workflows/_build-examples.yml
 
   instrumented-test:
