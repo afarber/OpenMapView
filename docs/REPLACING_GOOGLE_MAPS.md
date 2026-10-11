@@ -113,6 +113,8 @@ dependencies {
 
 Available on [Maven Central](https://central.sonatype.com/artifact/de.afarber/openmapview).
 
+**Requirements:** minSdk 23, compileSdk 37 and Android Gradle Plugin 9.1 or newer (since 0.14.0, because androidx.core 1.19 and Compose UI 1.12 require them). Projects still on compileSdk 36 or AGP 8 can stay on 0.13.3.
+
 ### Step 2: Update Imports
 
 **Before (Google Maps):**
