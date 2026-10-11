@@ -782,7 +782,7 @@ class OpenMapView
          * Stops the current camera animation, if any.
          *
          * The camera will remain at its current position when the animation is stopped.
-         * If a listener was provided, its [OnCameraAnimationListener.onCancel] callback will be invoked.
+         * If a callback was provided, its [CancelableCallback.onCancel] method will be invoked.
          */
         fun stopAnimation() {
             controller.stopAnimation()
