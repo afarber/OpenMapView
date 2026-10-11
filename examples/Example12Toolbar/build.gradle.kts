@@ -1,13 +1,12 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.spotless)
 }
 
 android {
     namespace = "de.afarber.openmapview.example12toolbar"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "de.afarber.openmapview.example12toolbar"
@@ -28,22 +27,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
-    }
-
     buildFeatures {
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
-    }
-
-    sourceSets {
-        getByName("main").java.srcDirs("src/main/kotlin")
     }
 }
 

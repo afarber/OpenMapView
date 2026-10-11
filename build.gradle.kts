@@ -1,11 +1,13 @@
 // Auto-detect version from Git tag (e.g., "v0.2.0" -> "0.2.0")
 fun getGitVersion(): String {
-    val process = ProcessBuilder("git", "describe", "--tags", "--abbrev=0")
-        .redirectOutput(ProcessBuilder.Redirect.PIPE)
-        .redirectError(ProcessBuilder.Redirect.PIPE)
-        .start()
-    process.waitFor()
-    val output = process.inputStream.bufferedReader().readText().trim()
+    val output =
+        providers
+            .exec {
+                commandLine("git", "describe", "--tags", "--abbrev=0")
+                isIgnoreExitValue = true
+            }.standardOutput.asText
+            .get()
+            .trim()
     val cleanVersion = output.removePrefix("v")
     return cleanVersion.ifEmpty { "0.0.1-SNAPSHOT" }
 }
@@ -20,7 +22,6 @@ ext["libVersion"] = try {
 plugins {
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.spotless) apply false
     alias(libs.plugins.dokka) apply false
@@ -40,7 +41,7 @@ nmcpAggregation {
 
 subprojects {
     afterEvaluate {
-        if (plugins.hasPlugin("org.jetbrains.kotlin.android")) {
+        if (plugins.hasPlugin("com.android.base")) {
             apply(plugin = "io.gitlab.arturbosch.detekt")
 
             extensions.configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {

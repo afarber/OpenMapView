@@ -1,14 +1,14 @@
 [versions]
 # Plugins
-agp = "8.13.2"
+agp = "9.4.1"
 kotlin = "2.3.21"
 spotless = "8.9.0"
 dokka = "2.2.0"
 nmcp = "1.6.2"
 
 # AndroidX Core
-androidx-core = "1.18.0"
-androidx-lifecycle = "2.10.0"
+androidx-core = "1.19.1"
+androidx-lifecycle = "2.11.0"
 androidx-activity = "1.13.0"
 androidx-test-core = "1.7.0"
 androidx-test-runner = "1.7.0"
@@ -16,8 +16,8 @@ androidx-test-rules = "1.7.0"
 androidx-test-junit = "1.3.0"
 
 # Compose
-compose-ui = "1.11.4"
-compose-ui-graphics = "1.11.4"
+compose-ui = "1.12.1"
+compose-ui-graphics = "1.12.1"
 compose-material3 = "1.4.0"
 compose-material-icons = "1.7.8"
 
@@ -75,7 +75,6 @@ androidx-test-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", ver
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

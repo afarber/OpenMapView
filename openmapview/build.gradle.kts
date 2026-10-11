@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.spotless)
     alias(libs.plugins.dokka)
     alias(libs.plugins.license.report)
@@ -11,11 +10,10 @@ plugins {
 
 android {
     namespace = "de.afarber.openmapview"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 23
-        consumerProguardFiles("consumer-rules.pro")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -26,18 +24,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
-    }
-
-    sourceSets {
-        getByName("main").java.srcDirs("src/main/kotlin")
-        getByName("test").java.srcDirs("src/test/kotlin")
-        getByName("androidTest").java.srcDirs("src/androidTest/kotlin")
     }
 
     testOptions {
@@ -160,7 +146,7 @@ tasks.withType<Test> {
 
 // Compiled classes measured by JaCoCo, shared by the report and the coverage gate
 val jacocoClassDirectories =
-    fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
+    fileTree("${layout.buildDirectory.get()}/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes") {
         exclude(
             "**/R.class",
             "**/R$*.class",
@@ -280,7 +266,7 @@ dokka {
     moduleName.set("OpenMapView")
     moduleVersion.set(rootProject.ext["libVersion"] as String)
 
-    dokkaSourceSets.main {
+    dokkaSourceSets.configureEach {
         documentedVisibilities.set(
             setOf(
                 org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier.Public,
