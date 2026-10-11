@@ -315,14 +315,18 @@ Before pushing, developers can run the same checks locally:
 
 ### Creating a Release
 
-```bash
-# 1. Ensure all changes are committed and pushed
-git status
-git push
+The library version is derived from the latest Git tag, so the only files that carry it are
+`README.md` and `docs/REPLACING_GOOGLE_MAPS.md`. The release script bumps both, commits them as
+"Release vX.Y.Z", creates an SSH-signed tag and atomically pushes `main` and the tag.
 
-# 2. Create and push a version tag
-git tag v0.2.0
-git push origin v0.2.0
+```bash
+# 1. Check out an up-to-date main with no local changes
+git checkout main
+git pull
+
+# 2. Bump the docs, tag and push (defaults to the next patch version,
+#    or to the version already shown in the docs if it is not tagged yet)
+./scripts/publish-release.sh          # or: ./scripts/publish-release.sh v0.2.0
 
 # 3. Watch the workflow
 # Go to: https://github.com/afarber/OpenMapView/actions
