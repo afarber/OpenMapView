@@ -1,19 +1,25 @@
 #!/bin/bash
 
 # Check test coverage meets minimum threshold (20%)
-# Returns 0 if coverage is adequate, 1 if below threshold
+# Returns 0 if coverage is adequate, 1 if tests fail or coverage is below threshold
+
+set -euo pipefail
 
 COVERAGE_THRESHOLD=20
+REPORT_DIR="openmapview/build/reports/coverage/test/debug"
+COVERAGE_FILE="$REPORT_DIR/report.xml"
 
-echo "Generating test coverage report..."
-./gradlew :openmapview:jacocoTestReport --quiet
+# Remove the previous report so a failed run can never be judged by stale numbers
+rm -rf "$REPORT_DIR"
 
-# Check if coverage report was generated
-COVERAGE_FILE="openmapview/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+echo "Running unit tests and generating coverage report..."
+if ! ./gradlew :openmapview:createDebugUnitTestCoverageReport --quiet; then
+    echo "ERROR: Unit tests or coverage report generation failed"
+    exit 1
+fi
 
 if [ ! -f "$COVERAGE_FILE" ]; then
     echo "ERROR: Coverage report not found at $COVERAGE_FILE"
-    echo "Run './gradlew :openmapview:test jacocoTestReport' to generate coverage."
     exit 1
 fi
 
@@ -47,7 +53,7 @@ if [ $COVERAGE -lt $COVERAGE_THRESHOLD ]; then
     echo "ERROR: Test coverage ${COVERAGE}% is below minimum threshold of ${COVERAGE_THRESHOLD}%"
     echo ""
     echo "Please add more tests to increase coverage."
-    echo "Coverage report: openmapview/build/reports/jacoco/jacocoTestReport/html/index.html"
+    echo "Coverage report: $REPORT_DIR/index.html"
     echo ""
     exit 1
 fi

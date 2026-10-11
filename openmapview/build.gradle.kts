@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.license.report)
     id("maven-publish")
     id("signing")
+    // Only for the Robolectric agent setting below; AGP creates the coverage report
     id("jacoco")
 }
 
@@ -151,65 +152,12 @@ tasks.withType<Test> {
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         showStandardStreams = true
     }
-    // Count classes loaded by Robolectric's instrumenting class loader
+    // Count classes loaded by Robolectric's instrumenting class loader (AGP coverage
+    // reports about 15% instead of 44% without this)
     extensions.configure<JacocoTaskExtension> {
         isIncludeNoLocationClasses = true
         excludes = listOf("jdk.internal.*")
     }
-    finalizedBy("jacocoTestReport")
-}
-
-// Compiled classes measured by JaCoCo, shared by the report and the coverage gate
-val jacocoClassDirectories =
-    fileTree("${layout.buildDirectory.get()}/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes") {
-        exclude(
-            "**/R.class",
-            "**/R$*.class",
-            "**/BuildConfig.*",
-            "**/Manifest*.*",
-            "**/*Test*.*",
-            "android/**/*.*",
-        )
-    }
-
-tasks.register<JacocoReport>("jacocoTestReport") {
-    dependsOn("testDebugUnitTest")
-
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-        csv.required.set(false)
-    }
-
-    val mainSrc = "${project.projectDir}/src/main/kotlin"
-
-    sourceDirectories.setFrom(files(mainSrc))
-    classDirectories.setFrom(jacocoClassDirectories)
-    executionData.setFrom(
-        fileTree(layout.buildDirectory.get()) {
-            include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
-        },
-    )
-}
-
-tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
-    dependsOn("jacocoTestReport")
-
-    violationRules {
-        rule {
-            // Keep in sync with COVERAGE_THRESHOLD in scripts/check-coverage.sh
-            limit {
-                minimum = "0.20".toBigDecimal()
-            }
-        }
-    }
-
-    classDirectories.setFrom(jacocoClassDirectories)
-    executionData.setFrom(
-        fileTree(layout.buildDirectory.get()) {
-            include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
-        },
-    )
 }
 
 publishing {

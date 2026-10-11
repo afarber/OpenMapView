@@ -160,17 +160,17 @@ Run unit tests:
 
 ### Test Coverage
 
-The project enforces a **minimum test coverage of 20%** for all code. Coverage is measured using JaCoCo.
+The project enforces a **minimum test coverage of 20%** for all code. Coverage is measured with the Android Gradle Plugin's built-in JaCoCo support.
 
 Generate coverage report:
 
 ```bash
-./gradlew :openmapview:jacocoTestReport
+./gradlew :openmapview:createDebugUnitTestCoverageReport
 ```
 
 View the HTML coverage report at:
 ```
-openmapview/build/reports/jacoco/jacocoTestReport/html/index.html
+openmapview/build/reports/coverage/test/debug/index.html
 ```
 
 Check coverage meets minimum threshold:
@@ -240,7 +240,7 @@ All checks must pass before merging.
 ./gradlew :openmapview:test
 
 # Generate coverage report
-./gradlew :openmapview:jacocoTestReport
+./gradlew :openmapview:createDebugUnitTestCoverageReport
 
 # Check coverage threshold
 ./scripts/check-coverage.sh
