@@ -34,6 +34,9 @@ nmcpAggregation {
         password = System.getenv("OSSRH_PASSWORD") ?: ""
         publishingType = "AUTOMATIC"
     }
+}
 
-    publishAllProjectsProbablyBreakingProjectIsolation()
+dependencies {
+    // Only the library is published; the example apps are not
+    nmcpAggregation(project(":openmapview"))
 }

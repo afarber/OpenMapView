@@ -325,10 +325,14 @@ nmcpAggregation {
         password = System.getenv("OSSRH_PASSWORD") ?: ""
         publishingType = "AUTOMATIC"
     }
+}
 
-    publishAllProjectsProbablyBreakingProjectIsolation()
+dependencies {
+    nmcpAggregation(project(":openmapview"))
 }
 ```
+
+The `:openmapview` module applies `com.gradleup.nmcp` (without a version, the root project already puts it on the classpath), so its publications can be aggregated. This replaces `publishAllProjectsProbablyBreakingProjectIsolation()`, which uses a dependency notation that Gradle 10 will reject.
 
 nmcp rejects builds where two projects have the same name, compared case-insensitively. That's why the root project is named `OpenMapView-root` in `settings.gradle.kts` rather than `OpenMapView`, which would clash with the `:openmapview` module.
 
