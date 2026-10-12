@@ -11,6 +11,7 @@ import android.content.Context
 import android.graphics.Canvas
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -37,6 +38,12 @@ class MapControllerTest {
         context = RuntimeEnvironment.getApplication()
         controller = MapController(context)
         controller.setViewSize(1080, 1920)
+    }
+
+    @After
+    fun tearDown() {
+        // Cancel tile downloads started by draw() before Robolectric deletes the cache directory
+        controller.onDestroy()
     }
 
     @Test

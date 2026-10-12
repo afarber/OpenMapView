@@ -69,10 +69,12 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **PolygonTest** | 16 | Polygon creation, validation, holes, and styling |
 | **PolylineTest** | 16 | Polyline creation, validation, and styling |
 | **ProjectionTest** | 12 | Web Mercator projection calculations |
-| **TileCacheTest** | 8 | Memory LRU cache behavior, clearing, namespaces |
-| **TileDownloaderTest** | 2 | HTTP tile downloading with mocked Ktor client |
+| **TileCacheTest** | 9 | Memory LRU cache behavior, clearing, namespaces, disk writes |
+| **TileDownloaderTest** | 5 | HTTP tile downloading with mocked Ktor client, HTTP errors, cancellation |
+| **TileRetryTrackerTest** | 4 | Exponential backoff for failed tiles |
 | **TileSourceTest** | 7 | Tile source URL generation and attribution |
 | **UiSettingsTest** | 19 | UI settings (gestures, zoom controls, not-implemented features) |
+| **UrlTileProviderTest** | 2 | Overlay tile downloading, HTTP 404 handling |
 | **ViewportCalculatorTest** | 10 | Visible tile calculation |
 | **VisibleRegionTest** | 4 | Visible region bounds and corners |
 

@@ -15,6 +15,8 @@ import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.readRawBytes
+import io.ktor.http.isSuccess
+import kotlinx.coroutines.CancellationException
 
 class TileDownloader {
     companion object {
@@ -35,6 +37,10 @@ class TileDownloader {
                 client.get(url) {
                     header("User-Agent", USER_AGENT)
                 }
+            if (!response.status.isSuccess()) {
+                Log.w(TAG, "Failed to download tile from $url: HTTP ${response.status.value}")
+                return null
+            }
             val bytes = response.readRawBytes()
             // Decode with RGB_565 to reduce memory usage (2 bytes per pixel vs 4 bytes for ARGB_8888)
             val options =
@@ -43,6 +49,8 @@ class TileDownloader {
                     inScaled = false
                 }
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Failed to download tile from $url: ${e.javaClass.simpleName}: ${e.message}", e)
             null

@@ -91,20 +91,12 @@ Implemented using Android's `LruCache`:
 - **Eviction:** Least Recently Used (LRU) algorithm
 - **Lifecycle:** Cleared when map view is destroyed
 
-When a tile is evicted from memory, it's automatically written to disk:
+New tiles are written to both levels as soon as they are downloaded, so they survive the process even if they are never evicted from memory:
 
 ```kotlin
-override fun entryRemoved(
-    evicted: Boolean,
-    key: TileCoordinate,
-    oldValue: Bitmap,
-    newValue: Bitmap?,
-) {
-    if (evicted && diskCache != null) {
-        CoroutineScope(Dispatchers.IO).launch {
-            diskCache?.put(key, oldValue)
-        }
-    }
+fun put(tile: TileCoordinate, bitmap: Bitmap) {
+    memoryCache.put(tile, bitmap)
+    diskCache?.put(tile, bitmap) // called from the IO download coroutine
 }
 ```
 
@@ -248,6 +240,10 @@ if (!downloadingTiles.contains(tile)) {
 ```
 
 This prevents the same tile from being downloaded multiple times during rapid view changes.
+
+### Retry Backoff
+
+When a tile fails to load (offline, HTTP error, or a tile overlay without data for that area), `TileRetryTracker` blocks new requests for it for 2 seconds, doubling with every further failure up to 60 seconds. A delayed redraw retries visible tiles once the delay has passed, even if the map isn't moving. A successful load resets the backoff. This keeps the map from requesting every missing tile on every frame, which matters for the OSM tile usage policy.
 
 ## Network Optimizations
 
