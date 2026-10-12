@@ -69,6 +69,18 @@ class TileCacheTest {
     }
 
     @Test
+    fun testGetAfterClearDoesNotThrow() {
+        val tile = TileCoordinate(1, 2, 3)
+        cache.put(tile, createMockBitmap(256, 256))
+
+        cache.clear()
+
+        assertNull(cache.get(tile))
+        cache.put(tile, createMockBitmap(256, 256))
+        assertNotNull(cache.get(tile))
+    }
+
+    @Test
     fun testOverwriteExisting() {
         val tile = TileCoordinate(1, 2, 3)
         val bitmap1 = createMockBitmap(256, 256)

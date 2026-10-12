@@ -21,12 +21,17 @@ import java.io.IOException
  * Stores up to 50MB of tile images in PNG format in the app's cache directory.
  * Tiles persist across app restarts, reducing network usage on subsequent launches.
  * Uses LRU eviction when cache size limit is reached.
+ *
+ * The cache stays usable after [clear], and a closed or failing cache only results
+ * in cache misses. Methods are synchronized because tiles are read and written from
+ * background threads while the main thread may clear or close the cache.
  */
 class DiskTileCache(
     context: Context,
 ) {
     private val maxSize = 50L * 1024 * 1024
-    private val diskCache: DiskLruCache?
+    private val cacheDir = File(context.cacheDir, "tiles")
+    private var diskCache: DiskLruCache? = open()
 
     companion object {
         private val TAG = DiskTileCache::class.java.simpleName
@@ -34,17 +39,7 @@ class DiskTileCache(
         private const val VALUE_COUNT = 1
     }
 
-    init {
-        val cacheDir = File(context.cacheDir, "tiles")
-        diskCache =
-            try {
-                DiskLruCache.open(cacheDir, DISK_CACHE_VERSION, VALUE_COUNT, maxSize)
-            } catch (e: IOException) {
-                Log.e(TAG, "Failed to initialize disk cache at $cacheDir", e)
-                null
-            }
-    }
-
+    @Synchronized
     fun get(tile: TileCoordinate): Bitmap? {
         val key = getTileKey(tile)
         return try {
@@ -55,9 +50,13 @@ class DiskTileCache(
         } catch (e: IOException) {
             Log.w(TAG, "Failed to read tile $key from disk cache", e)
             null
+        } catch (e: IllegalStateException) {
+            Log.w(TAG, "Failed to read tile $key from disk cache", e)
+            null
         }
     }
 
+    @Synchronized
     fun put(
         tile: TileCoordinate,
         bitmap: Bitmap,
@@ -77,24 +76,46 @@ class DiskTileCache(
             }
         } catch (e: IOException) {
             Log.w(TAG, "Failed to edit tile $key in disk cache", e)
+        } catch (e: IllegalStateException) {
+            Log.w(TAG, "Failed to edit tile $key in disk cache", e)
         }
     }
 
+    /**
+     * Removes all cached tiles. DiskLruCache.delete() also closes the cache,
+     * so it is reopened afterwards to keep the cache usable.
+     */
+    @Synchronized
     fun clear() {
+        val cache = diskCache ?: return
         try {
-            diskCache?.delete()
+            cache.delete()
         } catch (e: IOException) {
             Log.w(TAG, "Failed to clear disk cache", e)
         }
+        diskCache = open()
     }
 
+    /**
+     * Closes the cache. Later calls to [get] and [put] are treated as cache misses.
+     */
+    @Synchronized
     fun close() {
         try {
             diskCache?.close()
         } catch (e: IOException) {
             Log.w(TAG, "Failed to close disk cache", e)
         }
+        diskCache = null
     }
+
+    private fun open(): DiskLruCache? =
+        try {
+            DiskLruCache.open(cacheDir, DISK_CACHE_VERSION, VALUE_COUNT, maxSize)
+        } catch (e: IOException) {
+            Log.e(TAG, "Failed to initialize disk cache at $cacheDir", e)
+            null
+        }
 
     // Generate unique key for tile coordinate (e.g., "10_512_384" for zoom 10, x=512, y=384)
     private fun getTileKey(tile: TileCoordinate): String = "${tile.zoom}_${tile.x}_${tile.y}"
