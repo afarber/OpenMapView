@@ -43,7 +43,7 @@ Located in `.github/workflows/`:
 - **Runs**: `./gradlew :openmapview:lintRelease`
 - **Usage**: Called by CI and Release workflows
 - **Duration**: ~1-2 minutes
-- **Reports**: HTML report uploaded as an artifact; existing warnings are listed in `openmapview/lint-baseline.xml`
+- **Reports**: HTML report uploaded as an artifact; any issue, including warnings, fails the job
 
 #### `_coverage.yml`
 - **Purpose**: Check test coverage meets minimum threshold

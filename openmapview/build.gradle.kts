@@ -32,8 +32,6 @@ android {
         warningsAsErrors = true
         // Dependency updates come from Dependabot; these checks need network access and fail at random
         disable += setOf("NewerVersionAvailable", "GradleDependency", "AndroidGradlePluginVersion")
-        // Existing warnings are recorded here; regenerate with ./gradlew :openmapview:updateLintBaseline
-        baseline = file("lint-baseline.xml")
     }
 
     testOptions {

@@ -67,42 +67,38 @@ object ApiKeyManager {
     private var manifestMetadata: Bundle? = null
 
     /**
-     * Context used to read manifest metadata.
-     * Set automatically when first accessed via OpenMapView.
+     * Whether the manifest metadata has been loaded. The context is only used once
+     * for that and is not kept, so this singleton never holds on to a Context.
      */
-    private var context: Context? = null
+    @Volatile
+    private var initialized = false
 
     /**
-     * Initializes the ApiKeyManager with application context.
+     * Initializes the ApiKeyManager by reading API keys from the app's manifest.
      * Called automatically by OpenMapView on first use.
      *
-     * @param appContext Application context
+     * @param appContext Any context of the app
      */
+    @Synchronized
     internal fun initialize(appContext: Context) {
-        if (context == null) {
-            context = appContext.applicationContext
-            loadManifestMetadata()
+        if (!initialized) {
+            manifestMetadata = loadManifestMetadata(appContext.applicationContext)
+            initialized = true
         }
     }
 
     /**
      * Loads API keys from AndroidManifest.xml meta-data.
      */
-    private fun loadManifestMetadata() {
+    private fun loadManifestMetadata(context: Context): Bundle? =
         try {
-            val ctx = context ?: return
-            val packageManager = ctx.packageManager
-            val applicationInfo =
-                packageManager.getApplicationInfo(
-                    ctx.packageName,
-                    PackageManager.GET_META_DATA,
-                )
-            manifestMetadata = applicationInfo.metaData
+            context.packageManager
+                .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+                .metaData
         } catch (e: PackageManager.NameNotFoundException) {
             // Should never happen, but handle gracefully
-            manifestMetadata = Bundle()
+            Bundle()
         }
-    }
 
     /**
      * Sets an API key programmatically for the given provider.

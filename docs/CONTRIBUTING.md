@@ -67,12 +67,10 @@ Kotlin compiler warnings are treated as errors in the library, so new warnings f
 ./gradlew :openmapview:lintRelease
 ```
 
-The CI pipeline will fail if Lint finds any new issues. View the HTML report at:
+The CI pipeline will fail if Lint reports any issue, warnings included. View the HTML report at:
 ```
 openmapview/build/reports/lint-results-release.html
 ```
-
-Existing warnings are recorded in `openmapview/lint-baseline.xml` and do not fail the build. After fixing one of them, regenerate the baseline with `./gradlew :openmapview:updateLintBaseline`.
 
 The Lint report is also published at https://afarber.github.io/OpenMapView/lint/
 
