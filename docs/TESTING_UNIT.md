@@ -58,7 +58,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **BitmapDescriptorFactoryTest** | 18 | Marker icon generation with colors and custom images |
 | **CameraPositionTest** | 6 | Camera position validation and equality |
 | **CameraUpdateFactoryTest** | 8 | Camera update creation (zoom, pan, position) |
-| **DiskTileCacheTest** | 4 | Persistent disk cache with DiskLruCache |
+| **DiskTileCacheTest** | 8 | Persistent disk cache with DiskLruCache, per-source namespaces |
 | **GeoJsonParserTest** | 14 | GeoJSON parsing (Point, LineString, Polygon, Multi*, Features) |
 | **IntentUtilsTest** | 4 | External app integration (geo: URI, OSM fallback) |
 | **LatLngBoundsTest** | 13 | Lat/lng bounds calculations and contains checks |
@@ -69,7 +69,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **PolygonTest** | 16 | Polygon creation, validation, holes, and styling |
 | **PolylineTest** | 16 | Polyline creation, validation, and styling |
 | **ProjectionTest** | 12 | Web Mercator projection calculations |
-| **TileCacheTest** | 6 | Memory LRU cache behavior |
+| **TileCacheTest** | 8 | Memory LRU cache behavior, clearing, namespaces |
 | **TileDownloaderTest** | 2 | HTTP tile downloading with mocked Ktor client |
 | **TileSourceTest** | 7 | Tile source URL generation and attribution |
 | **UiSettingsTest** | 19 | UI settings (gestures, zoom controls, not-implemented features) |

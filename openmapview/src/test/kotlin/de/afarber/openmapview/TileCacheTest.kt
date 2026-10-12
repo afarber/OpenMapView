@@ -81,6 +81,18 @@ class TileCacheTest {
     }
 
     @Test
+    fun testNamespacesDoNotShareDiskTiles() {
+        val tile = TileCoordinate(1, 2, 3)
+        val standard = TileCache(RuntimeEnvironment.getApplication(), "STANDARD")
+        val cyclosm = TileCache(RuntimeEnvironment.getApplication(), "CYCLOSM")
+
+        standard.put(tile, createMockBitmap(256, 256))
+
+        assertNotNull(standard.get(tile))
+        assertNull(cyclosm.get(tile))
+    }
+
+    @Test
     fun testOverwriteExisting() {
         val tile = TileCoordinate(1, 2, 3)
         val bitmap1 = createMockBitmap(256, 256)
