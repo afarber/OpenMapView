@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.license.report)
     id("maven-publish")
+    // Collects the publications for the nmcp aggregation in the root project
+    id("com.gradleup.nmcp")
     id("signing")
     // Only for the Robolectric agent setting below; AGP creates the coverage report
     id("jacoco")
