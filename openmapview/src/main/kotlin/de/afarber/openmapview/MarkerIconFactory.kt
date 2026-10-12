@@ -12,6 +12,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import androidx.core.graphics.createBitmap
 
 /**
  * Factory for creating default marker icons with customizable colors.
@@ -61,7 +62,7 @@ internal object MarkerIconFactory {
      * Creates a marker icon bitmap with the specified hue.
      */
     private fun createMarkerIcon(hue: Float): Bitmap {
-        val bitmap = Bitmap.createBitmap(DEFAULT_WIDTH, DEFAULT_HEIGHT, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(DEFAULT_WIDTH, DEFAULT_HEIGHT)
         val canvas = Canvas(bitmap)
 
         // Convert HSV to RGB

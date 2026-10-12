@@ -17,6 +17,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.widget.FrameLayout
+import androidx.core.graphics.createBitmap
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import kotlin.time.Duration
@@ -144,6 +145,8 @@ class OpenMapView
             invalidate()
         }
 
+        override fun performClick(): Boolean = super.performClick()
+
         override fun onTouchEvent(event: MotionEvent): Boolean {
             // Let gesture detector handle long press (but not during drag)
             if (!isDragging) {
@@ -251,6 +254,12 @@ class OpenMapView
                         val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
 
                         if (movementDistance < 10) {
+                            // Report the tap as a click, so accessibility services and any
+                            // OnClickListener are notified like for other clickable views
+                            if (event.action == MotionEvent.ACTION_UP) {
+                                performClick()
+                            }
+
                             // Check zoom controls first (if enabled)
                             if (uiSettings.isZoomControlsEnabled) {
                                 val zoomAction = zoomControlsOverlay.handleTouch(event.x, event.y)
@@ -830,7 +839,7 @@ class OpenMapView
 
                 try {
                     // Create bitmap matching view dimensions
-                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    val bitmap = createBitmap(width, height)
                     val canvas = Canvas(bitmap)
 
                     // Render the entire view to the bitmap
@@ -888,7 +897,7 @@ class OpenMapView
                             bitmap
                         } else {
                             // Allocate new bitmap at correct size (matches Google Maps behavior)
-                            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                            createBitmap(width, height)
                         }
 
                     val canvas = Canvas(targetBitmap)

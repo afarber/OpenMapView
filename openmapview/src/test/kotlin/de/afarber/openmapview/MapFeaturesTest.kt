@@ -8,6 +8,7 @@
 package de.afarber.openmapview
 
 import android.content.Context
+import android.view.MotionEvent
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -45,5 +46,21 @@ class MapFeaturesTest {
     @Test
     fun testIsMyLocationEnabled_ReturnsFalse() {
         assertFalse(mapView.isMyLocationEnabled())
+    }
+
+    @Test
+    fun testTap_PerformsClick() {
+        var clicks = 0
+        mapView.setOnClickListener { clicks++ }
+        mapView.layout(0, 0, 400, 400)
+
+        val down = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 200f, 200f, 0)
+        val up = MotionEvent.obtain(0, 50, MotionEvent.ACTION_UP, 200f, 200f, 0)
+        mapView.onTouchEvent(down)
+        mapView.onTouchEvent(up)
+        down.recycle()
+        up.recycle()
+
+        assertTrue(clicks == 1)
     }
 }

@@ -8,6 +8,7 @@
 package de.afarber.openmapview
 
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColorInt
 
 /**
  * Converts a CSS color string to a Compose Color.
@@ -27,7 +28,7 @@ import androidx.compose.ui.graphics.Color
  */
 fun String.toComposeColor(): Color? =
     try {
-        val androidColor = android.graphics.Color.parseColor(this)
+        val androidColor = this.toColorInt()
         Color(androidColor)
     } catch (e: IllegalArgumentException) {
         null

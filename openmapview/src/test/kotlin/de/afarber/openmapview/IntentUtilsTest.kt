@@ -7,8 +7,14 @@
 
 package de.afarber.openmapview
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -67,5 +73,43 @@ class IntentUtilsTest {
         assertEquals(19, maxZoom)
         assertEquals(2, belowMin)
         assertEquals(19, aboveMax)
+    }
+
+    @Test
+    fun testOpenLocation_StartsGeoIntentWhenMapAppExists() {
+        val started = mutableListOf<Intent>()
+        val context = mockk<Context>()
+        every { context.startActivity(any()) } answers { started += firstArg<Intent>() }
+
+        assertTrue(openLocationInExternalApp(LatLng(51.4661, 7.2491), 14f, context))
+
+        assertEquals(1, started.size)
+        assertEquals(Intent.ACTION_VIEW, started[0].action)
+        assertEquals("geo", started[0].data?.scheme)
+    }
+
+    @Test
+    fun testOpenLocation_FallsBackToBrowserWithoutMapApp() {
+        val started = mutableListOf<Intent>()
+        val context = mockk<Context>()
+        every { context.startActivity(any()) } answers {
+            val intent = firstArg<Intent>()
+            if (intent.data?.scheme == "geo") throw ActivityNotFoundException()
+            started += intent
+        }
+
+        assertTrue(openLocationInExternalApp(LatLng(51.4661, 7.2491), 14f, context))
+
+        assertEquals(1, started.size)
+        assertEquals("https", started[0].data?.scheme)
+        assertEquals("www.openstreetmap.org", started[0].data?.host)
+    }
+
+    @Test
+    fun testOpenLocation_ReturnsFalseWhenNothingCanBeStarted() {
+        val context = mockk<Context>()
+        every { context.startActivity(any()) } throws ActivityNotFoundException()
+
+        assertFalse(openLocationInExternalApp(LatLng(51.4661, 7.2491), 14f, context))
     }
 }

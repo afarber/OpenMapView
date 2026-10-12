@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.withSave
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -1655,71 +1656,69 @@ class MapController(
                 alpha = ((1f - groundOverlay.transparency) * 255).toInt()
             }
 
-        canvas.save()
+        canvas.withSave {
+            if (groundOverlay.bounds != null) {
+                val bounds = groundOverlay.bounds
+                val (nwPixelX, nwPixelY) =
+                    ProjectionUtils.latLngToPixel(
+                        LatLng(bounds.northeast.latitude, bounds.southwest.longitude),
+                        zoom.toInt(),
+                    )
+                val (sePixelX, sePixelY) =
+                    ProjectionUtils.latLngToPixel(
+                        LatLng(bounds.southwest.latitude, bounds.northeast.longitude),
+                        zoom.toInt(),
+                    )
 
-        if (groundOverlay.bounds != null) {
-            val bounds = groundOverlay.bounds
-            val (nwPixelX, nwPixelY) =
-                ProjectionUtils.latLngToPixel(
-                    LatLng(bounds.northeast.latitude, bounds.southwest.longitude),
-                    zoom.toInt(),
-                )
-            val (sePixelX, sePixelY) =
-                ProjectionUtils.latLngToPixel(
-                    LatLng(bounds.southwest.latitude, bounds.northeast.longitude),
-                    zoom.toInt(),
-                )
+                val left = nwPixelX - centerPixelX + viewWidth / 2 - panOffsetX
+                val top = nwPixelY - centerPixelY + viewHeight / 2 - panOffsetY
+                val right = sePixelX - centerPixelX + viewWidth / 2 - panOffsetX
+                val bottom = sePixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
-            val left = nwPixelX - centerPixelX + viewWidth / 2 - panOffsetX
-            val top = nwPixelY - centerPixelY + viewHeight / 2 - panOffsetY
-            val right = sePixelX - centerPixelX + viewWidth / 2 - panOffsetX
-            val bottom = sePixelY - centerPixelY + viewHeight / 2 - panOffsetY
+                val centerX = (left + right) / 2
+                val centerY = (top + bottom) / 2
+                val anchorX = left + (right - left) * groundOverlay.anchor.first
+                val anchorY = top + (bottom - top) * groundOverlay.anchor.second
 
-            val centerX = (left + right) / 2
-            val centerY = (top + bottom) / 2
-            val anchorX = left + (right - left) * groundOverlay.anchor.first
-            val anchorY = top + (bottom - top) * groundOverlay.anchor.second
-
-            if (groundOverlay.bearing != 0f) {
-                canvas.rotate(groundOverlay.bearing, anchorX, anchorY)
-            }
-
-            val destRect = android.graphics.RectF(left, top, right, bottom)
-            canvas.drawBitmap(bitmap, null, destRect, paint)
-        } else if (groundOverlay.position != null && groundOverlay.width != null) {
-            val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(groundOverlay.position, zoom.toInt())
-
-            val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(groundOverlay.position.latitude, zoom.toInt())
-            val widthPixels = groundOverlay.width / metersPerPixel
-
-            val heightPixels =
-                if (groundOverlay.height != null) {
-                    groundOverlay.height / metersPerPixel
-                } else {
-                    val aspectRatio = bitmap.height.toFloat() / bitmap.width.toFloat()
-                    widthPixels * aspectRatio
+                if (groundOverlay.bearing != 0f) {
+                    canvas.rotate(groundOverlay.bearing, anchorX, anchorY)
                 }
 
-            val centerX = posPixelX - centerPixelX + viewWidth / 2 - panOffsetX
-            val centerY = posPixelY - centerPixelY + viewHeight / 2 - panOffsetY
+                val destRect = android.graphics.RectF(left, top, right, bottom)
+                canvas.drawBitmap(bitmap, null, destRect, paint)
+            } else if (groundOverlay.position != null && groundOverlay.width != null) {
+                val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(groundOverlay.position, zoom.toInt())
 
-            val left = (centerX - widthPixels / 2).toFloat()
-            val top = (centerY - heightPixels / 2).toFloat()
-            val right = (centerX + widthPixels / 2).toFloat()
-            val bottom = (centerY + heightPixels / 2).toFloat()
+                val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(groundOverlay.position.latitude, zoom.toInt())
+                val widthPixels = groundOverlay.width / metersPerPixel
 
-            val anchorX = left + (right - left) * groundOverlay.anchor.first
-            val anchorY = top + (bottom - top) * groundOverlay.anchor.second
+                val heightPixels =
+                    if (groundOverlay.height != null) {
+                        groundOverlay.height / metersPerPixel
+                    } else {
+                        val aspectRatio = bitmap.height.toFloat() / bitmap.width.toFloat()
+                        widthPixels * aspectRatio
+                    }
 
-            if (groundOverlay.bearing != 0f) {
-                canvas.rotate(groundOverlay.bearing, anchorX, anchorY)
+                val centerX = posPixelX - centerPixelX + viewWidth / 2 - panOffsetX
+                val centerY = posPixelY - centerPixelY + viewHeight / 2 - panOffsetY
+
+                val left = (centerX - widthPixels / 2).toFloat()
+                val top = (centerY - heightPixels / 2).toFloat()
+                val right = (centerX + widthPixels / 2).toFloat()
+                val bottom = (centerY + heightPixels / 2).toFloat()
+
+                val anchorX = left + (right - left) * groundOverlay.anchor.first
+                val anchorY = top + (bottom - top) * groundOverlay.anchor.second
+
+                if (groundOverlay.bearing != 0f) {
+                    canvas.rotate(groundOverlay.bearing, anchorX, anchorY)
+                }
+
+                val destRect = android.graphics.RectF(left, top, right, bottom)
+                canvas.drawBitmap(bitmap, null, destRect, paint)
             }
-
-            val destRect = android.graphics.RectF(left, top, right, bottom)
-            canvas.drawBitmap(bitmap, null, destRect, paint)
         }
-
-        canvas.restore()
     }
 
     private fun drawPolygonsByZIndex(
