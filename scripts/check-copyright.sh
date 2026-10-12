@@ -23,7 +23,7 @@ if [ ${#MISSING_FILES[@]} -gt 0 ]; then
   echo ""
   echo "Required header format:"
   echo "/*"
-  echo " * Copyright (c) 2025 Alexander Farber"
+  echo " * Copyright (c) 2025-2026 Alexander Farber"
   echo " * SPDX-License-Identifier: MIT"
   echo " *"
   echo " * This file is part of the OpenMapView project (https://github.com/afarber/OpenMapView)"
