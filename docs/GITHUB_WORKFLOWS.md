@@ -243,6 +243,24 @@ Deploy to GitHub Pages
 - No manual publishing needed
 - Professional, searchable API reference
 
+## Branch Protection
+
+The `main` branch is protected by a repository ruleset (Settings → Rules → Rulesets → "main branch ruleset"). Changes go through pull requests, and these status checks must pass before merging:
+
+| Required check | Workflow |
+|----------------|----------|
+| `Check Formatting / Check Code Formatting` | `_format.yml` |
+| `Check Copyright Headers / Check Copyright Headers` | `_copyright.yml` |
+| `Static Analysis / Run Android Lint` | `_lint.yml` |
+| `Test Coverage / Check Test Coverage` | `_coverage.yml` (also runs all unit tests) |
+| `Build Library / Build OpenMapView AAR` | `_build-library.yml` |
+| `Build Examples / Build Example Apps` | `_build-examples.yml` |
+| `Instrumentation Tests` | status job in `ci.yml` |
+
+GitHub matches required checks by name. For a reusable workflow, the name is `<job name in ci.yml> / <job name in the reusable workflow>`. When renaming either job, update the ruleset in the same change; otherwise the old check name never reports and pull requests stay blocked, or the new check silently stops being required.
+
+The instrumentation tests run as a matrix (phone and automotive), whose jobs report under their device names. The separate `Instrumentation Tests` job in `ci.yml` combines their results into the single status the ruleset requires.
+
 ## Required GitHub Secrets
 
 For the release workflow to function, the project owner must configure these secrets in the GitHub repository:
