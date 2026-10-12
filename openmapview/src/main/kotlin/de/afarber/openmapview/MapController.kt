@@ -208,10 +208,14 @@ class MapController(
 
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val tileDownloader = TileDownloader()
-    private val tileCache = TileCache(context)
+
+    // Replaced on every tile source change, so downloads still running for the old
+    // source can't put their tiles into the cache of the new one
+    @Volatile
+    private var tileCache = createTileCache(TileSource.STANDARD)
     private val tileDownloadSemaphore = Semaphore(MAX_CONCURRENT_TILE_DOWNLOADS)
     private var tileSource: TileSource? = TileSource.STANDARD
-    private val downloadingTiles = mutableSetOf<TileCoordinate>()
+    private var downloadingTiles = mutableSetOf<TileCoordinate>()
     private var onTileLoadedCallback: (() -> Unit)? = null
 
     // API key error overlay (null if no error)
@@ -614,17 +618,20 @@ class MapController(
     /**
      * Sets the tile source for rendering the base map.
      *
-     * When the tile source changes, the tile cache is cleared to prevent
-     * displaying incorrect tiles from the previous source.
+     * When the tile source changes, a new tile cache is used, so tiles from the previous
+     * source are never displayed. The disk cache keeps tiles per source, so switching
+     * back to a previous source can reuse its tiles.
      *
      * @param source The new tile source, or null to display no base map tiles
      */
     private fun setTileSource(source: TileSource?) {
         if (tileSource == source) return
         tileSource = source
-        tileCache.clear()
-        downloadingTiles.clear()
+        tileCache = createTileCache(source)
+        downloadingTiles = mutableSetOf()
     }
+
+    private fun createTileCache(source: TileSource?): TileCache = TileCache(context, source?.name ?: DiskTileCache.DEFAULT_NAMESPACE)
 
     /**
      * Gets the current tile source.
@@ -2101,24 +2108,24 @@ class MapController(
         tile: TileCoordinate,
         lowPriority: Boolean = false,
     ) {
+        // Capture the current source and its cache: if the source changes while this
+        // download is queued or running, the result must not end up in the new cache
+        val source = tileSource ?: return
+        val cache = tileCache
+        val downloading = downloadingTiles
         scope.launch(Dispatchers.IO) {
             var bitmap: Bitmap? = null
             try {
                 bitmap =
                     tileDownloadSemaphore.withPermit {
-                        val cachedBitmap = tileCache.get(tile)
-                        if (cachedBitmap != null) {
-                            cachedBitmap
-                        } else {
-                            val source = tileSource ?: return@withPermit null
-                            tileDownloader.downloadTile(source.getTileUrl(tile))
-                        }
+                        if (cache !== tileCache) return@withPermit null
+                        cache.get(tile) ?: tileDownloader.downloadTile(source.getTileUrl(tile))
                     }
-                bitmap?.let { tileCache.put(tile, it) }
+                bitmap?.let { cache.put(tile, it) }
             } finally {
                 launch(Dispatchers.Main) {
-                    downloadingTiles.remove(tile)
-                    if (bitmap != null && !lowPriority) {
+                    downloading.remove(tile)
+                    if (bitmap != null && !lowPriority && cache === tileCache) {
                         onTileLoadedCallback?.invoke()
                     }
                 }
@@ -2391,7 +2398,9 @@ class MapController(
      */
     fun addTileOverlay(tileOverlay: TileOverlay): TileOverlay {
         tileOverlays.add(tileOverlay)
-        overlayTileCaches[tileOverlay.id] = TileCache(context)
+        // Memory only: overlay tiles come from arbitrary TileProviders and must not
+        // end up in the disk cache of the base map
+        overlayTileCaches[tileOverlay.id] = TileCache()
         overlayDownloadingTiles[tileOverlay.id] = mutableSetOf()
         return tileOverlay
     }

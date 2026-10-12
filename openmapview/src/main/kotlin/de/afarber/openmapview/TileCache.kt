@@ -21,9 +21,14 @@ import kotlinx.coroutines.launch
  * Memory cache holds up to 1/8 of available heap memory for fast access.
  * When tiles are evicted from memory, they are automatically written to disk cache.
  * Disk cache stores up to 50MB of tiles to reduce network requests across app restarts.
+ *
+ * @param context Context for the disk cache, or null for a memory-only cache
+ * @param namespace Disk cache namespace, e.g. the tile source, so tiles of different
+ *   sources are stored separately
  */
 class TileCache(
     context: Context? = null,
+    namespace: String = DiskTileCache.DEFAULT_NAMESPACE,
 ) {
     companion object {
         private val TAG = TileCache::class.java.simpleName
@@ -34,7 +39,7 @@ class TileCache(
     private val cacheSize = maxMemory / 8
 
     private var diskCache: DiskTileCache? =
-        context?.let { DiskTileCache(it) }
+        context?.let { DiskTileCache(it, namespace) }
 
     // Set while clear() empties the memory cache, so cleared tiles are not written back to disk
     @Volatile

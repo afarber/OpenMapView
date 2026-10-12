@@ -114,6 +114,32 @@ class DiskTileCacheTest {
         }
     }
 
+    @Test
+    fun testNamespacesAreSeparate() {
+        val tile = TileCoordinate(1, 2, 3)
+        val standard = DiskTileCache(RuntimeEnvironment.getApplication(), "STANDARD")
+        val cyclosm = DiskTileCache(RuntimeEnvironment.getApplication(), "CYCLOSM")
+
+        standard.put(tile, createMockBitmap(256, 256))
+
+        assertNotNull(standard.get(tile))
+        assertNull(cyclosm.get(tile))
+        assertNull(diskCache.get(tile))
+    }
+
+    @Test
+    fun testInstancesShareTheDirectory() {
+        val tile = TileCoordinate(1, 2, 3)
+        val other = DiskTileCache(RuntimeEnvironment.getApplication())
+
+        diskCache.put(tile, createMockBitmap(256, 256))
+        assertNotNull(other.get(tile))
+
+        other.close()
+        assertNull(other.get(tile))
+        assertNotNull(diskCache.get(tile))
+    }
+
     private fun createMockBitmap(
         width: Int,
         height: Int,
