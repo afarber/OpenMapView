@@ -1,7 +1,7 @@
 [versions]
 # Plugins
 agp = "9.4.1"
-kotlin = "2.3.21"
+kotlin = "2.4.21"
 spotless = "8.10.4"
 dokka = "2.2.0"
 nmcp = "1.6.2"
