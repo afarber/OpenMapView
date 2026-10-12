@@ -36,6 +36,10 @@ class TileCache(
     private var diskCache: DiskTileCache? =
         context?.let { DiskTileCache(it) }
 
+    // Set while clear() empties the memory cache, so cleared tiles are not written back to disk
+    @Volatile
+    private var clearing = false
+
     private val memoryCache =
         object : LruCache<TileCoordinate, Bitmap>(cacheSize) {
             override fun sizeOf(
@@ -50,7 +54,7 @@ class TileCache(
                 oldValue: Bitmap,
                 newValue: Bitmap?,
             ) {
-                if (evicted && diskCache != null) {
+                if (evicted && !clearing && diskCache != null) {
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
                             diskCache?.put(key, oldValue)
@@ -90,7 +94,12 @@ class TileCache(
     }
 
     fun clear() {
-        memoryCache.evictAll()
+        clearing = true
+        try {
+            memoryCache.evictAll()
+        } finally {
+            clearing = false
+        }
         try {
             diskCache?.clear()
         } catch (e: Exception) {

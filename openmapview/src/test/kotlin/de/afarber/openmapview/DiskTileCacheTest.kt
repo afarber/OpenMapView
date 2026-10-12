@@ -64,13 +64,30 @@ class DiskTileCacheTest {
         diskCache.put(tile2, bitmap2)
 
         diskCache.clear()
-        diskCache.close()
-
-        // Recreate cache after clear
-        diskCache = DiskTileCache(RuntimeEnvironment.getApplication())
 
         assertNull(diskCache.get(tile1))
         assertNull(diskCache.get(tile2))
+    }
+
+    @Test
+    fun testPutAndGetAfterClear() {
+        val tile = TileCoordinate(1, 2, 3)
+        diskCache.put(tile, createMockBitmap(256, 256))
+
+        diskCache.clear()
+        diskCache.put(tile, createMockBitmap(256, 256))
+
+        assertNotNull(diskCache.get(tile))
+    }
+
+    @Test
+    fun testGetAndPutAfterCloseDoNotThrow() {
+        val tile = TileCoordinate(1, 2, 3)
+
+        diskCache.close()
+        diskCache.put(tile, createMockBitmap(256, 256))
+
+        assertNull(diskCache.get(tile))
     }
 
     @Test
