@@ -13,6 +13,8 @@ import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.readRawBytes
+import io.ktor.http.isSuccess
+import kotlinx.coroutines.CancellationException
 
 /**
  * Abstract base class for [TileProvider] implementations that fetch tiles from URLs.
@@ -104,6 +106,11 @@ abstract class UrlTileProvider(
                 client.get(url) {
                     header("User-Agent", getUserAgent())
                 }
+            if (!response.status.isSuccess()) {
+                // Sparse overlays commonly answer 404 for areas without data
+                Log.d(TAG, "No tile ($x, $y, $zoom) from $url: HTTP ${response.status.value}")
+                return null
+            }
             val bytes = response.readRawBytes()
 
             if (bytes.isEmpty()) {
@@ -113,6 +120,8 @@ abstract class UrlTileProvider(
                 // Standard OSM tile size
                 Tile(256, 256, bytes)
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(
                 TAG,

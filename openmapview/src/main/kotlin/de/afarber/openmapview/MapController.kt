@@ -15,6 +15,7 @@ import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
+import android.os.SystemClock
 import android.util.Log
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
@@ -25,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -194,6 +196,7 @@ class MapController(
     private val tileOverlays = mutableListOf<TileOverlay>()
     private val overlayTileCaches = mutableMapOf<String, TileCache>()
     private val overlayDownloadingTiles = mutableMapOf<String, MutableSet<TileCoordinate>>()
+    private val overlayTileRetries = mutableMapOf<String, TileRetryTracker>()
 
     private var animationJob: Job? = null
     private var animationListener: CancelableCallback? = null
@@ -216,6 +219,7 @@ class MapController(
     private val tileDownloadSemaphore = Semaphore(MAX_CONCURRENT_TILE_DOWNLOADS)
     private var tileSource: TileSource? = TileSource.STANDARD
     private var downloadingTiles = mutableSetOf<TileCoordinate>()
+    private var tileRetries = TileRetryTracker()
     private var onTileLoadedCallback: (() -> Unit)? = null
 
     // API key error overlay (null if no error)
@@ -629,6 +633,7 @@ class MapController(
         tileSource = source
         tileCache = createTileCache(source)
         downloadingTiles = mutableSetOf()
+        tileRetries = TileRetryTracker()
     }
 
     private fun createTileCache(source: TileSource?): TileCache = TileCache(context, source?.name ?: DiskTileCache.DEFAULT_NAMESPACE)
@@ -1261,7 +1266,7 @@ class MapController(
                 canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tilePlaceholderPaint)
                 canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tileBorderPaint)
 
-                if (!downloadingTiles.contains(tile)) {
+                if (!downloadingTiles.contains(tile) && tileRetries.canRequest(tile, SystemClock.elapsedRealtime())) {
                     downloadingTiles.add(tile)
                     downloadTile(tile)
                 }
@@ -1339,8 +1344,13 @@ class MapController(
             )
 
         // Download tiles that are adjacent but not yet visible
+        val now = SystemClock.elapsedRealtime()
         for (tile in prefetchTiles) {
-            if (!visibleTiles.contains(tile) && !downloadingTiles.contains(tile) && tileCache.getMemory(tile) == null) {
+            if (!visibleTiles.contains(tile) &&
+                !downloadingTiles.contains(tile) &&
+                tileCache.getMemory(tile) == null &&
+                tileRetries.canRequest(tile, now)
+            ) {
                 downloadingTiles.add(tile)
                 downloadTile(tile, lowPriority = true)
             }
@@ -2113,23 +2123,43 @@ class MapController(
         val source = tileSource ?: return
         val cache = tileCache
         val downloading = downloadingTiles
+        val retries = tileRetries
         scope.launch(Dispatchers.IO) {
             var bitmap: Bitmap? = null
+            var skipped = false
             try {
                 bitmap =
                     tileDownloadSemaphore.withPermit {
-                        if (cache !== tileCache) return@withPermit null
-                        cache.get(tile) ?: tileDownloader.downloadTile(source.getTileUrl(tile))
+                        if (cache !== tileCache) {
+                            skipped = true
+                            return@withPermit null
+                        }
+                        // A disk hit is promoted to memory by get(), only new downloads need put()
+                        cache.get(tile)
+                            ?: tileDownloader.downloadTile(source.getTileUrl(tile))?.also { cache.put(tile, it) }
                     }
-                bitmap?.let { cache.put(tile, it) }
             } finally {
                 launch(Dispatchers.Main) {
                     downloading.remove(tile)
-                    if (bitmap != null && !lowPriority && cache === tileCache) {
-                        onTileLoadedCallback?.invoke()
+                    if (skipped || cache !== tileCache) return@launch
+                    if (bitmap != null) {
+                        retries.onSuccess(tile)
+                        if (!lowPriority) onTileLoadedCallback?.invoke()
+                    } else {
+                        val retryDelay = retries.onFailure(tile, SystemClock.elapsedRealtime())
+                        if (!lowPriority) scheduleRedraw(retryDelay)
                     }
                 }
             }
+        }
+    }
+
+    // Redraws once a failed tile may be requested again, so it is retried
+    // even when the map isn't moving
+    private fun scheduleRedraw(delayMillis: Long) {
+        scope.launch {
+            delay(delayMillis)
+            onTileLoadedCallback?.invoke()
         }
     }
 
@@ -2151,6 +2181,8 @@ class MapController(
     ) {
         val cache = overlayTileCaches[overlay.id] ?: return
         val downloadingSet = overlayDownloadingTiles[overlay.id] ?: return
+        val retries = overlayTileRetries[overlay.id] ?: return
+        val now = SystemClock.elapsedRealtime()
 
         // Create paint for transparency if needed
         val paint =
@@ -2172,7 +2204,7 @@ class MapController(
             if (cachedBitmap != null) {
                 canvas.drawBitmap(cachedBitmap, screenX, screenY, paint)
             } else {
-                if (!downloadingSet.contains(tile)) {
+                if (!downloadingSet.contains(tile) && retries.canRequest(tile, now)) {
                     downloadingSet.add(tile)
                     downloadOverlayTile(tile, overlay)
                 }
@@ -2190,13 +2222,13 @@ class MapController(
         tile: TileCoordinate,
         overlay: TileOverlay,
     ) {
+        val cache = overlayTileCaches[overlay.id] ?: return
         scope.launch(Dispatchers.IO) {
             var bitmap: Bitmap? = null
             try {
-                val cache = overlayTileCaches[overlay.id]
                 bitmap =
                     tileDownloadSemaphore.withPermit {
-                        val cachedBitmap = cache?.get(tile)
+                        val cachedBitmap = cache.get(tile)
                         if (cachedBitmap != null) {
                             cachedBitmap
                         } else {
@@ -2207,18 +2239,25 @@ class MapController(
                                         inPreferredConfig = Bitmap.Config.ARGB_8888 // Support transparency
                                         inScaled = false
                                     }
-                                BitmapFactory.decodeByteArray(tileData.data, 0, tileData.data.size, options)
+                                BitmapFactory
+                                    .decodeByteArray(tileData.data, 0, tileData.data.size, options)
+                                    ?.also { cache.put(tile, it) }
                             } else {
                                 null
                             }
                         }
                     }
-                bitmap?.let { cache?.put(tile, it) }
             } finally {
                 launch(Dispatchers.Main) {
                     overlayDownloadingTiles[overlay.id]?.remove(tile)
+                    // The overlay may have been removed meanwhile
+                    val retries = overlayTileRetries[overlay.id] ?: return@launch
                     if (bitmap != null) {
+                        retries.onSuccess(tile)
                         onTileLoadedCallback?.invoke()
+                    } else {
+                        // Also covers providers without a tile for this area, so they aren't asked every frame
+                        scheduleRedraw(retries.onFailure(tile, SystemClock.elapsedRealtime()))
                     }
                 }
             }
@@ -2402,6 +2441,7 @@ class MapController(
         // end up in the disk cache of the base map
         overlayTileCaches[tileOverlay.id] = TileCache()
         overlayDownloadingTiles[tileOverlay.id] = mutableSetOf()
+        overlayTileRetries[tileOverlay.id] = TileRetryTracker()
         return tileOverlay
     }
 
@@ -2416,6 +2456,7 @@ class MapController(
         if (removed) {
             overlayTileCaches.remove(tileOverlay.id)
             overlayDownloadingTiles.remove(tileOverlay.id)
+            overlayTileRetries.remove(tileOverlay.id)
         }
         return removed
     }
@@ -2427,6 +2468,7 @@ class MapController(
         tileOverlays.clear()
         overlayTileCaches.clear()
         overlayDownloadingTiles.clear()
+        overlayTileRetries.clear()
     }
 
     /**

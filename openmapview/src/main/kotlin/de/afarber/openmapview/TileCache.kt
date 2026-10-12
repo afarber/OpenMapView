@@ -11,15 +11,12 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import android.util.LruCache
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /**
  * Two-level cache for map tiles: in-memory LRU cache backed by persistent disk cache.
  *
  * Memory cache holds up to 1/8 of available heap memory for fast access.
- * When tiles are evicted from memory, they are automatically written to disk cache.
+ * [put] also writes the tile to the disk cache, so call it from a background thread.
  * Disk cache stores up to 50MB of tiles to reduce network requests across app restarts.
  *
  * @param context Context for the disk cache, or null for a memory-only cache
@@ -41,34 +38,12 @@ class TileCache(
     private var diskCache: DiskTileCache? =
         context?.let { DiskTileCache(it, namespace) }
 
-    // Set while clear() empties the memory cache, so cleared tiles are not written back to disk
-    @Volatile
-    private var clearing = false
-
     private val memoryCache =
         object : LruCache<TileCoordinate, Bitmap>(cacheSize) {
             override fun sizeOf(
                 key: TileCoordinate,
                 bitmap: Bitmap,
             ): Int = bitmap.byteCount / 1024
-
-            // When a tile is evicted from memory, save it to disk for later reuse
-            override fun entryRemoved(
-                evicted: Boolean,
-                key: TileCoordinate,
-                oldValue: Bitmap,
-                newValue: Bitmap?,
-            ) {
-                if (evicted && !clearing && diskCache != null) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            diskCache?.put(key, oldValue)
-                        } catch (e: Exception) {
-                            Log.w(TAG, "Failed to write evicted tile to disk cache", e)
-                        }
-                    }
-                }
-            }
         }
 
     fun get(tile: TileCoordinate): Bitmap? {
@@ -96,15 +71,17 @@ class TileCache(
         bitmap: Bitmap,
     ) {
         memoryCache.put(tile, bitmap)
+        // Write to disk right away, so the tile survives the process even if it is never
+        // evicted from memory
+        try {
+            diskCache?.put(tile, bitmap)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to write tile to disk cache", e)
+        }
     }
 
     fun clear() {
-        clearing = true
-        try {
-            memoryCache.evictAll()
-        } finally {
-            clearing = false
-        }
+        memoryCache.evictAll()
         try {
             diskCache?.clear()
         } catch (e: Exception) {

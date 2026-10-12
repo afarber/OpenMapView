@@ -93,6 +93,17 @@ class TileCacheTest {
     }
 
     @Test
+    fun testPutWritesToDisk() {
+        val tile = TileCoordinate(7, 8, 9)
+        cache.put(tile, createMockBitmap(256, 256))
+
+        // A new cache has an empty memory cache, so the tile must come from disk
+        val other = TileCache(RuntimeEnvironment.getApplication())
+
+        assertNotNull(other.get(tile))
+    }
+
+    @Test
     fun testOverwriteExisting() {
         val tile = TileCoordinate(1, 2, 3)
         val bitmap1 = createMockBitmap(256, 256)

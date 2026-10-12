@@ -15,9 +15,11 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -82,9 +84,52 @@ class TileDownloaderTest {
         }
 
     @Test
+    fun testDownloadTile_HttpErrorReturnsNull() =
+        runTest {
+            val mockEngine =
+                MockEngine {
+                    respond(
+                        content = ByteReadChannel(createMockPngBytes()),
+                        status = HttpStatusCode.TooManyRequests,
+                        headers = headersOf(HttpHeaders.ContentType, "image/png"),
+                    )
+                }
+
+            val downloader = createDownloader(HttpClient(mockEngine))
+
+            assertNull(downloader.downloadTile("https://example.com/tile.png"))
+            downloader.close()
+        }
+
+    @Test
+    fun testDownloadTile_RethrowsCancellation() =
+        runTest {
+            val mockEngine = MockEngine { throw CancellationException("cancelled") }
+            val downloader = createDownloader(HttpClient(mockEngine))
+
+            var cancelled = false
+            try {
+                downloader.downloadTile("https://example.com/tile.png")
+            } catch (e: CancellationException) {
+                cancelled = true
+            }
+
+            assertTrue("Cancellation should not be swallowed", cancelled)
+            downloader.close()
+        }
+
+    @Test
     fun testClose() {
         val downloader = TileDownloader()
         downloader.close()
+    }
+
+    private fun createDownloader(client: HttpClient): TileDownloader {
+        val downloader = TileDownloader()
+        val reflectionField = TileDownloader::class.java.getDeclaredField("client")
+        reflectionField.isAccessible = true
+        reflectionField.set(downloader, client)
+        return downloader
     }
 
     private fun createMockPngBytes(): ByteArray {
