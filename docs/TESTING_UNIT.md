@@ -436,11 +436,11 @@ The test suite currently covers:
 The `.github/workflows/_coverage.yml` workflow:
 1. Runs all unit tests and generates the coverage report (`./scripts/check-coverage.sh`)
 2. Checks coverage meets minimum threshold
-3. Uploads coverage to Codecov
+3. Writes a coverage table (instructions, lines, branches) to the job summary
 4. Uploads HTML and XML reports as artifacts
 
 Coverage results are available:
-- On Codecov: https://codecov.io/gh/afarber/OpenMapView
+- In the job summary of the "Check Test Coverage" job
 - As CI artifacts (HTML report)
 - In PR status checks (pass/fail)
 
