@@ -179,9 +179,9 @@ These properties apply to:
 | Method                         | Return Type | Notes                                                            |
 | ------------------------------ | ----------- | ---------------------------------------------------------------- |
 | `setCenter(LatLng)`            | `void`      | Direct method on OpenMapView (not via separate GoogleMap object) |
-| `setZoom(double)`              | `void`      | Direct method on OpenMapView (not via separate GoogleMap object) |
-| `getZoom()`                    | `double`    | Direct method on OpenMapView (not via separate GoogleMap object) |
-| `setMapType(int)`              | `void`      | Supports NORMAL, TERRAIN, HUMANITARIAN, CYCLE, NONE              |
+| `setZoom(float)`               | `void`      | Direct method on OpenMapView (not via separate GoogleMap object) |
+| `getZoom()`                    | `float`     | Direct method on OpenMapView (not via separate GoogleMap object) |
+| `setMapType(int)`              | `void`      | Supports all 15 `MapType` constants, see MAP_TYPES.md            |
 | `getMapType()`                 | `int`       |                                                                  |
 | `setMapStyle(MapStyleOptions)` | `boolean`   | Not implemented                                                   |
 

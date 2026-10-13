@@ -14,14 +14,16 @@ openmapview/src/test/kotlin/de/afarber/openmapview/
 
 ## Test Framework Stack
 
-| Component | Version | Purpose |
-|-----------|---------|---------|
-| **JUnit** | 4.13.2 | Test runner and assertions |
-| **Kotlin Test** | (inherited) | Kotlin-specific test utilities |
-| **MockK** | 1.14.11 | Mocking framework for Kotlin |
-| **Robolectric** | 4.17 | Android framework shadow implementations |
-| **Ktor Client Mock** | 3.6.0 | HTTP client mocking for network tests |
-| **Coroutines Test** | 1.11.0 | Testing coroutines and async code |
+| Component | Purpose |
+|-----------|---------|
+| **JUnit 4** | Test runner and assertions |
+| **Kotlin Test** | Kotlin-specific test utilities |
+| **MockK** | Mocking framework for Kotlin |
+| **Robolectric** | Android framework shadow implementations |
+| **Ktor Client Mock** | HTTP client mocking for network tests |
+| **Coroutines Test** | Testing coroutines and async code |
+
+The versions are in `gradle/libs.versions.toml` and kept up to date by Dependabot.
 
 ## Running Tests
 
@@ -174,7 +176,7 @@ android {
 }
 
 dependencies {
-    testImplementation("org.robolectric:robolectric:4.14")
+    testImplementation(libs.robolectric)
 }
 ```
 

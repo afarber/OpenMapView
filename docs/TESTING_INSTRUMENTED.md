@@ -81,8 +81,10 @@ Test results and reports are uploaded as separate artifacts for each device with
 
 ```
 openmapview/src/androidTest/kotlin/de/afarber/openmapview/
+├── MapControllerInstrumentationTest.kt     # Canvas rendering and markers (7 tests)
 ├── TileDownloaderInstrumentationTest.kt    # Real OSM tile downloads (2 tests)
-└── MapControllerInstrumentationTest.kt     # Canvas rendering and markers (7 tests)
+├── TouchGestureInstrumentationTest.kt      # Click vs. drag detection (2 tests)
+└── UiSettingsInstrumentationTest.kt        # Enabling and disabling gestures (4 tests)
 ```
 
 ## Dependencies
@@ -91,14 +93,16 @@ Instrumented testing dependencies in `openmapview/build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    androidTestImplementation("androidx.test:core-ktx:1.7.0")
-    androidTestImplementation("androidx.test:runner:1.7.0")
-    androidTestImplementation("androidx.test:rules:1.7.0")
-    androidTestImplementation("androidx.test.ext:junit-ktx:1.3.0")
-    androidTestImplementation("junit:junit:4.13.2")
-    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
+    androidTestImplementation(libs.androidx.test.core.ktx)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.junit.ktx)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
 ```
+
+The versions are in `gradle/libs.versions.toml`.
 
 ## References
 

@@ -21,21 +21,9 @@ dependencies {
 
 The library is available on [Maven Central](https://central.sonatype.com/artifact/de.afarber/openmapview). Alternative distribution via [JitPack](https://jitpack.io/#afarber/OpenMapView) is also supported.
 
-## License Compliance
+## License
 
-OpenMapView is licensed under the **MIT License** - use freely in commercial apps.
-
-**Dependency Licenses:**
-- All runtime dependencies use Apache 2.0 or MIT licenses (business-friendly)
-- View complete [Dependency License Report](https://afarber.github.io/OpenMapView/licenses/)
-- No GPL or restrictive copyleft licenses
-
-**Dependencies (5 total):**
-- androidx.core:core-ktx (Apache 2.0)
-- androidx.lifecycle:lifecycle-runtime-ktx (Apache 2.0)
-- androidx.compose.ui:ui-graphics (Apache 2.0)
-- io.ktor:ktor-client-android (Apache 2.0)
-- com.jakewharton:disklrucache (Apache 2.0)
+OpenMapView is MIT licensed, so you can use it in commercial apps. Its five runtime dependencies (androidx core-ktx, lifecycle-runtime-ktx, Compose ui-graphics, ktor-client-android and DiskLruCache) are all Apache 2.0. See the [Dependency License Report](https://afarber.github.io/OpenMapView/licenses/) for details.
 
 ## Features
 
@@ -49,13 +37,12 @@ OpenMapView is licensed under the **MIT License** - use freely in commercial app
 - External app integration (open in Google Maps, OsmAnd, etc. via geo: URI)
 - GeoJSON import support
 - Extensible marker, overlay, and gesture handling
-- MIT licensed (use freely in commercial apps)
 
 ## API Documentation
 
 Full API reference documentation is available at [afarber.github.io/OpenMapView](https://afarber.github.io/OpenMapView/).
 
-The documentation is automatically generated from KDoc comments and updated with every commit to main.
+The documentation is generated from KDoc comments and redeployed whenever the library sources change on main.
 
 ## Examples
 
@@ -71,7 +58,7 @@ Explore the example applications to see OpenMapView in action:
 - [Example08Circles](examples/Example08Circles) - Circles with radius, styling, z-index ordering, and click listeners
 - [Example09Overlays](examples/Example09Overlays) - Tile overlays with transparency control (OpenSeaMap, Railways, Trails, Snow)
 - [Example10GroundOverlays](examples/Example10GroundOverlays) - Ground overlays with position/bounds modes, rotation, and transparency
-- [Example11MapTypes](examples/Example11MapTypes) - Switching between 5 map types (Normal, Terrain, Humanitarian, Cycle, None)
+- [Example11MapTypes](examples/Example11MapTypes) - Switching between all 15 map types (OSM, CyclOSM, Thunderforest, CARTO, Stamen and more)
 - [Example12Toolbar](examples/Example12Toolbar) - Open location in external map apps via geo: URI with OpenStreetMap browser fallback
 
 ![Example01Pan Demo](examples/Example01Pan/screenshot.gif)
@@ -107,7 +94,7 @@ fun MapViewScreen() {
                 lifecycleOwner.lifecycle.addObserver(this)
 
                 setCenter(LatLng(51.4661, 7.2491))
-                setZoom(14.0)
+                setZoom(14.0f)
 
                 // Add markers - Kotlin style (direct instantiation)
                 addMarker(Marker(
@@ -138,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val mapView = findViewById<OpenMapView>(R.id.mapView)
-        mapView.setZoom(14.0)
+        mapView.setZoom(14.0f)
         mapView.setCenter(LatLng(51.4661, 7.2491))
     }
 }

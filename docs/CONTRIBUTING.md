@@ -10,7 +10,7 @@ All contributions must meet the following requirements before being merged:
 
 ### 1. Code Formatting
 
-All Kotlin code must follow the project's formatting rules enforced by Spotless with ktlint 1.3.1.
+All Kotlin code must follow the project's formatting rules enforced by Spotless with ktlint (versions in `gradle/libs.versions.toml`).
 
 **Before committing**, run:
 
