@@ -27,7 +27,6 @@ class PredefinedTileProvidersTest {
                 mapOf(
                     PredefinedTileProviders.openSeaMap() to "https://tiles.openseamap.org/seamark/3/1/2.png",
                     PredefinedTileProviders.openRailwayMap() to "https://a.tiles.openrailwaymap.org/standard/3/1/2.png",
-                    PredefinedTileProviders.openFireMap() to "http://openfiremap.org/hytiles/3/1/2.png",
                     PredefinedTileProviders.openSnowMap() to "https://tiles.opensnowmap.org/pistes/3/1/2.png",
                     PredefinedTileProviders.waymarkedTrailsHiking() to "https://tile.waymarkedtrails.org/hiking/3/1/2.png",
                     PredefinedTileProviders.waymarkedTrailsCycling() to "https://tile.waymarkedtrails.org/cycling/3/1/2.png",
