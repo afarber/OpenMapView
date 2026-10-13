@@ -13,6 +13,7 @@ import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -20,9 +21,15 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class PredefinedTileProvidersTest {
+    @After
+    fun tearDown() {
+        ApiKeyManager.clearProgrammaticKeys()
+    }
+
     @Test
     fun testProvidersRequestExpectedUrls() =
         runTest {
+            ApiKeyManager.setApiKey("stadia", "test-key")
             val expected =
                 mapOf(
                     PredefinedTileProviders.openSeaMap() to "https://tiles.openseamap.org/seamark/3/1/2.png",
@@ -33,15 +40,27 @@ class PredefinedTileProvidersTest {
                     PredefinedTileProviders.waymarkedTrailsMtb() to "https://tile.waymarkedtrails.org/mtb/3/1/2.png",
                     PredefinedTileProviders.waymarkedTrailsSkating() to "https://tile.waymarkedtrails.org/skating/3/1/2.png",
                     PredefinedTileProviders.stamenTonerHybrid() to
-                        "https://stamen-tiles.a.ssl.fastly.net/toner-hybrid/3/1/2.png",
+                        "https://tiles.stadiamaps.com/tiles/stamen_toner_lines/3/1/2.png?api_key=test-key",
                     PredefinedTileProviders.stamenTerrainLines() to
-                        "https://stamen-tiles.a.ssl.fastly.net/terrain-lines/3/1/2.png",
+                        "https://tiles.stadiamaps.com/tiles/stamen_terrain_lines/3/1/2.png?api_key=test-key",
                     PredefinedTileProviders.custom("https://example.com/{z}/{x}/{y}.png") to "https://example.com/3/1/2.png",
                 )
 
             for ((provider, url) in expected) {
                 assertEquals(url, requestedUrl(provider as UrlTileProvider))
             }
+        }
+
+    @Test
+    fun testStadiaKeyIsReadPerTile() =
+        runTest {
+            val provider = PredefinedTileProviders.stamenTerrainLines() as UrlTileProvider
+            ApiKeyManager.setApiKey("stadia", "late-key")
+
+            assertEquals(
+                "https://tiles.stadiamaps.com/tiles/stamen_terrain_lines/3/1/2.png?api_key=late-key",
+                requestedUrl(provider),
+            )
         }
 
     // Swaps in a mock HTTP client, so no real tile server is contacted

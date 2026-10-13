@@ -52,7 +52,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (458 tests across 35 test classes)
+### Current Test Coverage (461 tests across 35 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
@@ -78,14 +78,14 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **OptionsBuildersTest** | 13 | Google-style *Options builders for markers, shapes and overlays |
 | **PolygonTest** | 20 | Polygon creation, validation, holes, and styling |
 | **PolylineTest** | 31 | Polyline creation, validation, and styling |
-| **PredefinedTileProvidersTest** | 1 | URL templates of the predefined overlay tile providers |
+| **PredefinedTileProvidersTest** | 2 | URL templates of the predefined overlay tile providers, Stadia key lookup |
 | **ProjectionTest** | 12 | Web Mercator projection calculations |
 | **SnapshotTest** | 8 | Map snapshot API and callbacks |
 | **TileCacheTest** | 9 | Memory LRU cache behavior, clearing, namespaces, disk writes |
 | **TileDownloaderTest** | 5 | HTTP tile downloading with mocked Ktor client, HTTP errors, cancellation |
 | **TileOverlayTest** | 5 | Tile overlay defaults, transparency validation, copy helpers |
 | **TileRetryTrackerTest** | 4 | Exponential backoff for failed tiles |
-| **TileSourceTest** | 7 | Tile source URL generation and attribution |
+| **TileSourceTest** | 9 | Tile source URL generation, attribution and API keys |
 | **TileTest** | 6 | Tile content equality, validation and toString |
 | **UiSettingsTest** | 25 | UI settings (gestures, zoom controls, not-implemented features) |
 | **UrlTileProviderTest** | 4 | Overlay tile downloading, HTTP 404 handling, shared HTTP client |
