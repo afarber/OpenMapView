@@ -23,8 +23,6 @@ Map tiles are decoded using the `RGB_565` bitmap configuration instead of the de
 val options = BitmapFactory.Options().apply {
     inPreferredConfig = Bitmap.Config.RGB_565
     inScaled = false
-    inDither = false
-    inPreferQualityOverSpeed = false
 }
 ```
 
@@ -322,14 +320,6 @@ Typical memory footprint for a visible viewport at zoom level 10:
 - **Total active memory:** ~4MB for tiles
 - **Memory cache capacity:** ~32-64MB depending on device
 
-### Cache Hit Rates
-
-Expected cache hit rates with typical usage:
-
-- **Memory cache:** 80-90% for panning within same area
-- **Disk cache:** 60-70% on app restart
-- **Network downloads:** 10-20% for new areas
-
 ### Network Usage
 
 With prefetching enabled:
@@ -338,36 +328,20 @@ With prefetching enabled:
 - **Pan gesture:** 0-4 tile downloads (~0-150KB) from cache
 - **Zoom change:** 0-20 tile downloads (~0-700KB) depending on zoom delta
 
-
 ## Benchmarking
 
-To measure performance in your app:
+The tile caches are internal, so measure from the outside:
 
-```kotlin
-// Memory usage
-val memoryInfo = ActivityManager.MemoryInfo()
-activityManager.getMemoryInfo(memoryInfo)
-
-// Cache statistics
-val cacheSize = tileCache.size()
-val cacheHits = tileCache.hitCount()
-val cacheMisses = tileCache.missCount()
-
-// Rendering performance
-Choreographer.getInstance().postFrameCallback { frameTimeNanos ->
-    // Measure frame time
-}
-```
+- **Memory:** Android Studio Memory Profiler, or `adb shell dumpsys meminfo <your.package>`
+- **Network:** Android Studio Network Inspector shows every tile request and whether panning hits the cache
+- **Rendering:** Profile GPU Rendering in the developer options, or a `Choreographer.FrameCallback`
 
 ## Best Practices
 
 For optimal performance:
 
 1. **Lifecycle integration:** Register OpenMapView with lifecycle observer (see [Lifecycle Management](LIFECYCLE.md))
-2. **Memory limits:** Monitor memory usage if displaying multiple maps simultaneously
-3. **Cache clearing:** Provide UI to clear cache if storage becomes an issue
-4. **Network awareness:** Consider pausing downloads on metered connections
-5. **Error handling:** Handle network failures gracefully
+2. **Several maps at once:** Each OpenMapView has its own memory cache of up to 1/8 of the heap, so watch memory usage when showing more than one
 
 ## References
 

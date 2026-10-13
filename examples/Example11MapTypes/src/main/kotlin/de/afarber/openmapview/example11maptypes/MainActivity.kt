@@ -286,7 +286,7 @@ fun MapTypeControls(
         // API Key Info
         Text(
             text = "API key required: Cycle Map, Transport, Transport Dark, " +
-                "Tracestrack Topo\n\nConfigure in AndroidManifest.xml\nSee docs/API_KEYS.md",
+                "Tracestrack Topo\n\nConfigure in AndroidManifest.xml\nSee docs/MAP_TYPES.md",
             style = MaterialTheme.typography.bodySmall,
             fontSize = 9.sp,
             lineHeight = 11.sp,

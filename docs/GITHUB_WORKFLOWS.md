@@ -120,9 +120,10 @@ instrumented-test (Phone + Automotive) runs in parallel
 7. **build-library** - Builds library AAR (depends on all above, runs in parallel with build-examples)
 8. **build-examples** - Builds example APKs (depends on all above, runs in parallel with build-library)
 9. **instrumented-test** - Runs instrumentation tests on phone and automotive emulators (PR only)
+10. **instrumented-test-status** - Reports one combined "Instrumentation Tests" check for the device matrix, used by branch protection (PR only)
 
 **Total Duration**:
-- **Maintainer pushes to main**: ~3-4 minutes (no instrumentation tests)
+- **Pushes to main** (merged PRs and release commits): ~3-4 minutes (no instrumentation tests)
 - **Pull Requests**: ~10-15 minutes (includes instrumentation tests on phone + automotive)
 
 **Benefits**:
@@ -157,7 +158,7 @@ lint ──────┘           │                 ├──→ publish
 - Validates tag format (must be `vMAJOR.MINOR.PATCH`)
 - Extracts version number (e.g., `v0.2.0` -> `0.2.0`)
 - Signs artifacts with GPG key
-- Uploads to Maven Central OSSRH
+- Uploads the bundle to the Maven Central Portal, which publishes it automatically
 - Generates changelog from git history
 - Creates GitHub Release with:
   - Version number and changelog
@@ -268,14 +269,14 @@ For the release workflow to function, the project owner must configure these sec
 **Location**: Settings -> Secrets and variables -> Actions -> Repository secrets
 
 ### 1. OSSRH_USERNAME
-- **Description**: Sonatype JIRA username
-- **Used for**: Authenticating to Maven Central OSSRH
-- **How to get**: Created when registering at https://issues.sonatype.org
+- **Description**: Username part of a Central Portal user token (the secret keeps its old name)
+- **Used for**: Authenticating to the Maven Central Portal
+- **How to get**: Generate a user token at https://central.sonatype.com/account
 
 ### 2. OSSRH_PASSWORD
-- **Description**: Sonatype JIRA password
-- **Used for**: Authenticating to Maven Central OSSRH
-- **How to get**: Set when registering at https://issues.sonatype.org
+- **Description**: Password part of the same Central Portal user token
+- **Used for**: Authenticating to the Maven Central Portal
+- **How to get**: Shown together with the username when the token is generated
 
 ### 3. SIGNING_KEY
 - **Description**: Base64-encoded GPG private key
@@ -349,11 +350,7 @@ git pull
 # 3. Watch the workflow
 # Go to: https://github.com/afarber/OpenMapView/actions
 
-# 4. For first release only: manually release staging repository
-# Log in to: https://s01.oss.sonatype.org/
-# Find your staging repo, click "Close", then "Release"
-
-# 5. Verify publication after 2-4 hours
+# 4. Verify publication, usually after 10-30 minutes
 # https://central.sonatype.com/artifact/de.afarber/openmapview
 ```
 
@@ -445,7 +442,7 @@ publish job:
    - Create GitHub Release - PASS
    |
    v
-Wait 2-4 hours -> Library available on Maven Central
+Wait 10-30 minutes -> Library available on Maven Central
 ```
 
 ## Benefits of This Architecture

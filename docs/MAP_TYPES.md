@@ -4,7 +4,7 @@ This guide helps you choose and configure the right map type for your OpenMapVie
 
 ## Quick Start
 
-OpenMapView provides **15 map types** from various tile providers. Twelve types work without any configuration, while three premium types require free API keys.
+OpenMapView provides **15 map types** from various tile providers. Eleven types work without any configuration (including `NONE`), while four premium types require free API keys.
 
 ```kotlin
 val mapView = OpenMapView(context)
@@ -401,7 +401,7 @@ See the **Example11MapTypes** sample app for a complete demonstration of all map
 val mapView = OpenMapView(context)
 lifecycle.addObserver(mapView)
 mapView.setCenter(LatLng(46.8182, 8.2275))
-mapView.setZoom(12.0)
+mapView.setZoom(12.0f)
 mapView.setMapType(MapType.CYCLOSM)  // Switch map types dynamically
 ```
 

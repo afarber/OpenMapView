@@ -168,11 +168,8 @@ Examples:
 
 When creating a new release:
 
-- [ ] Ensure all tests pass: `./gradlew test`
-- [ ] Run code formatting: `./gradlew spotlessApply`
-- [ ] Verify local build: `./gradlew build`
-- [ ] Test Maven publication: `./gradlew publishToMavenLocal`
-- [ ] Create and push version tag (e.g., `v0.3.0`)
+- [ ] Make sure CI on main is green and your local main is up to date
+- [ ] Run `./scripts/publish-release.sh` (next patch version) or `./scripts/publish-release.sh vX.Y.Z`. It bumps the version in the docs, commits, creates a signed tag and pushes main and the tag
 - [ ] Monitor GitHub Actions release workflow
 - [ ] Verify Maven Central publication (10-30 minutes)
 - [ ] Verify JitPack build status
@@ -360,13 +357,15 @@ git push origin v0.3.0
 
 ## Installation Examples
 
+Replace `<version>` with the latest release shown in the [README](../README.md#installation).
+
 ### Maven Central
 
 No repository configuration required:
 
 ```kotlin
 dependencies {
-    implementation("de.afarber:openmapview:0.1.0")
+    implementation("de.afarber:openmapview:<version>")
 }
 ```
 
@@ -386,6 +385,6 @@ dependencyResolutionManagement {
 
 ```kotlin
 dependencies {
-    implementation("com.github.afarber:OpenMapView:0.1.0")
+    implementation("com.github.afarber:OpenMapView:<version>")
 }
 ```
