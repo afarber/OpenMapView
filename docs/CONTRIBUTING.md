@@ -158,7 +158,7 @@ Run unit tests:
 
 ### Test Coverage
 
-The project enforces a **minimum test coverage of 20%** for all code. Coverage is measured with the Android Gradle Plugin's built-in JaCoCo support.
+The project enforces a **minimum test coverage of 75%** for all code. Coverage is measured with the Android Gradle Plugin's built-in JaCoCo support.
 
 Generate coverage report:
 
@@ -216,7 +216,7 @@ The CI pipeline runs automatically on all pull requests and includes:
 2. **Copyright Check** - Verifies MIT license headers
 3. **Static Analysis** - Runs Android Lint
 4. **Unit Tests** - Runs all JVM unit tests
-5. **Test Coverage** - Ensures minimum 20% code coverage
+5. **Test Coverage** - Ensures minimum 75% code coverage
 6. **Build Library** - Builds the OpenMapView AAR
 7. **Build Examples** - Builds all example applications
 

@@ -50,30 +50,42 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (260+ tests across 21 test classes)
+### Current Test Coverage (456 tests across 35 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
 | **AttributionOverlayTest** | 4 | Attribution rendering and touch detection |
-| **BitmapDescriptorFactoryTest** | 18 | Marker icon generation with colors and custom images |
-| **CameraPositionTest** | 6 | Camera position validation and equality |
-| **CameraUpdateFactoryTest** | 8 | Camera update creation (zoom, pan, position) |
+| **BitmapDescriptorFactoryTest** | 15 | Marker icon generation with colors and custom images |
+| **CameraPositionTest** | 7 | Camera position validation and equality |
+| **CameraUpdateFactoryTest** | 11 | Camera update creation (zoom, pan, position) |
+| **CircleTest** | 4 | Circle defaults, radius validation, identity equality |
 | **DiskTileCacheTest** | 8 | Persistent disk cache with DiskLruCache, per-source namespaces |
 | **GeoJsonParserTest** | 14 | GeoJSON parsing (Point, LineString, Polygon, Multi*, Features) |
-| **IntentUtilsTest** | 4 | External app integration (geo: URI, OSM fallback) |
+| **GeodesicUtilsTest** | 17 | Great-circle interpolation for geodesic shapes |
+| **GroundOverlayTest** | 10 | Ground overlay position/bounds validation and equality |
+| **IntentUtilsTest** | 7 | External app integration (geo: URI, OSM fallback) |
 | **LatLngBoundsTest** | 13 | Lat/lng bounds calculations and contains checks |
-| **MapControllerTest** | 63 | Zoom, pan, marker/polyline/polygon/circle management, touch detection, padding |
-| **MapFeaturesTest** | 4 | Feature query methods (traffic, indoor, buildings, myLocation) |
-| **MapTypeTest** | 9 | Map type switching and validation |
-| **MarkerTest** | 24 | Marker creation, equality, properties, info windows, dragging |
-| **PolygonTest** | 16 | Polygon creation, validation, holes, and styling |
-| **PolylineTest** | 16 | Polyline creation, validation, and styling |
+| **LatLngTest** | 11 | Latitude clamping and longitude wrapping |
+| **MapControllerOverlaysTest** | 13 | Circles, ground and tile overlays, their touch detection, info windows, drawing all shape types |
+| **MapControllerTest** | 103 | Zoom, pan, marker/polyline/polygon management, touch detection, padding, camera bounds, edge effects |
+| **MapFeaturesTest** | 5 | Feature query methods (traffic, indoor, buildings, myLocation) |
+| **MapProjectionTest** | 8 | Projection screen/LatLng conversion, pan offset, padding, visible region |
+| **MapTypeTest** | 18 | Map type switching and validation |
+| **MarkerIconFactoryTest** | 3 | Default marker icon generation and caching |
+| **MarkerTest** | 23 | Marker creation, equality, properties, info windows, dragging |
+| **OptionsBuildersTest** | 13 | Google-style *Options builders for markers, shapes and overlays |
+| **PolygonTest** | 20 | Polygon creation, validation, holes, and styling |
+| **PolylineTest** | 31 | Polyline creation, validation, and styling |
+| **PredefinedTileProvidersTest** | 1 | URL templates of the predefined overlay tile providers |
 | **ProjectionTest** | 12 | Web Mercator projection calculations |
+| **SnapshotTest** | 8 | Map snapshot API and callbacks |
 | **TileCacheTest** | 9 | Memory LRU cache behavior, clearing, namespaces, disk writes |
 | **TileDownloaderTest** | 5 | HTTP tile downloading with mocked Ktor client, HTTP errors, cancellation |
+| **TileOverlayTest** | 5 | Tile overlay defaults, transparency validation, copy helpers |
 | **TileRetryTrackerTest** | 4 | Exponential backoff for failed tiles |
 | **TileSourceTest** | 7 | Tile source URL generation and attribution |
-| **UiSettingsTest** | 19 | UI settings (gestures, zoom controls, not-implemented features) |
+| **TileTest** | 6 | Tile content equality, validation and toString |
+| **UiSettingsTest** | 25 | UI settings (gestures, zoom controls, not-implemented features) |
 | **UrlTileProviderTest** | 2 | Overlay tile downloading, HTTP 404 handling |
 | **ViewportCalculatorTest** | 10 | Visible tile calculation |
 | **VisibleRegionTest** | 4 | Visible region bounds and corners |
@@ -424,7 +436,8 @@ The test suite currently covers:
 - Memory cache (LRU) behavior
 - Disk cache (persistent storage)
 - Viewport calculation
-- MapController rendering logic
+- MapController rendering logic for all shape types, ground and tile overlays
+- Options builders and the public Projection class
 - Touch gesture handling (marker and attribution hit detection)
 - Zoom level validation and bounds
 - Network tile downloading (with mocking)

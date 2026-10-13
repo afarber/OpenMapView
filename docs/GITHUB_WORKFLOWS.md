@@ -116,7 +116,7 @@ instrumented-test (Phone + Automotive) runs in parallel
 3. **lint** - Runs Android Lint
 4. **test** - Runs unit tests (depends on format + copyright + lint)
 5. **docs** - Builds API documentation with Dokka (depends on format + copyright + lint)
-6. **coverage** - Checks test coverage meets 20% minimum (depends on format + copyright + lint)
+6. **coverage** - Checks test coverage meets 75% minimum (depends on format + copyright + lint)
 7. **build-library** - Builds library AAR (depends on all above, runs in parallel with build-examples)
 8. **build-examples** - Builds example APKs (depends on all above, runs in parallel with build-library)
 9. **instrumented-test** - Runs instrumentation tests on phone and automotive emulators (PR only)

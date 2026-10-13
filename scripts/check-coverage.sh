@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Check test coverage meets minimum threshold (20%)
+# Check test coverage meets minimum threshold (75%)
 # Returns 0 if coverage is adequate, 1 if tests fail or coverage is below threshold
 
 set -euo pipefail
 
-COVERAGE_THRESHOLD=20
+COVERAGE_THRESHOLD=75
 REPORT_DIR="openmapview/build/reports/coverage/test/debug"
 COVERAGE_FILE="$REPORT_DIR/report.xml"
 
