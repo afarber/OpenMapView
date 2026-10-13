@@ -48,7 +48,7 @@ Located in `.github/workflows/`:
 #### `_coverage.yml`
 - **Purpose**: Check test coverage meets minimum threshold
 - **Runs**: `./scripts/check-coverage.sh` (minimum threshold defined in [Contributing Guide](CONTRIBUTING.md#test-coverage))
-- **Artifacts**: Uploads coverage reports to Codecov and as artifacts
+- **Artifacts**: Writes a coverage table to the job summary and uploads the reports as artifacts
 - **Usage**: Called by CI workflow
 - **Duration**: ~1-2 minutes
 

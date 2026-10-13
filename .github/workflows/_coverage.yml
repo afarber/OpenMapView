@@ -27,14 +27,6 @@ jobs:
       - name: Run tests and check coverage
         run: ./scripts/check-coverage.sh
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v7
-        with:
-          files: ./openmapview/build/reports/coverage/test/debug/report.xml
-          flags: unittests
-          name: codecov-openmapview
-          fail_ci_if_error: false
-
       - name: Upload coverage reports
         if: always()
         uses: actions/upload-artifact@v7

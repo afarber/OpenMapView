@@ -1,12 +1,11 @@
 [![CI](https://github.com/afarber/OpenMapView/actions/workflows/ci.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/ci.yml)
 [![Daily Tests](https://github.com/afarber/OpenMapView/actions/workflows/daily.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/daily.yml)
 [![Release](https://github.com/afarber/OpenMapView/actions/workflows/release.yml/badge.svg)](https://github.com/afarber/OpenMapView/actions/workflows/release.yml)
-[![codecov](https://codecov.io/gh/afarber/OpenMapView/branch/main/graph/badge.svg)](https://codecov.io/gh/afarber/OpenMapView)
 [![API Documentation](https://img.shields.io/badge/API-Documentation-blue)](https://afarber.github.io/OpenMapView/)
 
 # OpenMapView
 
-A modern, Kotlin-first MapView replacement for Android — powered by [OpenStreetMap](https://www.openstreetmap.org/).
+A modern, Kotlin-first MapView replacement for Android - powered by [OpenStreetMap](https://www.openstreetmap.org/).
 
 ## Installation
 
