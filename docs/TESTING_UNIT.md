@@ -52,7 +52,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (456 tests across 35 test classes)
+### Current Test Coverage (458 tests across 35 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
@@ -88,7 +88,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **TileSourceTest** | 7 | Tile source URL generation and attribution |
 | **TileTest** | 6 | Tile content equality, validation and toString |
 | **UiSettingsTest** | 25 | UI settings (gestures, zoom controls, not-implemented features) |
-| **UrlTileProviderTest** | 2 | Overlay tile downloading, HTTP 404 handling |
+| **UrlTileProviderTest** | 4 | Overlay tile downloading, HTTP 404 handling, shared HTTP client |
 | **ViewportCalculatorTest** | 10 | Visible tile calculation |
 | **VisibleRegionTest** | 4 | Visible region bounds and corners |
 

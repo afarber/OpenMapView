@@ -57,7 +57,6 @@ class PredefinedTileProvidersTest {
         reflectionField.set(provider, HttpClient(engine))
 
         provider.getTile(1, 2, 3)
-        provider.close()
         return requested
     }
 }
