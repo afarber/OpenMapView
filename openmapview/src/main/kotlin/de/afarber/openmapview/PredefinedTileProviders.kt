@@ -12,7 +12,7 @@ package de.afarber.openmapview
  * public tile overlay services.
  *
  * These providers offer various overlay types including weather, transportation,
- * outdoor activities, maritime, and emergency services data.
+ * outdoor activities and maritime data.
  *
  * Example usage:
  * ```kotlin
@@ -30,8 +30,7 @@ package de.afarber.openmapview
  * ```
  *
  * All providers use 256×256 pixel tiles with Web Mercator projection (EPSG:3857).
- * See docs/TILE_OVERLAYS.md for detailed information about each service including
- * attribution requirements, usage policies, and content descriptions.
+ * See the "Tile Overlays" section of docs/MAP_TYPES.md for the available services.
  */
 object PredefinedTileProviders {
     /**
@@ -57,17 +56,6 @@ object PredefinedTileProviders {
      * @return TileProvider for OpenRailwayMap
      */
     fun openRailwayMap(): TileProvider = object : UrlTileProvider("https://a.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png") {}
-
-    /**
-     * Creates a provider for OpenFireMap emergency services overlay.
-     *
-     * Content: Fire stations, fire hydrants, ambulance stations, hospitals
-     * Zoom levels: 0-18
-     * Attribution: "Map data © OpenStreetMap contributors, Emergency data © OpenFireMap"
-     *
-     * @return TileProvider for OpenFireMap
-     */
-    fun openFireMap(): TileProvider = object : UrlTileProvider("http://openfiremap.org/hytiles/{z}/{x}/{y}.png") {}
 
     /**
      * Creates a provider for OpenSnowMap winter sports overlay.

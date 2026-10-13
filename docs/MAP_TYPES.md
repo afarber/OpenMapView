@@ -377,7 +377,6 @@ In addition to base map types, OpenMapView supports **tile overlays** that rende
 
 - **OpenSeaMap**: Nautical charts (buoys, depth contours)
 - **OpenRailwayMap**: Railway infrastructure
-- **OpenFireMap**: Fire stations, hydrants
 - **OpenSnowMap**: Ski pistes, lifts
 - **Waymarked Trails**: Hiking, cycling, MTB, skating trails
 - **Stamen Overlays**: Labels, terrain lines
