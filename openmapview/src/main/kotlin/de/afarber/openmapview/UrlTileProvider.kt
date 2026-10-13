@@ -38,6 +38,9 @@ import kotlinx.coroutines.CancellationException
  * }
  * ```
  *
+ * All instances share one HTTP client, so creating many providers (for example when
+ * overlays are switched on and off) does not create more connection pools.
+ *
  * @property urlTemplate URL pattern with {z}, {x}, {y} placeholders
  *
  * @see TileProvider
@@ -48,15 +51,19 @@ abstract class UrlTileProvider(
 ) : TileProvider {
     companion object {
         private val TAG = UrlTileProvider::class.java.simpleName
-    }
 
-    private val client =
-        HttpClient(Android) {
-            engine {
-                connectTimeout = 10_000
-                socketTimeout = 10_000
+        // Shared by all providers and never closed, it lives as long as the process
+        private val sharedClient by lazy {
+            HttpClient(Android) {
+                engine {
+                    connectTimeout = 10_000
+                    socketTimeout = 10_000
+                }
             }
         }
+    }
+
+    private val client: HttpClient = sharedClient
 
     /**
      * Returns the User-Agent header to use for HTTP requests.
@@ -132,10 +139,11 @@ abstract class UrlTileProvider(
         }
 
     /**
-     * Closes the HTTP client and releases resources.
-     * Should be called when the tile provider is no longer needed.
+     * Does nothing. All providers share one HTTP client, which must stay open
+     * for the other providers.
      */
+    @Deprecated("UrlTileProvider instances share one HTTP client now, there is nothing to close")
     fun close() {
-        client.close()
+        // Nothing to release per instance
     }
 }

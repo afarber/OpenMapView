@@ -12,10 +12,13 @@ import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -53,6 +56,31 @@ class UrlTileProviderTest {
 
             assertNull(provider.getTile(1, 2, 3))
         }
+
+    @Test
+    fun testProvidersShareOneClient() {
+        val provider1 = object : UrlTileProvider("https://example.com/a/{z}/{x}/{y}.png") {}
+        val provider2 = PredefinedTileProviders.openSeaMap() as UrlTileProvider
+
+        assertSame(clientOf(provider1), clientOf(provider2))
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun testCloseKeepsSharedClientOpen() {
+        val provider1 = object : UrlTileProvider("https://example.com/a/{z}/{x}/{y}.png") {}
+        val provider2 = object : UrlTileProvider("https://example.com/b/{z}/{x}/{y}.png") {}
+
+        provider1.close()
+
+        assertTrue(clientOf(provider2).isActive)
+    }
+
+    private fun clientOf(provider: UrlTileProvider): HttpClient {
+        val reflectionField = UrlTileProvider::class.java.getDeclaredField("client")
+        reflectionField.isAccessible = true
+        return reflectionField.get(provider) as HttpClient
+    }
 
     private fun createProvider(engine: MockEngine): UrlTileProvider {
         val provider = object : UrlTileProvider("https://example.com/{z}/{x}/{y}.png") {}
