@@ -7,11 +7,18 @@
 
 package de.afarber.openmapview
 
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TileSourceTest {
+    @After
+    fun tearDown() {
+        ApiKeyManager.clearProgrammaticKeys()
+    }
+
     @Test
     fun testTileSource_Standard() {
         val tile = TileCoordinate(x = 100, y = 200, zoom = 10)
@@ -76,5 +83,31 @@ class TileSourceTest {
                 source.attributionText.isNotEmpty(),
             )
         }
+    }
+
+    @Test
+    fun testStamenSources_RequireStadiaKey() {
+        for (source in listOf(TileSource.STAMEN_TONER, TileSource.STAMEN_WATERCOLOR)) {
+            assertTrue(source.requiresApiKey)
+            assertEquals("stadia", source.apiKeyProvider)
+            assertEquals("Stadia Maps", source.getProviderName())
+            assertFalse(source.hasApiKey())
+        }
+    }
+
+    @Test
+    fun testStamenSources_UseStadiaKey() {
+        ApiKeyManager.setApiKey("Stadia", "test-key")
+        val tile = TileCoordinate(x = 1, y = 2, zoom = 3)
+
+        assertTrue(TileSource.STAMEN_TONER.hasApiKey())
+        assertEquals(
+            "https://tiles.stadiamaps.com/tiles/stamen_toner/3/1/2.png?api_key=test-key",
+            TileSource.STAMEN_TONER.getTileUrl(tile),
+        )
+        assertEquals(
+            "https://tiles.stadiamaps.com/tiles/stamen_watercolor/3/1/2.jpg?api_key=test-key",
+            TileSource.STAMEN_WATERCOLOR.getTileUrl(tile),
+        )
     }
 }

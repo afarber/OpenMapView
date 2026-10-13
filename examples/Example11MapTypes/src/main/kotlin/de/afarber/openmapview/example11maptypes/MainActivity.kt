@@ -265,19 +265,19 @@ fun MapTypeControls(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        // Stamen Toner
+        // Stamen Toner (requires API key)
         MapTypeButton(
             text = "Stamen Toner",
-            description = "High-contrast black & white",
+            description = "Black & white (API key required)",
             enabled = currentMapType != MapType.STAMEN_TONER,
             onClick = { onMapTypeChange(MapType.STAMEN_TONER) },
             modifier = Modifier.fillMaxWidth(),
         )
 
-        // Stamen Watercolor
+        // Stamen Watercolor (requires API key)
         MapTypeButton(
             text = "Stamen Watercolor",
-            description = "Artistic watercolor rendering",
+            description = "Watercolor (API key required)",
             enabled = currentMapType != MapType.STAMEN_WATERCOLOR,
             onClick = { onMapTypeChange(MapType.STAMEN_WATERCOLOR) },
             modifier = Modifier.fillMaxWidth(),
@@ -286,7 +286,7 @@ fun MapTypeControls(
         // API Key Info
         Text(
             text = "API key required: Cycle Map, Transport, Transport Dark, " +
-                "Tracestrack Topo\n\nConfigure in AndroidManifest.xml\nSee docs/MAP_TYPES.md",
+                "Tracestrack Topo, Stamen Toner, Stamen Watercolor\n\nConfigure in AndroidManifest.xml\nSee docs/MAP_TYPES.md",
             style = MaterialTheme.typography.bodySmall,
             fontSize = 9.sp,
             lineHeight = 11.sp,

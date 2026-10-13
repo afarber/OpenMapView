@@ -208,24 +208,30 @@ enum class TileSource(
      *
      * Stark B&W design with maximum contrast for data visualization.
      * Most popular Stamen style. Hosted by Stadia Maps.
+     * Requires Stadia Maps API key.
      */
     STAMEN_TONER(
-        urlTemplate = "https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}.png",
+        urlTemplate = "https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}.png?api_key={apikey}",
         attributionText = "© OpenStreetMap contributors. Tiles © Stamen Design, © Stadia Maps",
         attributionUrl = "https://stadiamaps.com/stamen/",
         maxZoom = 20,
+        requiresApiKey = true,
+        apiKeyProvider = "stadia",
     ),
 
     /**
      * Stamen Watercolor - Artistic watercolor rendering.
      *
      * Unique hand-painted watercolor aesthetic. Hosted by Stadia Maps.
+     * Requires Stadia Maps API key.
      */
     STAMEN_WATERCOLOR(
-        urlTemplate = "https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg",
+        urlTemplate = "https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg?api_key={apikey}",
         attributionText = "© OpenStreetMap contributors. Tiles © Stamen Design, © Stadia Maps",
         attributionUrl = "https://stadiamaps.com/stamen/",
         maxZoom = 16,
+        requiresApiKey = true,
+        apiKeyProvider = "stadia",
     ),
     ;
 

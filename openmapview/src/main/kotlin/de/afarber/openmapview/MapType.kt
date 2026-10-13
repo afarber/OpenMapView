@@ -23,14 +23,14 @@ package de.afarber.openmapview
  * - [CARTO_LIGHT]: Minimalist light theme for data visualization
  * - [CARTO_DARK]: Dark theme for night mode
  * - [CARTO_VOYAGER]: Modern colorful basemap
- * - [STAMEN_TONER]: High-contrast black and white
- * - [STAMEN_WATERCOLOR]: Artistic watercolor rendering
  *
  * **Premium Map Types (API Key Required):**
  * - [CYCLEMAP]: Thunderforest cycling map (requires Thunderforest API key)
  * - [TRANSPORT]: Public transport focused map (requires Thunderforest API key)
  * - [TRANSPORT_DARK]: Dark mode public transport map (requires Thunderforest API key)
  * - [TRACESTRACK_TOPO]: Topographic with contours (requires Tracestrack API key)
+ * - [STAMEN_TONER]: High-contrast black and white (requires Stadia Maps API key)
+ * - [STAMEN_WATERCOLOR]: Artistic watercolor rendering (requires Stadia Maps API key)
  *
  * ## API Key Configuration
  *
@@ -41,6 +41,9 @@ package de.afarber.openmapview
  *     android:value="your_key_here"/>
  * <meta-data
  *     android:name="de.afarber.openmapview.TRACESTRACK_API_KEY"
+ *     android:value="your_key_here"/>
+ * <meta-data
+ *     android:name="de.afarber.openmapview.STADIA_API_KEY"
  *     android:value="your_key_here"/>
  * ```
  *
@@ -57,6 +60,8 @@ package de.afarber.openmapview
  *   - Free tier: 150,000 tiles/month
  * - **Tracestrack** (TRACESTRACK_TOPO): https://www.tracestrack.com/en/signup
  *   - Free tier: 100,000 tiles/month
+ * - **Stadia Maps** (STAMEN_TONER, STAMEN_WATERCOLOR): https://client.stadiamaps.com/signup/
+ *   - Free tier: 200,000 tiles/month for non-commercial use
  *
  * @see OpenMapView.setMapType
  * @see OpenMapView.getMapType
@@ -248,7 +253,7 @@ object MapType {
      *
      * - **Tile Server**: tiles.stadiamaps.com (Stadia Maps)
      * - **Max Zoom**: 20
-     * - **API Key**: Optional (free tier: 200k tiles/month for local dev)
+     * - **API Key**: Required (Stadia Maps)
      * - **Use Cases**: Data visualization, marker overlays, minimalist design
      */
     const val STAMEN_TONER: Int = 13
@@ -261,7 +266,7 @@ object MapType {
      *
      * - **Tile Server**: tiles.stadiamaps.com (Stadia Maps)
      * - **Max Zoom**: 16
-     * - **API Key**: Optional (free tier: 200k tiles/month for local dev)
+     * - **API Key**: Required (Stadia Maps)
      * - **Use Cases**: Creative apps, travel journals, artistic visualization
      */
     const val STAMEN_WATERCOLOR: Int = 14

@@ -78,8 +78,8 @@ try {
 | Carto Light | `MapType.CARTO_LIGHT` | CARTO | |
 | Carto Dark | `MapType.CARTO_DARK` | CARTO | |
 | Carto Voyager | `MapType.CARTO_VOYAGER` | CARTO | |
-| Stamen Toner | `MapType.STAMEN_TONER` | Stadia Maps | |
-| Stamen Watercolor | `MapType.STAMEN_WATERCOLOR` | Stadia Maps | |
+| Stamen Toner | `MapType.STAMEN_TONER` | Stadia Maps | Stadia Maps |
+| Stamen Watercolor | `MapType.STAMEN_WATERCOLOR` | Stadia Maps | Stadia Maps |
 
 See the [Map Types Guide](../../docs/MAP_TYPES.md) for details on each type and on configuring API keys.
 

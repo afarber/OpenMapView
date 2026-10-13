@@ -4,7 +4,7 @@ This guide helps you choose and configure the right map type for your OpenMapVie
 
 ## Quick Start
 
-OpenMapView provides **15 map types** from various tile providers. Eleven types work without any configuration (including `NONE`), while four premium types require free API keys.
+OpenMapView provides **15 map types** from various tile providers. Nine types work without any configuration (including `NONE`), while six premium types require free API keys.
 
 ```kotlin
 val mapView = OpenMapView(context)
@@ -147,41 +147,7 @@ Contemporary design with vibrant colors and clear labels.
 mapView.setMapType(MapType.CARTO_VOYAGER)
 ```
 
-#### 9. STAMEN_TONER - High-Contrast Black & White
-**`MapType.STAMEN_TONER`** (constant value: 13)
-
-Stark black and white design with maximum contrast.
-
-- **Best for**: Data visualization, marker overlays, minimalist design
-- **Features**: High contrast, clear roads and boundaries
-- **Highlights**: Most popular Stamen style, ideal for making colored overlays highly visible
-- **Tile Server**: tiles.stadiamaps.com (Stadia Maps)
-- **Max Zoom**: 20
-- **Free Tier**: 200,000 tiles/month for local development
-- **Attribution**: © OpenStreetMap contributors. Tiles © Stamen Design, © Stadia Maps
-
-```kotlin
-mapView.setMapType(MapType.STAMEN_TONER)
-```
-
-#### 10. STAMEN_WATERCOLOR - Artistic Watercolor Rendering
-**`MapType.STAMEN_WATERCOLOR`** (constant value: 14)
-
-Unique hand-painted watercolor aesthetic with soft colors.
-
-- **Best for**: Creative apps, travel journals, artistic visualization
-- **Features**: Hand-painted appearance, soft color palette
-- **Highlights**: Artistic interpretation of geographic features, completely unique style
-- **Tile Server**: tiles.stadiamaps.com (Stadia Maps)
-- **Max Zoom**: 16
-- **Free Tier**: 200,000 tiles/month for local development
-- **Attribution**: © OpenStreetMap contributors. Tiles © Stamen Design, © Stadia Maps
-
-```kotlin
-mapView.setMapType(MapType.STAMEN_WATERCOLOR)
-```
-
-#### 11. NONE - No Base Tiles
+#### 9. NONE - No Base Tiles
 **`MapType.NONE`** (constant value: 0)
 
 No base map tiles displayed (useful for custom tile sources or offline maps).
@@ -198,7 +164,7 @@ These map types require free API keys from third-party tile providers. When an A
 - Keeps the map fully interactive (pan, zoom still work)
 - Logs a warning to help with debugging
 
-#### 12. CYCLEMAP - Professional Cycling Map
+#### 10. CYCLEMAP - Professional Cycling Map
 **`MapType.CYCLEMAP`** (constant value: 3) **Requires Thunderforest API Key**
 
 Professional cycling map with elevation contours and comprehensive infrastructure.
@@ -224,7 +190,7 @@ ApiKeyManager.setApiKey("thunderforest", "your_key_here")
 mapView.setMapType(MapType.CYCLEMAP)
 ```
 
-#### 13. TRANSPORT - Public Transit Map
+#### 11. TRANSPORT - Public Transit Map
 **`MapType.TRANSPORT`** (constant value: 4) **Requires Thunderforest API Key**
 
 Public transport focused map with comprehensive transit information.
@@ -243,7 +209,7 @@ Public transport focused map with comprehensive transit information.
 mapView.setMapType(MapType.TRANSPORT)
 ```
 
-#### 14. TRANSPORT_DARK - Dark Mode Public Transit Map
+#### 12. TRANSPORT_DARK - Dark Mode Public Transit Map
 **`MapType.TRANSPORT_DARK`** (constant value: 5) **Requires Thunderforest API Key**
 
 Dark variant of the public transport map with comprehensive transit information in a dark color scheme.
@@ -262,7 +228,7 @@ Dark variant of the public transport map with comprehensive transit information 
 mapView.setMapType(MapType.TRANSPORT_DARK)
 ```
 
-#### 15. TRACESTRACK_TOPO - Topographic Map
+#### 13. TRACESTRACK_TOPO - Topographic Map
 **`MapType.TRACESTRACK_TOPO`** (constant value: 6) **Requires Tracestrack API Key**
 
 Detailed topographic map with elevation contours and hillshading.
@@ -288,6 +254,51 @@ ApiKeyManager.setApiKey("tracestrack", "your_key_here")
 mapView.setMapType(MapType.TRACESTRACK_TOPO)
 ```
 
+#### 14. STAMEN_TONER - High-Contrast Black & White
+**`MapType.STAMEN_TONER`** (constant value: 13) **Requires Stadia Maps API Key**
+
+Stark black and white design with maximum contrast.
+
+- **Best for**: Data visualization, marker overlays, minimalist design
+- **Features**: High contrast, clear roads and boundaries
+- **Highlights**: Most popular Stamen style, ideal for making colored overlays highly visible
+- **Tile Server**: tiles.stadiamaps.com (Stadia Maps)
+- **Max Zoom**: 20
+- **Free Tier**: 200,000 tiles/month for non-commercial use
+- **Get API Key**: https://client.stadiamaps.com/signup/
+- **Attribution**: © OpenStreetMap contributors. Tiles © Stamen Design, © Stadia Maps
+
+```kotlin
+// Configure in AndroidManifest.xml:
+<meta-data
+    android:name="de.afarber.openmapview.STADIA_API_KEY"
+    android:value="your_key_here"/>
+
+// Or programmatically:
+ApiKeyManager.setApiKey("stadia", "your_key_here")
+
+mapView.setMapType(MapType.STAMEN_TONER)
+```
+
+#### 15. STAMEN_WATERCOLOR - Artistic Watercolor Rendering
+**`MapType.STAMEN_WATERCOLOR`** (constant value: 14) **Requires Stadia Maps API Key**
+
+Unique hand-painted watercolor aesthetic with soft colors.
+
+- **Best for**: Creative apps, travel journals, artistic visualization
+- **Features**: Hand-painted appearance, soft color palette
+- **Highlights**: Artistic interpretation of geographic features, completely unique style
+- **Tile Server**: tiles.stadiamaps.com (Stadia Maps)
+- **Max Zoom**: 16
+- **Free Tier**: 200,000 tiles/month for non-commercial use
+- **Get API Key**: https://client.stadiamaps.com/signup/
+- **Attribution**: © OpenStreetMap contributors. Tiles © Stamen Design, © Stadia Maps
+
+```kotlin
+// Same API key as STAMEN_TONER
+mapView.setMapType(MapType.STAMEN_WATERCOLOR)
+```
+
 ## API Key Configuration
 
 ### Method 1: AndroidManifest.xml (Recommended)
@@ -305,6 +316,11 @@ Add API keys to your app's `AndroidManifest.xml`:
     <meta-data
         android:name="de.afarber.openmapview.TRACESTRACK_API_KEY"
         android:value="your_tracestrack_key_here"/>
+
+    <!-- Stadia Maps (for STAMEN_TONER, STAMEN_WATERCOLOR and the Stamen overlays) -->
+    <meta-data
+        android:name="de.afarber.openmapview.STADIA_API_KEY"
+        android:value="your_stadia_key_here"/>
 </application>
 ```
 
@@ -317,6 +333,7 @@ import de.afarber.openmapview.ApiKeyManager
 
 ApiKeyManager.setApiKey("thunderforest", "your_key_here")
 ApiKeyManager.setApiKey("tracestrack", "your_key_here")
+ApiKeyManager.setApiKey("stadia", "your_key_here")
 ```
 
 ### Obtaining API Keys
@@ -333,6 +350,12 @@ All providers offer generous free tiers suitable for development and small-scale
 - **Website**: https://www.tracestrack.com/en/signup
 - **Free Tier**: 100,000 tiles/month
 - **Sign Up**: Register for free account
+
+#### Stadia Maps (STAMEN_TONER, STAMEN_WATERCOLOR)
+- **Website**: https://client.stadiamaps.com/signup/
+- **Free Tier**: 200,000 tiles/month for non-commercial use
+- **Sign Up**: Register for free account
+- **One key works for**: STAMEN_TONER, STAMEN_WATERCOLOR and the Stamen overlays in `PredefinedTileProviders`
 
 ### Security Best Practices
 
@@ -359,15 +382,15 @@ All providers offer generous free tiers suitable for development and small-scale
 | Emergency/humanitarian | `HUMANITARIAN` |
 | Data visualization (light) | `CARTO_LIGHT` |
 | Night mode / dark theme | `CARTO_DARK` |
-| High-contrast data viz | `STAMEN_TONER` |
-| Creative/artistic app | `STAMEN_WATERCOLOR` |
+| High-contrast data viz | `STAMEN_TONER` (requires API key) |
+| Creative/artistic app | `STAMEN_WATERCOLOR` (requires API key) |
 | Custom tiles only | `NONE` |
 
 ### Performance Considerations
 
 - **Free maps without limits** (STANDARD, CYCLOSM, HUMANITARIAN, OPNVKARTE, OPENTOPOMAP): No usage limits, best for production apps
-- **Free maps with generous limits** (CARTO_LIGHT, CARTO_DARK, CARTO_VOYAGER, STAMEN_TONER, STAMEN_WATERCOLOR): Free tiers available (75k-200k tiles/month)
-- **Premium maps** with API keys (CYCLEMAP, TRANSPORT, TRANSPORT_DARK, TRACESTRACK_TOPO): Monitor monthly tile limits (free tiers: 100k-150k tiles/month)
+- **Free maps with generous limits** (CARTO_LIGHT, CARTO_DARK, CARTO_VOYAGER): Free tier available (75k tiles/month)
+- **Premium maps** with API keys (CYCLEMAP, TRANSPORT, TRANSPORT_DARK, TRACESTRACK_TOPO, STAMEN_TONER, STAMEN_WATERCOLOR): Monitor monthly tile limits (free tiers: 100k-200k tiles/month)
 - **Tile caching**: OpenMapView automatically caches tiles in memory and on disk to minimize requests
 - **Subdomain rotation**: Maps with subdomain support automatically distribute load across multiple servers for better performance
 
@@ -379,7 +402,7 @@ In addition to base map types, OpenMapView supports **tile overlays** that rende
 - **OpenRailwayMap**: Railway infrastructure
 - **OpenSnowMap**: Ski pistes, lifts
 - **Waymarked Trails**: Hiking, cycling, MTB, skating trails
-- **Stamen Overlays**: Labels, terrain lines
+- **Stamen Overlays**: Toner and terrain lines (roads, railways, borders), need a Stadia Maps API key
 
 See `PredefinedTileProviders.kt` for predefined overlay sources, or create custom overlays using `TileOverlay` and `UrlTileProvider`.
 
