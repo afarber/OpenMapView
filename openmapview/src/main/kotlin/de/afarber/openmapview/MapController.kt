@@ -222,6 +222,9 @@ class MapController(
     private var tileRetries = TileRetryTracker()
     private var onTileLoadedCallback: (() -> Unit)? = null
 
+    // One-shot callback for setOnMapLoadedCallback, checked at the end of every draw
+    private var onMapLoadedCallback: OnMapLoadedCallback? = null
+
     // API key error overlay (null if no error)
     private var apiKeyErrorOverlay: ApiKeyErrorOverlay? = null
     private var requestedMapType: Int = MapType.STANDARD
@@ -1138,6 +1141,22 @@ class MapController(
     }
 
     /**
+     * Sets a callback that is invoked once, after a draw in which all visible base map
+     * tiles were shown and the camera was not moving. If the map is already fully drawn,
+     * the callback is invoked after the next frame. Tile overlays are not waited for,
+     * because sparse overlays have no tiles for many areas.
+     *
+     * The callback runs on the main thread, outside of the draw pass.
+     *
+     * @param callback The callback, or null to remove a pending one
+     */
+    fun setOnMapLoadedCallback(callback: OnMapLoadedCallback?) {
+        onMapLoadedCallback = callback
+        // Redraw, so an already loaded map reports it without waiting for a camera change
+        if (callback != null) onTileLoadedCallback?.invoke()
+    }
+
+    /**
      * Sets a callback to be invoked when tiles finish loading.
      *
      * @param callback The callback to invoke when tiles are loaded
@@ -1252,7 +1271,9 @@ class MapController(
             drawTileOverlay(canvas, visibleTiles, centerPixelX, centerPixelY, overlay)
         }
 
-        // Draw base map tiles (z-index 0)
+        // Draw base map tiles (z-index 0). Without a tile source (MapType.NONE) there is
+        // nothing to wait for, a stale offline fallback tile counts as drawn.
+        var allTilesDrawn = true
         for (tile in visibleTiles) {
             val (tilePixelX, tilePixelY) = ProjectionUtils.tileToPixel(tile)
 
@@ -1265,6 +1286,7 @@ class MapController(
             } else {
                 canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tilePlaceholderPaint)
                 canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tileBorderPaint)
+                if (tileSource != null) allTilesDrawn = false
             }
 
             if (needsDownload(tile, SystemClock.elapsedRealtime())) {
@@ -1321,6 +1343,14 @@ class MapController(
 
         // Draw API key error overlay if present (on top of everything, but touch events pass through)
         apiKeyErrorOverlay?.draw(canvas, viewWidth, viewHeight)
+
+        if (allTilesDrawn && !isCameraMoving) {
+            onMapLoadedCallback?.let { callback ->
+                onMapLoadedCallback = null
+                // Run outside of the draw pass, so the callback may e.g. take a snapshot
+                scope.launch { callback.onMapLoaded() }
+            }
+        }
     }
 
     /**

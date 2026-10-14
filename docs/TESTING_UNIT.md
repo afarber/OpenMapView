@@ -52,7 +52,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (482 tests across 36 test classes)
+### Current Test Coverage (489 tests across 37 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
@@ -72,6 +72,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **MapControllerTest** | 103 | Zoom, pan, marker/polyline/polygon management, touch detection, padding, camera bounds, edge effects |
 | **MapControllerTileLoadingTest** | 7 | Base tile loading order (disk, network, stale fallback) and retry backoff |
 | **MapFeaturesTest** | 5 | Feature query methods (traffic, indoor, buildings, myLocation) |
+| **MapLoadedCallbackTest** | 7 | setOnMapLoadedCallback: fires once when all visible tiles are drawn, waits for missing tiles and camera moves |
 | **MapProjectionTest** | 8 | Projection screen/LatLng conversion, pan offset, padding, visible region |
 | **MapTypeTest** | 18 | Map type switching and validation |
 | **MarkerIconFactoryTest** | 3 | Default marker icon generation and caching |
