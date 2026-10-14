@@ -52,7 +52,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (503 tests across 41 test classes)
+### Current Test Coverage (504 tests across 42 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
@@ -69,6 +69,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **IntentUtilsTest** | 7 | External app integration (geo: URI, OSM fallback) |
 | **LatLngBoundsTest** | 13 | Lat/lng bounds calculations and contains checks |
 | **LatLngTest** | 11 | Latitude clamping and longitude wrapping |
+| **MapClippingTest** | 1 | Map drawing is clipped to the view bounds when the parent does not clip (native graphics, SDK 33) |
 | **MapControllerOverlaysTest** | 13 | Circles, ground and tile overlays, their touch detection, info windows, drawing all shape types |
 | **MapControllerTest** | 103 | Zoom, pan, marker/polyline/polygon management, touch detection, padding, camera bounds, edge effects |
 | **MapControllerTileLoadingTest** | 7 | Base tile loading order (disk, network, stale fallback) and retry backoff |

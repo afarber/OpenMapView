@@ -18,6 +18,7 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.widget.FrameLayout
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.withClip
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import kotlin.time.Duration
@@ -120,16 +121,20 @@ class OpenMapView
         }
 
         override fun dispatchDraw(canvas: Canvas) {
-            super.dispatchDraw(canvas)
-            controller.draw(canvas)
+            // Tiles and shapes extend past the view edges. Not every parent clips its
+            // children (e.g. Compose's AndroidView does not), so clip here.
+            canvas.withClip(0, 0, width, height) {
+                super.dispatchDraw(this)
+                controller.draw(this)
 
-            if (uiSettings.isZoomControlsEnabled) {
-                zoomControlsOverlay.draw(canvas, width, height)
+                if (uiSettings.isZoomControlsEnabled) {
+                    zoomControlsOverlay.draw(this, width, height)
+                }
+                attributionOverlay.draw(this, width, height)
+
+                // Draw custom edge glow effects LAST to ensure they're on top
+                controller.drawEdgeEffects(this, width, height)
             }
-            attributionOverlay.draw(canvas, width, height)
-
-            // Draw custom edge glow effects LAST to ensure they're on top
-            controller.drawEdgeEffects(canvas, width, height)
 
             // Continue invalidating if edge glows are still active
             if (controller.hasActiveEdgeEffect()) {
