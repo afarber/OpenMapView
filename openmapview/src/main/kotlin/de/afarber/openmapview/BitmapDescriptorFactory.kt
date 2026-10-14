@@ -44,6 +44,9 @@ object BitmapDescriptorFactory {
     /**
      * Creates a marker icon descriptor from a drawable resource.
      *
+     * Bitmap and vector drawables are both supported; the drawable is rendered at its
+     * intrinsic size.
+     *
      * @param resourceId The drawable resource ID (e.g., R.drawable.marker_icon)
      * @return A BitmapDescriptor for the resource marker
      */
