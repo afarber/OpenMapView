@@ -52,7 +52,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (514 tests across 43 test classes)
+### Current Test Coverage (518 tests across 44 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
@@ -83,6 +83,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **MarkerIconLoadingTest** | 4 | Marker icons from XML/vector resources and assets, caching, fallback to the default icon |
 | **MarkerTest** | 23 | Marker creation, equality, properties, info windows, dragging |
 | **OptionsBuildersTest** | 13 | Google-style *Options builders for markers, shapes and overlays |
+| **PinchZoomTest** | 4 | Pinch zoom and zoom buttons report camera move started, move and idle events |
 | **PolygonTest** | 20 | Polygon creation, validation, holes, and styling |
 | **PolylineTest** | 31 | Polyline creation, validation, and styling |
 | **PredefinedTileProvidersTest** | 2 | URL templates of the predefined overlay tile providers, Stadia key lookup |
