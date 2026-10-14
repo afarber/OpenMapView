@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import de.afarber.openmapview.CameraUpdateFactory
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OnCameraMoveStartedListener
@@ -70,8 +69,6 @@ class MainActivity : ComponentActivity() {
  */
 @Composable
 fun MapViewScreen() {
-    val lifecycleOwner = LocalLifecycleOwner.current
-
     // Irregular quadrilateral around Bochum (not a rectangle)
     val bochumCorners = listOf(
         LatLng(51.4873, 7.2050), // North-West
@@ -103,8 +100,6 @@ fun MapViewScreen() {
         AndroidView(
             factory = { ctx ->
                 OpenMapView(ctx).apply {
-                    lifecycleOwner.lifecycle.addObserver(this)
-
                     setCenter(initialLocation)
                     setZoom(initialZoom)
 

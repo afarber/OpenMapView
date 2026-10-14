@@ -84,46 +84,53 @@ class MainActivity : AppCompatActivity() {
 
 ## How OpenMapView Does It
 
-OpenMapView uses **Android Architecture Components** - specifically `DefaultLifecycleObserver` - which provides the best of both worlds.
+OpenMapView manages its lifecycle itself, like `SupportMapFragment`, but without requiring Fragments. No lifecycle code is needed in the app.
 
 ### The Implementation
 
-OpenMapView implements `DefaultLifecycleObserver`:
+OpenMapView implements `DefaultLifecycleObserver` and registers itself while it is attached to a window:
 
 ```kotlin
 class OpenMapView(context: Context) :
     FrameLayout(context),
-    DefaultLifecycleObserver {  // Implements lifecycle callbacks
+    DefaultLifecycleObserver {
 
-    override fun onResume(owner: LifecycleOwner) {
-        // Called when app comes to foreground
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        // The Activity, Fragment or Compose screen the view belongs to
+        findViewTreeLifecycleOwner()?.lifecycle?.addObserver(this)
     }
 
-    override fun onPause(owner: LifecycleOwner) {
-        // Called when app goes to background
+    override fun onDetachedFromWindow() {
+        // Stops observing the lifecycle, so it can't keep the view in memory
+        observedLifecycle?.removeObserver(this)
+        onDestroy()
+        super.onDetachedFromWindow()
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
-        // Clean up resources
+        onDestroy()
+    }
+
+    // Also public, like Google's MapView.onDestroy()
+    fun onDestroy() {
+        // Release resources
     }
 }
 ```
 
+Activities (`ComponentActivity`), Fragments and Compose's `AndroidView` all provide the view tree lifecycle owner that the view looks up.
+
 ### Usage Pattern
 
-You just need to register the observer once:
+Create the view, nothing else is needed:
 
 ```kotlin
 @Composable
 fun MapViewScreen() {
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-
     AndroidView(
         factory = { context ->
             OpenMapView(context).apply {
-                // Register lifecycle observer - ONE LINE!
-                lifecycleOwner.lifecycle.addObserver(this)
-
                 setCenter(LatLng(51.4661, 7.2491))
                 setZoom(14.0f)
             }
@@ -132,123 +139,57 @@ fun MapViewScreen() {
 }
 ```
 
-**That's it!** The lifecycle is automatically managed from this point forward.
+Apps written for older versions call `lifecycle.addObserver(mapView)`. This still works: adding the same observer twice does nothing, and the view removes it when detached.
 
 ## What Happens During Each Lifecycle Event
 
-### onResume()
-```kotlin
-fun onResume() {
-    // Called when app comes to foreground
-}
-```
+### Attached to a window
 
-**Current implementation:** Performs necessary resume operations.
+The view starts observing the lifecycle of its view tree.
 
-### onPause()
-```kotlin
-fun onPause() {
-    // Called when app goes to background
-}
-```
+### onResume() and onPause()
 
-**Current implementation:** Performs necessary pause operations.
+Do nothing. Tiles are only requested while the map is drawn, and a map in the background is not drawn, so it requests no new tiles. Downloads already running finish, so their tiles are cached when the app comes back.
 
-### onDestroy()
+### Detached from the window, or onDestroy()
+
 ```kotlin
 fun onDestroy() {
-    // Clean up resources to prevent memory leaks
-    scope.cancel()                     // Cancel all coroutines (tile downloads)
-    tileDownloader.close()             // Close HTTP client
-    tileCache.clear()                  // Clear cached bitmaps
-    MarkerIconFactory.clearCache()     // Clear marker icon cache
+    stopAnimation()                          // Cancel camera animation
+    scope.coroutineContext.cancelChildren()  // Cancel tile downloads
+    tileDownloader?.close()                  // Close HTTP client
+    tileDownloader = null
+    downloadingTiles = mutableSetOf()        // Request cancelled tiles again on the next draw
+    overlayDownloadingTiles.values.forEach { it.clear() }
+    MarkerIconFactory.clearCache()           // Clear marker icon cache
 }
 ```
 
-**Current implementation:** Full cleanup - cancels all running operations, closes network clients, and clears caches.
+On detach the view also stops observing the lifecycle. This matters in Compose: a map created per screen or tab is detached when the screen is left, while the Activity lives on. Without removing the observer, the Activity's lifecycle would keep every map ever created in memory, including its tile cache.
 
-## Best Practices
-
-### DO: Register the lifecycle observer
-
-```kotlin
-// GOOD - Proper cleanup will happen
-OpenMapView(context).apply {
-    lifecycleOwner.lifecycle.addObserver(this)
-    // ... configure map
-}
-```
-
-### DON'T: Forget to register
-
-```kotlin
-// BAD - Memory leaks on Activity destruction
-OpenMapView(context).apply {
-    // Missing: lifecycleOwner.lifecycle.addObserver(this)
-    setCenter(...)  // Map works but won't clean up!
-}
-```
+The cleanup can be undone: calling it twice is safe, and a view that is attached and drawn again (e.g. reused by a list) creates a new HTTP client and requests its tiles again.
 
 ## Comparison Table
 
 | Feature | Google MapView | Google SupportMapFragment | OpenMapView |
 |---------|---------------|---------------------------|-------------|
-| **Lifecycle Setup** | Manual (6 methods) | Automatic | Semi-automatic (1 line) |
-| **Memory Leaks if Forgotten** | Yes | No | Yes (but less likely) |
-| **Boilerplate Code** | High | Low | Very Low |
+| **Lifecycle Setup** | Manual (6 methods) | Automatic | Automatic |
+| **Memory Leaks if Forgotten** | Yes | No | No (nothing to forget) |
+| **Boilerplate Code** | High | Low | None |
 | **Flexibility** | High | Medium | High |
 | **Works with Compose** | No | No | Yes |
 | **Works with XML** | Yes | Yes | Yes |
 | **Marker Support** | Yes | Yes | Yes (with colors) |
 | **Touch Gestures** | Pan, Zoom, Tilt | Pan, Zoom, Tilt | Pan, Zoom |
 
-## Testing Lifecycle
-
-To verify lifecycle is working:
-
-1. Run the app and observe Logcat
-2. Press home button - `onPause()` should be called
-3. Return to app - `onResume()` should be called
-4. Kill the app - `onDestroy()` should be called
-
-Look for these log messages (if you add logging):
-```
-OpenMapView: onResume called
-OpenMapView: onPause called
-OpenMapView: onDestroy called - cleaning up resources
-```
-
-## What If I Forget?
-
-If you forget to register the lifecycle observer:
-
-**What works:**
-- Map displays correctly
-- Panning and zooming work
-- Markers work
-- Everything appears normal
-
-**What breaks:**
-- Memory leaks when Activity is destroyed
-- Tile downloads continue in background after app closes
-- HTTP client stays open
-- Cached bitmaps not released
-
-**How to detect:**
-- Run app, use map, then close app
-- Check Android Profiler in Android Studio
-- Look for memory not being released
-- Check for ongoing network activity after app closes
-
 ## Example Apps
 
-Example applications in the `examples/` directory demonstrate proper lifecycle management. Each example shows the same pattern:
+The example applications in the `examples/` directory create the map in an `AndroidView` without any lifecycle code:
 
 ```kotlin
 AndroidView(
     factory = { context ->
         OpenMapView(context).apply {
-            lifecycleOwner.lifecycle.addObserver(this)  // Always register!
             // ... configure map
         }
     }
@@ -257,10 +198,8 @@ AndroidView(
 
 ## Summary
 
-OpenMapView uses modern Android Architecture Components to provide:
-- Simple one-line lifecycle registration
-- Automatic cleanup when Activity/Fragment is destroyed
-- Prevention of memory leaks and battery drain
-- Best practices demonstrated in all example apps
-
-Always register the lifecycle observer in production apps!
+OpenMapView:
+- Observes the lifecycle of the Activity, Fragment or Compose screen it is shown in
+- Releases its resources when it leaves the window or its lifecycle owner is destroyed
+- Can't be kept in memory by a lifecycle that outlives it
+- Keeps working when it is attached again

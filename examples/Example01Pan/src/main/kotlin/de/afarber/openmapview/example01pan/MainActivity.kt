@@ -66,8 +66,6 @@ class MainActivity : ComponentActivity() {
  */
 @Composable
 fun MapViewScreen() {
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-
     // Bochum area bounds for constraint demo
     val bochumBounds = LatLngBounds(
         southwest = LatLng(51.4400, 7.1800),
@@ -120,8 +118,6 @@ fun MapViewScreen() {
         AndroidView(
             factory = { ctx ->
                 OpenMapView(ctx).apply {
-                    lifecycleOwner.lifecycle.addObserver(this)
-
                     setCenter(initialLocation)
                     setZoom(14.0f)
 

@@ -56,7 +56,6 @@ example03markers/
 ```kotlin
 @Composable
 fun MapViewScreen() {
-    val lifecycleOwner = LocalLifecycleOwner.current
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
     var selectedIndex by remember { mutableIntStateOf(0) }
     var selectedMarker: Marker? by remember { mutableStateOf(null) }
@@ -66,7 +65,6 @@ fun MapViewScreen() {
         AndroidView(
             factory = { ctx ->
                 OpenMapView(ctx).apply {
-                    lifecycleOwner.lifecycle.addObserver(this)
                     setCenter(initialLocation)
                     setZoom(15.0f)
                     getUiSettings().infoWindowAutoDismiss = 5.seconds

@@ -27,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import de.afarber.openmapview.CameraUpdateFactory
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
@@ -50,7 +49,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MapWithToolbarScreen() {
-    val lifecycleOwner = LocalLifecycleOwner.current
     var mapView by remember { mutableStateOf<OpenMapView?>(null) }
 
     Scaffold(
@@ -73,8 +71,6 @@ fun MapWithToolbarScreen() {
             AndroidView(
                 factory = { context ->
                     OpenMapView(context).apply {
-                        lifecycleOwner.lifecycle.addObserver(this)
-
                         // Set initial location (Bochum, Germany)
                         setCenter(LatLng(51.4661, 7.2491))
                         setZoom(14.0f)

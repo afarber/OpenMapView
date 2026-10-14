@@ -80,7 +80,6 @@ data class OverlayState(
 @Composable
 fun MapViewScreen() {
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var mapView by remember { mutableStateOf<OpenMapView?>(null) }
 
     val bochumCenter = LatLng(51.4661, 7.2491)
@@ -198,7 +197,6 @@ fun MapViewScreen() {
                 factory = { ctx ->
                     OpenMapView(ctx).apply {
                         mapView = this
-                        lifecycleOwner.lifecycle.addObserver(this)
                         setCenter(bochumCenter)
                         setZoom(13.0f)
                         setOnGroundOverlayClickListener { groundOverlay ->
@@ -236,7 +234,6 @@ fun MapViewScreen() {
                 factory = { ctx ->
                     OpenMapView(ctx).apply {
                         mapView = this
-                        lifecycleOwner.lifecycle.addObserver(this)
                         setCenter(bochumCenter)
                         setZoom(13.0f)
                         setOnGroundOverlayClickListener { groundOverlay ->

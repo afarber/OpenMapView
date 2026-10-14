@@ -59,7 +59,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MapViewScreen() {
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
 
     val location1 = LatLng(51.4700, 7.2400)
@@ -70,8 +69,6 @@ fun MapViewScreen() {
         AndroidView(
             factory = { ctx ->
                 OpenMapView(ctx).apply {
-                    lifecycleOwner.lifecycle.addObserver(this)
-
                     setCenter(LatLng(51.4620, 7.2480))
                     setZoom(13.0f)
 

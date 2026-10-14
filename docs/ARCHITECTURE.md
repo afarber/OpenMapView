@@ -49,7 +49,7 @@ OpenMapView uses a **single-class architecture** that combines both roles into o
 ### OpenMapView - Unified View and Controller
 
 - Extends FrameLayout (like MapView)
-- Implements DefaultLifecycleObserver (simplifies lifecycle)
+- Manages its own lifecycle: observes the lifecycle of its view tree while attached and cleans up when detached
 - Directly exposes map methods (no separate controller needed)
 - Map is immediately ready (no async callback needed)
 
@@ -57,8 +57,7 @@ OpenMapView uses a **single-class architecture** that combines both roles into o
 
 ```kotlin
 // Step 1: Get the view - that's it!
-val mapView = OpenMapView(context)
-lifecycle.addObserver(mapView) // Automatic lifecycle
+val mapView = OpenMapView(context) // Lifecycle is handled automatically
 
 // Step 2: Use immediately, no callback needed
 mapView.addMarker(marker)
@@ -75,13 +74,16 @@ OpenMapView consolidates the functionality of both Google classes into a single,
 class OpenMapView : FrameLayout, DefaultLifecycleObserver {
     private val controller = MapController(context)  // Internal, not exposed
 
-    // MapView role: lifecycle (automatic via DefaultLifecycleObserver)
-    override fun onResume(owner: LifecycleOwner) {
-        controller.onResume()
+    // MapView role: lifecycle (automatic, see LIFECYCLE.md)
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        findViewTreeLifecycleOwner()?.lifecycle?.addObserver(this)
     }
 
-    override fun onDestroy(owner: LifecycleOwner) {
+    override fun onDetachedFromWindow() {
+        // Stops observing the lifecycle, then releases resources
         controller.onDestroy()
+        super.onDetachedFromWindow()
     }
 
     // GoogleMap role: expose map methods directly
@@ -197,8 +199,7 @@ class MyActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val mapView = OpenMapView(context)
-        lifecycle.addObserver(mapView)  // Once - automatic lifecycle
+        val mapView = OpenMapView(context)  // Automatic lifecycle
 
         // Immediate - map ready now
         mapView.addMarker(...)

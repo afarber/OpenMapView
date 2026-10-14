@@ -87,7 +87,7 @@ Implemented using Android's `LruCache`:
 - **Access time:** Nanoseconds (in-memory lookup)
 - **Size:** Dynamically calculated as 1/8 of max heap
 - **Eviction:** Least Recently Used (LRU) algorithm
-- **Lifecycle:** Cleared when map view is destroyed
+- **Lifecycle:** Freed together with the map view
 
 New tiles are written to both levels as soon as they are downloaded, so they survive the process even if they are never evicted from memory:
 
@@ -298,18 +298,21 @@ scope.launch(Dispatchers.IO) {
 
 ### Lifecycle Management
 
-MapController properly cleans up resources on destruction:
+MapController releases its resources in `onDestroy()`:
 
 ```kotlin
 fun onDestroy() {
-    scope.cancel()              // Cancel all coroutines
-    tileDownloader.close()       // Close HTTP client
-    tileCache.close()            // Close disk cache
-    MarkerIconFactory.clearCache() // Clear marker icon cache
+    stopAnimation()                          // Cancel camera animation
+    scope.coroutineContext.cancelChildren()  // Cancel tile downloads, keep the scope usable
+    tileDownloader?.close()                  // Close HTTP client, created again on the next download
+    tileDownloader = null
+    downloadingTiles = mutableSetOf()        // Cancelled tiles are requested again on the next draw
+    overlayDownloadingTiles.values.forEach { it.clear() }
+    MarkerIconFactory.clearCache()           // Clear marker icon cache
 }
 ```
 
-This is called from `OpenMapView.onDestroy(owner: LifecycleOwner)` lifecycle callback.
+`OpenMapView` calls it when the view is detached from its window and when its lifecycle owner is destroyed. On detach it also stops observing the lifecycle, so an Activity that outlives a Compose screen doesn't keep the map in memory. A view that is attached again keeps working.
 
 ### Bitmap Management
 
@@ -348,7 +351,7 @@ The tile caches are internal, so measure from the outside:
 
 For optimal performance:
 
-1. **Lifecycle integration:** Register OpenMapView with lifecycle observer (see [Lifecycle Management](LIFECYCLE.md))
+1. **Lifecycle integration:** Automatic, the view cleans up when it leaves the window (see [Lifecycle Management](LIFECYCLE.md))
 2. **Several maps at once:** Each OpenMapView has its own memory cache of up to 1/8 of the heap, so watch memory usage when showing more than one
 
 ## References

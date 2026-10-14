@@ -31,7 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import de.afarber.openmapview.CameraUpdateFactory
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OnCameraMoveStartedListener
@@ -107,8 +106,6 @@ private fun getOverlayZoom(overlay: OverlayData): Float {
  */
 @Composable
 fun MapViewScreen() {
-    val lifecycleOwner = LocalLifecycleOwner.current
-
     // Initial location centered on the first overlay
     val initialLocation = getOverlayCenter(poiOverlays.first())
     val initialZoom = 14.0f
@@ -202,8 +199,6 @@ fun MapViewScreen() {
         AndroidView(
             factory = { ctx ->
                 OpenMapView(ctx).apply {
-                    lifecycleOwner.lifecycle.addObserver(this)
-
                     setCenter(initialLocation)
                     setZoom(initialZoom)
 

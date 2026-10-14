@@ -78,7 +78,6 @@ data class OverlayState(
 @Composable
 fun MapViewScreen() {
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var mapView by remember { mutableStateOf<OpenMapView?>(null) }
 
     // Overlay states
@@ -207,7 +206,6 @@ fun MapViewScreen() {
                 factory = { ctx ->
                     OpenMapView(ctx).apply {
                         mapView = this
-                        lifecycleOwner.lifecycle.addObserver(this)
                         setCenter(bochumCenter)
                         setZoom(12.0f)
                         setOnAttributionClickListener {
@@ -250,7 +248,6 @@ fun MapViewScreen() {
                 factory = { ctx ->
                     OpenMapView(ctx).apply {
                         mapView = this
-                        lifecycleOwner.lifecycle.addObserver(this)
                         setCenter(bochumCenter)
                         setZoom(12.0f)
                         setOnAttributionClickListener {

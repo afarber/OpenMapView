@@ -153,7 +153,7 @@ This example sets up three marker locations around Bochum, Germany:
 - Linear interpolation between start and end positions
 - 60 FPS target (16ms frame delay)
 - Automatically handles map tile loading during animation
-- Lifecycle-aware: animations cancelled when activity destroyed
+- Lifecycle-aware: animations cancelled when the map view is detached or the activity destroyed
 
 ### Lifecycle Integration
 

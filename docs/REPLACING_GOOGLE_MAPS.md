@@ -79,7 +79,7 @@ Note: Privacy benefits depend on implementation. Developers are responsible for 
 | **Cost** | Pay per request after free tier | Free (OSM tile servers may have usage policies) |
 | **Architecture** | Two classes (MapView + GoogleMap) | Single unified class |
 | **Initialization** | Async callback (`getMapAsync`) | Immediate availability |
-| **Lifecycle** | Manual forwarding (6 methods) | Automatic (`DefaultLifecycleObserver`) |
+| **Lifecycle** | Manual forwarding (6 methods) | Automatic |
 | **API Compatibility** | N/A | See [PUBLIC_API.md](PUBLIC_API.md) for detailed coverage |
 | **Core Features** | Full support | Full support (markers, shapes, camera, overlays) |
 | **Google Services** | Traffic, indoor maps, POI data | Not available (requires Google data) |
@@ -205,11 +205,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val mapView = findViewById<OpenMapView>(R.id.mapView)
-
-        // Single line for lifecycle - that's it!
-        lifecycle.addObserver(mapView)
     }
-    // No other lifecycle methods needed
+    // No lifecycle methods needed: the view observes the Activity's lifecycle
+    // and cleans up when it is detached
 }
 ```
 
@@ -237,7 +235,6 @@ mapView.getMapAsync { googleMap ->
 ```kotlin
 // Map is ready immediately after construction
 val mapView = findViewById<OpenMapView>(R.id.mapView)
-lifecycle.addObserver(mapView)
 
 // Use right away, no callback needed
 mapView.moveCamera(CameraUpdateFactory.newLatLngZoom(
@@ -511,7 +508,7 @@ OpenMapView uses a simpler architecture than Google Maps SDK. Instead of two cla
 - No async initialization complexity
 - Simpler API surface
 - Direct method access without controller object
-- Automatic lifecycle management via `DefaultLifecycleObserver`
+- Automatic lifecycle management, also in Compose
 
 For architectural deep dive, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
@@ -564,7 +561,7 @@ Use this checklist to track your migration progress:
 - [ ] Add OpenMapView dependency
 - [ ] Update all imports (replace `com.google.android.gms.maps.*` with `de.afarber.openmapview.*`)
 - [ ] Update XML layouts (replace Google MapView with OpenMapView)
-- [ ] Replace manual lifecycle forwarding with `lifecycle.addObserver(mapView)`
+- [ ] Remove manual lifecycle forwarding (`onCreate`, `onResume`, `onDestroy`, ...)
 - [ ] Remove `getMapAsync()` callbacks (use map immediately)
 - [ ] Update marker creation code
 - [ ] Update camera animation code
@@ -606,15 +603,15 @@ mapView.post {
 
 ### Issue: App crashes on rotation
 
-**Cause:** Lifecycle not properly managed
+**Cause:** A reference to the map view outlives its Activity
 
-**Solution:** Ensure `lifecycle.addObserver(mapView)` is called and mapView reference doesn't leak
+**Solution:** Don't keep the map view in a ViewModel or a static field; recreate it with the Activity
 
 ### Issue: Memory leaks
 
-**Cause:** Not removing lifecycle observer
+**Cause:** A reference to the map view is kept after it leaves the screen
 
-**Solution:** OpenMapView automatically handles cleanup via `DefaultLifecycleObserver`. Ensure Activity/Fragment lifecycle is not interrupted abnormally.
+**Solution:** OpenMapView releases its resources and stops observing the lifecycle when it is detached from its window. Make sure nothing else, such as a ViewModel or a static field, keeps a reference to it.
 
 ---
 
