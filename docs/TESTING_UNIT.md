@@ -52,14 +52,14 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (517 tests across 44 test classes)
+### Current Test Coverage (521 tests across 44 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
 | **AttributionOverlayLayoutTest** | 3 | Long attribution wrapping and its touch area (native graphics, SDK 33) |
 | **AttributionOverlayTest** | 4 | Attribution rendering and touch detection |
 | **BitmapDescriptorFactoryTest** | 15 | Marker icon generation with colors and custom images |
-| **CameraAnimationTest** | 3 | CancelableCallback.onCancel when an animation is stopped, replaced or the map destroyed |
+| **CameraAnimationTest** | 7 | CancelableCallback.onCancel when an animation is stopped, replaced or the map destroyed; no camera events when moving or animating to the current position |
 | **CameraPositionTest** | 7 | Camera position validation and equality |
 | **CameraUpdateFactoryTest** | 11 | Camera update creation (zoom, pan, position) |
 | **CircleTest** | 4 | Circle defaults, radius validation, identity equality |

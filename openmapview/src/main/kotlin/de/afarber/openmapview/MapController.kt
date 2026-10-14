@@ -796,13 +796,18 @@ class MapController(
      * Moves the camera instantly to a new position.
      *
      * Stops any ongoing animation and commits any pending pan offsets
-     * before applying the camera update.
+     * before applying the camera update. If the camera already is at the target,
+     * nothing else happens and no camera listeners are called.
      *
      * @param cameraUpdate The camera update to apply
      */
     fun moveCamera(cameraUpdate: CameraUpdate) {
         stopAnimation()
         commitPan()
+
+        val targetPosition = calculateTargetPosition(cameraUpdate, getCameraPosition())
+        val targetCenter = applyPaddingOffset(targetPosition.target, targetPosition.zoom)
+        if (targetCenter == center && targetPosition.zoom == zoom) return
 
         // Fire camera move started event
         if (!isCameraMoving) {
@@ -811,7 +816,8 @@ class MapController(
             onCameraMoveStartedListener?.onCameraMoveStarted(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION)
         }
 
-        applyCameraUpdate(cameraUpdate)
+        setCenter(targetCenter)
+        setZoom(targetPosition.zoom)
 
         // Fire camera idle event immediately since moveCamera is instant
         isCameraMoving = false
@@ -824,6 +830,8 @@ class MapController(
      *
      * Stops any ongoing animation and commits any pending pan offsets before starting.
      * The animation runs on the main thread and triggers redraws at ~60fps.
+     * If the camera already is at the target, the listener's onFinish() is called right
+     * away and no camera listeners are called.
      *
      * @param cameraUpdate The camera update to animate to
      * @param durationMs Duration of the animation in milliseconds (default 250ms)
@@ -839,6 +847,12 @@ class MapController(
 
         val startPosition = getCameraPosition()
         val targetPosition = calculateTargetPosition(cameraUpdate, startPosition)
+
+        // Nothing to animate, e.g. a Compose update block moving to the current position
+        if (targetPosition == startPosition) {
+            listener?.onFinish()
+            return
+        }
 
         // Fire camera move started event
         if (!isCameraMoving) {
@@ -925,12 +939,6 @@ class MapController(
                 currentMoveReason = null
             }
         }
-    }
-
-    private fun applyCameraUpdate(cameraUpdate: CameraUpdate) {
-        val targetPosition = calculateTargetPosition(cameraUpdate, getCameraPosition())
-        setCenter(applyPaddingOffset(targetPosition.target, targetPosition.zoom))
-        setZoom(targetPosition.zoom)
     }
 
     /**

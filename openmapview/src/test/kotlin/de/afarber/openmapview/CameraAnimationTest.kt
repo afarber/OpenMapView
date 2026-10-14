@@ -20,6 +20,7 @@ import org.robolectric.Shadows.shadowOf
 @RunWith(RobolectricTestRunner::class)
 class CameraAnimationTest {
     private lateinit var controller: MapController
+    private val events = mutableListOf<String>()
 
     private class CountingCallback : CancelableCallback {
         var finished = 0
@@ -38,6 +39,9 @@ class CameraAnimationTest {
     fun setUp() {
         controller = MapController(RuntimeEnvironment.getApplication())
         controller.setViewSize(400, 400)
+        controller.onCameraMoveStartedListener = OnCameraMoveStartedListener { events.add("started") }
+        controller.onCameraMoveListener = OnCameraMoveListener { events.add("move") }
+        controller.onCameraIdleListener = OnCameraIdleListener { events.add("idle") }
     }
 
     @After
@@ -89,6 +93,47 @@ class CameraAnimationTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertEquals(1, callback.cancelled)
+    }
+
+    @Test
+    fun testAnimateToCurrentPosition_FinishesWithoutCameraEvents() {
+        val callback = CountingCallback()
+
+        controller.animateCamera(
+            CameraUpdateFactory.newCameraPosition(controller.getCameraPosition()),
+            ANIMATION_MS,
+            callback,
+        )
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(1, callback.finished)
+        assertEquals(0, callback.cancelled)
+        assertEquals(emptyList<String>(), events)
+    }
+
+    @Test
+    fun testAnimateToOtherPosition_FiresCameraEvents() {
+        animate(CountingCallback())
+
+        assertEquals("started", events.first())
+    }
+
+    @Test
+    fun testMoveToCurrentPosition_FiresNoCameraEvents() {
+        val position = controller.getCameraPosition()
+
+        controller.moveCamera(CameraUpdateFactory.newCameraPosition(position))
+
+        assertEquals(emptyList<String>(), events)
+        assertEquals(position, controller.getCameraPosition())
+    }
+
+    @Test
+    fun testMoveToOtherPosition_FiresStartedAndIdle() {
+        controller.moveCamera(CameraUpdateFactory.zoomTo(12f))
+
+        assertEquals(listOf("started", "idle"), events)
+        assertEquals(12f, controller.getCameraPosition().zoom)
     }
 
     private companion object {
