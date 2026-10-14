@@ -238,28 +238,28 @@ fun MapTypeControls(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        // Carto Light
+        // Carto Light (requires API key)
         MapTypeButton(
             text = "Carto Light",
-            description = "Minimalist light theme",
+            description = "Light theme (API key required)",
             enabled = currentMapType != MapType.CARTO_LIGHT,
             onClick = { onMapTypeChange(MapType.CARTO_LIGHT) },
             modifier = Modifier.fillMaxWidth(),
         )
 
-        // Carto Dark
+        // Carto Dark (requires API key)
         MapTypeButton(
             text = "Carto Dark",
-            description = "Dark theme for night mode",
+            description = "Dark theme (API key required)",
             enabled = currentMapType != MapType.CARTO_DARK,
             onClick = { onMapTypeChange(MapType.CARTO_DARK) },
             modifier = Modifier.fillMaxWidth(),
         )
 
-        // Carto Voyager
+        // Carto Voyager (requires API key)
         MapTypeButton(
             text = "Carto Voyager",
-            description = "Modern colorful basemap",
+            description = "Colorful basemap (API key required)",
             enabled = currentMapType != MapType.CARTO_VOYAGER,
             onClick = { onMapTypeChange(MapType.CARTO_VOYAGER) },
             modifier = Modifier.fillMaxWidth(),
@@ -286,7 +286,7 @@ fun MapTypeControls(
         // API Key Info
         Text(
             text = "API key required: Cycle Map, Transport, Transport Dark, " +
-                "Tracestrack Topo, Stamen Toner, Stamen Watercolor\n\nConfigure in AndroidManifest.xml\nSee docs/MAP_TYPES.md",
+                "Tracestrack Topo, Carto Light, Carto Dark, Carto Voyager, Stamen Toner, Stamen Watercolor\n\nConfigure in AndroidManifest.xml\nSee docs/MAP_TYPES.md",
             style = MaterialTheme.typography.bodySmall,
             fontSize = 9.sp,
             lineHeight = 11.sp,

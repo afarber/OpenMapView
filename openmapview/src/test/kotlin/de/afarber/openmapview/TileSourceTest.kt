@@ -110,4 +110,35 @@ class TileSourceTest {
             TileSource.STAMEN_WATERCOLOR.getTileUrl(tile),
         )
     }
+
+    @Test
+    fun testCartoSources_RequireCartoKey() {
+        for (source in listOf(TileSource.CARTO_LIGHT, TileSource.CARTO_DARK, TileSource.CARTO_VOYAGER)) {
+            assertTrue(source.requiresApiKey)
+            assertEquals("carto", source.apiKeyProvider)
+            assertEquals("CARTO", source.getProviderName())
+            assertFalse(source.hasApiKey())
+        }
+    }
+
+    @Test
+    fun testCartoSources_UseCartoKey() {
+        ApiKeyManager.setApiKey("CARTO", "test-key")
+        val tile = TileCoordinate(x = 1, y = 2, zoom = 3)
+
+        assertTrue(TileSource.CARTO_LIGHT.hasApiKey())
+        // Subdomain is calculated as (x + y) % 4 = 3 -> 'd'
+        assertEquals(
+            "https://d.basemaps.cartocdn.com/light_all/3/1/2.png?key=test-key",
+            TileSource.CARTO_LIGHT.getTileUrl(tile),
+        )
+        assertEquals(
+            "https://d.basemaps.cartocdn.com/dark_all/3/1/2.png?key=test-key",
+            TileSource.CARTO_DARK.getTileUrl(tile),
+        )
+        assertEquals(
+            "https://basemaps.cartocdn.com/rastertiles/voyager/3/1/2.png?key=test-key",
+            TileSource.CARTO_VOYAGER.getTileUrl(tile),
+        )
+    }
 }
