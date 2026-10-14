@@ -52,7 +52,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (514 tests across 43 test classes)
+### Current Test Coverage (519 tests across 44 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
@@ -90,6 +90,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **SnapshotTest** | 8 | Map snapshot API and callbacks |
 | **TileCacheTest** | 13 | Memory LRU cache behavior, clearing, namespaces, disk writes, stale tiles |
 | **TileDownloaderTest** | 5 | HTTP tile downloading with mocked Ktor client, HTTP errors, cancellation |
+| **TileFallbackTest** | 5 | Cached ancestor and child tiles drawn while a tile is missing (native graphics, SDK 33) |
 | **TileOverlayTest** | 5 | Tile overlay defaults, transparency validation, copy helpers |
 | **TileRetryTrackerTest** | 4 | Exponential backoff for failed tiles |
 | **TileSourceTest** | 11 | Tile source URL generation, attribution and API keys |
