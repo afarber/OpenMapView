@@ -25,7 +25,6 @@ compose-material-icons = "1.7.8"
 ktor = "3.6.0"
 
 # Utilities
-disklrucache = "2.0.2"
 
 # Testing
 junit = "4.13.2"
@@ -56,7 +55,6 @@ ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version
 ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
 
 # Utilities
-disklrucache = { group = "com.jakewharton", name = "disklrucache", version.ref = "disklrucache" }
 
 # Testing - Unit
 junit = { group = "junit", name = "junit", version.ref = "junit" }

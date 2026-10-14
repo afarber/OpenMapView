@@ -1265,11 +1265,11 @@ class MapController(
             } else {
                 canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tilePlaceholderPaint)
                 canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tileBorderPaint)
+            }
 
-                if (!downloadingTiles.contains(tile) && tileRetries.canRequest(tile, SystemClock.elapsedRealtime())) {
-                    downloadingTiles.add(tile)
-                    downloadTile(tile)
-                }
+            if (needsDownload(tile, SystemClock.elapsedRealtime())) {
+                downloadingTiles.add(tile)
+                downloadTile(tile)
             }
         }
 
@@ -1346,16 +1346,24 @@ class MapController(
         // Download tiles that are adjacent but not yet visible
         val now = SystemClock.elapsedRealtime()
         for (tile in prefetchTiles) {
-            if (!visibleTiles.contains(tile) &&
-                !downloadingTiles.contains(tile) &&
-                tileCache.getMemory(tile) == null &&
-                tileRetries.canRequest(tile, now)
-            ) {
+            if (!visibleTiles.contains(tile) && needsDownload(tile, now)) {
                 downloadingTiles.add(tile)
                 downloadTile(tile, lowPriority = true)
             }
         }
     }
+
+    /**
+     * Returns true if a base tile should be downloaded: it is missing from memory, or it is
+     * an expired tile shown as offline fallback, and its retry delay has passed.
+     */
+    internal fun needsDownload(
+        tile: TileCoordinate,
+        now: Long,
+    ): Boolean =
+        (tileCache.getMemory(tile) == null || tileCache.isStale(tile)) &&
+            !downloadingTiles.contains(tile) &&
+            tileRetries.canRequest(tile, now)
 
     /**
      * Converts a distance in meters to screen pixels at a given latitude and zoom level.
@@ -1842,27 +1850,48 @@ class MapController(
         scope.launch(Dispatchers.IO) {
             var bitmap: Bitmap? = null
             var skipped = false
+            var stale = false
             try {
-                bitmap =
-                    tileDownloadSemaphore.withPermit {
-                        if (cache !== tileCache) {
-                            skipped = true
-                            return@withPermit null
+                // The source changed while this request was queued
+                if (cache !== tileCache) {
+                    skipped = true
+                    return@launch
+                }
+                // Disk hits don't need a download permit, a stale tile in memory is downloaded again
+                if (!cache.isStale(tile)) {
+                    bitmap = cache.get(tile)
+                }
+                if (bitmap == null) {
+                    bitmap =
+                        tileDownloadSemaphore.withPermit {
+                            if (cache !== tileCache) {
+                                skipped = true
+                                return@withPermit null
+                            }
+                            tileDownloader.downloadTileBytes(source.getTileUrl(tile))?.let { bytes ->
+                                decodeTile(bytes)?.also { cache.put(tile, it, bytes) }
+                            }
                         }
-                        // A disk hit is promoted to memory by get(), only new downloads need put()
-                        cache.get(tile)
-                            ?: tileDownloader.downloadTile(source.getTileUrl(tile))?.also { cache.put(tile, it) }
-                    }
+                }
+                // Offline or server error: show an expired tile from disk, if there is one
+                if (bitmap == null && !skipped) {
+                    bitmap = cache.getStale(tile)
+                    stale = bitmap != null && cache.isStale(tile)
+                }
             } finally {
                 launch(Dispatchers.Main) {
                     downloading.remove(tile)
                     if (skipped || cache !== tileCache) return@launch
-                    if (bitmap != null) {
+                    if (bitmap != null && !stale) {
                         retries.onSuccess(tile)
                         if (!lowPriority) onTileLoadedCallback?.invoke()
                     } else {
+                        // A stale fallback counts as a failure, so the tile is retried with back-off
                         val retryDelay = retries.onFailure(tile, SystemClock.elapsedRealtime())
-                        if (!lowPriority) scheduleRedraw(retryDelay)
+                        if (!lowPriority) {
+                            if (stale) onTileLoadedCallback?.invoke()
+                            scheduleRedraw(retryDelay)
+                        }
                     }
                 }
             }

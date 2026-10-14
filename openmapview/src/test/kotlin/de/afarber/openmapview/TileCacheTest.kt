@@ -10,16 +10,24 @@ package de.afarber.openmapview
 import android.graphics.Bitmap
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import java.io.ByteArrayOutputStream
 
 @RunWith(RobolectricTestRunner::class)
 class TileCacheTest {
+    @get:Rule
+    val folder = TemporaryFolder()
+
     private lateinit var cache: TileCache
 
     @Before
@@ -155,6 +163,77 @@ class TileCacheTest {
         assertEquals(bitmap5, cache.get(tile5))
         assertEquals(bitmap10, cache.get(tile10))
         assertEquals(bitmap15, cache.get(tile15))
+    }
+
+    @Test
+    fun testExpiredTileIsOnlyAvailableAsStale() {
+        var now = 1_000_000_000_000L
+        val disk = DiskTileCache(folder.newFolder(), DiskTileCache.DEFAULT_NAMESPACE, 1024 * 1024, 60_000, { now })
+        val tile = TileCoordinate(1, 2, 3)
+        TileCache(disk).put(tile, createMockBitmap(256, 256), createPngBytes())
+        now += 60_001
+
+        // A new cache has an empty memory cache, so the tile must come from disk
+        val stale = TileCache(disk)
+        assertNull(stale.get(tile))
+        assertFalse(stale.isStale(tile))
+
+        assertNotNull(stale.getStale(tile))
+        assertTrue(stale.isStale(tile))
+        assertNotNull("Stale tile is in memory now", stale.getMemory(tile))
+
+        stale.put(tile, createMockBitmap(256, 256), createPngBytes())
+        assertFalse("A fresh tile replaces the stale one", stale.isStale(tile))
+        assertNotNull(TileCache(disk).get(tile))
+    }
+
+    @Test
+    fun testGetStaleReturnsFreshTile() {
+        val tile = TileCoordinate(1, 2, 3)
+        cache.put(tile, createMockBitmap(256, 256), createPngBytes())
+
+        assertNotNull(cache.getStale(tile))
+        assertFalse(cache.isStale(tile))
+    }
+
+    @Test
+    fun testClearForgetsStaleTiles() {
+        var now = 1_000_000_000_000L
+        val disk = DiskTileCache(folder.newFolder(), DiskTileCache.DEFAULT_NAMESPACE, 1024 * 1024, 60_000, { now })
+        val tile = TileCoordinate(1, 2, 3)
+        val stale = TileCache(disk)
+        disk.put(tile, createPngBytes())
+        now += 60_001
+        stale.getStale(tile)
+
+        stale.clear()
+
+        assertFalse(stale.isStale(tile))
+        assertNull(stale.getStale(tile))
+    }
+
+    @Test
+    fun testEvictedTileLosesStaleMark() {
+        var now = 1_000_000_000_000L
+        val disk = DiskTileCache(folder.newFolder(), DiskTileCache.DEFAULT_NAMESPACE, 1024 * 1024, 60_000, { now })
+        val a = TileCoordinate(1, 2, 3)
+        disk.put(a, createPngBytes())
+        now += 60_001
+        // Room for one 256x256 RGB_565 tile (128 KB)
+        val small = TileCache(disk, cacheSize = 200)
+        small.getStale(a)
+        assertTrue(small.isStale(a))
+
+        small.put(TileCoordinate(4, 5, 6), Bitmap.createBitmap(256, 256, Bitmap.Config.RGB_565))
+
+        assertNull("Evicted from memory", small.getMemory(a))
+        assertFalse(small.isStale(a))
+    }
+
+    private fun createPngBytes(): ByteArray {
+        val output = ByteArrayOutputStream()
+        createMockBitmap(256, 256).compress(Bitmap.CompressFormat.PNG, 100, output)
+        return output.toByteArray()
     }
 
     private fun createMockBitmap(
