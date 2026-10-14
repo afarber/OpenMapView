@@ -204,7 +204,6 @@ class MapController(
     private val overlayTileRetries = mutableMapOf<String, TileRetryTracker>()
 
     private var animationJob: Job? = null
-    private var animationListener: CancelableCallback? = null
 
     var onCameraMoveStartedListener: OnCameraMoveStartedListener? = null
     var onCameraMoveListener: OnCameraMoveListener? = null
@@ -876,7 +875,8 @@ class MapController(
             onCameraMoveStartedListener?.onCameraMoveStarted(OnCameraMoveStartedListener.REASON_API_ANIMATION)
         }
 
-        animationListener = listener
+        // The listener is captured by the coroutine: a cancelled animation finishes only after
+        // stopAnimation() returned, possibly when the next animation has already started
         animationJob =
             scope.launch {
                 try {
@@ -920,18 +920,17 @@ class MapController(
                     setZoom(targetPosition.zoom)
                     onTileLoadedCallback?.invoke()
 
-                    animationListener?.onFinish()
+                    listener?.onFinish()
 
                     // Fire camera idle event after animation completes
                     isCameraMoving = false
                     currentMoveReason = null
                     onCameraIdleListener?.onCameraIdle()
                 } catch (e: kotlinx.coroutines.CancellationException) {
-                    animationListener?.onCancel()
+                    listener?.onCancel()
                     throw e
                 } finally {
-                    animationJob = null
-                    animationListener = null
+                    if (animationJob === coroutineContext[Job]) animationJob = null
                 }
             }
     }
@@ -946,7 +945,6 @@ class MapController(
         if (animationJob != null) {
             animationJob?.cancel()
             animationJob = null
-            animationListener = null
 
             // Fire camera move canceled event
             if (isCameraMoving) {

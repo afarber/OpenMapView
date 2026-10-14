@@ -14,6 +14,9 @@ Add to your `build.gradle.kts`:
 ```kotlin
 dependencies {
     implementation("de.afarber:openmapview:0.18.0")
+
+    // Optional: the OpenMap composable for Jetpack Compose
+    implementation("de.afarber:openmapview-compose:0.18.0")
 }
 ```
 
@@ -60,6 +63,7 @@ Explore the example applications to see OpenMapView in action:
 - [Example10GroundOverlays](examples/Example10GroundOverlays) - Ground overlays with position/bounds modes, rotation, and transparency
 - [Example11MapTypes](examples/Example11MapTypes) - Switching between all 15 map types (OSM, CyclOSM, Thunderforest, CARTO, Stamen and more)
 - [Example12Toolbar](examples/Example12Toolbar) - Open location in external map apps via geo: URI with OpenStreetMap browser fallback
+- [Example13Compose](examples/Example13Compose) - The `OpenMap` composable in a tab, keeping its camera while other tabs are shown
 
 ![Example01Pan Demo](examples/Example01Pan/screenshot.gif)
 
@@ -81,6 +85,30 @@ Explore the example applications to see OpenMapView in action:
 ## Getting Started
 
 ### With Jetpack Compose
+
+The optional `openmapview-compose` artifact provides the `OpenMap` composable. Its camera is kept in a `CameraPositionState`, which survives configuration changes and, when hoisted above the screen, also switching tabs:
+
+```kotlin
+@Composable
+fun MapScreen() {
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition(LatLng(51.4661, 7.2491), 14f)
+    }
+
+    OpenMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState,
+        onMapCreated = { map ->
+            map.addMarker(Marker(position = LatLng(51.4661, 7.2491), title = "Bochum City Center"))
+        },
+    )
+
+    // Move the camera by setting cameraPositionState.position, or animate it
+    // from a coroutine: cameraPositionState.animate(CameraUpdateFactory.zoomIn())
+}
+```
+
+Without that artifact, show `OpenMapView` in an `AndroidView`:
 
 ```kotlin
 @Composable

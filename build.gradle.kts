@@ -37,6 +37,7 @@ nmcpAggregation {
 }
 
 dependencies {
-    // Only the library is published; the example apps are not
+    // Only the libraries are published; the example apps are not
     nmcpAggregation(project(":openmapview"))
+    nmcpAggregation(project(":openmapview-compose"))
 }
