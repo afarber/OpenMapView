@@ -23,7 +23,7 @@ The library is available on [Maven Central](https://central.sonatype.com/artifac
 
 ## License
 
-OpenMapView is MIT licensed, so you can use it in commercial apps. Its five runtime dependencies (androidx core-ktx, lifecycle-runtime-ktx, Compose ui-graphics, ktor-client-android and DiskLruCache) are all Apache 2.0. See the [Dependency License Report](https://afarber.github.io/OpenMapView/licenses/) for details.
+OpenMapView is MIT licensed, so you can use it in commercial apps. Its four runtime dependencies (androidx core-ktx, lifecycle-runtime-ktx, Compose ui-graphics and ktor-client-android) are all Apache 2.0. See the [Dependency License Report](https://afarber.github.io/OpenMapView/licenses/) for details.
 
 ## Features
 

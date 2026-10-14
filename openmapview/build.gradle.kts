@@ -109,7 +109,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.ktor.client.android)
-    implementation(libs.disklrucache)
 
     // Unit testing
     testImplementation(libs.junit)

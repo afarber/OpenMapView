@@ -69,7 +69,7 @@ OpenMapView implements a two-tier cache hierarchy:
 │  Level 2: Disk Cache (LRU)              │
 │  - Persistent across app restarts       │
 │  - 50MB maximum size                    │
-│  - PNG compressed tiles                 │
+│  - Tiles as sent by the server          │
 └─────────────────┬───────────────────────┘
                   │ Cache miss
                   v
@@ -92,22 +92,25 @@ Implemented using Android's `LruCache`:
 New tiles are written to both levels as soon as they are downloaded, so they survive the process even if they are never evicted from memory:
 
 ```kotlin
-fun put(tile: TileCoordinate, bitmap: Bitmap) {
+fun put(tile: TileCoordinate, bitmap: Bitmap, bytes: ByteArray) {
     memoryCache.put(tile, bitmap)
-    diskCache?.put(tile, bitmap) // called from the IO download coroutine
+    diskCache?.put(tile, bytes) // the server's bytes, called from the IO download coroutine
 }
 ```
 
 ### Disk Cache (Level 2)
 
-Implemented using Jake Wharton's DiskLruCache library:
+`DiskTileCache` keeps one file per tile, without any extra library:
 
 - **Access time:** Milliseconds (disk I/O)
 - **Size:** 50MB maximum
-- **Format:** PNG compressed images
-- **Location:** App cache directory (`context.cacheDir/tiles`)
+- **Format:** The PNG or JPEG bytes as sent by the tile server, so tiles are never re-encoded. They are decoded with RGB_565, the same as fresh downloads
+- **Location:** App cache directory (`context.cacheDir/tiles2/<source>/<z>_<x>_<y>.tile`)
 - **Persistence:** Survives app restarts
-- **Eviction:** LRU with size limit
+- **Eviction:** When the 50MB are exceeded, the least recently used tiles are deleted until 45MB are left
+- **Expiry:** Tiles older than 7 days (the minimum of the OSM tile usage policy) are downloaded again. Reading a tile does not make it younger, the download time is stored in the file
+- **Offline fallback:** If downloading an expired tile fails, the old tile is shown and retried with the usual backoff (see [Retry Backoff](#retry-backoff))
+- **Writes:** Each tile is written to a temporary file and renamed, so an interrupted write never leaves a broken tile
 
 **Benefits:**
 - Reduces network requests on app restart
@@ -119,7 +122,7 @@ Implemented using Jake Wharton's DiskLruCache library:
 When a tile is found in disk cache, it's promoted back to memory cache:
 
 ```kotlin
-val diskBitmap = diskCache?.get(tile)
+val diskBitmap = diskCache?.get(tile) // null if missing or expired
 if (diskBitmap != null) {
     // Promote to memory for faster subsequent access
     memoryCache.put(tile, diskBitmap)
@@ -274,10 +277,13 @@ Tile downloads use Kotlin coroutines for efficient async I/O:
 
 ```kotlin
 scope.launch(Dispatchers.IO) {
-    tileDownloadSemaphore.withPermit {
-        val bitmap = tileDownloader.downloadTile(url)
-        // ...
-    }
+    // Disk hits don't wait for a download permit
+    val bitmap = cache.get(tile) ?: tileDownloadSemaphore.withPermit {
+        tileDownloader.downloadTileBytes(url)?.let { bytes ->
+            decodeTile(bytes)?.also { cache.put(tile, it, bytes) }
+        }
+    } ?: cache.getStale(tile) // expired tile as offline fallback
+    // ...
 }
 ```
 
@@ -347,5 +353,4 @@ For optimal performance:
 
 - [Android Bitmap Best Practices](https://developer.android.com/topic/performance/graphics)
 - [OSM Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/)
-- [DiskLruCache](https://github.com/JakeWharton/DiskLruCache)
 - [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-guide.html)

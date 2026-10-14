@@ -104,7 +104,6 @@ Before adding new dependencies to OpenMapView, verify the following:
 - androidx.lifecycle:lifecycle-runtime-ktx
 - androidx.compose.ui:ui-graphics
 - io.ktor:ktor-client-android
-- com.jakewharton:disklrucache
 
 ## Automated Git Hooks (Recommended)
 

@@ -1265,11 +1265,15 @@ class MapController(
             } else {
                 canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tilePlaceholderPaint)
                 canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tileBorderPaint)
+            }
 
-                if (!downloadingTiles.contains(tile) && tileRetries.canRequest(tile, SystemClock.elapsedRealtime())) {
-                    downloadingTiles.add(tile)
-                    downloadTile(tile)
-                }
+            // An expired tile shown as offline fallback is downloaded again after its retry delay
+            if ((cachedBitmap == null || tileCache.isStale(tile)) &&
+                !downloadingTiles.contains(tile) &&
+                tileRetries.canRequest(tile, SystemClock.elapsedRealtime())
+            ) {
+                downloadingTiles.add(tile)
+                downloadTile(tile)
             }
         }
 
@@ -1842,27 +1846,43 @@ class MapController(
         scope.launch(Dispatchers.IO) {
             var bitmap: Bitmap? = null
             var skipped = false
+            var stale = false
             try {
-                bitmap =
-                    tileDownloadSemaphore.withPermit {
-                        if (cache !== tileCache) {
-                            skipped = true
-                            return@withPermit null
+                // Disk hits don't need a download permit, a stale tile in memory is downloaded again
+                if (!cache.isStale(tile)) {
+                    bitmap = cache.get(tile)
+                }
+                if (bitmap == null) {
+                    bitmap =
+                        tileDownloadSemaphore.withPermit {
+                            if (cache !== tileCache) {
+                                skipped = true
+                                return@withPermit null
+                            }
+                            tileDownloader.downloadTileBytes(source.getTileUrl(tile))?.let { bytes ->
+                                decodeTile(bytes)?.also { cache.put(tile, it, bytes) }
+                            }
                         }
-                        // A disk hit is promoted to memory by get(), only new downloads need put()
-                        cache.get(tile)
-                            ?: tileDownloader.downloadTile(source.getTileUrl(tile))?.also { cache.put(tile, it) }
-                    }
+                }
+                // Offline or server error: show an expired tile from disk, if there is one
+                if (bitmap == null && !skipped) {
+                    bitmap = cache.getStale(tile)
+                    stale = bitmap != null && cache.isStale(tile)
+                }
             } finally {
                 launch(Dispatchers.Main) {
                     downloading.remove(tile)
                     if (skipped || cache !== tileCache) return@launch
-                    if (bitmap != null) {
+                    if (bitmap != null && !stale) {
                         retries.onSuccess(tile)
                         if (!lowPriority) onTileLoadedCallback?.invoke()
                     } else {
+                        // A stale fallback counts as a failure, so the tile is retried with back-off
                         val retryDelay = retries.onFailure(tile, SystemClock.elapsedRealtime())
-                        if (!lowPriority) scheduleRedraw(retryDelay)
+                        if (!lowPriority) {
+                            if (stale) onTileLoadedCallback?.invoke()
+                            scheduleRedraw(retryDelay)
+                        }
                     }
                 }
             }
