@@ -12,13 +12,18 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.text.Layout
+import android.text.StaticLayout
 import android.text.TextPaint
+import androidx.core.graphics.withTranslation
+import kotlin.math.ceil
 
 /**
  * Attribution overlay displaying tile source copyright notice.
  *
  * Required by tile provider usage policies to show attribution on all maps.
  * Renders a semi-transparent background with clickable attribution text in the bottom-right corner.
+ * Text wider than the view wraps onto more lines, so no part of the attribution is cut off.
  */
 class AttributionOverlay(
     context: Context,
@@ -39,14 +44,16 @@ class AttributionOverlay(
             style = Paint.Style.FILL
         }
 
-    private var textBounds = Rect()
     private val padding = (4 * context.resources.displayMetrics.density).toInt()
 
-    var onAttributionClickListener: (() -> Unit)? = null
+    // Rebuilt only when the text or the view width changes
+    private var layout: StaticLayout? = null
+    private var layoutViewWidth = -1
 
-    init {
-        updateTextBounds()
-    }
+    // Reused by bounds() to avoid allocating on every draw
+    private val box = Rect()
+
+    var onAttributionClickListener: (() -> Unit)? = null
 
     /**
      * Sets the attribution text to be displayed.
@@ -55,7 +62,7 @@ class AttributionOverlay(
      */
     fun setAttributionText(text: String) {
         attributionText = text
-        updateTextBounds()
+        layout = null
     }
 
     /**
@@ -74,29 +81,60 @@ class AttributionOverlay(
      */
     fun getAttributionUrl(): String = attributionUrl
 
-    private fun updateTextBounds() {
-        textPaint.getTextBounds(attributionText, 0, attributionText.length, textBounds)
+    /**
+     * Returns the text laid out right-aligned, at most as wide as the view minus padding.
+     */
+    private fun layoutFor(viewWidth: Int): StaticLayout {
+        layout?.let { if (layoutViewWidth == viewWidth) return it }
+
+        val maxWidth = (viewWidth - padding * 2).coerceAtLeast(1)
+        val desiredWidth = ceil(Layout.getDesiredWidth(attributionText, textPaint)).toInt()
+        val width = desiredWidth.coerceIn(1, maxWidth)
+        return StaticLayout.Builder
+            .obtain(attributionText, 0, attributionText.length, textPaint, width)
+            .setAlignment(Layout.Alignment.ALIGN_OPPOSITE)
+            .setIncludePad(false)
+            .build()
+            .also {
+                layout = it
+                layoutViewWidth = viewWidth
+            }
     }
+
+    /**
+     * Returns the background box of the attribution in the bottom-right corner of the view.
+     * The returned [Rect] is reused, so it is only valid until the next call.
+     */
+    internal fun bounds(
+        viewWidth: Int,
+        viewHeight: Int,
+    ): Rect {
+        val textLayout = layoutFor(viewWidth)
+        box.set(
+            viewWidth - textLayout.width - padding * 2,
+            viewHeight - textLayout.height - padding * 2,
+            viewWidth,
+            viewHeight,
+        )
+        return box
+    }
+
+    /**
+     * Returns the number of lines the attribution takes in a view of the given width.
+     */
+    internal fun lineCount(viewWidth: Int): Int = layoutFor(viewWidth).lineCount
 
     fun draw(
         canvas: Canvas,
         viewWidth: Int,
         viewHeight: Int,
     ) {
-        val textWidth = textBounds.width()
-        val textHeight = textBounds.height()
+        val box = bounds(viewWidth, viewHeight)
+        canvas.drawRect(box, backgroundPaint)
 
-        val bgLeft = viewWidth - textWidth - padding * 2
-        val bgTop = viewHeight - textHeight - padding * 2
-        val bgRight = viewWidth
-        val bgBottom = viewHeight
-
-        canvas.drawRect(bgLeft.toFloat(), bgTop.toFloat(), bgRight.toFloat(), bgBottom.toFloat(), backgroundPaint)
-
-        val textX = viewWidth - textWidth - padding
-        val textY = viewHeight - padding
-
-        canvas.drawText(attributionText, textX.toFloat(), textY.toFloat(), textPaint)
+        canvas.withTranslation((box.left + padding).toFloat(), (box.top + padding).toFloat()) {
+            layoutFor(viewWidth).draw(this)
+        }
     }
 
     fun handleTouch(
@@ -105,15 +143,9 @@ class AttributionOverlay(
         viewWidth: Int,
         viewHeight: Int,
     ): Boolean {
-        val textWidth = textBounds.width()
-        val textHeight = textBounds.height()
+        val box = bounds(viewWidth, viewHeight)
 
-        val bgLeft = viewWidth - textWidth - padding * 2
-        val bgTop = viewHeight - textHeight - padding * 2
-        val bgRight = viewWidth
-        val bgBottom = viewHeight
-
-        if (x >= bgLeft && x <= bgRight && y >= bgTop && y <= bgBottom) {
+        if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) {
             onAttributionClickListener?.invoke()
             return true
         }
