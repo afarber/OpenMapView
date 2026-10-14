@@ -52,11 +52,12 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (489 tests across 37 test classes)
+### Current Test Coverage (503 tests across 41 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
 | **AttributionOverlayTest** | 4 | Attribution rendering and touch detection |
+| **AttributionOverlayLayoutTest** | 3 | Long attribution wrapping and its touch area (native graphics, SDK 33) |
 | **BitmapDescriptorFactoryTest** | 15 | Marker icon generation with colors and custom images |
 | **CameraPositionTest** | 7 | Camera position validation and equality |
 | **CameraUpdateFactoryTest** | 11 | Camera update creation (zoom, pan, position) |
