@@ -46,7 +46,7 @@ import re
 import subprocess
 import sys
 
-DEPENDENCY = re.compile(r"de\.afarber:openmapview:([0-9]+\.[0-9]+\.[0-9]+)")
+DEPENDENCY = re.compile(r"de\.afarber:openmapview(?:-compose)?:([0-9]+\.[0-9]+\.[0-9]+)")
 TAG = re.compile(r"v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
 
 def parse(version):
@@ -115,7 +115,7 @@ import sys
 
 for name in sys.argv[2:]:
     path = pathlib.Path(name)
-    text, count = re.subn(r"(de\.afarber:openmapview:)[0-9]+\.[0-9]+\.[0-9]+", r"\g<1>" + sys.argv[1], path.read_text())
+    text, count = re.subn(r"(de\.afarber:openmapview(?:-compose)?:)[0-9]+\.[0-9]+\.[0-9]+", r"\g<1>" + sys.argv[1], path.read_text())
     if count == 0:
         sys.exit(f"No dependency version found in {name}; no changes written.")
     path.write_text(text)

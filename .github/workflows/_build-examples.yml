@@ -60,6 +60,9 @@ jobs:
       - name: Build Example12Toolbar
         run: ./gradlew :examples:Example12Toolbar:assembleDebug
 
+      - name: Build Example13Compose
+        run: ./gradlew :examples:Example13Compose:assembleDebug
+
       - name: Upload example APKs
         uses: actions/upload-artifact@v7
         with:

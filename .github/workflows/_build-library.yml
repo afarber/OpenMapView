@@ -24,12 +24,12 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Build OpenMapView library
-        run: ./gradlew :openmapview:assembleRelease
+      - name: Build OpenMapView libraries
+        run: ./gradlew :openmapview:assembleRelease :openmapview-compose:assembleRelease
 
       - name: Upload library artifact
         uses: actions/upload-artifact@v7
         with:
           name: openmapview-aar
-          path: openmapview/build/outputs/aar/*.aar
+          path: openmapview*/build/outputs/aar/*.aar
           retention-days: 30

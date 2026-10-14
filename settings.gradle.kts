@@ -18,6 +18,7 @@ dependencyResolutionManagement {
 rootProject.name = "OpenMapView-root"
 
 include(":openmapview")
+include(":openmapview-compose")
 include(":examples:Example01Pan")
 include(":examples:Example02Zoom")
 include(":examples:Example03Markers")
@@ -30,3 +31,4 @@ include(":examples:Example09Overlays")
 include(":examples:Example10GroundOverlays")
 include(":examples:Example11MapTypes")
 include(":examples:Example12Toolbar")
+include(":examples:Example13Compose")
