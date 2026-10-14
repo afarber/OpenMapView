@@ -52,13 +52,14 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (514 tests across 43 test classes)
+### Current Test Coverage (517 tests across 44 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
 | **AttributionOverlayLayoutTest** | 3 | Long attribution wrapping and its touch area (native graphics, SDK 33) |
 | **AttributionOverlayTest** | 4 | Attribution rendering and touch detection |
 | **BitmapDescriptorFactoryTest** | 15 | Marker icon generation with colors and custom images |
+| **CameraAnimationTest** | 3 | CancelableCallback.onCancel when an animation is stopped, replaced or the map destroyed |
 | **CameraPositionTest** | 7 | Camera position validation and equality |
 | **CameraUpdateFactoryTest** | 11 | Camera update creation (zoom, pan, position) |
 | **CircleTest** | 4 | Circle defaults, radius validation, identity equality |
@@ -99,6 +100,14 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **UserAgentTest** | 3 | User-Agent with library version and app package name |
 | **ViewportCalculatorTest** | 10 | Visible tile calculation |
 | **VisibleRegionTest** | 4 | Visible region bounds and corners |
+
+### Compose Module
+
+`./gradlew :openmapview-compose:test` runs the tests of the `openmapview-compose` artifact. They use the Compose test rule on Robolectric (SDK 34).
+
+| Test Class | Tests | Description |
+|------------|-------|-------------|
+| **OpenMapTest** | 7 | OpenMap starts at and follows CameraPositionState, keeps the camera when shown again, animate() and the Saver |
 
 ### Example Test
 

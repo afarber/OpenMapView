@@ -40,7 +40,7 @@ Located in `.github/workflows/`:
 
 #### `_lint.yml`
 - **Purpose**: Run Android Lint on the library
-- **Runs**: `./gradlew :openmapview:lintRelease`
+- **Runs**: `./gradlew :openmapview:lintRelease :openmapview-compose:lintRelease`
 - **Usage**: Called by CI and Release workflows
 - **Duration**: ~1-2 minutes
 - **Reports**: HTML report uploaded as an artifact; any issue, including warnings, fails the job
@@ -54,14 +54,14 @@ Located in `.github/workflows/`:
 
 #### `_test.yml`
 - **Purpose**: Run unit tests
-- **Runs**: `./gradlew :openmapview:test --continue`
+- **Runs**: `./gradlew :openmapview:test :openmapview-compose:test --continue`
 - **Artifacts**: Uploads test results and HTML reports
 - **Usage**: Called by CI and Release workflows
 - **Duration**: ~1-2 minutes
 
 #### `_build-library.yml`
 - **Purpose**: Build the OpenMapView AAR library
-- **Runs**: `./gradlew :openmapview:assembleRelease`
+- **Runs**: `./gradlew :openmapview:assembleRelease :openmapview-compose:assembleRelease`
 - **Artifacts**: Uploads the compiled AAR file
 - **Usage**: Called by CI and Release workflows
 - **Duration**: ~2-3 minutes

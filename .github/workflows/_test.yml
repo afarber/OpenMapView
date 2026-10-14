@@ -25,7 +25,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Run unit tests
-        run: ./gradlew :openmapview:test --continue
+        run: ./gradlew :openmapview:test :openmapview-compose:test --continue
 
       - name: Upload test results
         if: always()
