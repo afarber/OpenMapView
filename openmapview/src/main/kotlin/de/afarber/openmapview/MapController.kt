@@ -217,6 +217,10 @@ class MapController(
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val tileDownloader = TileDownloader()
 
+    init {
+        UserAgent.init(context)
+    }
+
     // Replaced on every tile source change, so downloads still running for the old
     // source can't put their tiles into the cache of the new one
     @Volatile

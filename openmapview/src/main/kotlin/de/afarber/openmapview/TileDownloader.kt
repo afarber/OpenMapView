@@ -41,7 +41,7 @@ class TileDownloader {
         try {
             val response =
                 client.get(url) {
-                    header("User-Agent", USER_AGENT)
+                    header("User-Agent", UserAgent.value)
                 }
             if (!response.status.isSuccess()) {
                 Log.w(TAG, "Failed to download tile from $url: HTTP ${response.status.value}")

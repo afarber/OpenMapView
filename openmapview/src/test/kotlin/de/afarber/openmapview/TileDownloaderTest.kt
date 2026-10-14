@@ -7,7 +7,9 @@
 
 package de.afarber.openmapview
 
+import android.content.Context
 import android.graphics.Bitmap
+import androidx.test.core.app.ApplicationProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -58,8 +60,10 @@ class TileDownloaderTest {
         }
 
     @Test
-    fun testDownloadTile_SendsVersionedUserAgent() =
+    fun testDownloadTile_SendsAppUserAgent() =
         runTest {
+            val context: Context = ApplicationProvider.getApplicationContext()
+            UserAgent.init(context)
             var userAgent: String? = null
             val mockEngine =
                 MockEngine { request ->
@@ -79,7 +83,10 @@ class TileDownloaderTest {
             downloader.downloadTile("https://example.com/tile.png")
 
             assertTrue("Library version should not be blank", LIBRARY_VERSION.isNotBlank())
-            assertEquals("OpenMapView/$LIBRARY_VERSION (https://github.com/afarber/OpenMapView)", userAgent)
+            assertEquals(
+                "OpenMapView/$LIBRARY_VERSION (${context.packageName}; https://github.com/afarber/OpenMapView)",
+                userAgent,
+            )
             downloader.close()
         }
 
