@@ -263,13 +263,15 @@ HttpClient(Android) {
 
 ### User-Agent Header
 
-All requests include a user-agent header as required by OSM tile usage policy:
+All requests include a user-agent header that identifies both OpenMapView and the app, as required by the OSM tile usage policy:
 
 ```kotlin
-header("User-Agent", USER_AGENT) // "OpenMapView/<version> (https://github.com/afarber/OpenMapView)"
+header("User-Agent", UserAgent.value) // "OpenMapView/<version> (<app package name>; https://github.com/afarber/OpenMapView)"
 ```
 
-`USER_AGENT` is generated at build time by the `generateLibraryVersion` Gradle task, using the same Git-tag-derived version as the published artifact.
+The package name comes from the `Context` of the map, so if one app overuses the tile servers, a block only affects that app. The version is `LIBRARY_VERSION`, generated at build time by the `generateLibraryVersion` Gradle task from the same Git tag as the published artifact.
+
+Tile overlays send the same header by default. A `UrlTileProvider` subclass can override `getUserAgent()` to send a different one.
 
 ### Coroutine-Based Downloads
 

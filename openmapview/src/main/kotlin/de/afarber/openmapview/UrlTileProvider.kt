@@ -67,11 +67,14 @@ abstract class UrlTileProvider(
 
     /**
      * Returns the User-Agent header to use for HTTP requests.
+     *
+     * The default identifies both OpenMapView and the app, e.g.
+     * `OpenMapView/0.17.1 (com.example.app; https://github.com/afarber/OpenMapView)`.
      * Subclasses can override to provide a custom User-Agent.
      *
      * @return User-Agent string
      */
-    protected open fun getUserAgent(): String = USER_AGENT
+    protected open fun getUserAgent(): String = UserAgent.value
 
     /**
      * Builds the URL for the specified tile coordinates by replacing placeholders

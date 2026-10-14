@@ -7,9 +7,12 @@
 
 package de.afarber.openmapview
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.isActive
@@ -42,6 +45,25 @@ class UrlTileProviderTest {
             assertNotNull(tile)
             assertEquals(3, tile?.data?.size)
             assertEquals("https://example.com/3/1/2.png", requestedUrl)
+        }
+
+    @Test
+    fun testGetTile_SendsAppUserAgent() =
+        runTest {
+            val context: Context = ApplicationProvider.getApplicationContext()
+            UserAgent.init(context)
+            var userAgent: String? = null
+            val provider =
+                createProvider(
+                    MockEngine { request ->
+                        userAgent = request.headers[HttpHeaders.UserAgent]
+                        respond(ByteReadChannel(byteArrayOf(1, 2, 3)), HttpStatusCode.OK)
+                    },
+                )
+
+            provider.getTile(1, 2, 3)
+
+            assertEquals(UserAgent.build(context.packageName), userAgent)
         }
 
     @Test

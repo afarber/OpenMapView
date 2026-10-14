@@ -536,7 +536,7 @@ Start using maps immediately without:
 - No monthly billing
 - No credit card required
 
-Note: If using public OpenStreetMap tile servers, follow their [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/). For high-volume applications, consider self-hosting tiles or using commercial OSM providers.
+Note: If using public OpenStreetMap tile servers, follow their [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/). OpenMapView sends a User-Agent containing your app package name, so the tile servers can tell apps apart. For high-volume applications, consider self-hosting tiles or using commercial OSM providers.
 
 ### Complete Data Control
 
