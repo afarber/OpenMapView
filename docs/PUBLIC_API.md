@@ -297,7 +297,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 | `setOnCameraMoveListener(OnCameraMoveListener)`                       | `void`           |                                                                      |
 | `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           |                                                                      |
 | `setOnCameraMoveCanceledListener(OnCameraMoveCanceledListener)`       | `void`           |                                                                      |
-| `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | Not implemented - tiles load asynchronously, callback could be added |
+| `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | Fires once when all visible base tiles are drawn (tile overlays are not awaited) |
 | `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | Not implemented - custom adapters not yet implemented                |
 | `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           |                                                                      |
 | `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | Called when info window is closed (manual or auto-dismiss)           |

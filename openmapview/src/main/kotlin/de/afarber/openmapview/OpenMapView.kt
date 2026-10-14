@@ -1254,6 +1254,27 @@ class OpenMapView
         }
 
         /**
+         * Sets a callback that is invoked once when the map has finished rendering, i.e.
+         * all visible base map tiles are drawn and the camera is not moving.
+         *
+         * If the map is already fully drawn, the callback is invoked after the next frame.
+         * It is not invoked while tiles can't be loaded (e.g. offline) or while the camera
+         * keeps moving. Tile overlays are not waited for.
+         *
+         * Example usage:
+         * ```kotlin
+         * mapView.setOnMapLoadedCallback {
+         *     mapView.snapshot { bitmap -> bitmap?.let { saveToFile(it) } }
+         * }
+         * ```
+         *
+         * @param callback The callback to invoke, or null to remove a pending one
+         */
+        fun setOnMapLoadedCallback(callback: OnMapLoadedCallback?) {
+            controller.setOnMapLoadedCallback(callback)
+        }
+
+        /**
          * Sets a listener to handle camera movement cancellation events.
          *
          * Called when an ongoing animation is interrupted before completion.
