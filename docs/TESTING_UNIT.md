@@ -52,62 +52,13 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (517 tests across 44 test classes)
+### Where Tests Live
 
-| Test Class | Tests | Description |
-|------------|-------|-------------|
-| **AttributionOverlayLayoutTest** | 3 | Long attribution wrapping and its touch area (native graphics, SDK 33) |
-| **AttributionOverlayTest** | 4 | Attribution rendering and touch detection |
-| **BitmapDescriptorFactoryTest** | 15 | Marker icon generation with colors and custom images |
-| **CameraAnimationTest** | 3 | CancelableCallback.onCancel when an animation is stopped, replaced or the map destroyed |
-| **CameraPositionTest** | 7 | Camera position validation and equality |
-| **CameraUpdateFactoryTest** | 11 | Camera update creation (zoom, pan, position) |
-| **CircleTest** | 4 | Circle defaults, radius validation, identity equality |
-| **DiskTileCacheTest** | 18 | Persistent disk cache: raw tile bytes, expiry, LRU trimming, atomic writes, per-source namespaces |
-| **GeoJsonParserTest** | 14 | GeoJSON parsing (Point, LineString, Polygon, Multi*, Features) |
-| **GeodesicUtilsTest** | 17 | Great-circle interpolation for geodesic shapes |
-| **GroundOverlayTest** | 10 | Ground overlay position/bounds validation and equality |
-| **IntentUtilsTest** | 7 | External app integration (geo: URI, OSM fallback) |
-| **LatLngBoundsTest** | 13 | Lat/lng bounds calculations and contains checks |
-| **LatLngTest** | 11 | Latitude clamping and longitude wrapping |
-| **MapClippingTest** | 1 | Map drawing is clipped to the view bounds when the parent does not clip (native graphics, SDK 33) |
-| **MapControllerOverlaysTest** | 13 | Circles, ground and tile overlays, their touch detection, info windows, drawing all shape types |
-| **MapControllerTest** | 103 | Zoom, pan, marker/polyline/polygon management, touch detection, padding, camera bounds, edge effects |
-| **MapControllerTileLoadingTest** | 9 | Base tile loading order (disk, network, stale fallback), retry backoff, onDestroy cancelling downloads and the map loading tiles afterwards |
-| **MapFeaturesTest** | 5 | Feature query methods (traffic, indoor, buildings, myLocation) |
-| **MapLifecycleTest** | 6 | Observing the view tree lifecycle while attached, cleanup and animation cancel on detach, reattaching |
-| **MapLoadedCallbackTest** | 7 | setOnMapLoadedCallback: fires once when all visible tiles are drawn, waits for missing tiles and camera moves |
-| **MapProjectionTest** | 8 | Projection screen/LatLng conversion, pan offset, padding, visible region |
-| **MapTypeTest** | 18 | Map type switching and validation |
-| **MarkerDragTest** | 3 | Marker drag starts past the touch slop and never pans the map |
-| **MarkerIconFactoryTest** | 3 | Default marker icon generation and caching |
-| **MarkerIconLoadingTest** | 4 | Marker icons from XML/vector resources and assets, caching, fallback to the default icon |
-| **MarkerTest** | 23 | Marker creation, equality, properties, info windows, dragging |
-| **OptionsBuildersTest** | 13 | Google-style *Options builders for markers, shapes and overlays |
-| **PolygonTest** | 20 | Polygon creation, validation, holes, and styling |
-| **PolylineTest** | 31 | Polyline creation, validation, and styling |
-| **PredefinedTileProvidersTest** | 2 | URL templates of the predefined overlay tile providers, Stadia key lookup |
-| **ProjectionTest** | 12 | Web Mercator projection calculations |
-| **SnapshotTest** | 8 | Map snapshot API and callbacks |
-| **TileCacheTest** | 13 | Memory LRU cache behavior, clearing, namespaces, disk writes, stale tiles |
-| **TileDownloaderTest** | 5 | HTTP tile downloading with mocked Ktor client, HTTP errors, cancellation |
-| **TileOverlayTest** | 5 | Tile overlay defaults, transparency validation, copy helpers |
-| **TileRetryTrackerTest** | 4 | Exponential backoff for failed tiles |
-| **TileSourceTest** | 11 | Tile source URL generation, attribution and API keys |
-| **TileTest** | 6 | Tile content equality, validation and toString |
-| **UiSettingsTest** | 25 | UI settings (gestures, zoom controls, not-implemented features) |
-| **UrlTileProviderTest** | 5 | Overlay tile downloading, HTTP 404 handling, shared HTTP client |
-| **UserAgentTest** | 3 | User-Agent with library version and app package name |
-| **ViewportCalculatorTest** | 10 | Visible tile calculation |
-| **VisibleRegionTest** | 4 | Visible region bounds and corners |
+- `openmapview/src/test/kotlin/de/afarber/openmapview/` holds the library tests, usually one `<ClassName>Test` per class under test (e.g. `TileCacheTest`), plus some for behavior across classes (e.g. `MarkerDragTest`, `MapLifecycleTest`).
+- Tests that check real pixels or text layout run with native graphics: `@GraphicsMode(GraphicsMode.Mode.NATIVE)` and `@Config(sdk = [33])`, e.g. `AttributionOverlayLayoutTest` and `MapClippingTest`. The default legacy graphics mode does not draw pixels or wrap text.
+- `openmapview-compose/src/test/kotlin/de/afarber/openmapview/compose/` holds the tests of the `openmapview-compose` artifact, run with `./gradlew :openmapview-compose:test`. They use the Compose test rule on Robolectric (SDK 34).
 
-### Compose Module
-
-`./gradlew :openmapview-compose:test` runs the tests of the `openmapview-compose` artifact. They use the Compose test rule on Robolectric (SDK 34).
-
-| Test Class | Tests | Description |
-|------------|-------|-------------|
-| **OpenMapTest** | 7 | OpenMap starts at and follows CameraPositionState, keeps the camera when shown again, animate() and the Saver |
+For the current number of tests, see the [test reports](#test-reports).
 
 ### Example Test
 
@@ -255,7 +206,10 @@ Test reports are generated in:
 ```
 openmapview/build/reports/tests/testDebugUnitTest/index.html
 openmapview/build/reports/tests/testReleaseUnitTest/index.html
+openmapview-compose/build/reports/tests/testDebugUnitTest/index.html
 ```
+
+CI uploads them as the `test-reports` artifact of each run.
 
 Open these HTML files in a browser to see:
 - Test success/failure counts
