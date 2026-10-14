@@ -11,7 +11,7 @@ This guide documents the publishing configuration for OpenMapView to Maven Centr
 
 OpenMapView is published to two package repositories:
 
-- **Maven Central**: `de.afarber:openmapview:VERSION`
+- **Maven Central**: `de.afarber:openmapview:VERSION` and the optional `de.afarber:openmapview-compose:VERSION`
 - **JitPack**: `com.github.afarber:OpenMapView:VERSION`
 
 Both repositories are automatically updated when pushing a version tag.
@@ -22,7 +22,7 @@ Both repositories are automatically updated when pushing a version tag.
 
 - **Namespace**: `de.afarber` (verified with Sonatype)
 - **Group ID**: `de.afarber`
-- **Artifact ID**: `openmapview`
+- **Artifact IDs**: `openmapview` and `openmapview-compose`, published together with the same version
 - **Publishing Plugin**: `com.gradleup.nmcp.aggregation` (version in `gradle/libs.versions.toml`)
 - **GPG Signing Key**: `8334881A009EB69E5B5BDBF189999F05686CE169` (Ed25519, expires 2028-10-24)
 
@@ -98,7 +98,7 @@ Required secrets configured in GitHub Actions:
 Publishing configuration is defined in:
 
 - `build.gradle.kts` (root) - nmcp plugin configuration
-- `openmapview/build.gradle.kts` - Maven publication setup (POM metadata, signing)
+- `openmapview/build.gradle.kts` and `openmapview-compose/build.gradle.kts` - Maven publication setup (POM metadata, signing)
 - `.github/workflows/release.yml` - Release automation
 
 ## JitPack
@@ -326,6 +326,7 @@ nmcpAggregation {
 
 dependencies {
     nmcpAggregation(project(":openmapview"))
+    nmcpAggregation(project(":openmapview-compose"))
 }
 ```
 

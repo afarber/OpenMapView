@@ -25,12 +25,12 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Run Android Lint
-        run: ./gradlew :openmapview:lintRelease
+        run: ./gradlew :openmapview:lintRelease :openmapview-compose:lintRelease
 
       - name: Upload lint report
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: lint-report
-          path: openmapview/build/reports/lint-results-release.html
+          path: openmapview*/build/reports/lint-results-release.html
           retention-days: 30
