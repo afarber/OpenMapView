@@ -4,7 +4,7 @@ This guide helps you choose and configure the right map type for your OpenMapVie
 
 ## Quick Start
 
-OpenMapView provides **15 map types** from various tile providers. Nine types work without any configuration (including `NONE`), while six premium types require free API keys.
+OpenMapView provides **15 map types** from various tile providers. Six types work without any configuration (including `NONE`), while nine premium types require free API keys.
 
 ```kotlin
 val mapView = OpenMapView(context)
@@ -96,58 +96,7 @@ Worldwide topographic map based on OpenStreetMap and SRTM data.
 mapView.setMapType(MapType.OPENTOPOMAP)
 ```
 
-#### 6. CARTO_LIGHT - Minimalist Light Theme
-**`MapType.CARTO_LIGHT`** (constant value: 10)
-
-Clean, light-colored basemap designed as a neutral background for overlays.
-
-- **Best for**: Data visualization, business intelligence, marker-heavy apps
-- **Features**: Minimal visual clutter, clear labels
-- **Highlights**: Allows markers and data to stand out clearly
-- **Tile Server**: basemaps.cartocdn.com
-- **Max Zoom**: 20
-- **License**: Free for non-commercial use (enterprise license for commercial)
-- **Attribution**: © OpenStreetMap contributors. Tiles © CARTO
-
-```kotlin
-mapView.setMapType(MapType.CARTO_LIGHT)
-```
-
-#### 7. CARTO_DARK - Dark Theme Basemap
-**`MapType.CARTO_DARK`** (constant value: 11)
-
-Dark-colored basemap suitable for night mode and low-light conditions.
-
-- **Best for**: Night mode apps, dark UI themes, reduced eye strain
-- **Features**: Dark color scheme, clear contrast
-- **Highlights**: Free alternative to TRANSPORT_DARK for general-purpose use
-- **Tile Server**: basemaps.cartocdn.com
-- **Max Zoom**: 20
-- **License**: Free for non-commercial use (enterprise license for commercial)
-- **Attribution**: © OpenStreetMap contributors. Tiles © CARTO
-
-```kotlin
-mapView.setMapType(MapType.CARTO_DARK)
-```
-
-#### 8. CARTO_VOYAGER - Modern Colorful Basemap
-**`MapType.CARTO_VOYAGER`** (constant value: 12)
-
-Contemporary design with vibrant colors and clear labels.
-
-- **Best for**: Modern apps, consumer-facing applications, travel apps
-- **Features**: Vibrant colors, updated aesthetics
-- **Highlights**: Modern alternative to STANDARD with contemporary design
-- **Tile Server**: basemaps.cartocdn.com
-- **Max Zoom**: 18
-- **License**: Free for non-commercial use (enterprise license for commercial)
-- **Attribution**: © OpenStreetMap contributors. Tiles © CARTO
-
-```kotlin
-mapView.setMapType(MapType.CARTO_VOYAGER)
-```
-
-#### 9. NONE - No Base Tiles
+#### 6. NONE - No Base Tiles
 **`MapType.NONE`** (constant value: 0)
 
 No base map tiles displayed (useful for custom tile sources or offline maps).
@@ -163,6 +112,70 @@ These map types require free API keys from third-party tile providers. When an A
 - Displays a translucent overlay with an error message
 - Keeps the map fully interactive (pan, zoom still work)
 - Logs a warning to help with debugging
+
+#### 7. CARTO_LIGHT - Minimalist Light Theme
+**`MapType.CARTO_LIGHT`** (constant value: 10) **Requires CARTO API Key**
+
+Clean, light-colored basemap designed as a neutral background for overlays.
+
+- **Best for**: Data visualization, business intelligence, marker-heavy apps
+- **Features**: Minimal visual clutter, clear labels
+- **Highlights**: Allows markers and data to stand out clearly
+- **Tile Server**: basemaps.cartocdn.com
+- **Max Zoom**: 20
+- **Free Tier**: 5,000,000 tiles/month for non-commercial use, 1,000,000 for commercial use
+- **Get API Key**: https://carto.com/basemaps/apikey
+- **Attribution**: © OpenStreetMap contributors. Tiles © CARTO
+
+```kotlin
+// Configure in AndroidManifest.xml:
+<meta-data
+    android:name="de.afarber.openmapview.CARTO_API_KEY"
+    android:value="your_key_here"/>
+
+// Or programmatically:
+ApiKeyManager.setApiKey("carto", "your_key_here")
+
+mapView.setMapType(MapType.CARTO_LIGHT)
+```
+
+#### 8. CARTO_DARK - Dark Theme Basemap
+**`MapType.CARTO_DARK`** (constant value: 11) **Requires CARTO API Key**
+
+Dark-colored basemap suitable for night mode and low-light conditions.
+
+- **Best for**: Night mode apps, dark UI themes, reduced eye strain
+- **Features**: Dark color scheme, clear contrast
+- **Highlights**: General-purpose dark basemap, unlike the transit-focused TRANSPORT_DARK
+- **Tile Server**: basemaps.cartocdn.com
+- **Max Zoom**: 20
+- **Free Tier**: 5,000,000 tiles/month for non-commercial use, 1,000,000 for commercial use
+- **Get API Key**: https://carto.com/basemaps/apikey
+- **Attribution**: © OpenStreetMap contributors. Tiles © CARTO
+
+```kotlin
+// Same API key as CARTO_LIGHT
+mapView.setMapType(MapType.CARTO_DARK)
+```
+
+#### 9. CARTO_VOYAGER - Modern Colorful Basemap
+**`MapType.CARTO_VOYAGER`** (constant value: 12) **Requires CARTO API Key**
+
+Contemporary design with vibrant colors and clear labels.
+
+- **Best for**: Modern apps, consumer-facing applications, travel apps
+- **Features**: Vibrant colors, updated aesthetics
+- **Highlights**: Modern alternative to STANDARD with contemporary design
+- **Tile Server**: basemaps.cartocdn.com
+- **Max Zoom**: 18
+- **Free Tier**: 5,000,000 tiles/month for non-commercial use, 1,000,000 for commercial use
+- **Get API Key**: https://carto.com/basemaps/apikey
+- **Attribution**: © OpenStreetMap contributors. Tiles © CARTO
+
+```kotlin
+// Same API key as CARTO_LIGHT and CARTO_DARK
+mapView.setMapType(MapType.CARTO_VOYAGER)
+```
 
 #### 10. CYCLEMAP - Professional Cycling Map
 **`MapType.CYCLEMAP`** (constant value: 3) **Requires Thunderforest API Key**
@@ -317,6 +330,11 @@ Add API keys to your app's `AndroidManifest.xml`:
         android:name="de.afarber.openmapview.TRACESTRACK_API_KEY"
         android:value="your_tracestrack_key_here"/>
 
+    <!-- CARTO (for CARTO_LIGHT, CARTO_DARK and CARTO_VOYAGER) -->
+    <meta-data
+        android:name="de.afarber.openmapview.CARTO_API_KEY"
+        android:value="your_carto_key_here"/>
+
     <!-- Stadia Maps (for STAMEN_TONER, STAMEN_WATERCOLOR and the Stamen overlays) -->
     <meta-data
         android:name="de.afarber.openmapview.STADIA_API_KEY"
@@ -333,6 +351,7 @@ import de.afarber.openmapview.ApiKeyManager
 
 ApiKeyManager.setApiKey("thunderforest", "your_key_here")
 ApiKeyManager.setApiKey("tracestrack", "your_key_here")
+ApiKeyManager.setApiKey("carto", "your_key_here")
 ApiKeyManager.setApiKey("stadia", "your_key_here")
 ```
 
@@ -350,6 +369,13 @@ All providers offer generous free tiers suitable for development and small-scale
 - **Website**: https://www.tracestrack.com/en/signup
 - **Free Tier**: 100,000 tiles/month
 - **Sign Up**: Register for free account
+
+#### CARTO (CARTO_LIGHT, CARTO_DARK, CARTO_VOYAGER)
+- **Website**: https://carto.com/basemaps/apikey
+- **Free Tier**: 5,000,000 tiles/month for non-commercial use, 1,000,000 for commercial use
+- **Sign Up**: No CARTO account needed
+- **One key works for**: CARTO_LIGHT, CARTO_DARK, and CARTO_VOYAGER
+- **Since 25 September 2026**: CARTO serves raster tiles only with a key; without one, its tiles show an "API KEY REQUIRED" notice
 
 #### Stadia Maps (STAMEN_TONER, STAMEN_WATERCOLOR)
 - **Website**: https://client.stadiamaps.com/signup/
@@ -371,7 +397,7 @@ All providers offer generous free tiers suitable for development and small-scale
 | Use Case | Recommended Map Type |
 |----------|---------------------|
 | General purpose app | `STANDARD` |
-| Modern general purpose app | `CARTO_VOYAGER` |
+| Modern general purpose app | `CARTO_VOYAGER` (requires API key) |
 | Cycling/bike app (free) | `CYCLOSM` |
 | Cycling/bike app (premium) | `CYCLEMAP` (requires API key) |
 | Public transit app | `TRANSPORT` (requires API key) |
@@ -380,8 +406,8 @@ All providers offer generous free tiers suitable for development and small-scale
 | Hiking/outdoor app (free) | `OPENTOPOMAP` |
 | Hiking/outdoor app (premium) | `TRACESTRACK_TOPO` (requires API key) |
 | Emergency/humanitarian | `HUMANITARIAN` |
-| Data visualization (light) | `CARTO_LIGHT` |
-| Night mode / dark theme | `CARTO_DARK` |
+| Data visualization (light) | `CARTO_LIGHT` (requires API key) |
+| Night mode / dark theme | `CARTO_DARK` (requires API key) |
 | High-contrast data viz | `STAMEN_TONER` (requires API key) |
 | Creative/artistic app | `STAMEN_WATERCOLOR` (requires API key) |
 | Custom tiles only | `NONE` |
@@ -389,8 +415,7 @@ All providers offer generous free tiers suitable for development and small-scale
 ### Performance Considerations
 
 - **Free maps without limits** (STANDARD, CYCLOSM, HUMANITARIAN, OPNVKARTE, OPENTOPOMAP): No usage limits, best for production apps
-- **Free maps with generous limits** (CARTO_LIGHT, CARTO_DARK, CARTO_VOYAGER): Free tier available (75k tiles/month)
-- **Premium maps** with API keys (CYCLEMAP, TRANSPORT, TRANSPORT_DARK, TRACESTRACK_TOPO, STAMEN_TONER, STAMEN_WATERCOLOR): Monitor monthly tile limits (free tiers: 100k-200k tiles/month)
+- **Premium maps** with API keys (CYCLEMAP, TRANSPORT, TRANSPORT_DARK, TRACESTRACK_TOPO, CARTO_LIGHT, CARTO_DARK, CARTO_VOYAGER, STAMEN_TONER, STAMEN_WATERCOLOR): Monitor monthly tile limits (free tiers: 100k-200k tiles/month, CARTO up to 5M)
 - **Tile caching**: OpenMapView automatically caches tiles in memory and on disk to minimize requests
 - **Subdomain rotation**: Maps with subdomain support automatically distribute load across multiple servers for better performance
 
@@ -461,4 +486,4 @@ mapView.setMapType(MapType.CYCLOSM)  // Switch map types dynamically
 
 ---
 
-**Note**: OpenMapView is designed to be a drop-in replacement for Google MapView but uses free OpenStreetMap tiles. Most map types work without any API keys or registration - a key advantage over Google Maps SDK which requires API keys and billing setup for all usage.
+**Note**: OpenMapView is designed to be a drop-in replacement for Google MapView but uses free OpenStreetMap tiles. Several map types, including the default `STANDARD`, work without any API keys or registration - a key advantage over Google Maps SDK which requires API keys and billing setup for all usage.

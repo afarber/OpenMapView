@@ -167,27 +167,32 @@ enum class TileSource(
      * Carto Light - Minimalist light basemap.
      *
      * Clean light theme designed as neutral background for data visualization.
-     * Free for non-commercial use. Uses subdomain rotation (a, b, c, d).
+     * Uses subdomain rotation (a, b, c, d).
+     * Requires CARTO API key.
      */
     CARTO_LIGHT(
-        urlTemplate = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        urlTemplate = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key={apikey}",
         attributionText = "© OpenStreetMap contributors. Tiles © CARTO",
         attributionUrl = "https://carto.com/basemaps/",
         maxZoom = 20,
+        requiresApiKey = true,
+        apiKeyProvider = "carto",
     ),
 
     /**
      * Carto Dark - Dark theme basemap.
      *
      * Dark theme suitable for night mode and low-light conditions.
-     * Free alternative to TRANSPORT_DARK for general-purpose use.
      * Uses subdomain rotation (a, b, c, d).
+     * Requires CARTO API key.
      */
     CARTO_DARK(
-        urlTemplate = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        urlTemplate = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png?key={apikey}",
         attributionText = "© OpenStreetMap contributors. Tiles © CARTO",
         attributionUrl = "https://carto.com/basemaps/",
         maxZoom = 20,
+        requiresApiKey = true,
+        apiKeyProvider = "carto",
     ),
 
     /**
@@ -195,12 +200,15 @@ enum class TileSource(
      *
      * Contemporary design with vibrant colors and clear labels.
      * Modern alternative to STANDARD OSM rendering.
+     * Requires CARTO API key.
      */
     CARTO_VOYAGER(
-        urlTemplate = "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        urlTemplate = "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key={apikey}",
         attributionText = "© OpenStreetMap contributors. Tiles © CARTO",
         attributionUrl = "https://carto.com/basemaps/",
         maxZoom = 18,
+        requiresApiKey = true,
+        apiKeyProvider = "carto",
     ),
 
     /**
