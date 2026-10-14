@@ -27,7 +27,7 @@ import androidx.core.graphics.withSave
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
@@ -214,8 +214,12 @@ class MapController(
     internal var isCameraMoving = false
     internal var currentMoveReason: Int? = null
 
+    // Never cancelled itself, only its children (see onDestroy), so the map keeps working
+    // when its view is attached to a window again
     private val scope = CoroutineScope(Dispatchers.Main + Job())
-    private val tileDownloader = TileDownloader()
+
+    // Created on the first download and closed by onDestroy
+    private var tileDownloader: TileDownloader? = null
 
     init {
         UserAgent.init(context)
@@ -1896,6 +1900,7 @@ class MapController(
         val cache = tileCache
         val downloading = downloadingTiles
         val retries = tileRetries
+        val downloader = tileDownloader ?: TileDownloader().also { tileDownloader = it }
         scope.launch(Dispatchers.IO) {
             var bitmap: Bitmap? = null
             var skipped = false
@@ -1917,7 +1922,7 @@ class MapController(
                                 skipped = true
                                 return@withPermit null
                             }
-                            tileDownloader.downloadTileBytes(source.getTileUrl(tile))?.let { bytes ->
+                            downloader.downloadTileBytes(source.getTileUrl(tile))?.let { bytes ->
                                 decodeTile(bytes)?.also { cache.put(tile, it, bytes) }
                             }
                         }
@@ -2727,34 +2732,36 @@ class MapController(
     /**
      * Called when the app comes to the foreground.
      *
-     * Reserved for future use (e.g., resuming tile downloads).
+     * Does nothing: tiles are requested from [draw], so they load again as soon as the map is drawn.
      */
     fun onResume() {
-        // Called when app comes to foreground
-        // Could be used to resume tile downloads if paused
     }
 
     /**
      * Called when the app goes to the background.
      *
-     * Reserved for future use (e.g., pausing tile downloads to save battery).
+     * Does nothing: a map in the background is not drawn, so it requests no new tiles.
+     * Downloads already running finish, so their tiles are cached when the app comes back.
      */
     fun onPause() {
-        // Called when app goes to background
-        // Could be used to pause tile downloads to save battery
     }
 
     /**
-     * Cleans up resources to prevent memory leaks.
+     * Releases resources to prevent memory leaks.
      *
-     * Cancels coroutines, closes network connections, disk caches, and clears icon caches.
-     * Called automatically when the view is destroyed.
+     * Stops camera animations and tile downloads, closes the HTTP client and clears the
+     * marker icon cache. Called when the view is detached from its window or its lifecycle
+     * owner is destroyed. Calling it more than once is safe, and the map keeps working
+     * afterwards: tiles that were still loading are requested again on the next draw.
      */
     fun onDestroy() {
-        // Clean up resources to prevent memory leaks
-        scope.cancel()
-        tileDownloader.close()
-        tileCache.close()
+        stopAnimation()
+        scope.coroutineContext.cancelChildren()
+        tileDownloader?.close()
+        tileDownloader = null
+        // Cancelled downloads never remove their tiles, so start with empty sets
+        downloadingTiles = mutableSetOf()
+        overlayDownloadingTiles.values.forEach { it.clear() }
         MarkerIconFactory.clearCache()
     }
 }

@@ -59,7 +59,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MapViewScreen() {
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var mapView by remember { mutableStateOf<OpenMapView?>(null) }
     var circleCount by remember { mutableStateOf(0) }
 
@@ -169,7 +168,6 @@ fun MapViewScreen() {
             factory = { ctx ->
                 OpenMapView(ctx).apply {
                     mapView = this
-                    lifecycleOwner.lifecycle.addObserver(this)
 
                     setCenter(bochumCenter)
                     setZoom(12.0f)

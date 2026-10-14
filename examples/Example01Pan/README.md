@@ -56,14 +56,12 @@ example01pan/
 ```kotlin
 @Composable
 fun MapViewScreen() {
-    val lifecycleOwner = LocalLifecycleOwner.current
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             factory = { ctx ->
                 OpenMapView(ctx).apply {
-                    lifecycleOwner.lifecycle.addObserver(this)
                     setCenter(LatLng(51.4661, 7.2491))
                     setZoom(14.0f)
                     mapView = this

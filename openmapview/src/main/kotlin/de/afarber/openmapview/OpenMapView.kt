@@ -20,7 +20,9 @@ import android.widget.FrameLayout
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withClip
 import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import kotlin.time.Duration
 
 // Finger movement in pixels below which a touch counts as a tap and a marker drag does not start
@@ -41,10 +43,10 @@ private const val TAP_SLOP_PX = 10f
  * mapView.addMarker(Marker(position = LatLng(51.5074, -0.1278), title = "London"))
  * ```
  *
- * The view must be registered with a lifecycle owner to ensure proper resource cleanup:
- * ```kotlin
- * lifecycle.addObserver(mapView)
- * ```
+ * The view manages its lifecycle itself: while attached to a window, it observes the
+ * lifecycle owner of its view tree (the Activity, Fragment or Compose screen). When the
+ * view is detached or that owner is destroyed, tile downloads and animations stop and the
+ * HTTP client is closed. A view that is attached again keeps working.
  *
  * ## Inherited View Methods
  *
@@ -85,6 +87,9 @@ class OpenMapView
         private var isDragging = false
         private val infoWindowHandler = Handler(Looper.getMainLooper())
         private var infoWindowDismissRunnable: Runnable? = null
+
+        // The lifecycle observed while attached to a window
+        private var observedLifecycle: Lifecycle? = null
 
         private val gestureDetector =
             GestureDetector(
@@ -1685,6 +1690,24 @@ class OpenMapView
             infoWindowDismissRunnable = null
         }
 
+        override fun onAttachedToWindow() {
+            super.onAttachedToWindow()
+            observedLifecycle =
+                findViewTreeLifecycleOwner()?.lifecycle?.also {
+                    // Does nothing if the app has already added this view as an observer
+                    it.addObserver(this)
+                }
+        }
+
+        override fun onDetachedFromWindow() {
+            // Also stops a lifecycle that outlives the view (e.g. the Activity behind a
+            // Compose screen) from keeping this view in memory
+            observedLifecycle?.removeObserver(this)
+            observedLifecycle = null
+            onDestroy()
+            super.onDetachedFromWindow()
+        }
+
         override fun onResume(owner: LifecycleOwner) {
             controller.onResume()
         }
@@ -1694,6 +1717,17 @@ class OpenMapView
         }
 
         override fun onDestroy(owner: LifecycleOwner) {
+            onDestroy()
+        }
+
+        /**
+         * Stops tile downloads and camera animations and closes the HTTP client.
+         *
+         * Called automatically when the view is detached from its window or its lifecycle
+         * owner is destroyed, so apps usually don't need to call it. Calling it more than
+         * once is safe, and the map keeps working if it is drawn again.
+         */
+        fun onDestroy() {
             cancelInfoWindowAutoDismiss()
             controller.onDestroy()
         }

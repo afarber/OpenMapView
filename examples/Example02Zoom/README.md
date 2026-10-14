@@ -53,7 +53,6 @@ example02zoom/
 ```kotlin
 @Composable
 fun MapViewScreen() {
-    val lifecycleOwner = LocalLifecycleOwner.current
     var mapView: OpenMapView? by remember { mutableStateOf(null) }
     var zoomLevel by remember { mutableStateOf("14.0") }
 
@@ -61,7 +60,6 @@ fun MapViewScreen() {
         AndroidView(
             factory = { ctx ->
                 OpenMapView(ctx).apply {
-                    lifecycleOwner.lifecycle.addObserver(this)
                     setCenter(LatLng(51.4661, 7.2491))
                     setZoom(14.0f)
                     mapView = this

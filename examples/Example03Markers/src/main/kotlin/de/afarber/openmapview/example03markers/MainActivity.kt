@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import de.afarber.openmapview.BitmapDescriptorFactory
 import de.afarber.openmapview.CameraUpdateFactory
 import de.afarber.openmapview.LatLng
@@ -77,7 +76,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MapViewScreen() {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     // Calculate initial location from POI marker positions
     val initialLocation = LatLng(
@@ -116,8 +114,6 @@ fun MapViewScreen() {
         AndroidView(
             factory = { ctx ->
                 OpenMapView(ctx).apply {
-                    lifecycleOwner.lifecycle.addObserver(this)
-
                     setCenter(initialLocation)
                     setZoom(initialZoom)
                     getUiSettings().infoWindowAutoDismiss = 5.seconds

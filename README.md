@@ -85,14 +85,10 @@ Explore the example applications to see OpenMapView in action:
 ```kotlin
 @Composable
 fun MapViewScreen() {
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-
     AndroidView(
         factory = { context ->
+            // Cleans up after itself when it leaves the screen, no lifecycle code needed
             OpenMapView(context).apply {
-                // Register lifecycle observer for proper cleanup
-                lifecycleOwner.lifecycle.addObserver(this)
-
                 setCenter(LatLng(51.4661, 7.2491))
                 setZoom(14.0f)
 

@@ -446,7 +446,6 @@ See the **Example11MapTypes** sample app for a complete demonstration of all map
 ```kotlin
 // From Example11MapTypes:
 val mapView = OpenMapView(context)
-lifecycle.addObserver(mapView)
 mapView.setCenter(LatLng(46.8182, 8.2275))
 mapView.setZoom(12.0f)
 mapView.setMapType(MapType.CYCLOSM)  // Switch map types dynamically

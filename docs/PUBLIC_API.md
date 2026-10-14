@@ -10,12 +10,12 @@ This document lists all public non-deprecated methods from Google's MapView and 
 
 | Method                            | Return Type | Notes                                                              |
 | --------------------------------- | ----------- | ------------------------------------------------------------------ |
-| `onCreate(Bundle)`                | `void`      | Not needed - OpenMapView uses DefaultLifecycleObserver pattern     |
-| `onStart()`                       | `void`      | Not needed - OpenMapView uses DefaultLifecycleObserver pattern     |
+| `onCreate(Bundle)`                | `void`      | Not needed - OpenMapView manages its lifecycle automatically       |
+| `onStart()`                       | `void`      | Not needed - OpenMapView manages its lifecycle automatically       |
 | `onResume()`                      | `void`      |                                                                    |
 | `onPause()`                       | `void`      |                                                                    |
-| `onStop()`                        | `void`      | Not needed - OpenMapView uses DefaultLifecycleObserver pattern     |
-| `onDestroy()`                     | `void`      |                                                                    |
+| `onStop()`                        | `void`      | Not needed - OpenMapView manages its lifecycle automatically       |
+| `onDestroy()`                     | `void`      | Optional - called automatically when the view is detached          |
 | `onSaveInstanceState(Bundle)`     | `void`      | Not implemented                                                     |
 | `onLowMemory()`                   | `void`      | Not implemented                                                     |
 | `getMapAsync(OnMapReadyCallback)` | `void`      | Not needed - map is immediately available after view creation      |
@@ -416,8 +416,7 @@ OpenMapView uses a **single-class architecture** (vs. Google Maps' MapView + Goo
 
 - Map methods called directly on `OpenMapView` instance (e.g., `mapView.setCenter()`, `mapView.getZoom()`)
 - No async initialization needed - map ready immediately after view creation
-- Uses `DefaultLifecycleObserver` pattern - no manual lifecycle forwarding required
-- Just call `lifecycle.addObserver(mapView)` once in Activity/Fragment
+- No manual lifecycle forwarding required: while attached to a window, the view observes the lifecycle of its view tree, and it releases its resources when detached
 
 ---
 

@@ -52,12 +52,12 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (504 tests across 42 test classes)
+### Current Test Coverage (514 tests across 43 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
-| **AttributionOverlayTest** | 4 | Attribution rendering and touch detection |
 | **AttributionOverlayLayoutTest** | 3 | Long attribution wrapping and its touch area (native graphics, SDK 33) |
+| **AttributionOverlayTest** | 4 | Attribution rendering and touch detection |
 | **BitmapDescriptorFactoryTest** | 15 | Marker icon generation with colors and custom images |
 | **CameraPositionTest** | 7 | Camera position validation and equality |
 | **CameraUpdateFactoryTest** | 11 | Camera update creation (zoom, pan, position) |
@@ -72,12 +72,15 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **MapClippingTest** | 1 | Map drawing is clipped to the view bounds when the parent does not clip (native graphics, SDK 33) |
 | **MapControllerOverlaysTest** | 13 | Circles, ground and tile overlays, their touch detection, info windows, drawing all shape types |
 | **MapControllerTest** | 103 | Zoom, pan, marker/polyline/polygon management, touch detection, padding, camera bounds, edge effects |
-| **MapControllerTileLoadingTest** | 7 | Base tile loading order (disk, network, stale fallback) and retry backoff |
+| **MapControllerTileLoadingTest** | 9 | Base tile loading order (disk, network, stale fallback), retry backoff, onDestroy cancelling downloads and the map loading tiles afterwards |
 | **MapFeaturesTest** | 5 | Feature query methods (traffic, indoor, buildings, myLocation) |
+| **MapLifecycleTest** | 6 | Observing the view tree lifecycle while attached, cleanup and animation cancel on detach, reattaching |
 | **MapLoadedCallbackTest** | 7 | setOnMapLoadedCallback: fires once when all visible tiles are drawn, waits for missing tiles and camera moves |
 | **MapProjectionTest** | 8 | Projection screen/LatLng conversion, pan offset, padding, visible region |
 | **MapTypeTest** | 18 | Map type switching and validation |
+| **MarkerDragTest** | 3 | Marker drag starts past the touch slop and never pans the map |
 | **MarkerIconFactoryTest** | 3 | Default marker icon generation and caching |
+| **MarkerIconLoadingTest** | 4 | Marker icons from XML/vector resources and assets, caching, fallback to the default icon |
 | **MarkerTest** | 23 | Marker creation, equality, properties, info windows, dragging |
 | **OptionsBuildersTest** | 13 | Google-style *Options builders for markers, shapes and overlays |
 | **PolygonTest** | 20 | Polygon creation, validation, holes, and styling |
@@ -89,10 +92,11 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **TileDownloaderTest** | 5 | HTTP tile downloading with mocked Ktor client, HTTP errors, cancellation |
 | **TileOverlayTest** | 5 | Tile overlay defaults, transparency validation, copy helpers |
 | **TileRetryTrackerTest** | 4 | Exponential backoff for failed tiles |
-| **TileSourceTest** | 9 | Tile source URL generation, attribution and API keys |
+| **TileSourceTest** | 11 | Tile source URL generation, attribution and API keys |
 | **TileTest** | 6 | Tile content equality, validation and toString |
 | **UiSettingsTest** | 25 | UI settings (gestures, zoom controls, not-implemented features) |
-| **UrlTileProviderTest** | 4 | Overlay tile downloading, HTTP 404 handling, shared HTTP client |
+| **UrlTileProviderTest** | 5 | Overlay tile downloading, HTTP 404 handling, shared HTTP client |
+| **UserAgentTest** | 3 | User-Agent with library version and app package name |
 | **ViewportCalculatorTest** | 10 | Visible tile calculation |
 | **VisibleRegionTest** | 4 | Visible region bounds and corners |
 

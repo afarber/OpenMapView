@@ -15,6 +15,7 @@ import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.awaitCancellation
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -48,6 +49,7 @@ class MapControllerTileLoadingTest {
     private val tile = TileCoordinate(1, 2, 3)
     private var now = 1_000_000_000_000L
     private var serverUp = true
+    private var serverHangs = false
     private var requests = 0
 
     @Before
@@ -56,17 +58,24 @@ class MapControllerTileLoadingTest {
         disk = DiskTileCache(folder.newFolder(), DiskTileCache.DEFAULT_NAMESPACE, 1024 * 1024, MAX_AGE_MS, { now })
         cache = TileCache(disk)
         setField(controller, "tileCache", cache)
+        setField(controller, "tileDownloader", mockDownloader())
+    }
 
+    // A TileDownloader whose HTTP client answers from the fields above
+    private fun mockDownloader(): TileDownloader {
         val engine =
             MockEngine {
                 requests++
+                if (serverHangs) awaitCancellation()
                 if (serverUp) {
                     respond(ByteReadChannel(createPngBytes()), HttpStatusCode.OK)
                 } else {
                     respond(ByteReadChannel(ByteArray(0)), HttpStatusCode.ServiceUnavailable)
                 }
             }
-        setField(getField(controller, "tileDownloader"), "client", HttpClient(engine))
+        val downloader = TileDownloader()
+        setField(downloader, "client", HttpClient(engine))
+        return downloader
     }
 
     @After
@@ -160,10 +169,51 @@ class MapControllerTileLoadingTest {
         assertFalse(controller.needsDownload(tile, SystemClock.elapsedRealtime()))
     }
 
-    // Calls the private downloadTile() and waits until its result reached the main thread
+    @Test
+    fun testOnDestroy_CancelsRunningDownloadAndMapStillLoadsTilesAfterwards() {
+        serverHangs = true
+        val downloading = startDownload()
+        val deadline = System.currentTimeMillis() + 5_000
+        while (requests == 0) {
+            check(System.currentTimeMillis() < deadline) { "Request was not sent" }
+            Thread.sleep(10)
+        }
+
+        controller.onDestroy()
+
+        // The cancelled download no longer blocks the tile and the HTTP client is closed
+        assertFalse(downloadingTiles().contains(tile))
+        assertTrue(downloading.contains(tile))
+        val field = MapController::class.java.getDeclaredField("tileDownloader")
+        field.isAccessible = true
+        assertNull(field.get(controller))
+        assertTrue(controller.needsDownload(tile, SystemClock.elapsedRealtime()))
+
+        // Drawn again, e.g. after the view is attached again, the map downloads the tile
+        serverHangs = false
+        setField(controller, "tileDownloader", mockDownloader())
+        download()
+
+        assertNotNull(cache.getMemory(tile))
+    }
+
+    @Test
+    fun testOnDestroy_CanBeCalledTwice() {
+        controller.onDestroy()
+        controller.onDestroy()
+
+        setField(controller, "tileDownloader", mockDownloader())
+        download()
+
+        assertNotNull(cache.getMemory(tile))
+    }
+
     @Suppress("UNCHECKED_CAST")
-    private fun download() {
-        val downloading = getField(controller, "downloadingTiles") as MutableSet<TileCoordinate>
+    private fun downloadingTiles(): MutableSet<TileCoordinate> = getField(controller, "downloadingTiles") as MutableSet<TileCoordinate>
+
+    // Calls the private downloadTile() and returns the set it removes the tile from when done
+    private fun startDownload(): MutableSet<TileCoordinate> {
+        val downloading = downloadingTiles()
         downloading.add(tile)
         val method =
             MapController::class.java.getDeclaredMethod(
@@ -173,6 +223,12 @@ class MapControllerTileLoadingTest {
             )
         method.isAccessible = true
         method.invoke(controller, tile, false)
+        return downloading
+    }
+
+    // Calls the private downloadTile() and waits until its result reached the main thread
+    private fun download() {
+        val downloading = startDownload()
 
         val deadline = System.currentTimeMillis() + 5_000
         while (downloading.contains(tile)) {
