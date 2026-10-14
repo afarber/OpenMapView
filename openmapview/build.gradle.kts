@@ -83,8 +83,6 @@ abstract class GenerateLibraryVersionTask : DefaultTask() {
             |
             |internal const val LIBRARY_VERSION = "${libraryVersion.get()}"
             |
-            |internal const val USER_AGENT = "OpenMapView/${'$'}LIBRARY_VERSION (https://github.com/afarber/OpenMapView)"
-            |
             """.trimMargin(),
         )
     }
