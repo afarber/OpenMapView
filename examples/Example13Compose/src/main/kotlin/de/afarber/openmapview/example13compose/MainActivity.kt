@@ -37,10 +37,12 @@ import androidx.compose.ui.unit.dp
 import de.afarber.openmapview.CameraPosition
 import de.afarber.openmapview.CameraUpdateFactory
 import de.afarber.openmapview.LatLng
-import de.afarber.openmapview.Marker
 import de.afarber.openmapview.compose.CameraPositionState
+import de.afarber.openmapview.compose.Marker
+import de.afarber.openmapview.compose.MarkerState
 import de.afarber.openmapview.compose.OpenMap
 import de.afarber.openmapview.compose.rememberCameraPositionState
+import de.afarber.openmapview.compose.rememberMarkerState
 import kotlinx.coroutines.launch
 
 private val BOCHUM = LatLng(51.4661, 7.2491)
@@ -66,6 +68,8 @@ fun TabsScreen() {
         rememberCameraPositionState {
             position = CameraPosition(BOCHUM, 14f)
         }
+    // Also hoisted, so the dragged marker keeps its position
+    val markerState = rememberMarkerState(BOCHUM)
 
     Scaffold(
         bottomBar = {
@@ -87,15 +91,18 @@ fun TabsScreen() {
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             when (selectedTab) {
-                0 -> MapTab(cameraPositionState)
-                else -> CameraTab(cameraPositionState) { selectedTab = 0 }
+                0 -> MapTab(cameraPositionState, markerState)
+                else -> CameraTab(cameraPositionState, markerState) { selectedTab = 0 }
             }
         }
     }
 }
 
 @Composable
-fun MapTab(cameraPositionState: CameraPositionState) {
+fun MapTab(
+    cameraPositionState: CameraPositionState,
+    markerState: MarkerState,
+) {
     val scope = rememberCoroutineScope()
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -103,10 +110,9 @@ fun MapTab(cameraPositionState: CameraPositionState) {
         OpenMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            onMapCreated = { map ->
-                map.addMarker(Marker(position = BOCHUM, title = "Bochum"))
-            },
-        )
+        ) {
+            Marker(state = markerState, title = "Drag me", draggable = true)
+        }
         Button(
             onClick = { scope.launch { cameraPositionState.animate(CameraUpdateFactory.zoomIn()) } },
             modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
@@ -119,9 +125,11 @@ fun MapTab(cameraPositionState: CameraPositionState) {
 @Composable
 fun CameraTab(
     cameraPositionState: CameraPositionState,
+    markerState: MarkerState,
     showMap: () -> Unit,
 ) {
     val position = cameraPositionState.position
+    val marker = markerState.position
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -133,13 +141,19 @@ fun CameraTab(
             "%.4f, %.4f at zoom %.1f".format(position.target.latitude, position.target.longitude, position.zoom),
             style = MaterialTheme.typography.titleMedium,
         )
+        Text("Marker:")
+        Text(
+            "%.4f, %.4f".format(marker.latitude, marker.longitude),
+            style = MaterialTheme.typography.titleMedium,
+        )
         Button(
             onClick = {
                 cameraPositionState.position = CameraPosition(BOCHUM, 14f)
+                markerState.position = BOCHUM
                 showMap()
             },
         ) {
-            Text("Show Bochum")
+            Text("Back to Bochum")
         }
     }
 }

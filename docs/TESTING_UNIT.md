@@ -107,6 +107,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
+| **MarkerComposableTest** | 7 | Marker composables added to and removed from the map, moved by MarkerState, replaced on changes, drag and click, Saver |
 | **OpenMapTest** | 7 | OpenMap starts at and follows CameraPositionState, keeps the camera when shown again, animate() and the Saver |
 
 ### Example Test
