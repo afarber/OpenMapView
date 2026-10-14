@@ -15,7 +15,7 @@ import android.graphics.Bitmap
  * This sealed class provides different ways to specify marker icons:
  * - [DefaultMarker]: Default colored teardrop marker
  * - [BitmapMarker]: Custom bitmap object
- * - [ResourceMarker]: Bitmap from drawable resource
+ * - [ResourceMarker]: Bitmap or vector drawable resource
  * - [AssetMarker]: Bitmap from assets folder
  */
 sealed class BitmapDescriptor {
@@ -38,7 +38,7 @@ sealed class BitmapDescriptor {
     ) : BitmapDescriptor()
 
     /**
-     * Marker from a drawable resource ID.
+     * Marker from a drawable resource ID, either a bitmap or a vector drawable.
      *
      * @property resourceId The drawable resource ID (e.g., R.drawable.marker_icon)
      */

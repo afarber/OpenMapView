@@ -380,15 +380,15 @@ mapView.setOnMarkerDragListener(object : OnMarkerDragListener {
 
 ## BitmapDescriptorFactory
 
-| Method                 | Return Type        | Notes |
-| ---------------------- | ------------------ | ----- |
-| `defaultMarker()`      | `BitmapDescriptor` |       |
-| `defaultMarker(float)` | `BitmapDescriptor` |       |
-| `fromAsset(String)`    | `BitmapDescriptor` |       |
-| `fromBitmap(Bitmap)`   | `BitmapDescriptor` |       |
-| `fromFile(String)`     | `BitmapDescriptor` |       |
-| `fromPath(String)`     | `BitmapDescriptor` |       |
-| `fromResource(int)`    | `BitmapDescriptor` |       |
+| Method                 | Return Type        | Notes                         |
+| ---------------------- | ------------------ | ----------------------------- |
+| `defaultMarker()`      | `BitmapDescriptor` |                               |
+| `defaultMarker(float)` | `BitmapDescriptor` |                               |
+| `fromAsset(String)`    | `BitmapDescriptor` |                               |
+| `fromBitmap(Bitmap)`   | `BitmapDescriptor` |                               |
+| `fromFile(String)`     | `BitmapDescriptor` |                               |
+| `fromPath(String)`     | `BitmapDescriptor` |                               |
+| `fromResource(int)`    | `BitmapDescriptor` | Also accepts vector drawables |
 
 ---
 

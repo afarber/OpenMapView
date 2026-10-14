@@ -22,6 +22,9 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import kotlin.time.Duration
 
+// Finger movement in pixels below which a touch counts as a tap and a marker drag does not start
+private const val TAP_SLOP_PX = 10f
+
 /**
  * A MapView powered by OpenStreetMap tiles.
  *
@@ -181,8 +184,14 @@ class OpenMapView
                         val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
 
                         if (draggedMarker != null) {
-                            // Start dragging if moved more than threshold
-                            if (!isDragging && movementDistance > 10) {
+                            // Start dragging once the finger has moved past the slop from the
+                            // down point; until then the map must not pan under the marker
+                            if (!isDragging) {
+                                val fromDownX = event.x - initialTouchX
+                                val fromDownY = event.y - initialTouchY
+                                if (fromDownX * fromDownX + fromDownY * fromDownY <= TAP_SLOP_PX * TAP_SLOP_PX) {
+                                    return true
+                                }
                                 isDragging = true
                                 controller.commitPan()
                                 onMarkerDragListener?.onMarkerDragStart(draggedMarker!!)
@@ -253,7 +262,7 @@ class OpenMapView
                         val dy = event.y - initialTouchY
                         val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
 
-                        if (movementDistance < 10) {
+                        if (movementDistance < TAP_SLOP_PX) {
                             // Report the tap as a click, so accessibility services and any
                             // OnClickListener are notified like for other clickable views
                             if (event.action == MotionEvent.ACTION_UP) {

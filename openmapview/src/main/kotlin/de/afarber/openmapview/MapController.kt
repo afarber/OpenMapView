@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withSave
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -185,6 +187,9 @@ class MapController(
 
     private val markers = mutableListOf<Marker>()
     private val defaultMarkerIcon by lazy { MarkerIconFactory.getDefaultIcon() }
+
+    // Decoded resource and asset icons, keyed by descriptor (failed loads are not cached)
+    private val descriptorBitmapCache = HashMap<BitmapDescriptor, Bitmap>()
     var onMarkerClickListener: OnMarkerClickListener? = null
     var onInfoWindowClickListener: OnInfoWindowClickListener? = null
     var onInfoWindowCloseListener: OnInfoWindowCloseListener? = null
@@ -246,10 +251,12 @@ class MapController(
     /**
      * Loads a bitmap from a BitmapDescriptor.
      *
+     * Resource and asset bitmaps are decoded once and cached, because this runs on every draw.
+     *
      * @param descriptor The descriptor specifying the bitmap source
      * @return The loaded bitmap, or the default marker icon if loading fails
      */
-    private fun loadBitmap(descriptor: BitmapDescriptor?): Bitmap {
+    internal fun loadBitmap(descriptor: BitmapDescriptor?): Bitmap {
         if (descriptor == null) {
             return defaultMarkerIcon
         }
@@ -264,25 +271,33 @@ class MapController(
             }
 
             is BitmapDescriptor.ResourceMarker -> {
-                try {
-                    BitmapFactory.decodeResource(context.resources, descriptor.resourceId)
-                        ?: defaultMarkerIcon
-                } catch (e: Exception) {
-                    defaultMarkerIcon
-                }
+                descriptorBitmapCache[descriptor]
+                    ?: decodeResource(descriptor.resourceId)?.also { descriptorBitmapCache[descriptor] = it }
+                    ?: defaultMarkerIcon
             }
 
             is BitmapDescriptor.AssetMarker -> {
-                try {
-                    context.assets.open(descriptor.assetName).use { stream ->
-                        BitmapFactory.decodeStream(stream) ?: defaultMarkerIcon
-                    }
-                } catch (e: IOException) {
-                    defaultMarkerIcon
-                }
+                descriptorBitmapCache[descriptor]
+                    ?: decodeAsset(descriptor.assetName)?.also { descriptorBitmapCache[descriptor] = it }
+                    ?: defaultMarkerIcon
             }
         }
     }
+
+    // Goes through Drawable rather than BitmapFactory so vector and other XML drawables work too
+    private fun decodeResource(resourceId: Int): Bitmap? =
+        try {
+            ContextCompat.getDrawable(context, resourceId)?.toBitmap()
+        } catch (e: Exception) {
+            null
+        }
+
+    private fun decodeAsset(assetName: String): Bitmap? =
+        try {
+            context.assets.open(assetName).use { stream -> BitmapFactory.decodeStream(stream) }
+        } catch (e: IOException) {
+            null
+        }
 
     /**
      * Sets the zoom level, clamping to valid range.
