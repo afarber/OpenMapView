@@ -52,7 +52,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 
 ## Test Structure
 
-### Current Test Coverage (479 tests across 36 test classes)
+### Current Test Coverage (482 tests across 36 test classes)
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
@@ -70,7 +70,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **LatLngTest** | 11 | Latitude clamping and longitude wrapping |
 | **MapControllerOverlaysTest** | 13 | Circles, ground and tile overlays, their touch detection, info windows, drawing all shape types |
 | **MapControllerTest** | 103 | Zoom, pan, marker/polyline/polygon management, touch detection, padding, camera bounds, edge effects |
-| **MapControllerTileLoadingTest** | 5 | Base tile loading order (disk, network, stale fallback) and retry backoff |
+| **MapControllerTileLoadingTest** | 7 | Base tile loading order (disk, network, stale fallback) and retry backoff |
 | **MapFeaturesTest** | 5 | Feature query methods (traffic, indoor, buildings, myLocation) |
 | **MapProjectionTest** | 8 | Projection screen/LatLng conversion, pan offset, padding, visible region |
 | **MapTypeTest** | 18 | Map type switching and validation |
@@ -82,7 +82,7 @@ The `--continue` flag ensures all tests run even if some fail, useful for gettin
 | **PredefinedTileProvidersTest** | 2 | URL templates of the predefined overlay tile providers, Stadia key lookup |
 | **ProjectionTest** | 12 | Web Mercator projection calculations |
 | **SnapshotTest** | 8 | Map snapshot API and callbacks |
-| **TileCacheTest** | 12 | Memory LRU cache behavior, clearing, namespaces, disk writes, stale tiles |
+| **TileCacheTest** | 13 | Memory LRU cache behavior, clearing, namespaces, disk writes, stale tiles |
 | **TileDownloaderTest** | 5 | HTTP tile downloading with mocked Ktor client, HTTP errors, cancellation |
 | **TileOverlayTest** | 5 | Tile overlay defaults, transparency validation, copy helpers |
 | **TileRetryTrackerTest** | 4 | Exponential backoff for failed tiles |

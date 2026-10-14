@@ -212,6 +212,24 @@ class TileCacheTest {
         assertNull(stale.getStale(tile))
     }
 
+    @Test
+    fun testEvictedTileLosesStaleMark() {
+        var now = 1_000_000_000_000L
+        val disk = DiskTileCache(folder.newFolder(), DiskTileCache.DEFAULT_NAMESPACE, 1024 * 1024, 60_000, { now })
+        val a = TileCoordinate(1, 2, 3)
+        disk.put(a, createPngBytes())
+        now += 60_001
+        // Room for one 256x256 RGB_565 tile (128 KB)
+        val small = TileCache(disk, cacheSize = 200)
+        small.getStale(a)
+        assertTrue(small.isStale(a))
+
+        small.put(TileCoordinate(4, 5, 6), Bitmap.createBitmap(256, 256, Bitmap.Config.RGB_565))
+
+        assertNull("Evicted from memory", small.getMemory(a))
+        assertFalse(small.isStale(a))
+    }
+
     private fun createPngBytes(): ByteArray {
         val output = ByteArrayOutputStream()
         createMockBitmap(256, 256).compress(Bitmap.CompressFormat.PNG, 100, output)

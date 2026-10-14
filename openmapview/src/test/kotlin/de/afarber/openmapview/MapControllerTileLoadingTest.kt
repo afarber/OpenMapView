@@ -30,6 +30,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import java.io.ByteArrayOutputStream
+import java.time.Duration
 
 /**
  * Drives MapController's base tile download through a mocked HTTP client and a disk
@@ -134,6 +135,29 @@ class MapControllerTileLoadingTest {
         assertEquals(2, requests)
         assertFalse(cache.isStale(tile))
         assertTrue(retries().canRequest(tile, SystemClock.elapsedRealtime()))
+    }
+
+    @Test
+    fun testStaleTileNeedsDownloadAfterBackOff() {
+        disk.put(tile, createPngBytes())
+        now += MAX_AGE_MS + 1
+        serverUp = false
+        download()
+
+        assertFalse("Still waiting for the retry delay", controller.needsDownload(tile, SystemClock.elapsedRealtime()))
+
+        // Prefetch and visible tiles share needsDownload(), so both retry the stale tile
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(TileRetryTracker.INITIAL_DELAY_MS))
+        assertTrue(controller.needsDownload(tile, SystemClock.elapsedRealtime()))
+    }
+
+    @Test
+    fun testFreshTileInMemoryNeedsNoDownload() {
+        assertTrue(controller.needsDownload(tile, SystemClock.elapsedRealtime()))
+
+        download()
+
+        assertFalse(controller.needsDownload(tile, SystemClock.elapsedRealtime()))
     }
 
     // Calls the private downloadTile() and waits until its result reached the main thread

@@ -31,6 +31,8 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class TileCache internal constructor(
     private var diskCache: DiskTileCache?,
+    // Use 1/8 of available heap memory for tile cache
+    cacheSize: Int = (Runtime.getRuntime().maxMemory() / 1024 / 8).toInt(),
 ) {
     constructor(
         context: Context? = null,
@@ -41,10 +43,6 @@ class TileCache internal constructor(
         private val TAG = TileCache::class.java.simpleName
     }
 
-    // Use 1/8 of available heap memory for tile cache
-    private val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
-    private val cacheSize = maxMemory / 8
-
     // Tiles in the memory cache that came from an expired disk entry
     private val staleTiles: MutableSet<TileCoordinate> = Collections.newSetFromMap(ConcurrentHashMap())
 
@@ -54,6 +52,16 @@ class TileCache internal constructor(
                 key: TileCoordinate,
                 bitmap: Bitmap,
             ): Int = bitmap.byteCount / 1024
+
+            // A tile that leaves the memory cache is no longer shown, so forget its stale mark
+            override fun entryRemoved(
+                evicted: Boolean,
+                key: TileCoordinate,
+                oldValue: Bitmap,
+                newValue: Bitmap?,
+            ) {
+                staleTiles.remove(key)
+            }
         }
 
     /**

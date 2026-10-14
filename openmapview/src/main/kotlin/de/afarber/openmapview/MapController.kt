@@ -1267,11 +1267,7 @@ class MapController(
                 canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tileBorderPaint)
             }
 
-            // An expired tile shown as offline fallback is downloaded again after its retry delay
-            if ((cachedBitmap == null || tileCache.isStale(tile)) &&
-                !downloadingTiles.contains(tile) &&
-                tileRetries.canRequest(tile, SystemClock.elapsedRealtime())
-            ) {
+            if (needsDownload(tile, SystemClock.elapsedRealtime())) {
                 downloadingTiles.add(tile)
                 downloadTile(tile)
             }
@@ -1350,16 +1346,24 @@ class MapController(
         // Download tiles that are adjacent but not yet visible
         val now = SystemClock.elapsedRealtime()
         for (tile in prefetchTiles) {
-            if (!visibleTiles.contains(tile) &&
-                !downloadingTiles.contains(tile) &&
-                tileCache.getMemory(tile) == null &&
-                tileRetries.canRequest(tile, now)
-            ) {
+            if (!visibleTiles.contains(tile) && needsDownload(tile, now)) {
                 downloadingTiles.add(tile)
                 downloadTile(tile, lowPriority = true)
             }
         }
     }
+
+    /**
+     * Returns true if a base tile should be downloaded: it is missing from memory, or it is
+     * an expired tile shown as offline fallback, and its retry delay has passed.
+     */
+    internal fun needsDownload(
+        tile: TileCoordinate,
+        now: Long,
+    ): Boolean =
+        (tileCache.getMemory(tile) == null || tileCache.isStale(tile)) &&
+            !downloadingTiles.contains(tile) &&
+            tileRetries.canRequest(tile, now)
 
     /**
      * Converts a distance in meters to screen pixels at a given latitude and zoom level.
@@ -1848,6 +1852,11 @@ class MapController(
             var skipped = false
             var stale = false
             try {
+                // The source changed while this request was queued
+                if (cache !== tileCache) {
+                    skipped = true
+                    return@launch
+                }
                 // Disk hits don't need a download permit, a stale tile in memory is downloaded again
                 if (!cache.isStale(tile)) {
                     bitmap = cache.get(tile)
