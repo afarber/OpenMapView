@@ -75,9 +75,9 @@ try {
 | Humanitarian | `MapType.HUMANITARIAN` | Humanitarian OSM Team | |
 | OPNVKarte | `MapType.OPNVKARTE` | MeMoMaps | |
 | OpenTopoMap | `MapType.OPENTOPOMAP` | OpenTopoMap | |
-| Carto Light | `MapType.CARTO_LIGHT` | CARTO | |
-| Carto Dark | `MapType.CARTO_DARK` | CARTO | |
-| Carto Voyager | `MapType.CARTO_VOYAGER` | CARTO | |
+| Carto Light | `MapType.CARTO_LIGHT` | CARTO | CARTO |
+| Carto Dark | `MapType.CARTO_DARK` | CARTO | CARTO |
+| Carto Voyager | `MapType.CARTO_VOYAGER` | CARTO | CARTO |
 | Stamen Toner | `MapType.STAMEN_TONER` | Stadia Maps | Stadia Maps |
 | Stamen Watercolor | `MapType.STAMEN_WATERCOLOR` | Stadia Maps | Stadia Maps |
 

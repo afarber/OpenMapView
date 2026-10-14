@@ -11,7 +11,8 @@ package de.afarber.openmapview
  * Map type constants for OpenMapView.
  *
  * Defines 15 map tile styles from various providers.
- * Twelve map types work without API keys, three require API keys from third-party providers.
+ * Six map types (including [NONE]) work without API keys, nine require API keys from
+ * third-party providers.
  *
  * **Free Map Types (No API Key Required):**
  * - [NONE]: No base map tiles
@@ -20,15 +21,15 @@ package de.afarber.openmapview
  * - [HUMANITARIAN]: Humanitarian OSM style for emergency response
  * - [OPNVKARTE]: German public transport map
  * - [OPENTOPOMAP]: Free topographic map with contours
- * - [CARTO_LIGHT]: Minimalist light theme for data visualization
- * - [CARTO_DARK]: Dark theme for night mode
- * - [CARTO_VOYAGER]: Modern colorful basemap
  *
  * **Premium Map Types (API Key Required):**
  * - [CYCLEMAP]: Thunderforest cycling map (requires Thunderforest API key)
  * - [TRANSPORT]: Public transport focused map (requires Thunderforest API key)
  * - [TRANSPORT_DARK]: Dark mode public transport map (requires Thunderforest API key)
  * - [TRACESTRACK_TOPO]: Topographic with contours (requires Tracestrack API key)
+ * - [CARTO_LIGHT]: Minimalist light theme for data visualization (requires CARTO API key)
+ * - [CARTO_DARK]: Dark theme for night mode (requires CARTO API key)
+ * - [CARTO_VOYAGER]: Modern colorful basemap (requires CARTO API key)
  * - [STAMEN_TONER]: High-contrast black and white (requires Stadia Maps API key)
  * - [STAMEN_WATERCOLOR]: Artistic watercolor rendering (requires Stadia Maps API key)
  *
@@ -41,6 +42,9 @@ package de.afarber.openmapview
  *     android:value="your_key_here"/>
  * <meta-data
  *     android:name="de.afarber.openmapview.TRACESTRACK_API_KEY"
+ *     android:value="your_key_here"/>
+ * <meta-data
+ *     android:name="de.afarber.openmapview.CARTO_API_KEY"
  *     android:value="your_key_here"/>
  * <meta-data
  *     android:name="de.afarber.openmapview.STADIA_API_KEY"
@@ -60,6 +64,8 @@ package de.afarber.openmapview
  *   - Free tier: 150,000 tiles/month
  * - **Tracestrack** (TRACESTRACK_TOPO): https://www.tracestrack.com/en/signup
  *   - Free tier: 100,000 tiles/month
+ * - **CARTO** (CARTO_LIGHT, CARTO_DARK, CARTO_VOYAGER): https://carto.com/basemaps/apikey
+ *   - Free tier: 5,000,000 tiles/month for non-commercial use, 1,000,000 for commercial use
  * - **Stadia Maps** (STAMEN_TONER, STAMEN_WATERCOLOR): https://client.stadiamaps.com/signup/
  *   - Free tier: 200,000 tiles/month for non-commercial use
  *
@@ -213,8 +219,10 @@ object MapType {
      *
      * - **Tile Server**: basemaps.cartocdn.com
      * - **Max Zoom**: 20
-     * - **API Key**: Not required (free for non-commercial use)
+     * - **API Key**: Required (CARTO)
      * - **Use Cases**: Data visualization, business intelligence, marker-heavy apps
+     *
+     * @see ApiKeyManager
      */
     const val CARTO_LIGHT: Int = 10
 
@@ -222,12 +230,13 @@ object MapType {
      * Carto Dark - Dark theme basemap for night mode.
      *
      * Dark-colored basemap suitable for night mode and low-light conditions.
-     * Free alternative to TRANSPORT_DARK for general-purpose use.
      *
      * - **Tile Server**: basemaps.cartocdn.com
      * - **Max Zoom**: 20
-     * - **API Key**: Not required (free for non-commercial use)
+     * - **API Key**: Required (CARTO)
      * - **Use Cases**: Night mode apps, dark UI themes, reduced eye strain
+     *
+     * @see ApiKeyManager
      */
     const val CARTO_DARK: Int = 11
 
@@ -239,8 +248,10 @@ object MapType {
      *
      * - **Tile Server**: basemaps.cartocdn.com
      * - **Max Zoom**: 18
-     * - **API Key**: Not required (free for non-commercial use)
+     * - **API Key**: Required (CARTO)
      * - **Use Cases**: Modern apps, consumer-facing applications, travel apps
+     *
+     * @see ApiKeyManager
      */
     const val CARTO_VOYAGER: Int = 12
 
