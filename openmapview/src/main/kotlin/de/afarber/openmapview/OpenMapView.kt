@@ -16,6 +16,7 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
+import android.view.View
 import android.widget.FrameLayout
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withClip
@@ -82,6 +83,7 @@ class OpenMapView
         private var initialTouchY = 0f
         private var onMapClickListener: OnMapClickListener? = null
         private var onMapLongClickListener: OnMapLongClickListener? = null
+        private var infoWindowAdapter: InfoWindowAdapter? = null
         private var onMarkerDragListener: OnMarkerDragListener? = null
         private var draggedMarker: Marker? = null
         private var isDragging = false
@@ -346,11 +348,7 @@ class OpenMapView
                                             controller.onInfoWindowCloseListener?.onInfoWindowClose(marker)
                                         }
                                     }
-                                    // Show info window for clicked marker if it has title or snippet
-                                    if (touchedMarker.title != null || touchedMarker.snippet != null) {
-                                        touchedMarker.setInfoWindowShownInternal(true)
-                                        scheduleInfoWindowAutoDismiss()
-                                    }
+                                    openInfoWindow(touchedMarker)
                                 }
 
                                 controller.onMarkerClickListener?.onMarkerClick(touchedMarker)
@@ -1052,12 +1050,60 @@ class OpenMapView
         fun showInfoWindow(marker: Marker) {
             // Hide all other info windows (only one can be shown at a time)
             controller.getMarkers().forEach { it.setInfoWindowShownInternal(false) }
-            // Show info window for the marker if it has title or snippet
-            if (marker.title != null || marker.snippet != null) {
-                marker.setInfoWindowShownInternal(true)
-                scheduleInfoWindowAutoDismiss()
-            }
+            openInfoWindow(marker)
             invalidate()
+        }
+
+        /**
+         * Sets the adapter that provides custom views for info windows, or null for the
+         * default window with the marker's title and snippet.
+         *
+         * Example:
+         * ```kotlin
+         * mapView.setInfoWindowAdapter(object : InfoWindowAdapter {
+         *     override fun getInfoWindow(marker: Marker): View? = null
+         *
+         *     override fun getInfoContents(marker: Marker): View =
+         *         layoutInflater.inflate(R.layout.info_contents, null)
+         * })
+         * ```
+         *
+         * @param adapter The adapter, or null for the default info windows
+         * @see InfoWindowAdapter
+         */
+        fun setInfoWindowAdapter(adapter: InfoWindowAdapter?) {
+            infoWindowAdapter = adapter
+        }
+
+        // Shows the info window of the marker: the adapter's view, or the title and snippet.
+        // Without either there is nothing to show.
+        private fun openInfoWindow(marker: Marker) {
+            val adapter = infoWindowAdapter
+            val image =
+                adapter?.getInfoWindow(marker)?.let { InfoWindowImage(drawToBitmap(it), framed = false) }
+                    ?: adapter?.getInfoContents(marker)?.let { InfoWindowImage(drawToBitmap(it), framed = true) }
+            if (image == null && marker.title == null && marker.snippet == null) return
+
+            marker.setInfoWindowShownInternal(true)
+            marker.infoWindowImage = image
+            scheduleInfoWindowAutoDismiss()
+        }
+
+        // Draws an info window view into a bitmap at its wrap_content size. The view is
+        // briefly added to the map, so views that need a window, like ComposeView, are ready.
+        private fun drawToBitmap(view: View): Bitmap {
+            val added = view.parent == null
+            if (added) addView(view, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
+            try {
+                val unspecified = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+                view.measure(unspecified, unspecified)
+                view.layout(0, 0, view.measuredWidth, view.measuredHeight)
+                val bitmap = createBitmap(view.measuredWidth.coerceAtLeast(1), view.measuredHeight.coerceAtLeast(1))
+                view.draw(Canvas(bitmap))
+                return bitmap
+            } finally {
+                if (added) removeView(view)
+            }
         }
 
         /**

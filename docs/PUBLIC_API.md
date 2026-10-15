@@ -311,7 +311,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 | `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           |                                                                      |
 | `setOnCameraMoveCanceledListener(OnCameraMoveCanceledListener)`       | `void`           |                                                                      |
 | `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | Fires once when all visible base tiles are drawn (tile overlays are not awaited) |
-| `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | Not implemented - custom adapters not yet implemented                |
+| `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | Views are drawn into an image when the window opens, like in Google Maps |
 | `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           |                                                                      |
 | `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | Called when info window is closed (manual or auto-dismiss)           |
 | `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | Not implemented                                                      |
@@ -458,9 +458,12 @@ The optional `openmapview-compose` artifact follows the API of Google's [maps-co
 | `MapProperties(mapType, minZoomPreference, maxZoomPreference, latLngBoundsForCameraTarget)` | Same | `mapType` is one of the `MapType` constants |
 | `MapUiSettings(zoomControlsEnabled, zoomGesturesEnabled, scrollGesturesEnabled)` | Same, plus `infoWindowAutoDismiss` | |
 | `rememberCameraPositionState`, `CameraPositionState.animate` | Same | |
+| `ScaleBar`, `DisappearingScaleBar` (maps-compose-widgets) | Same, in `openmapview-compose` | Metric and imperial bars for the camera's latitude and zoom |
 | `Marker(state, title, snippet, onClick, onInfoWindowClick, onInfoWindowClose)` | Same | |
 | `MarkerState.showInfoWindow()`, `hideInfoWindow()`, `isInfoWindowShown` | Same | |
+| `MarkerInfoWindow(state, ...) { marker -> }`, `MarkerInfoWindowContent(state, ...) { marker -> }` | Same | The content is drawn into an image when the window opens |
 | `Polyline`, `Polygon`, `Circle`, `GroundOverlay`, `TileOverlay` | Same | Parameters match the OpenMapView model classes |
+| `MarkerComposable(vararg keys, state, ...) { }` | Same | The content is drawn into the icon again when a key changes |
 
 ---
 

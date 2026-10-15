@@ -7,6 +7,8 @@
 
 package de.afarber.openmapview
 
+import android.graphics.Bitmap
+
 /**
  * Represents a marker on the map at a specific geographic location.
  *
@@ -92,7 +94,14 @@ data class Marker(
      */
     internal fun setInfoWindowShownInternal(shown: Boolean) {
         _isInfoWindowShown = shown
+        if (!shown) infoWindowImage = null
     }
+
+    /**
+     * The info window drawn from an [InfoWindowAdapter] view while it is shown,
+     * or null for the default title and snippet window.
+     */
+    internal var infoWindowImage: InfoWindowImage? = null
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -102,3 +111,14 @@ data class Marker(
 
     override fun hashCode(): Int = id.hashCode()
 }
+
+/**
+ * An info window view drawn into a bitmap.
+ *
+ * @property bitmap The drawn view
+ * @property framed Whether the default frame is drawn around it, see [InfoWindowAdapter.getInfoContents]
+ */
+internal class InfoWindowImage(
+    val bitmap: Bitmap,
+    val framed: Boolean,
+)

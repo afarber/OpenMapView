@@ -58,12 +58,12 @@ dependencies {
     api(project(":openmapview"))
     // OpenMap takes a Modifier
     api(libs.androidx.compose.ui)
+    // Canvas, BasicText and AnimatedVisibility for ScaleBar
+    implementation(libs.androidx.compose.foundation)
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.compose.ui.test.junit4)
-    // Only for testing the map inside a scrolling Column
-    testImplementation(libs.androidx.compose.foundation)
     // Provides the empty activity that createComposeRule() starts
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
