@@ -21,6 +21,7 @@ object CameraUpdateFactory {
      * @param target The location to move the camera to
      * @return A CameraUpdate for the new location
      */
+    @JvmStatic
     fun newLatLng(target: LatLng): CameraUpdate = CameraUpdate.NewLatLng(target)
 
     /**
@@ -31,6 +32,7 @@ object CameraUpdateFactory {
      * @param zoom The desired zoom level (2.0 to 19.0)
      * @return A CameraUpdate for the new location and zoom
      */
+    @JvmStatic
     fun newLatLngZoom(
         target: LatLng,
         zoom: Float,
@@ -42,6 +44,7 @@ object CameraUpdateFactory {
      * @param position The target camera position
      * @return A CameraUpdate for the new position
      */
+    @JvmStatic
     fun newCameraPosition(position: CameraPosition): CameraUpdate = CameraUpdate.NewCameraPosition(position)
 
     /**
@@ -49,6 +52,7 @@ object CameraUpdateFactory {
      *
      * @return A CameraUpdate that zooms in
      */
+    @JvmStatic
     fun zoomIn(): CameraUpdate = CameraUpdate.ZoomIn
 
     /**
@@ -56,6 +60,7 @@ object CameraUpdateFactory {
      *
      * @return A CameraUpdate that zooms out
      */
+    @JvmStatic
     fun zoomOut(): CameraUpdate = CameraUpdate.ZoomOut
 
     /**
@@ -64,6 +69,7 @@ object CameraUpdateFactory {
      * @param zoom The target zoom level (2.0 to 19.0)
      * @return A CameraUpdate for the specified zoom level
      */
+    @JvmStatic
     fun zoomTo(zoom: Float): CameraUpdate = CameraUpdate.ZoomTo(zoom)
 
     /**
@@ -74,6 +80,7 @@ object CameraUpdateFactory {
      * @param amount The amount to adjust the zoom level (e.g., 1.5 or -2.0)
      * @return A CameraUpdate for the relative zoom adjustment
      */
+    @JvmStatic
     fun zoomBy(amount: Float): CameraUpdate = CameraUpdate.ZoomBy(amount)
 
     /**
@@ -87,6 +94,7 @@ object CameraUpdateFactory {
      * @param yPixels The vertical scroll amount in pixels
      * @return A CameraUpdate for the pixel scroll
      */
+    @JvmStatic
     fun scrollBy(
         xPixels: Float,
         yPixels: Float,
@@ -102,6 +110,7 @@ object CameraUpdateFactory {
      * @param padding Padding in pixels to apply uniformly on all sides
      * @return A CameraUpdate to display the bounds
      */
+    @JvmStatic
     fun newLatLngBounds(
         bounds: LatLngBounds,
         padding: Int,
@@ -120,6 +129,7 @@ object CameraUpdateFactory {
      * @param padding Padding in pixels to apply uniformly on all sides
      * @return A CameraUpdate to display the bounds
      */
+    @JvmStatic
     fun newLatLngBounds(
         bounds: LatLngBounds,
         width: Int,

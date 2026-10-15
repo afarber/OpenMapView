@@ -67,8 +67,8 @@ Located in `.github/workflows/`:
 - **Duration**: ~2-3 minutes
 
 #### `_build-examples.yml`
-- **Purpose**: Build all three example apps
-- **Runs**: Builds Example01Pan, Example02Zoom, Example03Markers
+- **Purpose**: Build all example apps
+- **Runs**: `./gradlew -p examples assembleDebug`, which builds every app under `examples/compose` and `examples/views`
 - **Artifacts**: Uploads all debug APKs
 - **Usage**: Called by CI and Release workflows
 - **Duration**: ~3-4 minutes
@@ -324,9 +324,8 @@ Before pushing, developers can run the same checks locally:
 ./gradlew :openmapview:assembleRelease
 
 # Build examples
-./gradlew :examples:Example01Pan:assembleDebug
-./gradlew :examples:Example02Zoom:assembleDebug
-./gradlew :examples:Example03Markers:assembleDebug
+./gradlew -p examples assembleDebug              # all of them
+./gradlew :examples:compose:Pan:assembleDebug    # just one
 
 # Or build everything
 ./gradlew build

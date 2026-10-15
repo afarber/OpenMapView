@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.toArgb
 
 /**
  * Represents a polygon on the map, consisting of a closed shape with optional holes.
@@ -51,6 +52,14 @@ data class Polygon(
      * Used internally for management and callbacks.
      */
     internal val id: String = "polygon_${System.nanoTime()}_${System.identityHashCode(this)}"
+
+    /** [strokeColor] as an ARGB color int, e.g. for Java code. */
+    val strokeColorArgb: Int
+        get() = strokeColor.toArgb()
+
+    /** [fillColor] as an ARGB color int, e.g. for Java code. */
+    val fillColorArgb: Int
+        get() = fillColor.toArgb()
 
     init {
         require(points.size >= 3) { "Polygon must have at least 3 points" }
