@@ -8,6 +8,7 @@
 package de.afarber.openmapview.compose
 
 import android.content.Context
+import android.location.Location
 import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionContext
@@ -24,6 +25,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.CameraUpdateFactory
 import de.afarber.openmapview.InfoWindowAdapter
 import de.afarber.openmapview.LatLng
+import de.afarber.openmapview.LocationSource
 import de.afarber.openmapview.OnMarkerDragListener
 import de.afarber.openmapview.OpenMapView
 import de.afarber.openmapview.Marker as MapMarker
@@ -62,6 +64,11 @@ import de.afarber.openmapview.Marker as MapMarker
  * @param onMapClick Called with the location when the map is tapped
  * @param onMapLongClick Called with the location when the map is long-pressed
  * @param onMapLoaded Called once when the tiles of the first screen are loaded
+ * @param locationSource The source of device locations for [MapProperties.isMyLocationEnabled],
+ *   or null for the platform LocationManager
+ * @param onMyLocationButtonClick Called when the my-location button is tapped; return true to
+ *   keep the camera where it is
+ * @param onMyLocationClick Called with the location when the my-location dot is tapped
  * @param onMapCreated Called once when the map view is created, e.g. to add shapes or
  *   overlays. Set the initial camera through [cameraPositionState] instead.
  * @param content The markers and shapes of the map, see [Marker] and [Polyline]
@@ -75,6 +82,9 @@ fun OpenMap(
     onMapClick: (LatLng) -> Unit = {},
     onMapLongClick: (LatLng) -> Unit = {},
     onMapLoaded: () -> Unit = {},
+    locationSource: LocationSource? = null,
+    onMyLocationButtonClick: (() -> Boolean)? = null,
+    onMyLocationClick: (Location) -> Unit = {},
     onMapCreated: (OpenMapView) -> Unit = {},
     content: @Composable () -> Unit = {},
 ) {
@@ -89,17 +99,21 @@ fun OpenMap(
     val currentOnMapClick by rememberUpdatedState(onMapClick)
     val currentOnMapLongClick by rememberUpdatedState(onMapLongClick)
     val currentOnMapLoaded by rememberUpdatedState(onMapLoaded)
+    val currentOnMyLocationButtonClick by rememberUpdatedState(onMyLocationButtonClick)
+    val currentOnMyLocationClick by rememberUpdatedState(onMyLocationClick)
 
     AndroidView(
         factory = { context ->
             OpenMapView(context).apply {
                 // Before the camera, so the zoom limits and bounds apply to it
-                applied.apply(this, properties, uiSettings, initial = true)
+                applied.apply(this, locationSource, properties, uiSettings, initial = true)
                 moveCamera(CameraUpdateFactory.newCameraPosition(cameraPositionState.position))
                 // Before onMapCreated, which may still replace them
                 setOnMapClickListener { currentOnMapClick(it) }
                 setOnMapLongClickListener { currentOnMapLongClick(it) }
                 setOnMapLoadedCallback { currentOnMapLoaded() }
+                setOnMyLocationButtonClickListener { currentOnMyLocationButtonClick?.invoke() ?: false }
+                setOnMyLocationClickListener { currentOnMyLocationClick(it) }
                 onMapCreated(this)
                 setOnCameraMoveListener { cameraPositionState.readFrom(this) }
                 setOnCameraIdleListener { cameraPositionState.readFrom(this) }
@@ -120,7 +134,7 @@ fun OpenMap(
         modifier = modifier,
         update = { view ->
             cameraPositionState.applyTo(view)
-            applied.apply(view, properties, uiSettings, initial = false)
+            applied.apply(view, locationSource, properties, uiSettings, initial = false)
         },
         onRelease = { view ->
             // Pinch zooming alone doesn't report camera moves, so read the final position
@@ -157,17 +171,25 @@ private class ComposeInfoWindowAdapter(
     }
 }
 
-// The properties and UI settings last set on the map, so only changes are set again
+// The location source, properties and UI settings last set on the map, so only changes are
+// set again
 private class AppliedSettings {
+    private var locationSource: LocationSource? = null
     private var properties: MapProperties? = null
     private var uiSettings: MapUiSettings? = null
 
     fun apply(
         map: OpenMapView,
+        locationSource: LocationSource?,
         properties: MapProperties,
         uiSettings: MapUiSettings,
         initial: Boolean,
     ) {
+        // Before the properties: with a custom source, my location needs no permission
+        if (initial || locationSource !== this.locationSource) {
+            map.setLocationSource(locationSource)
+            this.locationSource = locationSource
+        }
         if (initial || properties != this.properties) {
             properties.applyTo(map, if (initial) null else this.properties)
             this.properties = properties

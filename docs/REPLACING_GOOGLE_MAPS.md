@@ -490,6 +490,7 @@ OpenMapView implements the vast majority of Google MapView's public API. For a c
 - Projection API (coordinate conversion)
 - UI settings and gesture controls
 - Click and long-click listeners
+- My-location layer (`setMyLocationEnabled`, `LocationSource`, my-location button). Without Play Services the default source is the platform `LocationManager`. As with Google Maps, declare `ACCESS_FINE_LOCATION` or `ACCESS_COARSE_LOCATION` in your manifest and request it at runtime first.
 
 **Not Implemented (Google-Specific Features):**
 
@@ -497,7 +498,6 @@ OpenMapView implements the vast majority of Google MapView's public API. For a c
 - Indoor maps (requires Google indoor data)
 - Street View (requires Google imagery)
 - POI (Places of Interest) data
-- My Location layer (developers implement their own location handling)
 
 ---
 

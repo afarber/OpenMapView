@@ -240,8 +240,8 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 | `isTiltGesturesEnabled()`                             | `boolean`   | Always returns false                                                                     |
 | `setCompassEnabled(boolean)`                          | `void`      | Not implemented                                                                           |
 | `isCompassEnabled()`                                  | `boolean`   | Always returns false                                                                     |
-| `setMyLocationButtonEnabled(boolean)`                 | `void`      | Not implemented                                                                           |
-| `isMyLocationButtonEnabled()`                         | `boolean`   | Always returns false                                                                     |
+| `setMyLocationButtonEnabled(boolean)`                 | `void`      | Shown while the my-location layer is enabled; default true |
+| `isMyLocationButtonEnabled()`                         | `boolean`   |  |
 | `setIndoorLevelPickerEnabled(boolean)`                | `void`      | Not implemented                                                                           |
 | `isIndoorLevelPickerEnabled()`                        | `boolean`   | Always returns false                                                                     |
 | `setMapToolbarEnabled(boolean)`                       | `void`      | Not implemented - use openInExternalApp() instead (see External Map Integration section) |
@@ -268,9 +268,9 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 | Method                              | Return Type | Notes                                                                               |
 | ----------------------------------- | ----------- | ----------------------------------------------------------------------------------- |
-| `setMyLocationEnabled(boolean)`     | `void`      | Not implemented - can be achieved via custom marker                                 |
-| `isMyLocationEnabled()`             | `boolean`   | Always returns false                                                                |
-| `setLocationSource(LocationSource)` | `void`      | Not implemented - can be achieved via custom location tracking and marker placement |
+| `setMyLocationEnabled(boolean)`     | `void`      | Blue dot with accuracy circle; throws `SecurityException` without location permission, unless a custom source is set |
+| `isMyLocationEnabled()`             | `boolean`   |  |
+| `setLocationSource(LocationSource)` | `void`      | Default: platform `LocationManager` (GPS and network), no Play Services needed |
 
 ---
 
@@ -315,8 +315,8 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 | `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           |                                                                      |
 | `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | Called when info window is closed (manual or auto-dismiss)           |
 | `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | Not implemented                                                      |
-| `setOnMyLocationButtonClickListener(OnMyLocationButtonClickListener)` | `void`           | Not implemented                                                      |
-| `setOnMyLocationClickListener(OnMyLocationClickListener)`             | `void`           | Not implemented                                                      |
+| `setOnMyLocationButtonClickListener(OnMyLocationButtonClickListener)` | `void`           | Return true to keep the camera where it is |
+| `setOnMyLocationClickListener(OnMyLocationClickListener)`             | `void`           |  |
 | `setOnIndoorStateChangeListener(OnIndoorStateChangeListener)`         | `void`           | Not implemented - indoor mapping not supported                        |
 | `getFocusedBuilding()`                                                | `IndoorBuilding` | Not implemented - indoor mapping not supported                        |
 
@@ -455,6 +455,7 @@ The optional `openmapview-compose` artifact follows the API of Google's [maps-co
 | maps-compose | openmapview-compose | Notes |
 |---|---|---|
 | `GoogleMap(cameraPositionState, properties, uiSettings, onMapClick, onMapLongClick, onMapLoaded)` | `OpenMap(...)` with the same parameters | Plus `onMapCreated` for direct access to the `OpenMapView` |
+| `GoogleMap(locationSource, onMyLocationButtonClick, onMyLocationClick)`, `MapProperties(isMyLocationEnabled)`, `MapUiSettings(myLocationButtonEnabled)` | Same | |
 | `MapProperties(mapType, minZoomPreference, maxZoomPreference, latLngBoundsForCameraTarget)` | Same | `mapType` is one of the `MapType` constants |
 | `MapUiSettings(zoomControlsEnabled, zoomGesturesEnabled, scrollGesturesEnabled)` | Same, plus `infoWindowAutoDismiss` | |
 | `rememberCameraPositionState`, `CameraPositionState.animate` | Same | |
