@@ -16,12 +16,13 @@ package de.afarber.openmapview
 fun interface OnCameraMoveStartedListener {
     companion object {
         /**
-         * Camera movement initiated by user gesture (pan, zoom, etc.)
+         * Camera movement initiated by a user gesture (pan or pinch zoom)
          */
         const val REASON_GESTURE = 1
 
         /**
-         * Camera movement initiated by [OpenMapView.animateCamera] call.
+         * Camera movement initiated by an [OpenMapView.animateCamera] call or a tap on the
+         * zoom buttons (see [UiSettings.isZoomControlsEnabled]).
          */
         const val REASON_API_ANIMATION = 2
 
