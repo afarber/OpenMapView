@@ -8,6 +8,7 @@
 package de.afarber.openmapview
 
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Settings for the map user interface controls and gestures.
@@ -109,6 +110,20 @@ class UiSettings {
     var infoWindowAutoDismiss: Duration = Duration.ZERO
         set(value) {
             field = if (value.isPositive()) value else Duration.ZERO
+        }
+
+    /**
+     * [infoWindowAutoDismiss] in milliseconds, e.g. for Java code. 0 disables auto-dismiss.
+     *
+     * Example:
+     * ```java
+     * mapView.getUiSettings().setInfoWindowAutoDismissMillis(3000);
+     * ```
+     */
+    var infoWindowAutoDismissMillis: Long
+        get() = infoWindowAutoDismiss.inWholeMilliseconds
+        set(value) {
+            infoWindowAutoDismiss = value.milliseconds
         }
 
     /**

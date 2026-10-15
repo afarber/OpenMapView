@@ -97,6 +97,19 @@ val polyline = PolylineOptions()
     .color(Color.Red)
 ```
 
+The `*Options` builders also accept ARGB color ints like Google Maps: `PolylineOptions.color(int)`, and `strokeColor(int)` and `fillColor(int)` on `PolygonOptions` and `CircleOptions`. So `.color(Color.RED)` with `android.graphics.Color` keeps working unchanged. The shapes report their colors as ints through `strokeColorArgb` and `fillColorArgb`.
+
+### Using OpenMapView from Java
+
+Java code calls the Google-style API directly:
+
+- Factory methods are static: `CameraUpdateFactory.newLatLngZoom(...)`, `BitmapDescriptorFactory.defaultMarker(...)`, `PredefinedTileProviders.openSeaMap()`, `GeoJsonParser.parse(...)`
+- Shapes are built with the `*Options` builders and int colors, as shown above
+- Listeners are functional interfaces, so Java lambdas work: `mapView.setOnMapClickListener(latLng -> ...)`
+- `UiSettings.setInfoWindowAutoDismissMillis(long)` replaces the Kotlin `Duration` property
+
+Compose types without a Java-friendly form remain Kotlin-only: the shape constructors and `copy()` (because of their `Color` parameters), and the stroke caps and joins (`StrokeCap`, `StrokeJoin`). `PathEffect` works from Java through `PathEffect.Companion.dashPathEffect(...)`.
+
 ### Stroke Styling API
 
 | Google Maps Property | OpenMapView Equivalent | Notes |

@@ -68,6 +68,13 @@ class CircleOptions {
     }
 
     /**
+     * Sets the stroke color of the circle outline as an ARGB color int, as in the Google Maps API.
+     * Use this overload from Java, e.g. with android.graphics.Color.RED or 0x800000FF.
+     * @param color ARGB color int
+     */
+    fun strokeColor(color: Int): CircleOptions = strokeColor(Color(color))
+
+    /**
      * Sets the stroke width of the circle outline in pixels.
      * @param width Width in pixels (default: 10f)
      */
@@ -111,6 +118,13 @@ class CircleOptions {
         this.fillColor = color
         return this
     }
+
+    /**
+     * Sets the fill color of the circle interior as an ARGB color int, as in the Google Maps API.
+     * Use this overload from Java, e.g. with android.graphics.Color.RED or 0x800000FF.
+     * @param color ARGB color int
+     */
+    fun fillColor(color: Int): CircleOptions = fillColor(Color(color))
 
     /**
      * Sets whether the circle is visible.

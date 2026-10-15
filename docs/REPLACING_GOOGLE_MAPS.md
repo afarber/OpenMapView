@@ -318,6 +318,8 @@ val polygon = PolygonOptions()
 - Custom colors use named parameters: `Color(red = 255, green = 0, blue = 0, alpha = 128)`
 - Hex colors still work: `Color(0xFF0066CC)` or `Color(0x800066CC)` with alpha
 
+In Java code, or to keep the change minimal, the `*Options` builders also take the ARGB ints of the Google Maps API, so `.color(android.graphics.Color.RED)` and `.fillColor(0x80FF0000)` compile unchanged. See [Using OpenMapView from Java](PUBLIC_API.md#using-openmapview-from-java).
+
 #### Pattern/PathEffect Migration
 
 Google Maps uses `PatternItem` lists, OpenMapView uses Compose `PathEffect`.
