@@ -437,14 +437,14 @@ See `PredefinedTileProviders.kt` for predefined overlay sources, or create custo
 
 ## Example Usage
 
-See the **Example11MapTypes** sample app for a complete demonstration of all map types with:
+See the [MapTypes](../examples/views/MapTypes) example app for a complete demonstration of all map types with:
 - Buttons to switch between all 15 map types
 - Visual indicators for API key requirements
 - Descriptions of each map type
 - Instructions for API key configuration
 
 ```kotlin
-// From Example11MapTypes:
+// From the MapTypes example:
 val mapView = OpenMapView(context)
 mapView.setCenter(LatLng(46.8182, 8.2275))
 mapView.setZoom(12.0f)
@@ -478,7 +478,7 @@ mapView.setMapType(MapType.CYCLOSM)  // Switch map types dynamically
 ## Additional Resources
 
 - **Source Code**: See `MapType.kt` and `TileSource.kt` for all map type definitions
-- **Example App**: `examples/Example11MapTypes` demonstrates all features
+- **Example App**: `examples/views/MapTypes` demonstrates all features
 - **Public API**: See `docs/PUBLIC_API.md` for complete API reference
 - **Tile Specifications**: All maps use 256×256 pixel tiles, Web Mercator projection (EPSG:3857)
 
