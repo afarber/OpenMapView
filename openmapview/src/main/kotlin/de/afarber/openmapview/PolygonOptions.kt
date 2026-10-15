@@ -79,6 +79,13 @@ class PolygonOptions {
     }
 
     /**
+     * Sets the stroke color of the polygon outline as an ARGB color int, as in the Google Maps API.
+     * Use this overload from Java, e.g. with android.graphics.Color.RED or 0x800000FF.
+     * @param color ARGB color int
+     */
+    fun strokeColor(color: Int): PolygonOptions = strokeColor(Color(color))
+
+    /**
      * Sets the stroke width of the polygon outline in pixels.
      * @param width Width in pixels (default: 10f)
      */
@@ -122,6 +129,13 @@ class PolygonOptions {
         this.fillColor = color
         return this
     }
+
+    /**
+     * Sets the fill color of the polygon interior as an ARGB color int, as in the Google Maps API.
+     * Use this overload from Java, e.g. with android.graphics.Color.RED or 0x800000FF.
+     * @param color ARGB color int
+     */
+    fun fillColor(color: Int): PolygonOptions = fillColor(Color(color))
 
     /**
      * Sets whether segments are drawn as geodesics (great-circle paths).

@@ -70,6 +70,13 @@ class PolylineOptions {
     }
 
     /**
+     * Sets the stroke color of the polyline as an ARGB color int, as in the Google Maps API.
+     * Use this overload from Java, e.g. with android.graphics.Color.RED or 0x800000FF.
+     * @param color ARGB color int
+     */
+    fun color(color: Int): PolylineOptions = color(Color(color))
+
+    /**
      * Sets the stroke width of the polyline in pixels.
      * @param width Width in pixels (default: 10f)
      */

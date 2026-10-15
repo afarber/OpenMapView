@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.toArgb
 
 /**
  * Represents a circle on the map with a center point and radius in meters.
@@ -47,6 +48,14 @@ data class Circle(
      * Used internally for management and callbacks.
      */
     internal val id: String = "circle_${System.nanoTime()}_${System.identityHashCode(this)}"
+
+    /** [strokeColor] as an ARGB color int, e.g. for Java code. */
+    val strokeColorArgb: Int
+        get() = strokeColor.toArgb()
+
+    /** [fillColor] as an ARGB color int, e.g. for Java code. */
+    val fillColorArgb: Int
+        get() = fillColor.toArgb()
 
     init {
         require(radius > 0) { "Circle radius must be greater than 0" }

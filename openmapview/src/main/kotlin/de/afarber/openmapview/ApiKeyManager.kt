@@ -124,6 +124,7 @@ object ApiKeyManager {
      * @param key API key string
      */
     @Synchronized
+    @JvmStatic
     fun setApiKey(
         provider: String,
         key: String,
@@ -140,6 +141,7 @@ object ApiKeyManager {
      * @return API key string, or null if not configured
      */
     @Synchronized
+    @JvmStatic
     fun getApiKey(provider: String): String? {
         val normalizedProvider = provider.lowercase()
 
@@ -165,6 +167,7 @@ object ApiKeyManager {
      * @param provider Provider name ("thunderforest", "tracestrack", "carto" or "stadia")
      * @return true if a key is available, false otherwise
      */
+    @JvmStatic
     fun hasApiKey(provider: String): Boolean = !getApiKey(provider).isNullOrEmpty()
 
     /**
@@ -174,6 +177,7 @@ object ApiKeyManager {
      * Useful for testing.
      */
     @Synchronized
+    @JvmStatic
     fun clearProgrammaticKeys() {
         programmaticKeys.clear()
     }

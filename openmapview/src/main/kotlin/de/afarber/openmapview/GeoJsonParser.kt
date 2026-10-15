@@ -29,6 +29,7 @@ object GeoJsonParser {
      * @param geoJsonString Valid GeoJSON string
      * @return GeoJsonResult containing markers, polylines, and polygons
      */
+    @JvmStatic
     fun parse(geoJsonString: String): GeoJsonResult {
         val json = JSONObject(geoJsonString)
         return parseGeoJson(json)
