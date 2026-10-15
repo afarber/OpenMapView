@@ -102,12 +102,18 @@ fun MapScreen() {
         // Dragging updates the state; setting state.position moves the marker
         val markerState = rememberMarkerState(LatLng(51.4661, 7.2491))
         Marker(state = markerState, title = "Bochum City Center", draggable = true)
+
+        // Shapes are replaced when a parameter changes, so this circle follows the marker
+        Circle(center = markerState.position, radius = 300f, fillColor = Color.Blue.copy(alpha = 0.2f))
+        Polyline(points = route, strokeColor = Color.Red, clickable = true, onClick = { /* ... */ })
     }
 
     // Move the camera by setting cameraPositionState.position, or animate it
     // from a coroutine: cameraPositionState.animate(CameraUpdateFactory.zoomIn())
 }
 ```
+
+Content composables: `Marker`, `Polyline`, `Polygon`, `Circle`, `GroundOverlay` and `TileOverlay`. Their parameters match the model classes of the same names. `OpenMap` sets the map's camera, marker and shape listeners itself, so use the composables' state and `onClick` parameters instead.
 
 Without that artifact, show `OpenMapView` in an `AndroidView`:
 
