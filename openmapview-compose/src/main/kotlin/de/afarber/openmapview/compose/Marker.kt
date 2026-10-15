@@ -89,6 +89,10 @@ internal class MapContext(
     val map: OpenMapView,
     val markerNodes: MutableMap<MapMarker, MarkerNode>,
     val shapeClickHandlers: MutableMap<Any, () -> Unit>,
+    // Called when the camera stops, and for taps on markers of no Marker composable,
+    // e.g. by Clustering
+    val cameraIdleListeners: MutableList<() -> Unit>,
+    val markerClickHandlers: MutableList<(MapMarker) -> Boolean>,
 )
 
 internal class MarkerNode(

@@ -465,6 +465,7 @@ The optional `openmapview-compose` artifact follows the API of Google's [maps-co
 | `MarkerInfoWindow(state, ...) { marker -> }`, `MarkerInfoWindowContent(state, ...) { marker -> }` | Same | The content is drawn into an image when the window opens |
 | `Polyline`, `Polygon`, `Circle`, `GroundOverlay`, `TileOverlay` | Same | Parameters match the OpenMapView model classes |
 | `MarkerComposable(vararg keys, state, ...) { }` | Same | The content is drawn into the icon again when a key changes |
+| `Clustering(items, onClusterClick, onClusterItemClick, clusterContent, clusterItemContent)` (maps-compose-utils) | Same, in `openmapview-compose` | Uses the library's `ClusterManager`, see Marker Clustering above |
 
 ---
 
