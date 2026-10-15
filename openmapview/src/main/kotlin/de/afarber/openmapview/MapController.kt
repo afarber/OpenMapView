@@ -14,6 +14,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.Shader
 import android.os.SystemClock
 import android.util.Log
@@ -90,6 +92,9 @@ class MapController(
         internal const val DEFAULT_MAX_ZOOM = 19.0f
         private const val TILE_SIZE = 256f
         private const val MAX_CONCURRENT_TILE_DOWNLOADS = 4
+
+        // How many zoom levels up drawFallbackTile() looks for a cached tile to scale up
+        private const val MAX_FALLBACK_LEVELS = 4
     }
 
     private var minZoomPreference = DEFAULT_MIN_ZOOM
@@ -254,6 +259,11 @@ class MapController(
             style = Paint.Style.FILL
             color = Color.LTGRAY
         }
+
+    // Smooths tiles of other zoom levels that are scaled as fallback
+    private val fallbackTilePaint = Paint(Paint.FILTER_BITMAP_FLAG)
+    private val fallbackSrc = Rect()
+    private val fallbackDst = RectF()
 
     /**
      * Loads a bitmap from a BitmapDescriptor.
@@ -1335,7 +1345,10 @@ class MapController(
                 canvas.drawBitmap(cachedBitmap, screenX, screenY, null)
             } else {
                 canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tilePlaceholderPaint)
-                canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tileBorderPaint)
+                if (!drawFallbackTile(canvas, tile, screenX, screenY)) {
+                    canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tileBorderPaint)
+                }
+                // A fallback is only a preview, the map is not loaded until the real tile is drawn
                 if (tileSource != null) allTilesDrawn = false
             }
 
@@ -1977,6 +1990,55 @@ class MapController(
                 }
             }
         }
+    }
+
+    /**
+     * Draws cached tiles of other zoom levels in place of a tile that isn't loaded yet, so
+     * the map shows a preview instead of a gray square while the tile downloads, e.g.
+     * during a camera animation:
+     * - the nearest cached ancestor (up to [MAX_FALLBACK_LEVELS] levels up), its matching
+     *   part scaled up, for zooming in
+     * - any cached children one level down, scaled down on top, for zooming out
+     *
+     * Only the memory cache is used, as this runs on every frame.
+     *
+     * @return true if anything was drawn
+     */
+    private fun drawFallbackTile(
+        canvas: Canvas,
+        tile: TileCoordinate,
+        screenX: Float,
+        screenY: Float,
+    ): Boolean {
+        var drawn = false
+        for (levels in 1..MAX_FALLBACK_LEVELS) {
+            val ancestor = TileCoordinate(tile.x shr levels, tile.y shr levels, tile.zoom - levels)
+            if (ancestor.zoom < 0) break
+            val bitmap = tileCache.getMemory(ancestor) ?: continue
+            // The part of the ancestor covered by this tile
+            val size = bitmap.width shr levels
+            val left = (tile.x - (ancestor.x shl levels)) * size
+            val top = (tile.y - (ancestor.y shl levels)) * size
+            fallbackSrc.set(left, top, left + size, top + size)
+            fallbackDst.set(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE)
+            canvas.drawBitmap(bitmap, fallbackSrc, fallbackDst, fallbackTilePaint)
+            drawn = true
+            break
+        }
+
+        val half = TILE_SIZE / 2
+        for (dy in 0..1) {
+            for (dx in 0..1) {
+                val child = TileCoordinate(tile.x * 2 + dx, tile.y * 2 + dy, tile.zoom + 1)
+                val bitmap = tileCache.getMemory(child) ?: continue
+                val left = screenX + dx * half
+                val top = screenY + dy * half
+                fallbackDst.set(left, top, left + half, top + half)
+                canvas.drawBitmap(bitmap, null, fallbackDst, fallbackTilePaint)
+                drawn = true
+            }
+        }
+        return drawn
     }
 
     // Redraws once a failed tile may be requested again, so it is retried
