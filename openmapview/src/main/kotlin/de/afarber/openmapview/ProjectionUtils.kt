@@ -44,10 +44,19 @@ internal object ProjectionUtils {
         x: Int,
         y: Int,
         zoom: Int,
+    ): LatLng = pixelToLatLng(x.toDouble(), y.toDouble(), zoom)
+
+    /**
+     * Converts fractional pixel coordinates to GPS coordinates at a given zoom level.
+     */
+    fun pixelToLatLng(
+        x: Double,
+        y: Double,
+        zoom: Int,
     ): LatLng {
         val n = 2.0.pow(zoom)
-        val xTile = x.toDouble() / TILE_SIZE
-        val yTile = y.toDouble() / TILE_SIZE
+        val xTile = x / TILE_SIZE
+        val yTile = y / TILE_SIZE
 
         val lng = xTile / n * 360.0 - 180.0
         val latRad = atan(sinh(PI * (1.0 - 2.0 * yTile / n)))
