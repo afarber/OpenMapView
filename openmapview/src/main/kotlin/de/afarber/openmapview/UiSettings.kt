@@ -24,6 +24,10 @@ class UiSettings {
     /**
      * Whether scroll gestures (panning) are enabled.
      * Default is true.
+     *
+     * While enabled, a drag that starts on the map pans it, also inside a scrolling parent
+     * such as a ScrollView or a Compose verticalScroll. Disable it (and zoom gestures) to let
+     * such drags scroll the parent instead, e.g. for a static map in a list.
      */
     var isScrollGesturesEnabled: Boolean = true
 

@@ -152,6 +152,8 @@ class OpenMapView
             }
         }
 
+        private fun isOnDraggableMarker(event: MotionEvent): Boolean = controller.handleMarkerTouch(event.x, event.y)?.draggable == true
+
         override fun onSizeChanged(
             w: Int,
             h: Int,
@@ -166,6 +168,22 @@ class OpenMapView
         override fun performClick(): Boolean = super.performClick()
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
+            // Keep scroll containers (ScrollView, ViewPager, Compose verticalScroll) from taking
+            // over drags the map handles itself. The parent resets this when the gesture ends.
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    if (uiSettings.isScrollGesturesEnabled || isOnDraggableMarker(event)) {
+                        parent?.requestDisallowInterceptTouchEvent(true)
+                    }
+                }
+
+                MotionEvent.ACTION_POINTER_DOWN -> {
+                    if (uiSettings.isZoomGesturesEnabled) {
+                        parent?.requestDisallowInterceptTouchEvent(true)
+                    }
+                }
+            }
+
             // Let gesture detector handle long press (but not during drag)
             if (!isDragging) {
                 gestureDetector.onTouchEvent(event)
