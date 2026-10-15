@@ -60,10 +60,12 @@ fun rememberMarkerState(position: LatLng = LatLng(0.0, 0.0)): MarkerState = reme
     MarkerState(position)
 }
 
-// The map an OpenMap's content adds its markers to, and the markers' states and callbacks
+// The map an OpenMap's content adds its markers and shapes to, the markers' states and
+// callbacks, and the click callbacks of shapes and ground overlays
 internal class MapContext(
     val map: OpenMapView,
     val markerNodes: MutableMap<MapMarker, MarkerNode>,
+    val shapeClickHandlers: MutableMap<Any, () -> Unit>,
 )
 
 internal class MarkerNode(

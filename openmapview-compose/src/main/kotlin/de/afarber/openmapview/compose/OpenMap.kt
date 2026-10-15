@@ -40,16 +40,17 @@ import de.afarber.openmapview.Marker as MapMarker
  * }
  * ```
  *
- * OpenMap sets the camera move and idle listeners and the marker click and drag listeners of
- * the map. Observe the camera through [cameraPositionState] (e.g. with `snapshotFlow`) and
- * markers through [Marker]'s state and onClick instead of setting those listeners in
+ * OpenMap sets the camera move and idle listeners, the marker click and drag listeners, and
+ * the polyline, polygon, circle and ground overlay click listeners of the map. Observe the
+ * camera through [cameraPositionState] (e.g. with `snapshotFlow`), and markers and shapes
+ * through the state and onClick of their composables, instead of setting those listeners in
  * [onMapCreated].
  *
  * @param modifier Modifier for the map
  * @param cameraPositionState The camera position of the map
  * @param onMapCreated Called once when the map view is created, e.g. to add shapes or
  *   overlays. Set the initial camera through [cameraPositionState] instead.
- * @param content The markers of the map, see [Marker]
+ * @param content The markers and shapes of the map, see [Marker] and [Polyline]
  */
 @Composable
 fun OpenMap(
@@ -61,6 +62,8 @@ fun OpenMap(
     // Set once the view exists, so the content can add its markers to it
     var map by remember { mutableStateOf<OpenMapView?>(null) }
     val markerNodes = remember { HashMap<MapMarker, MarkerNode>() }
+    // Keyed by the shape added to the map, see MapElement
+    val shapeClickHandlers = remember { HashMap<Any, () -> Unit>() }
 
     AndroidView(
         factory = { context ->
@@ -71,6 +74,10 @@ fun OpenMap(
                 setOnCameraIdleListener { cameraPositionState.readFrom(this) }
                 setOnMarkerClickListener { marker -> markerNodes[marker]?.onClick?.invoke(marker) ?: false }
                 setOnMarkerDragListener(MarkerDragDispatcher(markerNodes))
+                setOnPolylineClickListener { shapeClickHandlers[it]?.invoke() }
+                setOnPolygonClickListener { shapeClickHandlers[it]?.invoke() }
+                setOnCircleClickListener { shapeClickHandlers[it]?.invoke() }
+                setOnGroundOverlayClickListener { shapeClickHandlers[it]?.invoke() }
                 cameraPositionState.readFrom(this)
                 cameraPositionState.map = this
                 map = this
@@ -87,7 +94,7 @@ fun OpenMap(
     )
 
     val currentMap = map ?: return
-    val mapContext = remember(currentMap) { MapContext(currentMap, markerNodes) }
+    val mapContext = remember(currentMap) { MapContext(currentMap, markerNodes, shapeClickHandlers) }
     CompositionLocalProvider(LocalMapContext provides mapContext) {
         content()
     }
