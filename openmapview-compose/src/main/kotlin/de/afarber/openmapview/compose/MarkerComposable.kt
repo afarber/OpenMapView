@@ -16,7 +16,6 @@ import androidx.compose.runtime.CompositionContext
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.ui.platform.ComposeView
-import androidx.core.graphics.createBitmap
 import de.afarber.openmapview.BitmapDescriptorFactory
 import de.afarber.openmapview.OpenMapView
 import de.afarber.openmapview.Marker as MapMarker
@@ -101,7 +100,12 @@ internal fun drawComposable(
         val unspecified = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
         view.measure(unspecified, unspecified)
         view.layout(0, 0, view.measuredWidth, view.measuredHeight)
-        val bitmap = createBitmap(view.measuredWidth.coerceAtLeast(1), view.measuredHeight.coerceAtLeast(1))
+        val bitmap =
+            Bitmap.createBitmap(
+                view.measuredWidth.coerceAtLeast(1),
+                view.measuredHeight.coerceAtLeast(1),
+                Bitmap.Config.ARGB_8888,
+            )
         view.draw(Canvas(bitmap))
         return bitmap
     } finally {
