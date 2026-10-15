@@ -98,10 +98,11 @@ fun MapScreen() {
     OpenMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
-        onMapCreated = { map ->
-            map.addMarker(Marker(position = LatLng(51.4661, 7.2491), title = "Bochum City Center"))
-        },
-    )
+    ) {
+        // Dragging updates the state; setting state.position moves the marker
+        val markerState = rememberMarkerState(LatLng(51.4661, 7.2491))
+        Marker(state = markerState, title = "Bochum City Center", draggable = true)
+    }
 
     // Move the camera by setting cameraPositionState.position, or animate it
     // from a coroutine: cameraPositionState.animate(CameraUpdateFactory.zoomIn())
