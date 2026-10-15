@@ -25,7 +25,7 @@ import de.afarber.openmapview.OpenMapView
 import de.afarber.openmapview.Marker as MapMarker
 
 /**
- * Holds the position of a [Marker].
+ * Holds the position of a [Marker] and opens its info window.
  *
  * Setting [position] moves the marker, and dragging a draggable marker updates it.
  *
@@ -37,6 +37,29 @@ class MarkerState(
 ) {
     /** The marker position, updated while the user drags the marker. */
     var position: LatLng by mutableStateOf(position)
+
+    // The marker currently shown for this state and its map, set by the Marker composable
+    internal var shown: Pair<OpenMapView, MapMarker>? = null
+
+    /**
+     * Whether the info window of the marker is open. Not observable: read it when needed,
+     * e.g. in a click handler.
+     */
+    val isInfoWindowShown: Boolean
+        get() = shown?.second?.isInfoWindowShown ?: false
+
+    /**
+     * Opens the info window of the marker, if it has a title or snippet, and closes any other.
+     * Does nothing while the marker is not on a map.
+     */
+    fun showInfoWindow() {
+        shown?.let { (map, marker) -> map.showInfoWindow(marker) }
+    }
+
+    /** Closes the info window of the marker. */
+    fun hideInfoWindow() {
+        shown?.let { (map, marker) -> map.hideInfoWindow(marker) }
+    }
 
     companion object {
         /** Saves the position as latitude and longitude, e.g. for [rememberSaveable]. */
@@ -73,6 +96,8 @@ internal class MarkerNode(
 ) {
     var marker: MapMarker? = null
     var onClick: (MapMarker) -> Boolean = { false }
+    var onInfoWindowClick: (MapMarker) -> Unit = {}
+    var onInfoWindowClose: (MapMarker) -> Unit = {}
 }
 
 internal val LocalMapContext = staticCompositionLocalOf<MapContext?> { null }
@@ -102,7 +127,9 @@ internal val LocalMapContext = staticCompositionLocalOf<MapContext?> { null }
  * @param draggable Whether the user can drag the marker
  * @param zIndex Drawing order relative to other markers and shapes
  * @param tag Any object to associate with the marker
- * @param onClick Called when the marker is tapped
+ * @param onClick Called when the marker is tapped, which also opens or closes its info window
+ * @param onInfoWindowClick Called when the info window of the marker is tapped
+ * @param onInfoWindowClose Called when the info window of the marker is closed
  */
 @Composable
 fun Marker(
@@ -117,6 +144,8 @@ fun Marker(
     zIndex: Float = 0f,
     tag: Any? = null,
     onClick: (MapMarker) -> Boolean = { false },
+    onInfoWindowClick: (MapMarker) -> Unit = {},
+    onInfoWindowClose: (MapMarker) -> Unit = {},
 ) {
     val context = LocalMapContext.current ?: return
     val node = remember(state) { MarkerNode(state) }
@@ -140,10 +169,12 @@ fun Marker(
             )
         node.marker = marker
         context.markerNodes[marker] = node
+        state.shown = context.map to marker
         onDispose {
             context.markerNodes.remove(marker)
             context.map.removeMarker(marker)
             if (node.marker === marker) node.marker = null
+            if (state.shown?.second === marker) state.shown = null
         }
     }
 
@@ -151,6 +182,8 @@ fun Marker(
     val position = state.position
     SideEffect {
         node.onClick = onClick
+        node.onInfoWindowClick = onInfoWindowClick
+        node.onInfoWindowClose = onInfoWindowClose
         val marker = node.marker ?: return@SideEffect
         if (marker.position != position) {
             marker.position = position
