@@ -739,6 +739,8 @@ class OpenMapView
          * moveCamera(CameraUpdateFactory.zoomIn())
          * ```
          *
+         * If the camera already is at the target, no camera listeners are called.
+         *
          * @param cameraUpdate The camera update to apply
          */
         fun moveCamera(cameraUpdate: CameraUpdate) {
@@ -773,7 +775,8 @@ class OpenMapView
          *
          * The callback will receive notifications when the animation completes or is cancelled.
          * An animation can be cancelled by calling [stopAnimation] or by starting another
-         * camera move or animation.
+         * camera move or animation. If the camera already is at the target, onFinish() is
+         * called right away and no camera listeners are called.
          *
          * @param cameraUpdate The camera update to animate to
          * @param callback Optional callback for animation completion events
@@ -790,7 +793,8 @@ class OpenMapView
          *
          * The callback will receive notifications when the animation completes or is cancelled.
          * An animation can be cancelled by calling [stopAnimation] or by starting another
-         * camera move or animation.
+         * camera move or animation. If the camera already is at the target, onFinish() is
+         * called right away and no camera listeners are called.
          *
          * @param cameraUpdate The camera update to animate to
          * @param durationMs Duration of the animation in milliseconds
