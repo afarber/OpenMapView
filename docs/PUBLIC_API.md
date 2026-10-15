@@ -446,6 +446,7 @@ The optional `openmapview-compose` artifact follows the API of Google's [maps-co
 | `Marker(state, title, snippet, onClick, onInfoWindowClick, onInfoWindowClose)` | Same | |
 | `MarkerState.showInfoWindow()`, `hideInfoWindow()`, `isInfoWindowShown` | Same | |
 | `Polyline`, `Polygon`, `Circle`, `GroundOverlay`, `TileOverlay` | Same | Parameters match the OpenMapView model classes |
+| `MarkerComposable(vararg keys, state, ...) { }` | Same | The content is drawn into the icon again when a key changes |
 
 ---
 
