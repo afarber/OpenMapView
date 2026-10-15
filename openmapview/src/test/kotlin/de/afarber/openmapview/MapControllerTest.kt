@@ -22,6 +22,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import kotlin.math.abs
+import kotlin.math.pow
 
 @RunWith(RobolectricTestRunner::class)
 class MapControllerTest {
@@ -1216,6 +1218,57 @@ class MapControllerTest {
 
         // Smaller padding should result in higher zoom
         assertTrue(zoomWithSmallPadding > zoomWithLargePadding)
+    }
+
+    @Test
+    fun testNewLatLngBounds_FitsExactlyWithFractionalZoom() {
+        controller.setViewSize(1408, 620)
+        val bounds = LatLngBounds(LatLng(51.43, 7.13), LatLng(51.53, 7.33))
+
+        controller.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 48))
+
+        // The bounds fill the padded viewport on one axis and fit on the other
+        val zoom = controller.getZoom()
+        val scale = 2.0.pow(zoom.toDouble())
+        val (swX, swY) = ProjectionUtils.latLngToPixel(bounds.southwest, 0)
+        val (neX, neY) = ProjectionUtils.latLngToPixel(bounds.northeast, 0)
+        val width = (neX - swX) * scale
+        val height = (swY - neY) * scale
+        assertTrue(zoom > 12.0f && zoom < 13.0f)
+        assertTrue(width <= 1408 - 96 + 0.5 && height <= 620 - 96 + 0.5)
+        assertTrue(abs(width - (1408 - 96)) < 0.5 || abs(height - (620 - 96)) < 0.5)
+    }
+
+    @Test
+    fun testNewLatLngBounds_CentersOnMercatorMiddle() {
+        controller.setViewSize(1080, 1920)
+        val bounds = LatLngBounds(LatLng(0.0, 0.0), LatLng(60.0, 10.0))
+
+        controller.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0))
+
+        // On the map, the middle between 0 and 60 degrees is near 35.3 degrees, not 30
+        val target = controller.getCameraPosition().target
+        val (_, swY) = ProjectionUtils.latLngToPixel(bounds.southwest, 0)
+        val (_, neY) = ProjectionUtils.latLngToPixel(bounds.northeast, 0)
+        val (_, targetY) = ProjectionUtils.latLngToPixel(target, 0)
+        assertEquals((swY + neY) / 2.0, targetY.toDouble(), 0.001)
+        assertEquals(35.26, target.latitude, 0.01)
+        assertEquals(5.0, target.longitude, 0.001)
+    }
+
+    @Test
+    fun testNewLatLngBounds_AcrossAntimeridian() {
+        controller.setViewSize(1080, 1920)
+        // 20 degrees wide, from 170 E over the antimeridian to 170 W
+        val bounds = LatLngBounds(LatLng(-10.0, 170.0), LatLng(10.0, -170.0))
+
+        controller.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0))
+
+        val position = controller.getCameraPosition()
+        assertEquals(180.0, abs(position.target.longitude), 0.001)
+        assertEquals(0.0, position.target.latitude, 0.001)
+        // Narrow bounds need a high zoom, not the whole world
+        assertTrue(position.zoom > 5.0f)
     }
 
     @Test

@@ -37,6 +37,7 @@ import kotlinx.coroutines.sync.withPermit
 import java.io.IOException
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.sin
 
@@ -1052,41 +1053,52 @@ class MapController(
     }
 
     /**
-     * Calculates the appropriate zoom level to fit bounds within the specified viewport dimensions.
+     * Calculates the camera position that shows the bounds as large as possible in a viewport,
+     * like Google's `CameraUpdateFactory.newLatLngBounds`.
      *
-     * Iterates from maximum zoom down to minimum zoom, finding the largest zoom level
-     * where the bounds fit entirely within the viewport.
+     * The zoom is fractional, so the bounds touch the viewport edges on one axis. The target
+     * is the middle of the bounds on the Web Mercator map, which is a bit north of the average
+     * latitude, so the bounds are centered on screen. Bounds crossing the antimeridian
+     * (southwest longitude greater than northeast longitude) are supported.
      *
      * @param bounds The geographic bounds to fit
-     * @param viewWidth The viewport width in pixels
-     * @param viewHeight The viewport height in pixels
-     * @return The calculated zoom level (between 2.0 and 19.0)
+     * @param viewWidth The viewport width in pixels, without padding
+     * @param viewHeight The viewport height in pixels, without padding
+     * @return The camera position, its zoom clamped to the min and max zoom preferences
      */
-    private fun calculateZoomForBounds(
+    private fun cameraPositionForBounds(
         bounds: LatLngBounds,
         viewWidth: Int,
         viewHeight: Int,
-    ): Float {
-        // Ensure we have valid viewport dimensions
-        if (viewWidth <= 0 || viewHeight <= 0) {
-            return DEFAULT_MIN_ZOOM
-        }
+    ): CameraPosition {
+        // Web Mercator coordinates at zoom 0, where the world is TILE_SIZE pixels wide
+        val (swX, swY) = ProjectionUtils.latLngToPixel(bounds.southwest, 0)
+        val (neX, neY) = ProjectionUtils.latLngToPixel(bounds.northeast, 0)
+        val width = if (neX >= swX) neX - swX else TILE_SIZE - swX + neX
+        val height = swY - neY // Y increases downward
 
-        // Iterate from max zoom down to find the largest zoom that fits
-        for (zoom in 19 downTo 2) {
-            val (swX, swY) = ProjectionUtils.latLngToPixel(bounds.southwest, zoom)
-            val (neX, neY) = ProjectionUtils.latLngToPixel(bounds.northeast, zoom)
+        var centerX = swX + width / 2f
+        if (centerX >= TILE_SIZE) centerX -= TILE_SIZE
+        val center = ProjectionUtils.pixelToLatLng(centerX.toDouble(), (swY + neY) / 2.0, 0)
 
-            val boundsWidth = kotlin.math.abs(neX - swX)
-            val boundsHeight = kotlin.math.abs(swY - neY) // Y increases downward
+        // Each zoom level doubles the size, so the zoom that fits is log2 of the scale
+        val zoom =
+            when {
+                viewWidth <= 0 || viewHeight <= 0 -> {
+                    DEFAULT_MIN_ZOOM
+                }
 
-            if (boundsWidth <= viewWidth && boundsHeight <= viewHeight) {
-                return zoom.toFloat()
+                width <= 0f && height <= 0f -> {
+                    DEFAULT_MAX_ZOOM
+                }
+
+                else -> {
+                    val scaleX = if (width > 0f) viewWidth / width else Float.MAX_VALUE
+                    val scaleY = if (height > 0f) viewHeight / height else Float.MAX_VALUE
+                    log2(minOf(scaleX, scaleY))
+                }
             }
-        }
-
-        // Fallback to minimum zoom
-        return DEFAULT_MIN_ZOOM
+        return CameraPosition(center, zoom.coerceIn(minZoomPreference, maxZoomPreference))
     }
 
     private fun calculateTargetPosition(
@@ -1164,28 +1176,18 @@ class MapController(
             }
 
             is CameraUpdate.NewLatLngBounds -> {
-                val zoom =
-                    calculateZoomForBounds(
-                        bounds = cameraUpdate.bounds,
-                        viewWidth = viewWidth - cameraUpdate.padding * 2,
-                        viewHeight = viewHeight - cameraUpdate.padding * 2,
-                    )
-                CameraPosition(
-                    target = cameraUpdate.bounds.getCenter(),
-                    zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference),
+                cameraPositionForBounds(
+                    bounds = cameraUpdate.bounds,
+                    viewWidth = viewWidth - cameraUpdate.padding * 2,
+                    viewHeight = viewHeight - cameraUpdate.padding * 2,
                 )
             }
 
             is CameraUpdate.NewLatLngBoundsWithSize -> {
-                val zoom =
-                    calculateZoomForBounds(
-                        bounds = cameraUpdate.bounds,
-                        viewWidth = cameraUpdate.width - cameraUpdate.padding * 2,
-                        viewHeight = cameraUpdate.height - cameraUpdate.padding * 2,
-                    )
-                CameraPosition(
-                    target = cameraUpdate.bounds.getCenter(),
-                    zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference),
+                cameraPositionForBounds(
+                    bounds = cameraUpdate.bounds,
+                    viewWidth = cameraUpdate.width - cameraUpdate.padding * 2,
+                    viewHeight = cameraUpdate.height - cameraUpdate.padding * 2,
                 )
             }
         }
