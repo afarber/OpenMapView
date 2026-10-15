@@ -91,11 +91,15 @@ class OpenMapView
         // The lifecycle observed while attached to a window
         private var observedLifecycle: Lifecycle? = null
 
+        // Set when the current gesture became a long press, so lifting the finger is no click
+        private var isLongPressed = false
+
         private val gestureDetector =
             GestureDetector(
                 context,
                 object : GestureDetector.SimpleOnGestureListener() {
                     override fun onLongPress(e: MotionEvent) {
+                        isLongPressed = true
                         val latLng = controller.screenToLatLng(e.x, e.y)
                         onMapLongClickListener?.onMapLongClick(latLng)
                     }
@@ -198,6 +202,7 @@ class OpenMapView
             if (!scaleGestureDetector.isInProgress) {
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
+                        isLongPressed = false
                         lastTouchX = event.x
                         lastTouchY = event.y
                         initialTouchX = event.x
@@ -286,12 +291,11 @@ class OpenMapView
                         val dy = event.y - initialTouchY
                         val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
 
-                        if (movementDistance < TAP_SLOP_PX) {
+                        // A tap ends with ACTION_UP; a canceled gesture or a long press is no click
+                        if (event.action == MotionEvent.ACTION_UP && !isLongPressed && movementDistance < TAP_SLOP_PX) {
                             // Report the tap as a click, so accessibility services and any
                             // OnClickListener are notified like for other clickable views
-                            if (event.action == MotionEvent.ACTION_UP) {
-                                performClick()
-                            }
+                            performClick()
 
                             // Check zoom controls first (if enabled)
                             if (uiSettings.isZoomControlsEnabled) {
