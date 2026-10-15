@@ -433,6 +433,21 @@ OpenMapView uses a **single-class architecture** (vs. Google Maps' MapView + Goo
 
 ---
 
+## Marker Clustering
+
+The `de.afarber.openmapview.clustering` package follows the clustering of the [Google Maps Utility Library](https://github.com/googlemaps/android-maps-utils), with no extra artifact:
+
+| Google Maps Utility Library | OpenMapView | Notes |
+|---|---|---|
+| `ClusterItem` (`getPosition`, `getTitle`, `getSnippet`, `getZIndex`) | Same | |
+| `Cluster` (`getPosition`, `getItems`, `getSize`) | Same, as Kotlin properties | |
+| `ClusterManager(context, map)`, `addItem(s)`, `removeItem(s)`, `clearItems`, `cluster()` | Same | Set it as the map's camera idle and marker click listener, as with Google |
+| `setOnClusterClickListener`, `setOnClusterItemClickListener` | Same | Without a consuming cluster listener, a tap zooms in to the cluster's items |
+| `NonHierarchicalDistanceBasedAlgorithm` | Default algorithm | 100 dp, items join the closest cluster |
+| `DefaultClusterRenderer` | Colored circles with bucketed counts (10+, 20+, 50+, ...) | `minClusterSize` (default 4); custom icons via `clusterIconProvider` and `clusterItemIconProvider` |
+
+---
+
 ## Jetpack Compose
 
 The optional `openmapview-compose` artifact follows the API of Google's [maps-compose](https://github.com/googlemaps/android-maps-compose) library:
