@@ -420,4 +420,20 @@ OpenMapView uses a **single-class architecture** (vs. Google Maps' MapView + Goo
 
 ---
 
+## Jetpack Compose
+
+The optional `openmapview-compose` artifact follows the API of Google's [maps-compose](https://github.com/googlemaps/android-maps-compose) library:
+
+| maps-compose | openmapview-compose | Notes |
+|---|---|---|
+| `GoogleMap(cameraPositionState, properties, uiSettings, onMapClick, onMapLongClick, onMapLoaded)` | `OpenMap(...)` with the same parameters | Plus `onMapCreated` for direct access to the `OpenMapView` |
+| `MapProperties(mapType, minZoomPreference, maxZoomPreference, latLngBoundsForCameraTarget)` | Same | `mapType` is one of the `MapType` constants |
+| `MapUiSettings(zoomControlsEnabled, zoomGesturesEnabled, scrollGesturesEnabled)` | Same, plus `infoWindowAutoDismiss` | |
+| `rememberCameraPositionState`, `CameraPositionState.animate` | Same | |
+| `Marker(state, title, snippet, onClick, onInfoWindowClick, onInfoWindowClose)` | Same | |
+| `MarkerState.showInfoWindow()`, `hideInfoWindow()`, `isInfoWindowShown` | Same | |
+| `Polyline`, `Polygon`, `Circle`, `GroundOverlay`, `TileOverlay` | Same | Parameters match the OpenMapView model classes |
+
+---
+
 For an in-depth explanation of OpenMapView's architectural design and how it compares to Google Maps SDK, see [ARCHITECTURE.md](ARCHITECTURE.md).

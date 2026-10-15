@@ -12,10 +12,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.CameraUpdateFactory
+import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OnMarkerDragListener
 import de.afarber.openmapview.OpenMapView
 import de.afarber.openmapview.Marker as MapMarker
@@ -40,14 +42,19 @@ import de.afarber.openmapview.Marker as MapMarker
  * }
  * ```
  *
- * OpenMap sets the camera move and idle listeners, the marker click and drag listeners, and
- * the polyline, polygon, circle and ground overlay click listeners of the map. Observe the
- * camera through [cameraPositionState] (e.g. with `snapshotFlow`), and markers and shapes
- * through the state and onClick of their composables, instead of setting those listeners in
- * [onMapCreated].
+ * OpenMap sets the camera move and idle listeners, the marker click, drag and info window
+ * listeners, and the polyline, polygon, circle and ground overlay click listeners of the map.
+ * Observe the camera through [cameraPositionState] (e.g. with `snapshotFlow`), and markers and
+ * shapes through the state and callbacks of their composables, instead of setting those
+ * listeners in [onMapCreated].
  *
  * @param modifier Modifier for the map
  * @param cameraPositionState The camera position of the map
+ * @param properties The map type, zoom limits and camera bounds
+ * @param uiSettings The zoom controls and gestures
+ * @param onMapClick Called with the location when the map is tapped
+ * @param onMapLongClick Called with the location when the map is long-pressed
+ * @param onMapLoaded Called once when the tiles of the first screen are loaded
  * @param onMapCreated Called once when the map view is created, e.g. to add shapes or
  *   overlays. Set the initial camera through [cameraPositionState] instead.
  * @param content The markers and shapes of the map, see [Marker] and [Polyline]
@@ -56,6 +63,11 @@ import de.afarber.openmapview.Marker as MapMarker
 fun OpenMap(
     modifier: Modifier = Modifier,
     cameraPositionState: CameraPositionState = rememberCameraPositionState(),
+    properties: MapProperties = MapProperties(),
+    uiSettings: MapUiSettings = MapUiSettings(),
+    onMapClick: (LatLng) -> Unit = {},
+    onMapLongClick: (LatLng) -> Unit = {},
+    onMapLoaded: () -> Unit = {},
     onMapCreated: (OpenMapView) -> Unit = {},
     content: @Composable () -> Unit = {},
 ) {
@@ -64,16 +76,28 @@ fun OpenMap(
     val markerNodes = remember { HashMap<MapMarker, MarkerNode>() }
     // Keyed by the shape added to the map, see MapElement
     val shapeClickHandlers = remember { HashMap<Any, () -> Unit>() }
+    val applied = remember { AppliedSettings() }
+    val currentOnMapClick by rememberUpdatedState(onMapClick)
+    val currentOnMapLongClick by rememberUpdatedState(onMapLongClick)
+    val currentOnMapLoaded by rememberUpdatedState(onMapLoaded)
 
     AndroidView(
         factory = { context ->
             OpenMapView(context).apply {
+                // Before the camera, so the zoom limits and bounds apply to it
+                applied.apply(this, properties, uiSettings, initial = true)
                 moveCamera(CameraUpdateFactory.newCameraPosition(cameraPositionState.position))
+                // Before onMapCreated, which may still replace them
+                setOnMapClickListener { currentOnMapClick(it) }
+                setOnMapLongClickListener { currentOnMapLongClick(it) }
+                setOnMapLoadedCallback { currentOnMapLoaded() }
                 onMapCreated(this)
                 setOnCameraMoveListener { cameraPositionState.readFrom(this) }
                 setOnCameraIdleListener { cameraPositionState.readFrom(this) }
                 setOnMarkerClickListener { marker -> markerNodes[marker]?.onClick?.invoke(marker) ?: false }
                 setOnMarkerDragListener(MarkerDragDispatcher(markerNodes))
+                setOnInfoWindowClickListener { marker -> markerNodes[marker]?.onInfoWindowClick?.invoke(marker) }
+                setOnInfoWindowCloseListener { marker -> markerNodes[marker]?.onInfoWindowClose?.invoke(marker) }
                 setOnPolylineClickListener { shapeClickHandlers[it]?.invoke() }
                 setOnPolygonClickListener { shapeClickHandlers[it]?.invoke() }
                 setOnCircleClickListener { shapeClickHandlers[it]?.invoke() }
@@ -84,7 +108,10 @@ fun OpenMap(
             }
         },
         modifier = modifier,
-        update = { view -> cameraPositionState.applyTo(view) },
+        update = { view ->
+            cameraPositionState.applyTo(view)
+            applied.apply(view, properties, uiSettings, initial = false)
+        },
         onRelease = { view ->
             // Pinch zooming alone doesn't report camera moves, so read the final position
             cameraPositionState.readFrom(view)
@@ -97,6 +124,28 @@ fun OpenMap(
     val mapContext = remember(currentMap) { MapContext(currentMap, markerNodes, shapeClickHandlers) }
     CompositionLocalProvider(LocalMapContext provides mapContext) {
         content()
+    }
+}
+
+// The properties and UI settings last set on the map, so only changes are set again
+private class AppliedSettings {
+    private var properties: MapProperties? = null
+    private var uiSettings: MapUiSettings? = null
+
+    fun apply(
+        map: OpenMapView,
+        properties: MapProperties,
+        uiSettings: MapUiSettings,
+        initial: Boolean,
+    ) {
+        if (initial || properties != this.properties) {
+            properties.applyTo(map, if (initial) null else this.properties)
+            this.properties = properties
+        }
+        if (initial || uiSettings != this.uiSettings) {
+            uiSettings.applyTo(map)
+            this.uiSettings = uiSettings
+        }
     }
 }
 

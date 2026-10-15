@@ -98,6 +98,9 @@ fun MapScreen() {
     OpenMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
+        properties = MapProperties(mapType = MapType.CARTO_LIGHT, minZoomPreference = 10f),
+        uiSettings = MapUiSettings(zoomControlsEnabled = true),
+        onMapLongClick = { latLng -> /* ... */ },
     ) {
         // Dragging updates the state; setting state.position moves the marker
         val markerState = rememberMarkerState(LatLng(51.4661, 7.2491))
@@ -113,7 +116,7 @@ fun MapScreen() {
 }
 ```
 
-Content composables: `Marker`, `Polyline`, `Polygon`, `Circle`, `GroundOverlay` and `TileOverlay`. Their parameters match the model classes of the same names. `OpenMap` sets the map's camera, marker and shape listeners itself, so use the composables' state and `onClick` parameters instead.
+Content composables: `Marker`, `Polyline`, `Polygon`, `Circle`, `GroundOverlay` and `TileOverlay`. Their parameters match the model classes of the same names. `MarkerState.showInfoWindow()` opens a marker's info window. `OpenMap` takes the map type, zoom limits and camera bounds as `MapProperties`, the controls and gestures as `MapUiSettings`, and `onMapClick`, `onMapLongClick` and `onMapLoaded` callbacks. It sets the map's camera, marker and shape listeners itself, so use the composables' state and callbacks instead.
 
 Without that artifact, show `OpenMapView` in an `AndroidView`:
 
