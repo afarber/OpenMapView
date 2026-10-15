@@ -110,7 +110,12 @@ class OpenMapView
                         val scaleFactor = detector.scaleFactor
                         val focusX = detector.focusX
                         val focusY = detector.focusY
+                        val oldZoom = controller.getZoom()
                         controller.zoom(scaleFactor, focusX, focusY)
+                        // Nothing to report when the zoom is already at its limit
+                        if (controller.getZoom() != oldZoom) {
+                            controller.reportGestureMove()
+                        }
                         invalidate()
                         return true
                     }
@@ -227,20 +232,11 @@ class OpenMapView
                                 (!scaleGestureDetector.isInProgress || uiSettings.isScrollGesturesEnabledDuringRotateOrZoom)
 
                         if (allowScroll) {
-                            // Fire camera move started event on first pan movement
-                            if (movementDistance > 0 && !controller.isCameraMoving) {
-                                controller.isCameraMoving = true
-                                controller.currentMoveReason = de.afarber.openmapview.OnCameraMoveStartedListener.REASON_GESTURE
-                                controller.onCameraMoveStartedListener?.onCameraMoveStarted(
-                                    de.afarber.openmapview.OnCameraMoveStartedListener.REASON_GESTURE,
-                                )
-                            }
-
                             controller.updatePanOffset(dx, dy)
 
-                            // Fire camera move event during pan
-                            if (controller.isCameraMoving) {
-                                controller.onCameraMoveListener?.onCameraMove()
+                            // Fire camera move events during pan
+                            if (movementDistance > 0) {
+                                controller.reportGestureMove()
                             }
 
                             lastTouchX = event.x
@@ -289,8 +285,8 @@ class OpenMapView
                                         controller.setZoom(controller.getZoom() - 1.0f)
                                     }
                                     controller.commitPan()
-                                    // Notify camera move listener
-                                    controller.onCameraMoveListener?.onCameraMove()
+                                    // Like Google Maps, zoom buttons report an API animation
+                                    controller.reportInstantMove(OnCameraMoveStartedListener.REASON_API_ANIMATION)
                                     invalidate()
                                     return true
                                 }
