@@ -157,8 +157,11 @@ class UiSettingsTest {
     }
 
     @Test
-    fun testIsMyLocationButtonEnabled_ReturnsFalse() {
+    fun testIsMyLocationButtonEnabled_DefaultsToTrueAndCanBeChanged() {
         val uiSettings = UiSettings()
+        assertTrue(uiSettings.isMyLocationButtonEnabled)
+
+        uiSettings.isMyLocationButtonEnabled = false
         assertFalse(uiSettings.isMyLocationButtonEnabled)
     }
 

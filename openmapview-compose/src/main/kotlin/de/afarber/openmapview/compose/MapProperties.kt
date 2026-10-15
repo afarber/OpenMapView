@@ -26,6 +26,9 @@ import kotlin.time.Duration
  * @param minZoomPreference The lowest zoom level the camera can show (2 to 19)
  * @param maxZoomPreference The highest zoom level the camera can show (2 to 19)
  * @param latLngBoundsForCameraTarget The area the camera target is kept in, or null for no limit
+ * @param isMyLocationEnabled Whether the device location is shown, see
+ *   [OpenMapView.setMyLocationEnabled]. Needs the location permission, unless OpenMap gets a
+ *   locationSource.
  */
 @Immutable
 data class MapProperties(
@@ -33,6 +36,7 @@ data class MapProperties(
     val minZoomPreference: Float = 2f,
     val maxZoomPreference: Float = 19f,
     val latLngBoundsForCameraTarget: LatLngBounds? = null,
+    val isMyLocationEnabled: Boolean = false,
 ) {
     internal fun applyTo(
         map: OpenMapView,
@@ -51,6 +55,9 @@ data class MapProperties(
         if (previous == null || previous.latLngBoundsForCameraTarget != latLngBoundsForCameraTarget) {
             map.setLatLngBoundsForCameraTarget(latLngBoundsForCameraTarget)
         }
+        if (previous == null || previous.isMyLocationEnabled != isMyLocationEnabled) {
+            map.setMyLocationEnabled(isMyLocationEnabled)
+        }
     }
 }
 
@@ -61,6 +68,8 @@ data class MapProperties(
  * @param zoomGesturesEnabled Whether pinch and double tap zoom the map
  * @param scrollGesturesEnabled Whether dragging pans the map
  * @param infoWindowAutoDismiss How long an info window stays open, or [Duration.ZERO] to keep it
+ * @param myLocationButtonEnabled Whether the my-location button is shown while
+ *   [MapProperties.isMyLocationEnabled] is set
  */
 @Immutable
 data class MapUiSettings(
@@ -68,6 +77,7 @@ data class MapUiSettings(
     val zoomGesturesEnabled: Boolean = true,
     val scrollGesturesEnabled: Boolean = true,
     val infoWindowAutoDismiss: Duration = Duration.ZERO,
+    val myLocationButtonEnabled: Boolean = true,
 ) {
     internal fun applyTo(map: OpenMapView) {
         val uiSettings = map.getUiSettings()
@@ -75,6 +85,7 @@ data class MapUiSettings(
         uiSettings.isZoomGesturesEnabled = zoomGesturesEnabled
         uiSettings.isScrollGesturesEnabled = scrollGesturesEnabled
         uiSettings.infoWindowAutoDismiss = infoWindowAutoDismiss
+        uiSettings.isMyLocationButtonEnabled = myLocationButtonEnabled
         // The zoom buttons are drawn by the map
         map.invalidate()
     }

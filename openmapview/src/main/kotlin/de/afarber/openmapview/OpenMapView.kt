@@ -10,6 +10,7 @@ package de.afarber.openmapview
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.location.Location
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
@@ -23,6 +24,8 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
+import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.time.Duration
 
 // Finger movement in pixels below which a touch counts as a tap and a marker drag does not start
@@ -70,6 +73,7 @@ class OpenMapView
         private val controller = MapController(context)
         private val attributionOverlay = AttributionOverlay(context)
         private val zoomControlsOverlay = ZoomControlsOverlay(context)
+        private val myLocationOverlay = MyLocationOverlay(context)
         private val uiSettings = UiSettings()
         private var currentMapType: Int = MapType.STANDARD
         private var paddingLeft = 0
@@ -82,6 +86,17 @@ class OpenMapView
         private var initialTouchY = 0f
         private var onMapClickListener: OnMapClickListener? = null
         private var onMapLongClickListener: OnMapLongClickListener? = null
+
+        // The my-location layer: the source set by the app or the platform default, the one
+        // currently sending locations, and the last location received
+        private var isMyLocationLayerEnabled = false
+        private var customLocationSource: LocationSource? = null
+        private val platformLocationSource by lazy { PlatformLocationSource(context) }
+        private var activeLocationSource: LocationSource? = null
+        private var myLocation: Location? = null
+        private var isPaused = false
+        private var onMyLocationButtonClickListener: OnMyLocationButtonClickListener? = null
+        private var onMyLocationClickListener: OnMyLocationClickListener? = null
         private var onMarkerDragListener: OnMarkerDragListener? = null
         private var draggedMarker: Marker? = null
         private var isDragging = false
@@ -140,6 +155,7 @@ class OpenMapView
             canvas.withClip(0, 0, width, height) {
                 super.dispatchDraw(this)
                 controller.draw(this)
+                drawMyLocation(this)
 
                 if (uiSettings.isZoomControlsEnabled) {
                     zoomControlsOverlay.draw(this, width, height)
@@ -312,6 +328,12 @@ class OpenMapView
                                     invalidate()
                                     return true
                                 }
+                            }
+
+                            if (handleMyLocationTap(event.x, event.y)) {
+                                controller.commitPan()
+                                invalidate()
+                                return true
                             }
 
                             // Check attribution overlay
@@ -600,11 +622,150 @@ class OpenMapView
         /**
          * Returns whether the my-location layer is enabled.
          *
-         * @return false - my-location layer is not implemented in OpenMapView.
-         *         Developers can show user location using custom markers instead.
-         *         Example: addMarker(Marker(position = userLocation, icon = customLocationIcon))
+         * @see setMyLocationEnabled
          */
-        fun isMyLocationEnabled(): Boolean = false
+        fun isMyLocationEnabled(): Boolean = isMyLocationLayerEnabled
+
+        /**
+         * Enables or disables the my-location layer, as in Google Maps: a blue dot at the
+         * device location with an accuracy circle, and the my-location button (see
+         * [UiSettings.isMyLocationButtonEnabled]).
+         *
+         * Locations come from the platform `LocationManager` (GPS and network), or from the
+         * source set with [setLocationSource]. They are only requested while the map is
+         * attached and not paused.
+         *
+         * The app must declare `ACCESS_FINE_LOCATION` or `ACCESS_COARSE_LOCATION` in its
+         * manifest and request it at runtime before enabling the layer.
+         *
+         * @param enabled true to show the device location
+         * @throws SecurityException if enabled with the default source and no location permission
+         */
+        fun setMyLocationEnabled(enabled: Boolean) {
+            if (enabled && customLocationSource == null && !PlatformLocationSource.hasLocationPermission(context)) {
+                throw SecurityException("The my-location layer needs ACCESS_FINE_LOCATION or ACCESS_COARSE_LOCATION")
+            }
+            isMyLocationLayerEnabled = enabled
+            if (!enabled) {
+                stopLocationUpdates()
+                myLocation = null
+            }
+            updateLocationUpdates()
+            invalidate()
+        }
+
+        /**
+         * Sets the source of locations for the my-location layer, or null for the default
+         * platform `LocationManager`.
+         *
+         * Example, with the fused location provider of Google Play Services:
+         * ```kotlin
+         * mapView.setLocationSource(object : LocationSource {
+         *     override fun activate(listener: LocationSource.OnLocationChangedListener) {
+         *         // Request fused location updates and pass them to listener.onLocationChanged
+         *     }
+         *
+         *     override fun deactivate() {
+         *         // Remove the location updates
+         *     }
+         * })
+         * ```
+         *
+         * @param source The location source, or null for the default one
+         */
+        fun setLocationSource(source: LocationSource?) {
+            stopLocationUpdates()
+            customLocationSource = source
+            updateLocationUpdates()
+        }
+
+        /**
+         * Sets a listener called when the my-location button is tapped.
+         *
+         * @param listener The listener, returning true to keep the camera where it is
+         */
+        fun setOnMyLocationButtonClickListener(listener: OnMyLocationButtonClickListener?) {
+            onMyLocationButtonClickListener = listener
+        }
+
+        /**
+         * Sets a listener called when the my-location dot is tapped.
+         *
+         * @param listener The listener
+         */
+        fun setOnMyLocationClickListener(listener: OnMyLocationClickListener?) {
+            onMyLocationClickListener = listener
+        }
+
+        // Requests locations while the layer is enabled and the map is shown
+        private fun updateLocationUpdates() {
+            val wanted = isMyLocationLayerEnabled && isAttachedToWindow && !isPaused
+            if (!wanted) {
+                stopLocationUpdates()
+                return
+            }
+            if (activeLocationSource != null) return
+
+            val source = customLocationSource ?: platformLocationSource
+            activeLocationSource = source
+            source.activate { location ->
+                // Ignore late locations from a source that was replaced or stopped
+                if (activeLocationSource === source) {
+                    myLocation = location
+                    invalidate()
+                }
+            }
+        }
+
+        private fun stopLocationUpdates() {
+            activeLocationSource?.deactivate()
+            activeLocationSource = null
+        }
+
+        private fun drawMyLocation(canvas: Canvas) {
+            if (!isMyLocationLayerEnabled) return
+
+            val location = myLocation
+            if (location == null) {
+                myLocationOverlay.clearLocation()
+            } else {
+                val position = LatLng(location.latitude, location.longitude)
+                val point = getProjection().toScreenLocation(position)
+                // The accuracy in meters, converted with the Mercator scale at that latitude
+                val metersPerPixel = 156543.03392 * cos(Math.toRadians(location.latitude)) / 2.0.pow(getZoom().toDouble())
+                val accuracy = if (location.hasAccuracy()) (location.accuracy / metersPerPixel).toFloat() else 0f
+                myLocationOverlay.drawLocation(canvas, point.x.toFloat(), point.y.toFloat(), accuracy)
+            }
+
+            if (uiSettings.isMyLocationButtonEnabled) {
+                myLocationOverlay.drawButton(canvas, width)
+            }
+        }
+
+        // Handles a tap on the my-location button or dot; returns whether it hit one of them
+        private fun handleMyLocationTap(
+            x: Float,
+            y: Float,
+        ): Boolean {
+            if (!isMyLocationLayerEnabled) return false
+
+            if (uiSettings.isMyLocationButtonEnabled && myLocationOverlay.isOnButton(x, y)) {
+                val consumed = onMyLocationButtonClickListener?.onMyLocationButtonClick() ?: false
+                val location = myLocation
+                if (!consumed && location != null) {
+                    animateCamera(CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)))
+                }
+                return true
+            }
+
+            val location = myLocation
+            val listener = onMyLocationClickListener
+            if (location != null && listener != null && myLocationOverlay.isOnDot(x, y)) {
+                listener.onMyLocationClick(location)
+                return true
+            }
+            return false
+        }
 
         /**
          * Returns the current camera position.
@@ -1721,6 +1882,7 @@ class OpenMapView
                     // Does nothing if the app has already added this view as an observer
                     it.addObserver(this)
                 }
+            updateLocationUpdates()
         }
 
         override fun onDetachedFromWindow() {
@@ -1734,10 +1896,14 @@ class OpenMapView
 
         override fun onResume(owner: LifecycleOwner) {
             controller.onResume()
+            isPaused = false
+            updateLocationUpdates()
         }
 
         override fun onPause(owner: LifecycleOwner) {
             controller.onPause()
+            isPaused = true
+            stopLocationUpdates()
         }
 
         override fun onDestroy(owner: LifecycleOwner) {
@@ -1753,6 +1919,7 @@ class OpenMapView
          */
         fun onDestroy() {
             cancelInfoWindowAutoDismiss()
+            stopLocationUpdates()
             controller.onDestroy()
         }
     }

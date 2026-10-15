@@ -75,11 +75,11 @@ class UiSettings {
     val isCompassEnabled: Boolean = false
 
     /**
-     * Whether the my-location button is enabled.
-     * My-location button is not implemented in OpenMapView.
-     * Always returns false.
+     * Whether the my-location button is shown while the my-location layer is enabled,
+     * see [OpenMapView.setMyLocationEnabled]. Tapping it moves the camera to the location.
+     * Default is true, as in Google Maps.
      */
-    val isMyLocationButtonEnabled: Boolean = false
+    var isMyLocationButtonEnabled: Boolean = true
 
     /**
      * Whether the indoor level picker is enabled.
