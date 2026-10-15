@@ -724,6 +724,34 @@ class MapController(
     }
 
     /**
+     * Reports a camera move caused by a gesture (pan or pinch zoom): fires
+     * onCameraMoveStarted with REASON_GESTURE when the move begins, then onCameraMove.
+     * [commitPan] fires onCameraIdle when the gesture ends.
+     */
+    internal fun reportGestureMove() {
+        if (!isCameraMoving) {
+            isCameraMoving = true
+            currentMoveReason = OnCameraMoveStartedListener.REASON_GESTURE
+            onCameraMoveStartedListener?.onCameraMoveStarted(OnCameraMoveStartedListener.REASON_GESTURE)
+        }
+        onCameraMoveListener?.onCameraMove()
+    }
+
+    /**
+     * Reports an instant camera change that is not a gesture, e.g. by the zoom buttons:
+     * fires onCameraMoveStarted, onCameraMove and onCameraIdle.
+     */
+    internal fun reportInstantMove(reason: Int) {
+        if (!isCameraMoving) {
+            onCameraMoveStartedListener?.onCameraMoveStarted(reason)
+        }
+        onCameraMoveListener?.onCameraMove()
+        isCameraMoving = false
+        currentMoveReason = null
+        onCameraIdleListener?.onCameraIdle()
+    }
+
+    /**
      * Sets the map center to the specified location.
      *
      * If camera target bounds are set, the center will be clamped to stay within those bounds.
@@ -1252,16 +1280,17 @@ class MapController(
      * Called when a pan gesture ends or before camera operations.
      */
     fun commitPan() {
-        if (panOffsetX == 0f && panOffsetY == 0f) return
+        if (panOffsetX != 0f || panOffsetY != 0f) {
+            // Convert accumulated pan offset to new center
+            setCenter(pannedCenter(panOffsetX, panOffsetY))
 
-        // Convert accumulated pan offset to new center
-        setCenter(pannedCenter(panOffsetX, panOffsetY))
+            // Reset pan offset
+            panOffsetX = 0f
+            panOffsetY = 0f
+        }
 
-        // Reset pan offset
-        panOffsetX = 0f
-        panOffsetY = 0f
-
-        // Fire camera idle event after pan gesture completes
+        // Fire camera idle event after a gesture completes, also after a pinch around
+        // the view center, which leaves no pan offset
         if (isCameraMoving && currentMoveReason == OnCameraMoveStartedListener.REASON_GESTURE) {
             isCameraMoving = false
             currentMoveReason = null
