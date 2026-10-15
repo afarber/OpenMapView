@@ -116,7 +116,7 @@ fun MapScreen() {
 }
 ```
 
-Content composables: `Marker`, `Polyline`, `Polygon`, `Circle`, `GroundOverlay` and `TileOverlay`. Their parameters match the model classes of the same names. `MarkerState.showInfoWindow()` opens a marker's info window. `OpenMap` takes the map type, zoom limits and camera bounds as `MapProperties`, the controls and gestures as `MapUiSettings`, and `onMapClick`, `onMapLongClick` and `onMapLoaded` callbacks. It sets the map's camera, marker and shape listeners itself, so use the composables' state and callbacks instead.
+Content composables: `Marker`, `Polyline`, `Polygon`, `Circle`, `GroundOverlay` and `TileOverlay`. Their parameters match the model classes of the same names. `MarkerState.showInfoWindow()` opens a marker's info window, and `MarkerInfoWindow` and `MarkerInfoWindowContent` draw it with your own composables. `OpenMap` takes the map type, zoom limits and camera bounds as `MapProperties`, the controls and gestures as `MapUiSettings`, and `onMapClick`, `onMapLongClick` and `onMapLoaded` callbacks. It sets the map's camera, marker and shape listeners itself, so use the composables' state and callbacks instead.
 
 ### With XML Layouts (Java)
 
