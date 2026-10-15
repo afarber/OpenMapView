@@ -311,7 +311,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 | `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           |                                                                      |
 | `setOnCameraMoveCanceledListener(OnCameraMoveCanceledListener)`       | `void`           |                                                                      |
 | `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | Fires once when all visible base tiles are drawn (tile overlays are not awaited) |
-| `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | Not implemented - custom adapters not yet implemented                |
+| `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | Views are drawn into an image when the window opens, like in Google Maps |
 | `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           |                                                                      |
 | `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | Called when info window is closed (manual or auto-dismiss)           |
 | `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | Not implemented                                                      |
@@ -433,6 +433,21 @@ OpenMapView uses a **single-class architecture** (vs. Google Maps' MapView + Goo
 
 ---
 
+## Marker Clustering
+
+The `de.afarber.openmapview.clustering` package follows the clustering of the [Google Maps Utility Library](https://github.com/googlemaps/android-maps-utils), with no extra artifact:
+
+| Google Maps Utility Library | OpenMapView | Notes |
+|---|---|---|
+| `ClusterItem` (`getPosition`, `getTitle`, `getSnippet`, `getZIndex`) | Same | |
+| `Cluster` (`getPosition`, `getItems`, `getSize`) | Same, as Kotlin properties | |
+| `ClusterManager(context, map)`, `addItem(s)`, `removeItem(s)`, `clearItems`, `cluster()` | Same | Set it as the map's camera idle and marker click listener, as with Google |
+| `setOnClusterClickListener`, `setOnClusterItemClickListener` | Same | Without a consuming cluster listener, a tap zooms in to the cluster's items |
+| `NonHierarchicalDistanceBasedAlgorithm` | Default algorithm | 100 dp, items join the closest cluster |
+| `DefaultClusterRenderer` | Colored circles with bucketed counts (10+, 20+, 50+, ...) | `minClusterSize` (default 4); custom icons via `clusterIconProvider` and `clusterItemIconProvider` |
+
+---
+
 ## Jetpack Compose
 
 The optional `openmapview-compose` artifact follows the API of Google's [maps-compose](https://github.com/googlemaps/android-maps-compose) library:
@@ -444,9 +459,12 @@ The optional `openmapview-compose` artifact follows the API of Google's [maps-co
 | `MapProperties(mapType, minZoomPreference, maxZoomPreference, latLngBoundsForCameraTarget)` | Same | `mapType` is one of the `MapType` constants |
 | `MapUiSettings(zoomControlsEnabled, zoomGesturesEnabled, scrollGesturesEnabled)` | Same, plus `infoWindowAutoDismiss` | |
 | `rememberCameraPositionState`, `CameraPositionState.animate` | Same | |
+| `ScaleBar`, `DisappearingScaleBar` (maps-compose-widgets) | Same, in `openmapview-compose` | Metric and imperial bars for the camera's latitude and zoom |
 | `Marker(state, title, snippet, onClick, onInfoWindowClick, onInfoWindowClose)` | Same | |
 | `MarkerState.showInfoWindow()`, `hideInfoWindow()`, `isInfoWindowShown` | Same | |
+| `MarkerInfoWindow(state, ...) { marker -> }`, `MarkerInfoWindowContent(state, ...) { marker -> }` | Same | The content is drawn into an image when the window opens |
 | `Polyline`, `Polygon`, `Circle`, `GroundOverlay`, `TileOverlay` | Same | Parameters match the OpenMapView model classes |
+| `MarkerComposable(vararg keys, state, ...) { }` | Same | The content is drawn into the icon again when a key changes |
 
 ---
 

@@ -98,6 +98,10 @@ internal class MarkerNode(
     var onClick: (MapMarker) -> Boolean = { false }
     var onInfoWindowClick: (MapMarker) -> Unit = {}
     var onInfoWindowClose: (MapMarker) -> Unit = {}
+
+    // Custom info window content, see MarkerInfoWindow and MarkerInfoWindowContent
+    var infoWindow: (@Composable (MapMarker) -> Unit)? = null
+    var infoContent: (@Composable (MapMarker) -> Unit)? = null
 }
 
 internal val LocalMapContext = staticCompositionLocalOf<MapContext?> { null }
@@ -147,6 +151,120 @@ fun Marker(
     onInfoWindowClick: (MapMarker) -> Unit = {},
     onInfoWindowClose: (MapMarker) -> Unit = {},
 ) {
+    MarkerImpl(
+        state, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag,
+        onClick, onInfoWindowClick, onInfoWindowClose,
+        infoWindow = null,
+        infoContent = null,
+    )
+}
+
+/**
+ * A [Marker] whose whole info window is drawn by [content], without the default frame.
+ *
+ * Like in Google's Maps Compose, the content is drawn once into an image when the info
+ * window opens: call [MarkerState.showInfoWindow] again to show changes. Taps on the window
+ * call [onInfoWindowClick], not clickables inside the content.
+ *
+ * Example:
+ * ```kotlin
+ * MarkerInfoWindow(state = rememberMarkerState(LatLng(51.4661, 7.2491))) { marker ->
+ *     Card { Text("Custom window for ${marker.position}", Modifier.padding(8.dp)) }
+ * }
+ * ```
+ *
+ * The other parameters are the same as for [Marker].
+ *
+ * @param content The info window, given the marker
+ */
+@Composable
+fun MarkerInfoWindow(
+    state: MarkerState,
+    title: String? = null,
+    snippet: String? = null,
+    icon: BitmapDescriptor? = null,
+    anchor: Pair<Float, Float> = Pair(0.5f, 1.0f),
+    visible: Boolean = true,
+    alpha: Float = 1.0f,
+    draggable: Boolean = false,
+    zIndex: Float = 0f,
+    tag: Any? = null,
+    onClick: (MapMarker) -> Boolean = { false },
+    onInfoWindowClick: (MapMarker) -> Unit = {},
+    onInfoWindowClose: (MapMarker) -> Unit = {},
+    content: @Composable (MapMarker) -> Unit,
+) {
+    MarkerImpl(
+        state, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag,
+        onClick, onInfoWindowClick, onInfoWindowClose,
+        infoWindow = content,
+        infoContent = null,
+    )
+}
+
+/**
+ * A [Marker] whose info window shows [content] inside the default white frame, instead of
+ * the title and snippet.
+ *
+ * The content is drawn once into an image when the info window opens, see [MarkerInfoWindow].
+ *
+ * Example:
+ * ```kotlin
+ * MarkerInfoWindowContent(state = rememberMarkerState(LatLng(51.4661, 7.2491)), title = "Bochum") { marker ->
+ *     Column {
+ *         Text(marker.title ?: "", fontWeight = FontWeight.Bold)
+ *         Text("Population 365,000")
+ *     }
+ * }
+ * ```
+ *
+ * The other parameters are the same as for [Marker].
+ *
+ * @param content The info window contents, given the marker
+ */
+@Composable
+fun MarkerInfoWindowContent(
+    state: MarkerState,
+    title: String? = null,
+    snippet: String? = null,
+    icon: BitmapDescriptor? = null,
+    anchor: Pair<Float, Float> = Pair(0.5f, 1.0f),
+    visible: Boolean = true,
+    alpha: Float = 1.0f,
+    draggable: Boolean = false,
+    zIndex: Float = 0f,
+    tag: Any? = null,
+    onClick: (MapMarker) -> Boolean = { false },
+    onInfoWindowClick: (MapMarker) -> Unit = {},
+    onInfoWindowClose: (MapMarker) -> Unit = {},
+    content: @Composable (MapMarker) -> Unit,
+) {
+    MarkerImpl(
+        state, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag,
+        onClick, onInfoWindowClick, onInfoWindowClose,
+        infoWindow = null,
+        infoContent = content,
+    )
+}
+
+@Composable
+private fun MarkerImpl(
+    state: MarkerState,
+    title: String?,
+    snippet: String?,
+    icon: BitmapDescriptor?,
+    anchor: Pair<Float, Float>,
+    visible: Boolean,
+    alpha: Float,
+    draggable: Boolean,
+    zIndex: Float,
+    tag: Any?,
+    onClick: (MapMarker) -> Boolean,
+    onInfoWindowClick: (MapMarker) -> Unit,
+    onInfoWindowClose: (MapMarker) -> Unit,
+    infoWindow: (@Composable (MapMarker) -> Unit)?,
+    infoContent: (@Composable (MapMarker) -> Unit)?,
+) {
     val context = LocalMapContext.current ?: return
     val node = remember(state) { MarkerNode(state) }
 
@@ -184,6 +302,8 @@ fun Marker(
         node.onClick = onClick
         node.onInfoWindowClick = onInfoWindowClick
         node.onInfoWindowClose = onInfoWindowClose
+        node.infoWindow = infoWindow
+        node.infoContent = infoContent
         val marker = node.marker ?: return@SideEffect
         if (marker.position != position) {
             marker.position = position
