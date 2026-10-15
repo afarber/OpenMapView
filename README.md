@@ -20,7 +20,7 @@ dependencies {
 }
 ```
 
-**Requirements:** minSdk 23, compileSdk 37 and Android Gradle Plugin 9.1 or newer (since 0.14.0, because androidx.core 1.19 and Compose UI 1.12 require them). Since 0.14.1 the app also needs Kotlin 2.3 or newer, because the library is built with Kotlin 2.4. Projects still on compileSdk 36 or AGP 8 can stay on 0.13.3.
+**Requirements:** minSdk 23, compileSdk 37, Android Gradle Plugin 9.1 or newer and Kotlin 2.3 or newer.
 
 The library is available on [Maven Central](https://central.sonatype.com/artifact/de.afarber/openmapview). Alternative distribution via [JitPack](https://jitpack.io/#afarber/OpenMapView) is also supported.
 
@@ -49,9 +49,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 
 ## Examples
 
-Examples come in two versions with the same functionality, Jetpack Compose and classic Views with XML layouts, so you can compare them side by side.
-
-| Jetpack Compose | Views (XML) | Synopsis |
+| Jetpack Compose (Kotlin) | Views with XML (Java) | Synopsis |
 |---|---|---|
 |  | [Pan](examples/views/Pan) | Map panning with touch gestures and arrow buttons, preset places and camera bounds |
 |  | [Zoom](examples/views/Zoom) | Zoom controls (+/- buttons), pinch zoom and the current zoom level |
@@ -86,7 +84,7 @@ Examples come in two versions with the same functionality, Jetpack Compose and c
 
 ## Getting Started
 
-### With Jetpack Compose
+### With Jetpack Compose (Kotlin)
 
 The optional `openmapview-compose` artifact provides the `OpenMap` composable. Its camera is kept in a `CameraPositionState`, which survives configuration changes and, when hoisted above the screen, also switching tabs:
 
@@ -120,49 +118,21 @@ fun MapScreen() {
 
 Content composables: `Marker`, `Polyline`, `Polygon`, `Circle`, `GroundOverlay` and `TileOverlay`. Their parameters match the model classes of the same names. `MarkerState.showInfoWindow()` opens a marker's info window. `OpenMap` takes the map type, zoom limits and camera bounds as `MapProperties`, the controls and gestures as `MapUiSettings`, and `onMapClick`, `onMapLongClick` and `onMapLoaded` callbacks. It sets the map's camera, marker and shape listeners itself, so use the composables' state and callbacks instead.
 
-Without that artifact, show `OpenMapView` in an `AndroidView`:
+### With XML Layouts (Java)
 
-```kotlin
-@Composable
-fun MapViewScreen() {
-    AndroidView(
-        factory = { context ->
-            // Cleans up after itself when it leaves the screen, no lifecycle code needed
-            OpenMapView(context).apply {
-                setCenter(LatLng(51.4661, 7.2491))
-                setZoom(14.0f)
+```java
+public class MainActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-                // Add markers - Kotlin style (direct instantiation)
-                addMarker(Marker(
-                    position = LatLng(51.4661, 7.2491),
-                    title = "Bochum City Center"
-                ))
-
-                // Or Google Maps API style (builder pattern)
-                addMarker(
-                    MarkerOptions()
-                        .position(LatLng(51.4700, 7.2550))
-                        .title("North Location")
-                        .draggable(true)
-                )
-            }
-        },
-        modifier = Modifier.fillMaxSize()
-    )
-}
-```
-
-### With XML Layouts
-
-```kotlin
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        val mapView = findViewById<OpenMapView>(R.id.mapView)
-        mapView.setZoom(14.0f)
-        mapView.setCenter(LatLng(51.4661, 7.2491))
+        // Ready right away: no getMapAsync() and no lifecycle forwarding
+        OpenMapView mapView = findViewById(R.id.mapView);
+        mapView.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(51.4661, 7.2491), 14f));
+        mapView.addMarker(new MarkerOptions()
+                .position(new LatLng(51.4661, 7.2491))
+                .title("Bochum City Center"));
     }
 }
 ```
