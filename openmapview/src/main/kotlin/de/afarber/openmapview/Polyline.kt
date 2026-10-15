@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.toArgb
 
 /**
  * Represents a polyline on the map, consisting of connected line segments.
@@ -51,6 +52,10 @@ data class Polyline(
      * Used internally for management and callbacks.
      */
     internal val id: String = "polyline_${System.nanoTime()}_${System.identityHashCode(this)}"
+
+    /** [strokeColor] as an ARGB color int, e.g. for Java code. */
+    val strokeColorArgb: Int
+        get() = strokeColor.toArgb()
 
     init {
         require(points.size >= 2) { "Polyline must have at least 2 points" }

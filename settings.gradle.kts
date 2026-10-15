@@ -19,16 +19,12 @@ rootProject.name = "OpenMapView-root"
 
 include(":openmapview")
 include(":openmapview-compose")
-include(":examples:Example01Pan")
-include(":examples:Example02Zoom")
-include(":examples:Example03Markers")
-include(":examples:Example04Polylines")
-include(":examples:Example05Camera")
-include(":examples:Example06Clicks")
-include(":examples:Example07DraggableMarkers")
-include(":examples:Example08Circles")
-include(":examples:Example09Overlays")
-include(":examples:Example10GroundOverlays")
-include(":examples:Example11MapTypes")
-include(":examples:Example12Toolbar")
-include(":examples:Example13Compose")
+// Every folder under examples/compose and examples/views with a build file is an example app,
+// e.g. examples/views/Pan becomes :examples:views:Pan
+listOf("compose", "views").forEach { kind ->
+    file("examples/$kind")
+        .listFiles { dir -> dir.resolve("build.gradle.kts").isFile }
+        .orEmpty()
+        .sortedBy { it.name }
+        .forEach { include(":examples:$kind:${it.name}") }
+}

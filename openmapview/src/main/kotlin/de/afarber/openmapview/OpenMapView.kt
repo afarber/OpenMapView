@@ -664,6 +664,7 @@ class OpenMapView
          * @return true if successfully launched an intent, false if an error occurred
          * @see openLocationInExternalApp
          */
+        @JvmOverloads
         fun openInExternalApp(label: String? = null): Boolean {
             val center = controller.getCenter()
             val zoom = controller.getZoom()
@@ -708,6 +709,7 @@ class OpenMapView
          * @param edges The set of edges to trigger the effect on
          * @param intensity The glow intensity from 0.0 (none) to 1.0 (full), default 0.8
          */
+        @JvmOverloads
         fun triggerEdgeEffect(
             edges: Set<Edge>,
             intensity: Float = 0.8f,

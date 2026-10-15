@@ -39,6 +39,8 @@ object BitmapDescriptorFactory {
      *            0=red, 120=green, 240=blue, etc.
      * @return A BitmapDescriptor for the default colored marker
      */
+    @JvmOverloads
+    @JvmStatic
     fun defaultMarker(hue: Float = HUE_RED): BitmapDescriptor = BitmapDescriptor.DefaultMarker(hue)
 
     /**
@@ -50,6 +52,7 @@ object BitmapDescriptorFactory {
      * @param resourceId The drawable resource ID (e.g., R.drawable.marker_icon)
      * @return A BitmapDescriptor for the resource marker
      */
+    @JvmStatic
     fun fromResource(resourceId: Int): BitmapDescriptor = BitmapDescriptor.ResourceMarker(resourceId)
 
     /**
@@ -58,6 +61,7 @@ object BitmapDescriptorFactory {
      * @param assetName The name of the asset file (e.g., "markers/custom_marker.png")
      * @return A BitmapDescriptor for the asset marker
      */
+    @JvmStatic
     fun fromAsset(assetName: String): BitmapDescriptor = BitmapDescriptor.AssetMarker(assetName)
 
     /**
@@ -66,5 +70,6 @@ object BitmapDescriptorFactory {
      * @param bitmap The bitmap to use as marker icon
      * @return A BitmapDescriptor for the bitmap marker
      */
+    @JvmStatic
     fun fromBitmap(bitmap: Bitmap): BitmapDescriptor = BitmapDescriptor.BitmapMarker(bitmap)
 }

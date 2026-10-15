@@ -217,4 +217,22 @@ class UiSettingsTest {
         uiSettings.infoWindowAutoDismiss = 0.seconds
         assertEquals(Duration.ZERO, uiSettings.infoWindowAutoDismiss)
     }
+
+    @Test
+    fun testInfoWindowAutoDismissMillis_MatchesDuration() {
+        val uiSettings = UiSettings()
+        uiSettings.infoWindowAutoDismissMillis = 2500L
+        assertEquals(2500.milliseconds, uiSettings.infoWindowAutoDismiss)
+
+        uiSettings.infoWindowAutoDismiss = 3.seconds
+        assertEquals(3000L, uiSettings.infoWindowAutoDismissMillis)
+    }
+
+    @Test
+    fun testInfoWindowAutoDismissMillis_NegativeDisables() {
+        val uiSettings = UiSettings()
+        uiSettings.infoWindowAutoDismissMillis = -1L
+        assertEquals(0L, uiSettings.infoWindowAutoDismissMillis)
+        assertEquals(Duration.ZERO, uiSettings.infoWindowAutoDismiss)
+    }
 }

@@ -43,6 +43,7 @@ object PredefinedTileProviders {
      *
      * @return TileProvider for OpenSeaMap
      */
+    @JvmStatic
     fun openSeaMap(): TileProvider = object : UrlTileProvider("https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png") {}
 
     /**
@@ -55,6 +56,7 @@ object PredefinedTileProviders {
      *
      * @return TileProvider for OpenRailwayMap
      */
+    @JvmStatic
     fun openRailwayMap(): TileProvider = object : UrlTileProvider("https://a.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png") {}
 
     /**
@@ -66,6 +68,7 @@ object PredefinedTileProviders {
      *
      * @return TileProvider for OpenSnowMap
      */
+    @JvmStatic
     fun openSnowMap(): TileProvider = object : UrlTileProvider("https://tiles.opensnowmap.org/pistes/{z}/{x}/{y}.png") {}
 
     /**
@@ -78,6 +81,7 @@ object PredefinedTileProviders {
      *
      * @return TileProvider for hiking trails
      */
+    @JvmStatic
     fun waymarkedTrailsHiking(): TileProvider = object : UrlTileProvider("https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png") {}
 
     /**
@@ -90,6 +94,7 @@ object PredefinedTileProviders {
      *
      * @return TileProvider for cycling trails
      */
+    @JvmStatic
     fun waymarkedTrailsCycling(): TileProvider = object : UrlTileProvider("https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png") {}
 
     /**
@@ -102,6 +107,7 @@ object PredefinedTileProviders {
      *
      * @return TileProvider for MTB trails
      */
+    @JvmStatic
     fun waymarkedTrailsMtb(): TileProvider = object : UrlTileProvider("https://tile.waymarkedtrails.org/mtb/{z}/{x}/{y}.png") {}
 
     /**
@@ -114,6 +120,7 @@ object PredefinedTileProviders {
      *
      * @return TileProvider for skating trails
      */
+    @JvmStatic
     fun waymarkedTrailsSkating(): TileProvider = object : UrlTileProvider("https://tile.waymarkedtrails.org/skating/{z}/{x}/{y}.png") {}
 
     /**
@@ -127,6 +134,7 @@ object PredefinedTileProviders {
      *
      * @return TileProvider for Stamen Toner lines
      */
+    @JvmStatic
     fun stamenTonerHybrid(): TileProvider = stadia("stamen_toner_lines")
 
     /**
@@ -139,6 +147,7 @@ object PredefinedTileProviders {
      *
      * @return TileProvider for Stamen Terrain lines
      */
+    @JvmStatic
     fun stamenTerrainLines(): TileProvider = stadia("stamen_terrain_lines")
 
     /**
@@ -156,6 +165,7 @@ object PredefinedTileProviders {
      * @param urlTemplate URL pattern with {z}, {x}, {y} placeholders
      * @return TileProvider for the custom URL
      */
+    @JvmStatic
     fun custom(urlTemplate: String): TileProvider = object : UrlTileProvider(urlTemplate) {}
 
     // Stadia Maps tiles with the "stadia" key from ApiKeyManager, looked up per tile
