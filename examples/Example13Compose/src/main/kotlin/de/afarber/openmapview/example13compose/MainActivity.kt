@@ -28,24 +28,32 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import de.afarber.openmapview.CameraPosition
 import de.afarber.openmapview.CameraUpdateFactory
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.compose.CameraPositionState
+import de.afarber.openmapview.compose.Circle
 import de.afarber.openmapview.compose.Marker
 import de.afarber.openmapview.compose.MarkerState
 import de.afarber.openmapview.compose.OpenMap
+import de.afarber.openmapview.compose.Polyline
 import de.afarber.openmapview.compose.rememberCameraPositionState
 import de.afarber.openmapview.compose.rememberMarkerState
 import kotlinx.coroutines.launch
 
 private val BOCHUM = LatLng(51.4661, 7.2491)
+
+// From the main station through the city center to the university
+private val ROUTE = listOf(LatLng(51.4785, 7.2232), BOCHUM, LatLng(51.4447, 7.2617))
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -104,6 +112,7 @@ fun MapTab(
     markerState: MarkerState,
 ) {
     val scope = rememberCoroutineScope()
+    var routeSelected by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // No lifecycle code and no clipping needed: the map cleans up when the tab is left
@@ -112,6 +121,21 @@ fun MapTab(
             cameraPositionState = cameraPositionState,
         ) {
             Marker(state = markerState, title = "Drag me", draggable = true)
+            // A changed center replaces the circle, so it follows the dragged marker
+            Circle(
+                center = markerState.position,
+                radius = 300f,
+                strokeColor = Color.Blue,
+                strokeWidth = 4f,
+                fillColor = Color.Blue.copy(alpha = 0.15f),
+            )
+            Polyline(
+                points = ROUTE,
+                strokeColor = if (routeSelected) Color.Red else Color.DarkGray,
+                strokeWidth = 12f,
+                clickable = true,
+                onClick = { routeSelected = !routeSelected },
+            )
         }
         Button(
             onClick = { scope.launch { cameraPositionState.animate(CameraUpdateFactory.zoomIn()) } },

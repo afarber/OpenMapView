@@ -11,6 +11,8 @@ This example shows the `OpenMap` composable from the optional `de.afarber:openma
 - Moving the camera by setting `CameraPositionState.position` from another tab
 - Animating the camera with the suspending `CameraPositionState.animate`
 - A draggable `Marker` declared in `OpenMap`'s content, its `MarkerState` hoisted like the camera
+- A `Circle` that follows the dragged marker, as a changed parameter replaces the shape
+- A clickable `Polyline` route that changes color when tapped
 
 ## Quick Start
 
@@ -77,6 +79,7 @@ fun MapTab(cameraPositionState: CameraPositionState, markerState: MarkerState) {
 2. Switch back to the Map tab: the new map starts at the same position, with the marker where you left it
 3. Tap "Back to Bochum" on the Camera tab: the map tab opens at the initial camera and marker position
 4. Tap "Zoom in" for an animated zoom
+5. Tap the gray route to select it, and again to deselect it
 
 ## Notes
 
