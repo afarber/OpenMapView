@@ -14,6 +14,10 @@ This example shows the `OpenMap` composable from the optional `de.afarber:openma
 - A `Circle` that follows the dragged marker, as a changed parameter replaces the shape
 - A clickable `Polyline` route that changes color when tapped
 
+## Screenshot
+
+![Example13Compose Demo](screenshot.gif)
+
 ## Quick Start
 
 ### Option 1: Run in Android Studio
