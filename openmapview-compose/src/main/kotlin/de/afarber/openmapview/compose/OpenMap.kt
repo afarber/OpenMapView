@@ -7,16 +7,22 @@
 
 package de.afarber.openmapview.compose
 
+import android.content.Context
+import android.view.View
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionContext
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.viewinterop.AndroidView
 import de.afarber.openmapview.CameraUpdateFactory
+import de.afarber.openmapview.InfoWindowAdapter
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OnMarkerDragListener
 import de.afarber.openmapview.OpenMapView
@@ -43,7 +49,8 @@ import de.afarber.openmapview.Marker as MapMarker
  * ```
  *
  * OpenMap sets the camera move and idle listeners, the marker click, drag and info window
- * listeners, and the polyline, polygon, circle and ground overlay click listeners of the map.
+ * listeners, the info window adapter, and the polyline, polygon, circle and ground overlay
+ * click listeners of the map.
  * Observe the camera through [cameraPositionState] (e.g. with `snapshotFlow`), and markers and
  * shapes through the state and callbacks of their composables, instead of setting those
  * listeners in [onMapCreated].
@@ -77,6 +84,8 @@ fun OpenMap(
     // Keyed by the shape added to the map, see MapElement
     val shapeClickHandlers = remember { HashMap<Any, () -> Unit>() }
     val applied = remember { AppliedSettings() }
+    // Lets info window content use the composition locals of the screen, e.g. MaterialTheme
+    val compositionContext = rememberCompositionContext()
     val currentOnMapClick by rememberUpdatedState(onMapClick)
     val currentOnMapLongClick by rememberUpdatedState(onMapLongClick)
     val currentOnMapLoaded by rememberUpdatedState(onMapLoaded)
@@ -98,6 +107,7 @@ fun OpenMap(
                 setOnMarkerDragListener(MarkerDragDispatcher(markerNodes))
                 setOnInfoWindowClickListener { marker -> markerNodes[marker]?.onInfoWindowClick?.invoke(marker) }
                 setOnInfoWindowCloseListener { marker -> markerNodes[marker]?.onInfoWindowClose?.invoke(marker) }
+                setInfoWindowAdapter(ComposeInfoWindowAdapter(context, markerNodes, compositionContext))
                 setOnPolylineClickListener { shapeClickHandlers[it]?.invoke() }
                 setOnPolygonClickListener { shapeClickHandlers[it]?.invoke() }
                 setOnCircleClickListener { shapeClickHandlers[it]?.invoke() }
@@ -124,6 +134,26 @@ fun OpenMap(
     val mapContext = remember(currentMap) { MapContext(currentMap, markerNodes, shapeClickHandlers) }
     CompositionLocalProvider(LocalMapContext provides mapContext) {
         content()
+    }
+}
+
+// Shows the content of MarkerInfoWindow and MarkerInfoWindowContent; other markers get the
+// default window. The map draws the returned view into an image.
+private class ComposeInfoWindowAdapter(
+    private val context: Context,
+    private val markerNodes: Map<MapMarker, MarkerNode>,
+    private val compositionContext: CompositionContext,
+) : InfoWindowAdapter {
+    override fun getInfoWindow(marker: MapMarker): View? = markerNodes[marker]?.infoWindow?.let { composeView(marker, it) }
+
+    override fun getInfoContents(marker: MapMarker): View? = markerNodes[marker]?.infoContent?.let { composeView(marker, it) }
+
+    private fun composeView(
+        marker: MapMarker,
+        content: @Composable (MapMarker) -> Unit,
+    ): View = ComposeView(context).apply {
+        setParentCompositionContext(compositionContext)
+        setContent { content(marker) }
     }
 }
 
