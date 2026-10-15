@@ -62,6 +62,8 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.compose.ui.test.junit4)
+    // Only for testing the map inside a scrolling Column
+    testImplementation(libs.androidx.compose.foundation)
     // Provides the empty activity that createComposeRule() starts
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
