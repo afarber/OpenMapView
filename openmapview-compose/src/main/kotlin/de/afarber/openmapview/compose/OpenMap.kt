@@ -93,6 +93,8 @@ fun OpenMap(
     val markerNodes = remember { HashMap<MapMarker, MarkerNode>() }
     // Keyed by the shape added to the map, see MapElement
     val shapeClickHandlers = remember { HashMap<Any, () -> Unit>() }
+    val cameraIdleListeners = remember { ArrayList<() -> Unit>() }
+    val markerClickHandlers = remember { ArrayList<(MapMarker) -> Boolean>() }
     val applied = remember { AppliedSettings() }
     // Lets info window content use the composition locals of the screen, e.g. MaterialTheme
     val compositionContext = rememberCompositionContext()
@@ -116,8 +118,14 @@ fun OpenMap(
                 setOnMyLocationClickListener { currentOnMyLocationClick(it) }
                 onMapCreated(this)
                 setOnCameraMoveListener { cameraPositionState.readFrom(this) }
-                setOnCameraIdleListener { cameraPositionState.readFrom(this) }
-                setOnMarkerClickListener { marker -> markerNodes[marker]?.onClick?.invoke(marker) ?: false }
+                setOnCameraIdleListener {
+                    cameraPositionState.readFrom(this)
+                    cameraIdleListeners.toList().forEach { it() }
+                }
+                setOnMarkerClickListener { marker ->
+                    markerNodes[marker]?.onClick?.invoke(marker)
+                        ?: markerClickHandlers.toList().any { it(marker) }
+                }
                 setOnMarkerDragListener(MarkerDragDispatcher(markerNodes))
                 setOnInfoWindowClickListener { marker -> markerNodes[marker]?.onInfoWindowClick?.invoke(marker) }
                 setOnInfoWindowCloseListener { marker -> markerNodes[marker]?.onInfoWindowClose?.invoke(marker) }
@@ -145,7 +153,10 @@ fun OpenMap(
     )
 
     val currentMap = map ?: return
-    val mapContext = remember(currentMap) { MapContext(currentMap, markerNodes, shapeClickHandlers) }
+    val mapContext =
+        remember(currentMap) {
+            MapContext(currentMap, markerNodes, shapeClickHandlers, cameraIdleListeners, markerClickHandlers)
+        }
     CompositionLocalProvider(LocalMapContext provides mapContext) {
         content()
     }
