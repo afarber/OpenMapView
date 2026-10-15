@@ -49,23 +49,25 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 
 ## Examples
 
-Explore the example applications to see OpenMapView in action:
+Examples come in two versions with the same functionality, Jetpack Compose and classic Views with XML layouts, so you can compare them side by side.
 
-- [Example01Pan](examples/Example01Pan) - Basic map panning with touch gestures
-- [Example02Zoom](examples/Example02Zoom) - Built-in zoom controls (+/- buttons) and zoom level display
-- [Example03Markers](examples/Example03Markers) - Marker overlays with custom colors and info windows
-- [Example04Polylines](examples/Example04Polylines) - Polylines, polygons, and polygons with holes (donut shapes)
-- [Example05Camera](examples/Example05Camera) - Camera animations with callbacks, custom durations, and built-in zoom controls
-- [Example06Clicks](examples/Example06Clicks) - Map click and long-click listeners with coordinate display
-- [Example07DraggableMarkers](examples/Example07DraggableMarkers) - Draggable markers with drag event listeners
-- [Example08Circles](examples/Example08Circles) - Circles with radius, styling, z-index ordering, and click listeners
-- [Example09Overlays](examples/Example09Overlays) - Tile overlays with transparency control (OpenSeaMap, Railways, Trails, Snow)
-- [Example10GroundOverlays](examples/Example10GroundOverlays) - Ground overlays with position/bounds modes, rotation, and transparency
-- [Example11MapTypes](examples/Example11MapTypes) - Switching between all 15 map types (OSM, CyclOSM, Thunderforest, CARTO, Stamen and more)
-- [Example12Toolbar](examples/Example12Toolbar) - Open location in external map apps via geo: URI with OpenStreetMap browser fallback
-- [Example13Compose](examples/Example13Compose) - The `OpenMap` composable in a tab, keeping its camera while other tabs are shown
+| Jetpack Compose | Views (XML) | Synopsis |
+|---|---|---|
+|  | [Pan](examples/views/Pan) | Map panning with touch gestures and arrow buttons, preset places and camera bounds |
+|  | [Zoom](examples/views/Zoom) | Zoom controls (+/- buttons), pinch zoom and the current zoom level |
+|  | [Markers](examples/views/Markers) | Markers with custom colors and info windows at Bochum landmarks |
+|  | [Polylines](examples/views/Polylines) | Polylines, polygons and polygons with holes, highlighted on click |
+|  | [Camera](examples/views/Camera) | Camera animations with durations, callbacks and cancellation |
+|  | [Clicks](examples/views/Clicks) | Map click and long-click listeners with coordinate display |
+|  | [DraggableMarkers](examples/views/DraggableMarkers) | Draggable markers with drag event listeners |
+|  | [Circles](examples/views/Circles) | Circles with radius in meters, styling, z-index and click listeners |
+|  | [Overlays](examples/views/Overlays) | Tile overlays with transparency (OpenSeaMap, Railways, Trails, Snow) |
+|  | [GroundOverlays](examples/views/GroundOverlays) | Ground overlays with position or bounds mode, rotation and transparency |
+|  | [MapTypes](examples/views/MapTypes) | Switching between all 15 map types (OSM, CyclOSM, Thunderforest, CARTO, Stamen and more) |
+|  | [Toolbar](examples/views/Toolbar) | Open the location in external map apps via geo: URI, with a browser fallback |
+| [Tabs](examples/compose/Tabs) |  | A map in a tab that keeps its camera while other tabs are shown |
 
-![Example01Pan Demo](examples/Example01Pan/screenshot.gif)
+![Pan Demo](examples/views/Pan/screenshot.gif)
 
 ## Documentation
 

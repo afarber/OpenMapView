@@ -24,44 +24,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Build Example01Pan
-        run: ./gradlew :examples:Example01Pan:assembleDebug
-
-      - name: Build Example02Zoom
-        run: ./gradlew :examples:Example02Zoom:assembleDebug
-
-      - name: Build Example03Markers
-        run: ./gradlew :examples:Example03Markers:assembleDebug
-
-      - name: Build Example04Polylines
-        run: ./gradlew :examples:Example04Polylines:assembleDebug
-
-      - name: Build Example05Camera
-        run: ./gradlew :examples:Example05Camera:assembleDebug
-
-      - name: Build Example06Clicks
-        run: ./gradlew :examples:Example06Clicks:assembleDebug
-
-      - name: Build Example07DraggableMarkers
-        run: ./gradlew :examples:Example07DraggableMarkers:assembleDebug
-
-      - name: Build Example08Circles
-        run: ./gradlew :examples:Example08Circles:assembleDebug
-
-      - name: Build Example09Overlays
-        run: ./gradlew :examples:Example09Overlays:assembleDebug
-
-      - name: Build Example10GroundOverlays
-        run: ./gradlew :examples:Example10GroundOverlays:assembleDebug
-
-      - name: Build Example11MapTypes
-        run: ./gradlew :examples:Example11MapTypes:assembleDebug
-
-      - name: Build Example12Toolbar
-        run: ./gradlew :examples:Example12Toolbar:assembleDebug
-
-      - name: Build Example13Compose
-        run: ./gradlew :examples:Example13Compose:assembleDebug
+      # Builds every app under examples/compose and examples/views
+      - name: Build examples
+        run: ./gradlew -p examples assembleDebug
 
       - name: Upload example APKs
         uses: actions/upload-artifact@v7

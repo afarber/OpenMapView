@@ -29,6 +29,8 @@ plugins {
 }
 
 nmcpAggregation {
+    // examples/compose/Pan and examples/views/Pan share a name; only the libraries are aggregated
+    allowDuplicateProjectNames.set(true)
     centralPortal {
         username = System.getenv("OSSRH_USERNAME") ?: ""
         password = System.getenv("OSSRH_PASSWORD") ?: ""
