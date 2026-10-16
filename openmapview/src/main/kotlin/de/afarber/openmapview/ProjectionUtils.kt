@@ -44,7 +44,7 @@ internal object ProjectionUtils {
         x: Int,
         y: Int,
         zoom: Int,
-    ): LatLng = pixelToLatLng(x.toDouble(), y.toDouble(), zoom)
+    ): LatLng = pixelToLatLng(x.toDouble(), y.toDouble(), zoom.toFloat())
 
     /**
      * Converts fractional pixel coordinates to GPS coordinates at a given zoom level.
@@ -53,13 +53,20 @@ internal object ProjectionUtils {
         x: Double,
         y: Double,
         zoom: Int,
-    ): LatLng {
-        val n = 2.0.pow(zoom)
-        val xTile = x / TILE_SIZE
-        val yTile = y / TILE_SIZE
+    ): LatLng = pixelToLatLng(x, y, zoom.toFloat())
 
-        val lng = xTile / n * 360.0 - 180.0
-        val latRad = atan(sinh(PI * (1.0 - 2.0 * yTile / n)))
+    /**
+     * Converts pixel coordinates to GPS coordinates at a fractional zoom level, where the
+     * world is 256 * 2^zoom pixels wide.
+     */
+    fun pixelToLatLng(
+        x: Double,
+        y: Double,
+        zoom: Float,
+    ): LatLng {
+        val worldSize = worldSize(zoom)
+        val lng = x / worldSize * 360.0 - 180.0
+        val latRad = atan(sinh(PI * (1.0 - 2.0 * y / worldSize)))
         val lat = latRad * 180.0 / PI
 
         return LatLng(lat, lng)
@@ -71,13 +78,27 @@ internal object ProjectionUtils {
     fun latLngToPixel(
         latLng: LatLng,
         zoom: Int,
+    ): Pair<Float, Float> = latLngToPixel(latLng, zoom.toFloat())
+
+    /**
+     * Converts GPS coordinates to pixel position at a fractional zoom level, where the
+     * world is 256 * 2^zoom pixels wide.
+     */
+    fun latLngToPixel(
+        latLng: LatLng,
+        zoom: Float,
     ): Pair<Float, Float> {
-        val n = 2.0.pow(zoom)
-        val xPixel = (latLng.longitude + 180.0) / 360.0 * n * TILE_SIZE
+        val worldSize = worldSize(zoom)
+        val xPixel = (latLng.longitude + 180.0) / 360.0 * worldSize
         val latRad = latLng.latitude * PI / 180.0
-        val yPixel = (1.0 - ln(tan(latRad) + 1.0 / cos(latRad)) / PI) / 2.0 * n * TILE_SIZE
+        val yPixel = (1.0 - ln(tan(latRad) + 1.0 / cos(latRad)) / PI) / 2.0 * worldSize
         return Pair(xPixel.toFloat(), yPixel.toFloat())
     }
+
+    /**
+     * The width and height of the whole world in pixels at a fractional zoom level.
+     */
+    fun worldSize(zoom: Float): Double = TILE_SIZE * 2.0.pow(zoom.toDouble())
 
     /**
      * Calculates meters per pixel at a given latitude and zoom level.
@@ -90,10 +111,17 @@ internal object ProjectionUtils {
     fun metersPerPixelAtLatitude(
         latitude: Double,
         zoom: Int,
+    ): Double = metersPerPixelAtLatitude(latitude, zoom.toFloat())
+
+    /**
+     * Calculates meters per pixel at a given latitude and fractional zoom level.
+     */
+    fun metersPerPixelAtLatitude(
+        latitude: Double,
+        zoom: Float,
     ): Double {
         val earthCircumference = 40075017.0
         val latitudeRadians = latitude * PI / 180.0
-        val pixelsAtZoom = TILE_SIZE * 2.0.pow(zoom)
-        return earthCircumference * cos(latitudeRadians) / pixelsAtZoom
+        return earthCircumference * cos(latitudeRadians) / worldSize(zoom)
     }
 }

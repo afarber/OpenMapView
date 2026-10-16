@@ -7,9 +7,11 @@
 
 package de.afarber.openmapview
 
+import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 /**
  * Utility for calculating which map tiles are visible in the viewport.
@@ -19,6 +21,46 @@ import kotlin.math.pow
  */
 object ViewportCalculator {
     private const val TILE_SIZE = 256
+
+    /**
+     * The zoom level of the tiles drawn at a fractional zoom: the nearest whole level, so
+     * the tiles are scaled by a factor between 0.71 and 1.41.
+     */
+    internal fun tileZoom(zoom: Float): Int = zoom.roundToInt().coerceAtLeast(0)
+
+    /**
+     * Calculates which tiles are visible at a fractional zoom level.
+     *
+     * The tiles are of the zoom level [tileZoom] and drawn scaled to the fractional zoom.
+     *
+     * @param center The map center location
+     * @param zoom The current, possibly fractional zoom level
+     * @param viewWidth The viewport width in pixels
+     * @param viewHeight The viewport height in pixels
+     * @param panOffsetX The horizontal pan offset in screen pixels (default 0)
+     * @param panOffsetY The vertical pan offset in screen pixels (default 0)
+     * @return A list of tile coordinates that should be rendered
+     */
+    fun getVisibleTiles(
+        center: LatLng,
+        zoom: Float,
+        viewWidth: Int,
+        viewHeight: Int,
+        panOffsetX: Float = 0f,
+        panOffsetY: Float = 0f,
+    ): List<TileCoordinate> {
+        val tileZoom = tileZoom(zoom)
+        // Screen pixels per pixel of the tile zoom level
+        val scale = 2.0.pow((zoom - tileZoom).toDouble()).toFloat()
+        return getVisibleTiles(
+            center,
+            tileZoom,
+            ceil(viewWidth / scale).toInt(),
+            ceil(viewHeight / scale).toInt(),
+            panOffsetX / scale,
+            panOffsetY / scale,
+        )
+    }
 
     /**
      * Calculates which tiles are visible in the current viewport.

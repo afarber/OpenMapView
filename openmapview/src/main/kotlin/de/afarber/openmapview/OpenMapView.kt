@@ -83,6 +83,10 @@ class OpenMapView
         private var paddingBottom = 0
         private var lastTouchX = 0f
         private var lastTouchY = 0f
+
+        // The average position of all fingers on the map, which pans it
+        private var focalX = 0f
+        private var focalY = 0f
         private var initialTouchX = 0f
         private var initialTouchY = 0f
         private var onMapClickListener: OnMapClickListener? = null
@@ -175,6 +179,24 @@ class OpenMapView
             }
         }
 
+        // Sets focalX and focalY to the average position of the fingers that stay on the map
+        private fun updateFocalPoint(event: MotionEvent) {
+            val liftedIndex = if (event.actionMasked == MotionEvent.ACTION_POINTER_UP) event.actionIndex else -1
+            var sumX = 0f
+            var sumY = 0f
+            var count = 0
+            for (i in 0 until event.pointerCount) {
+                if (i == liftedIndex) continue
+                sumX += event.getX(i)
+                sumY += event.getY(i)
+                count++
+            }
+            if (count > 0) {
+                focalX = sumX / count
+                focalY = sumY / count
+            }
+        }
+
         private fun isOnDraggableMarker(event: MotionEvent): Boolean = controller.handleMarkerTouch(event.x, event.y)?.draggable == true
 
         override fun onSizeChanged(
@@ -217,6 +239,22 @@ class OpenMapView
                 scaleGestureDetector.onTouchEvent(event)
             }
 
+            // Pan by the average of all fingers, so a pinch, whose fingers move apart around
+            // a fixed point, doesn't pan the map before the scale detector takes over
+            updateFocalPoint(event)
+            when (event.actionMasked) {
+                // A finger was added or lifted: go on from the new focal point instead of jumping
+                MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_POINTER_UP -> {
+                    lastTouchX = focalX
+                    lastTouchY = focalY
+                    return true
+                }
+            }
+            if (scaleGestureDetector.isInProgress) {
+                lastTouchX = focalX
+                lastTouchY = focalY
+            }
+
             // Handle dragging and panning only if not scaling
             if (!scaleGestureDetector.isInProgress) {
                 when (event.action) {
@@ -236,8 +274,8 @@ class OpenMapView
                     }
 
                     MotionEvent.ACTION_MOVE -> {
-                        val dx = event.x - lastTouchX
-                        val dy = event.y - lastTouchY
+                        val dx = focalX - lastTouchX
+                        val dy = focalY - lastTouchY
                         val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
 
                         if (draggedMarker != null) {
@@ -281,8 +319,8 @@ class OpenMapView
                                 controller.reportGestureMove()
                             }
 
-                            lastTouchX = event.x
-                            lastTouchY = event.y
+                            lastTouchX = focalX
+                            lastTouchY = focalY
                             invalidate()
                         }
                         return true

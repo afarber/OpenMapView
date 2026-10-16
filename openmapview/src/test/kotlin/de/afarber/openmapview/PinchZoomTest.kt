@@ -9,6 +9,7 @@ package de.afarber.openmapview
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Point
 import android.view.MotionEvent
 import androidx.core.graphics.createBitmap
 import androidx.test.core.app.ApplicationProvider
@@ -43,11 +44,18 @@ class PinchZoomTest {
         time: Long,
         action: Int,
         vararg points: Pair<Float, Float>,
+    ): MotionEvent = eventWithIds(time, action, IntArray(points.size) { it }, *points)
+
+    private fun eventWithIds(
+        time: Long,
+        action: Int,
+        ids: IntArray,
+        vararg points: Pair<Float, Float>,
     ): MotionEvent {
         val properties =
             Array(points.size) { i ->
                 MotionEvent.PointerProperties().apply {
-                    id = i
+                    id = ids[i]
                     toolType = MotionEvent.TOOL_TYPE_FINGER
                 }
             }
@@ -112,6 +120,46 @@ class PinchZoomTest {
         assertEquals("started:${OnCameraMoveStartedListener.REASON_GESTURE}", events.first())
         assertEquals("idle", events.last())
         assertEquals(1, events.count { it == "idle" })
+    }
+
+    @Test
+    fun testPinch_KeepsPinchCenterInPlace() {
+        val center = 266
+        val before = mapView.getProjection().fromScreenLocation(Point(center, center))
+
+        pinch(center.toFloat(), center.toFloat(), startSpan = 200f, endSpan = 600f)
+
+        // The fingers move apart around the pinch center, so the map must not pan away
+        // under them, neither before the scale detector starts nor while it zooms
+        val after = mapView.getProjection().toScreenLocation(before)
+        assertTrue("zoomed in", mapView.getCameraPosition().zoom > 10.5f)
+        // Within the rounding of screen points to whole pixels
+        assertEquals(center.toFloat(), after.x.toFloat(), 2f)
+        assertEquals(center.toFloat(), after.y.toFloat(), 2f)
+    }
+
+    @Test
+    fun testTwoFingerPan_LiftingFirstFingerDoesNotJump() {
+        val place = mapView.getCameraPosition().target
+        val start = mapView.getProjection().toScreenLocation(place)
+
+        // Two fingers move right together by 60 px, then the first one is lifted and
+        // the second one moves on by 10 px
+        send(eventWithIds(0, MotionEvent.ACTION_DOWN, intArrayOf(0), 300f to 400f))
+        val pointerDown = MotionEvent.ACTION_POINTER_DOWN or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT)
+        send(eventWithIds(10, pointerDown, intArrayOf(0, 1), 300f to 400f, 500f to 400f))
+        for (step in 1..6) {
+            val dx = step * 10f
+            send(eventWithIds(10L + step * 16, MotionEvent.ACTION_MOVE, intArrayOf(0, 1), 300f + dx to 400f, 500f + dx to 400f))
+        }
+        val pointerUp = MotionEvent.ACTION_POINTER_UP or (0 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT)
+        send(eventWithIds(120, pointerUp, intArrayOf(0, 1), 360f to 400f, 560f to 400f))
+        send(eventWithIds(136, MotionEvent.ACTION_MOVE, intArrayOf(1), 570f to 400f))
+
+        val end = mapView.getProjection().toScreenLocation(place)
+        assertEquals(start.x + 70, end.x)
+        assertEquals(start.y, end.y)
+        send(eventWithIds(152, MotionEvent.ACTION_UP, intArrayOf(1), 570f to 400f))
     }
 
     @Test

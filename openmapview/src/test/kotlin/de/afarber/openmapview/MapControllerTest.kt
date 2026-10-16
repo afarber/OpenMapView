@@ -9,6 +9,7 @@ package de.afarber.openmapview
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.RectF
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.After
@@ -23,6 +24,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import kotlin.math.abs
+import kotlin.math.log2
 import kotlin.math.pow
 
 @RunWith(RobolectricTestRunner::class)
@@ -81,15 +83,16 @@ class MapControllerTest {
     @Test
     fun testZoom_ScaleUp() {
         controller.setZoom(10.0f)
+        // Doubling the finger distance zooms in by one level
         controller.zoom(2.0f, 540f, 960f)
-        assertEquals(MapController.DEFAULT_MAX_ZOOM, controller.getZoom(), DELTA)
+        assertEquals(11.0f, controller.getZoom(), DELTA)
     }
 
     @Test
     fun testZoom_ScaleDown() {
         controller.setZoom(10.0f)
         controller.zoom(0.5f, 540f, 960f)
-        assertEquals(5.0f, controller.getZoom(), DELTA)
+        assertEquals(9.0f, controller.getZoom(), DELTA)
     }
 
     @Test
@@ -307,7 +310,7 @@ class MapControllerTest {
         controller.draw(canvas)
 
         // Verify that drawRect was called for tile placeholders
-        verify(atLeast = 1) { canvas.drawRect(any(), any(), any(), any(), any()) }
+        verify(atLeast = 1) { canvas.drawRect(any<RectF>(), any()) }
     }
 
     @Test
@@ -576,6 +579,26 @@ class MapControllerTest {
         controller.resetMinMaxZoomPreference()
         assertEquals(MapController.DEFAULT_MIN_ZOOM, controller.getMinZoomLevel(), DELTA)
         assertEquals(MapController.DEFAULT_MAX_ZOOM, controller.getMaxZoomLevel(), DELTA)
+    }
+
+    @Test
+    fun testZoom_KeepsFocusPointUnderFingers() {
+        controller.setViewSize(1080, 1920)
+        controller.setCenter(LatLng(51.4661, 7.2491))
+        controller.setZoom(12.3f)
+        controller.updatePanOffset(40f, -25f)
+        val focusX = 300f
+        val focusY = 1500f
+        val before = controller.screenToLatLng(focusX, focusY)
+
+        // Several pinch steps, as the gesture detector reports them
+        controller.zoom(1.3f, focusX, focusY)
+        controller.zoom(1.2f, focusX, focusY)
+        controller.zoom(0.9f, focusX, focusY)
+
+        val after = controller.screenToLatLng(focusX, focusY)
+        assertEquals(before.latitude, after.latitude, 0.00001)
+        assertEquals(before.longitude, after.longitude, 0.00001)
     }
 
     @Test
@@ -1369,11 +1392,11 @@ class MapControllerTest {
         controller.setZoom(10.0f)
         val initialZoom = controller.getZoom()
 
-        // Normal zoom within limits (10.0 * 1.5 = 15.0, which is within 2.0-19.0 range)
+        // Normal zoom within limits (10 + log2(1.5) = 10.58, which is within 2.0-19.0 range)
         controller.zoom(1.5f, 540f, 960f)
 
         // Zoom should change normally (not clamped)
-        val expectedZoom = initialZoom * 1.5f
+        val expectedZoom = initialZoom + log2(1.5f)
         assertEquals(expectedZoom, controller.getZoom(), DELTA)
         assertTrue(controller.getZoom() > initialZoom)
         assertTrue(controller.getZoom() < MapController.DEFAULT_MAX_ZOOM)

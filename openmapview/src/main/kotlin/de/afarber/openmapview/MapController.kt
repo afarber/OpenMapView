@@ -39,6 +39,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.log2
 import kotlin.math.pow
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 /**
@@ -296,9 +297,12 @@ class MapController(
         }
 
     // Smooths tiles of other zoom levels that are scaled as fallback
+    // Tiles are scaled to fractional zoom levels, so they are drawn with bitmap filtering
+    private val tilePaint = Paint(Paint.FILTER_BITMAP_FLAG)
     private val fallbackTilePaint = Paint(Paint.FILTER_BITMAP_FLAG)
     private val fallbackSrc = Rect()
     private val fallbackDst = RectF()
+    private val tileDst = RectF()
 
     /**
      * Loads a bitmap from a BitmapDescriptor.
@@ -721,7 +725,8 @@ class MapController(
      * Adjusts the zoom level and map center so that the content under
      * the focus point remains stationary during the zoom.
      *
-     * @param scaleFactor The zoom scale factor (>1 zooms in, <1 zooms out)
+     * @param scaleFactor The zoom scale factor (>1 zooms in, <1 zooms out). Doubling the
+     *   distance between the fingers zooms in by one level, as the map doubles in size.
      * @param focusX The screen X coordinate of the zoom center
      * @param focusY The screen Y coordinate of the zoom center
      */
@@ -731,7 +736,7 @@ class MapController(
         focusY: Float,
     ) {
         val oldZoom = zoom
-        val requestedZoom = zoom * scaleFactor
+        val requestedZoom = zoom + log2(scaleFactor)
         val newZoom = requestedZoom.coerceIn(minZoomPreference, maxZoomPreference)
 
         // Trigger edge effect only when actually trying to exceed zoom limits
@@ -746,16 +751,14 @@ class MapController(
 
         zoom = newZoom
 
-        // Adjust center to zoom towards focus point
-        val zoomRatio = newZoom / oldZoom
-        val centerPixelX = viewWidth / 2f + panOffsetX
-        val centerPixelY = viewHeight / 2f + panOffsetY
-
-        val dx = (focusX - centerPixelX) * (1 - zoomRatio)
-        val dy = (focusY - centerPixelY) * (1 - zoomRatio)
-
-        panOffsetX += dx
-        panOffsetY += dy
+        // The map grows by this ratio around its center. Scale the pan offset with it and
+        // shift by the focus point's distance from the view center, so the content under
+        // the fingers stays put.
+        val ratio = 2.0.pow((newZoom - oldZoom).toDouble()).toFloat()
+        val focusOffsetX = focusX - viewWidth / 2f
+        val focusOffsetY = focusY - viewHeight / 2f
+        panOffsetX = panOffsetX * ratio + focusOffsetX * (ratio - 1)
+        panOffsetY = panOffsetY * ratio + focusOffsetY * (ratio - 1)
     }
 
     /**
@@ -854,15 +857,15 @@ class MapController(
         screenY: Float,
     ): LatLng {
         // Get center pixel coordinates at current zoom
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
 
         // Convert screen coordinates to pixel coordinates
         // Account for view center offset and pan offset
-        val pixelX = (centerPixelX + (screenX - viewWidth / 2 + panOffsetX).toDouble()).toInt()
-        val pixelY = (centerPixelY + (screenY - viewHeight / 2 + panOffsetY).toDouble()).toInt()
+        val pixelX = centerPixelX + (screenX - viewWidth / 2 + panOffsetX).toDouble()
+        val pixelY = centerPixelY + (screenY - viewHeight / 2 + panOffsetY).toDouble()
 
         // Convert pixel coordinates to LatLng
-        return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom.toInt())
+        return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom)
     }
 
     /**
@@ -1159,15 +1162,15 @@ class MapController(
                 val (centerPixelX, centerPixelY) =
                     ProjectionUtils.latLngToPixel(
                         currentPosition.target,
-                        currentPosition.zoom.toInt(),
+                        currentPosition.zoom,
                     )
 
                 // Apply pixel scroll offset
-                val newPixelX = (centerPixelX + cameraUpdate.xPixels).toInt()
-                val newPixelY = (centerPixelY + cameraUpdate.yPixels).toInt()
+                val newPixelX = (centerPixelX + cameraUpdate.xPixels).toDouble()
+                val newPixelY = (centerPixelY + cameraUpdate.yPixels).toDouble()
 
                 // Convert back to LatLng
-                val newTarget = ProjectionUtils.pixelToLatLng(newPixelX, newPixelY, currentPosition.zoom.toInt())
+                val newTarget = ProjectionUtils.pixelToLatLng(newPixelX, newPixelY, currentPosition.zoom)
 
                 CameraPosition(
                     target = newTarget,
@@ -1310,11 +1313,11 @@ class MapController(
         offsetX: Float,
         offsetY: Float,
     ): LatLng {
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
-        val worldSize = (TILE_SIZE * 2.0.pow(zoom.toInt())).toInt()
-        val newCenterPixelX = (centerPixelX + offsetX).toInt().coerceIn(0, worldSize)
-        val newCenterPixelY = (centerPixelY + offsetY).toInt()
-        return ProjectionUtils.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
+        val worldSize = ProjectionUtils.worldSize(zoom)
+        val newCenterPixelX = (centerPixelX + offsetX).toDouble().coerceIn(0.0, worldSize)
+        val newCenterPixelY = (centerPixelY + offsetY).toDouble()
+        return ProjectionUtils.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom)
     }
 
     /**
@@ -1358,14 +1361,14 @@ class MapController(
         val visibleTiles =
             ViewportCalculator.getVisibleTiles(
                 center,
-                zoom.toInt(),
+                zoom,
                 viewWidth,
                 viewHeight,
                 panOffsetX,
                 panOffsetY,
             )
 
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
 
         // Sort tile overlays by z-index
         val sortedTileOverlays = tileOverlays.filter { it.visible }.sortedBy { it.zIndex }
@@ -1379,18 +1382,15 @@ class MapController(
         // nothing to wait for, a stale offline fallback tile counts as drawn.
         var allTilesDrawn = true
         for (tile in visibleTiles) {
-            val (tilePixelX, tilePixelY) = ProjectionUtils.tileToPixel(tile)
-
-            val screenX = tilePixelX - centerPixelX + viewWidth / 2 - panOffsetX
-            val screenY = tilePixelY - centerPixelY + viewHeight / 2 - panOffsetY
+            tileScreenRect(tile, centerPixelX, centerPixelY, tileDst)
 
             val cachedBitmap = tileCache.getMemory(tile)
             if (cachedBitmap != null) {
-                canvas.drawBitmap(cachedBitmap, screenX, screenY, null)
+                canvas.drawBitmap(cachedBitmap, null, tileDst, tilePaint)
             } else {
-                canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tilePlaceholderPaint)
-                if (!drawFallbackTile(canvas, tile, screenX, screenY)) {
-                    canvas.drawRect(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE, tileBorderPaint)
+                canvas.drawRect(tileDst, tilePlaceholderPaint)
+                if (!drawFallbackTile(canvas, tile, tileDst)) {
+                    canvas.drawRect(tileDst, tileBorderPaint)
                 }
                 // A fallback is only a preview, the map is not loaded until the real tile is drawn
                 if (tileSource != null) allTilesDrawn = false
@@ -1473,7 +1473,7 @@ class MapController(
         val prefetchTiles =
             ViewportCalculator.getVisibleTiles(
                 center,
-                zoom.toInt(),
+                zoom,
                 viewWidth + 512,
                 viewHeight + 512,
                 panOffsetX,
@@ -1539,12 +1539,12 @@ class MapController(
                 val (nwPixelX, nwPixelY) =
                     ProjectionUtils.latLngToPixel(
                         LatLng(bounds.northeast.latitude, bounds.southwest.longitude),
-                        zoom.toInt(),
+                        zoom,
                     )
                 val (sePixelX, sePixelY) =
                     ProjectionUtils.latLngToPixel(
                         LatLng(bounds.southwest.latitude, bounds.northeast.longitude),
-                        zoom.toInt(),
+                        zoom,
                     )
 
                 val left = nwPixelX - centerPixelX + viewWidth / 2 - panOffsetX
@@ -1564,9 +1564,9 @@ class MapController(
                 val destRect = android.graphics.RectF(left, top, right, bottom)
                 canvas.drawBitmap(bitmap, null, destRect, paint)
             } else if (groundOverlay.position != null && groundOverlay.width != null) {
-                val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(groundOverlay.position, zoom.toInt())
+                val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(groundOverlay.position, zoom)
 
-                val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(groundOverlay.position.latitude, zoom.toInt())
+                val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(groundOverlay.position.latitude, zoom)
                 val widthPixels = groundOverlay.width / metersPerPixel
 
                 val heightPixels =
@@ -1635,7 +1635,7 @@ class MapController(
             var isFirst = true
 
             for (point in points) {
-                val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
+                val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom)
                 val screenX = pixelX - centerPixelX + viewWidth / 2 - panOffsetX
                 val screenY = pixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
@@ -1659,7 +1659,7 @@ class MapController(
                     }
                 var isFirstHole = true
                 for (point in holePoints) {
-                    val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
+                    val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom)
                     val screenX = pixelX - centerPixelX + viewWidth / 2 - panOffsetX
                     val screenY = pixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
@@ -1715,7 +1715,7 @@ class MapController(
                 var isFirst = true
 
                 for (point in points) {
-                    val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom.toInt())
+                    val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom)
                     val screenX = pixelX - centerPixelX + viewWidth / 2 - panOffsetX
                     val screenY = pixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
@@ -1771,11 +1771,11 @@ class MapController(
                 val from = points[segmentIndex]
                 val to = points[segmentIndex + 1]
 
-                val (fromPixelX, fromPixelY) = ProjectionUtils.latLngToPixel(from, zoom.toInt())
+                val (fromPixelX, fromPixelY) = ProjectionUtils.latLngToPixel(from, zoom)
                 val fromScreenX = fromPixelX - centerPixelX + viewWidth / 2 - panOffsetX
                 val fromScreenY = fromPixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
-                val (toPixelX, toPixelY) = ProjectionUtils.latLngToPixel(to, zoom.toInt())
+                val (toPixelX, toPixelY) = ProjectionUtils.latLngToPixel(to, zoom)
                 val toScreenX = toPixelX - centerPixelX + viewWidth / 2 - panOffsetX
                 val toScreenY = toPixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
@@ -1795,11 +1795,11 @@ class MapController(
                 val from = points[segmentIndex]
                 val to = points[segmentIndex + 1]
 
-                val (fromPixelX, fromPixelY) = ProjectionUtils.latLngToPixel(from, zoom.toInt())
+                val (fromPixelX, fromPixelY) = ProjectionUtils.latLngToPixel(from, zoom)
                 val fromScreenX = fromPixelX - centerPixelX + viewWidth / 2 - panOffsetX
                 val fromScreenY = fromPixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
-                val (toPixelX, toPixelY) = ProjectionUtils.latLngToPixel(to, zoom.toInt())
+                val (toPixelX, toPixelY) = ProjectionUtils.latLngToPixel(to, zoom)
                 val toScreenX = toPixelX - centerPixelX + viewWidth / 2 - panOffsetX
                 val toScreenY = toPixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
@@ -1834,7 +1834,7 @@ class MapController(
             strokePaint.strokeCap = circle.strokeCap.toAndroidCap()
             strokePaint.strokeJoin = circle.strokeJoin.toAndroidJoin()
 
-            val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(circle.center, zoom.toInt())
+            val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(circle.center, zoom)
             val screenX = pixelX - centerPixelX + viewWidth / 2 - panOffsetX
             val screenY = pixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
@@ -1858,7 +1858,7 @@ class MapController(
         for (marker in sortedMarkers) {
             if (marker.zIndex != zIndex || !marker.visible) continue
 
-            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom.toInt())
+            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom)
 
             val screenX = markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX
             val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
@@ -1949,8 +1949,8 @@ class MapController(
             boxHeight = totalHeight + INFO_WINDOW_PADDING * 2
         }
 
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
-        val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
+        val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom)
         val screenX = markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX
         val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
@@ -2039,8 +2039,7 @@ class MapController(
     private fun drawFallbackTile(
         canvas: Canvas,
         tile: TileCoordinate,
-        screenX: Float,
-        screenY: Float,
+        dst: RectF,
     ): Boolean {
         var drawn = false
         for (levels in 1..MAX_FALLBACK_LEVELS) {
@@ -2052,25 +2051,50 @@ class MapController(
             val left = (tile.x - (ancestor.x shl levels)) * size
             val top = (tile.y - (ancestor.y shl levels)) * size
             fallbackSrc.set(left, top, left + size, top + size)
-            fallbackDst.set(screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE)
-            canvas.drawBitmap(bitmap, fallbackSrc, fallbackDst, fallbackTilePaint)
+            canvas.drawBitmap(bitmap, fallbackSrc, dst, fallbackTilePaint)
             drawn = true
             break
         }
 
-        val half = TILE_SIZE / 2
+        val halfWidth = dst.width() / 2
+        val halfHeight = dst.height() / 2
         for (dy in 0..1) {
             for (dx in 0..1) {
                 val child = TileCoordinate(tile.x * 2 + dx, tile.y * 2 + dy, tile.zoom + 1)
                 val bitmap = tileCache.getMemory(child) ?: continue
-                val left = screenX + dx * half
-                val top = screenY + dy * half
-                fallbackDst.set(left, top, left + half, top + half)
+                val left = dst.left + dx * halfWidth
+                val top = dst.top + dy * halfHeight
+                fallbackDst.set(left, top, left + halfWidth, top + halfHeight)
                 canvas.drawBitmap(bitmap, null, fallbackDst, fallbackTilePaint)
                 drawn = true
             }
         }
         return drawn
+    }
+
+    /**
+     * Sets [out] to the screen rectangle of a tile, scaled from the tile's zoom level to the
+     * current fractional zoom. The edges are rounded to whole pixels, so neighboring tiles
+     * meet without gaps or overlaps.
+     *
+     * @param centerPixelX Center pixel X coordinate at the current zoom
+     * @param centerPixelY Center pixel Y coordinate at the current zoom
+     */
+    private fun tileScreenRect(
+        tile: TileCoordinate,
+        centerPixelX: Float,
+        centerPixelY: Float,
+        out: RectF,
+    ) {
+        val size = TILE_SIZE * 2.0.pow((zoom - tile.zoom).toDouble())
+        val originX = viewWidth / 2.0 - panOffsetX - centerPixelX
+        val originY = viewHeight / 2.0 - panOffsetY - centerPixelY
+        out.set(
+            (originX + tile.x * size).roundToInt().toFloat(),
+            (originY + tile.y * size).roundToInt().toFloat(),
+            (originX + (tile.x + 1) * size).roundToInt().toFloat(),
+            (originY + (tile.y + 1) * size).roundToInt().toFloat(),
+        )
     }
 
     // Redraws once a failed tile may be requested again, so it is retried
@@ -2106,22 +2130,19 @@ class MapController(
         // Create paint for transparency if needed
         val paint =
             if (overlay.transparency > 0f) {
-                Paint().apply {
+                Paint(Paint.FILTER_BITMAP_FLAG).apply {
                     alpha = ((1f - overlay.transparency) * 255).toInt()
                 }
             } else {
-                null
+                tilePaint
             }
 
         for (tile in visibleTiles) {
-            val (tilePixelX, tilePixelY) = ProjectionUtils.tileToPixel(tile)
-
-            val screenX = tilePixelX - centerPixelX + viewWidth / 2 - panOffsetX
-            val screenY = tilePixelY - centerPixelY + viewHeight / 2 - panOffsetY
+            tileScreenRect(tile, centerPixelX, centerPixelY, tileDst)
 
             val cachedBitmap = cache.getMemory(tile)
             if (cachedBitmap != null) {
-                canvas.drawBitmap(cachedBitmap, screenX, screenY, paint)
+                canvas.drawBitmap(cachedBitmap, null, tileDst, paint)
             } else {
                 if (!downloadingSet.contains(tile) && retries.canRequest(tile, now)) {
                     downloadingSet.add(tile)
@@ -2424,11 +2445,11 @@ class MapController(
         x: Float,
         y: Float,
     ): Marker? {
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
 
         // Check markers in reverse order (top to bottom) for correct z-ordering
         for (marker in markers.reversed()) {
-            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom.toInt())
+            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom)
 
             val screenX = markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX
             val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
@@ -2483,7 +2504,7 @@ class MapController(
         y: Float,
     ): Polyline? {
         val touchTolerance = 20f
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
 
         // Check polylines in reverse order (top to bottom) for correct z-ordering
         for (polyline in polylines.reversed()) {
@@ -2492,7 +2513,7 @@ class MapController(
             // Convert all points to screen coordinates
             val screenPoints =
                 polyline.points.map { latLng ->
-                    val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom.toInt())
+                    val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom)
                     val sx = px - centerPixelX + viewWidth / 2 - panOffsetX
                     val sy = py - centerPixelY + viewHeight / 2 - panOffsetY
                     Pair(sx, sy)
@@ -2525,7 +2546,7 @@ class MapController(
         x: Float,
         y: Float,
     ): Polygon? {
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
 
         // Check polygons in reverse order (top to bottom) for correct z-ordering
         for (polygon in polygons.reversed()) {
@@ -2534,7 +2555,7 @@ class MapController(
             // Convert all points to screen coordinates
             val screenPoints =
                 polygon.points.map { latLng ->
-                    val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom.toInt())
+                    val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom)
                     val sx = px - centerPixelX + viewWidth / 2 - panOffsetX
                     val sy = py - centerPixelY + viewHeight / 2 - panOffsetY
                     Pair(sx, sy)
@@ -2547,7 +2568,7 @@ class MapController(
                 for (hole in polygon.holes) {
                     val holeScreenPoints =
                         hole.map { latLng ->
-                            val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom.toInt())
+                            val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom)
                             val sx = px - centerPixelX + viewWidth / 2 - panOffsetX
                             val sy = py - centerPixelY + viewHeight / 2 - panOffsetY
                             Pair(sx, sy)
@@ -2580,14 +2601,14 @@ class MapController(
         x: Float,
         y: Float,
     ): Circle? {
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
 
         // Check circles in reverse order (top to bottom) for correct z-ordering
         for (circle in circles.reversed()) {
             if (!circle.clickable) continue
 
             // Convert circle center to screen coordinates
-            val (px, py) = ProjectionUtils.latLngToPixel(circle.center, zoom.toInt())
+            val (px, py) = ProjectionUtils.latLngToPixel(circle.center, zoom)
             val sx = px - centerPixelX + viewWidth / 2 - panOffsetX
             val sy = py - centerPixelY + viewHeight / 2 - panOffsetY
 
@@ -2611,7 +2632,7 @@ class MapController(
         x: Float,
         y: Float,
     ): GroundOverlay? {
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom.toInt())
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
 
         for (groundOverlay in groundOverlays.reversed()) {
             if (!groundOverlay.clickable) continue
@@ -2621,12 +2642,12 @@ class MapController(
                 val (nwPixelX, nwPixelY) =
                     ProjectionUtils.latLngToPixel(
                         LatLng(bounds.northeast.latitude, bounds.southwest.longitude),
-                        zoom.toInt(),
+                        zoom,
                     )
                 val (sePixelX, sePixelY) =
                     ProjectionUtils.latLngToPixel(
                         LatLng(bounds.southwest.latitude, bounds.northeast.longitude),
-                        zoom.toInt(),
+                        zoom,
                     )
 
                 val left = nwPixelX - centerPixelX + viewWidth / 2 - panOffsetX
@@ -2651,8 +2672,8 @@ class MapController(
                     }
                 }
             } else if (groundOverlay.position != null && groundOverlay.width != null) {
-                val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(groundOverlay.position, zoom.toInt())
-                val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(groundOverlay.position.latitude, zoom.toInt())
+                val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(groundOverlay.position, zoom)
+                val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(groundOverlay.position.latitude, zoom)
                 val widthPixels = groundOverlay.width / metersPerPixel
 
                 val bitmap = loadBitmap(groundOverlay.image)
