@@ -10,6 +10,7 @@ package de.afarber.openmapview
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.pow
 
 class ViewportCalculatorTest {
     @Test
@@ -180,5 +181,32 @@ class ViewportCalculatorTest {
 
         assertTrue(tiles.isNotEmpty())
         assertTrue(tiles.all { it.zoom == 10 })
+    }
+
+    @Test
+    fun testFractionalZoomUsesNearestTileZoom() {
+        val center = LatLng(51.4661, 7.2491)
+
+        assertTrue(ViewportCalculator.getVisibleTiles(center, 12.4f, 1408, 620).all { it.zoom == 12 })
+        assertTrue(ViewportCalculator.getVisibleTiles(center, 12.6f, 1408, 620).all { it.zoom == 13 })
+    }
+
+    @Test
+    fun testFractionalZoomTilesCoverViewport() {
+        val center = LatLng(51.4661, 7.2491)
+        // Zoom 12.6 draws zoom 13 tiles scaled by 2^-0.4, so more of them are visible
+        val zoom = 12.6f
+        val scale = 2.0.pow(zoom - 13.0)
+        val tiles = ViewportCalculator.getVisibleTiles(center, zoom, 1408, 620)
+
+        val (centerX, centerY) = ProjectionUtils.latLngToPixel(center, 13)
+        val left = centerX - 704 / scale
+        val right = centerX + 704 / scale
+        val top = centerY - 310 / scale
+        val bottom = centerY + 310 / scale
+        assertTrue(tiles.minOf { it.x } * 256 <= left)
+        assertTrue((tiles.maxOf { it.x } + 1) * 256 >= right)
+        assertTrue(tiles.minOf { it.y } * 256 <= top)
+        assertTrue((tiles.maxOf { it.y } + 1) * 256 >= bottom)
     }
 }

@@ -197,7 +197,7 @@ The current implementation uses a 2-tile (512px) buffer around the visible area:
 ```kotlin
 val prefetchTiles = ViewportCalculator.getVisibleTiles(
     center,
-    zoom.toInt(),
+    zoom,
     viewWidth + 512,   // Add 2 tiles horizontally
     viewHeight + 512,  // Add 2 tiles vertically
     panOffsetX,
@@ -212,6 +212,14 @@ val prefetchTiles = ViewportCalculator.getVisibleTiles(
 - Keeps memory footprint reasonable
 
 ## Rendering Optimizations
+
+### Fractional Zoom
+
+The camera zoom is a float, e.g. 12.4 during a pinch or after `newLatLngBounds()`. The map
+draws the tiles of the nearest whole zoom level (12 for 12.4, 13 for 12.6), scaled by
+2^(zoom - tile zoom), so between 0.71 and 1.41. Shapes, markers and hit-testing use the
+fractional zoom directly. Tile edges are rounded to whole pixels, so neighboring tiles meet
+without gaps.
 
 ### Minimal Invalidations
 

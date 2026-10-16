@@ -116,4 +116,31 @@ class MapProjectionTest {
             controller.onDestroy()
         }
     }
+
+    @Test
+    fun testFractionalZoomScalesDistances() {
+        val place = LatLng(51.4661, 7.2491)
+        val east = LatLng(51.4661, 7.2591)
+
+        fun distance(zoom: Float): Int {
+            val projection = Projection(place, zoom, 1080, 1920, 0f, 0f)
+            return projection.toScreenLocation(east).x - projection.toScreenLocation(place).x
+        }
+
+        // Half a zoom level makes the map sqrt(2) times larger, not the same as the whole level
+        assertEquals(distance(12f) * Math.sqrt(2.0), distance(12.5f).toDouble(), 1.0)
+        assertEquals(distance(12f) * 2.0, distance(13f).toDouble(), 1.0)
+    }
+
+    @Test
+    fun testRoundTripAtFractionalZoom() {
+        val projection = Projection(LatLng(51.4661, 7.2491), 12.7f, 1080, 1920, 0f, 0f)
+        val location = LatLng(51.47, 7.26)
+
+        val result = projection.fromScreenLocation(projection.toScreenLocation(location))
+
+        // Within one screen pixel, about 0.0002 degrees at this zoom
+        assertEquals(location.latitude, result.latitude, 0.0002)
+        assertEquals(location.longitude, result.longitude, 0.0002)
+    }
 }
