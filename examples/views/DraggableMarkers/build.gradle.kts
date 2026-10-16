@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.spotless)
 }
 
@@ -26,28 +25,17 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
-    buildFeatures {
-        compose = true
-    }
 }
 
 dependencies {
     implementation(project(":openmapview"))
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.bundles.compose)
-    implementation(libs.bundles.androidx.lifecycle)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
 }
 
 spotless {
-    kotlin {
-        target("src/**/*.kt")
-        ktlint(libs.versions.ktlint.get()).editorConfigOverride(
-            mapOf(
-                "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
-            ),
-        )
+    java {
+        target("src/**/*.java")
         trimTrailingWhitespace()
         endWithNewline()
         leadingTabsToSpaces(4)
