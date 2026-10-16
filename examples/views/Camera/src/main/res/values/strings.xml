@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="museum">Mining Museum</string>
+    <string name="university">Ruhr University</string>
+    <string name="dortmund">Dortmund</string>
+    <string name="ruhr_area">Ruhr area</string>
+    <string name="fast">0.5 s</string>
+    <string name="normal">2 s</string>
+    <string name="slow">5 s</string>
+    <string name="stop">Stop</string>
+    <string name="camera_status">Zoom %1$.1f, %2$s</string>
+    <string name="idle">idle</string>
+    <string name="moving_gesture">moving by gesture</string>
+    <string name="moving_app">moving by the app</string>
+    <string name="moving_map">moving by the map</string>
+    <string name="pick_destination">Pick a destination and a duration</string>
+    <string name="flying">Flying to %1$s in %2$s</string>
+    <string name="finished">Finished: %1$s in %2$s</string>
+    <string name="canceled">Canceled: %1$s</string>
+</resources>
