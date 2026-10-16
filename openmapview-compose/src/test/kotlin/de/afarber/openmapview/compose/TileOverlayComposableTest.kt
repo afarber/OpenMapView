@@ -16,9 +16,11 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import de.afarber.openmapview.CameraPosition
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
+import de.afarber.openmapview.PredefinedTileProviders
 import de.afarber.openmapview.TileProvider
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -66,7 +68,7 @@ class TileOverlayComposableTest {
     }
 
     @Test
-    fun testChangingTransparency_ReplacesOverlay() {
+    fun testChangingTransparency_UpdatesOverlayInPlace() {
         var transparency by mutableStateOf(0f)
         showMap { TileOverlay(tileProvider = provider, transparency = transparency) }
         val old = map.getTileOverlays()[0]
@@ -77,7 +79,24 @@ class TileOverlayComposableTest {
         val overlays = map.getTileOverlays()
         assertEquals(1, overlays.size)
         assertEquals(0.5f, overlays[0].transparency)
-        assertNotSame(old, overlays[0])
+        // The same overlay, which keeps its downloaded tiles
+        assertSame(old, overlays[0])
+    }
+
+    @Test
+    fun testChangingProvider_ReplacesOverlay() {
+        val other = PredefinedTileProviders.openRailwayMap()
+        var current by mutableStateOf(provider)
+        showMap { TileOverlay(tileProvider = current) }
+        val old = map.getTileOverlays()[0]
+
+        current = other
+        composeRule.waitForIdle()
+
+        val overlays = map.getTileOverlays()
+        assertEquals(1, overlays.size)
+        assertSame(other, overlays[0].tileProvider)
+        assertFalse(old === overlays[0])
     }
 
     @Test

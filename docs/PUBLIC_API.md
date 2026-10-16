@@ -82,6 +82,8 @@ The returned `Polyline`, `Polygon` and `Circle` are live handles, as in the Maps
 | `remove()` | Same | |
 | `PolylineOptions.add(LatLng...)`, `PolygonOptions.add(LatLng...)` | Same | |
 
+`TileOverlay` is a live handle too: `setTransparency(float)`, `setZIndex(float)`, `setVisible(boolean)`, `setFadeIn(boolean)`, `setTag(Object)`, `clearTileCache()` and `remove()`, as in the Maps SDK. A changed property keeps the overlay's downloaded tiles.
+
 A setter that gets an invalid value (fewer than 2 polyline points or 3 polygon points, a radius of 0 or less) throws `IllegalArgumentException` and keeps the old value. In Kotlin, `copy(...)` returns a new shape with some properties changed, which is not on any map.
 
 ---

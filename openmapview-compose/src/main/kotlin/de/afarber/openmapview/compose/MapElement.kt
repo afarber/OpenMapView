@@ -62,7 +62,7 @@ internal fun <T : Any> MapElement(
  * @param update Sets the current parameters on the shape
  * @param add Adds the shape to the map and returns the added instance
  * @param remove Removes the shape from the map
- * @param onClick Called when the shape is tapped
+ * @param onClick Called when the shape is tapped, or null for elements that can't be tapped
  */
 @Composable
 internal fun <T : Any> LiveMapElement(
@@ -70,7 +70,7 @@ internal fun <T : Any> LiveMapElement(
     update: T.() -> Unit,
     add: OpenMapView.(T) -> T,
     remove: OpenMapView.(T) -> Unit,
-    onClick: (T) -> Unit,
+    onClick: ((T) -> Unit)? = null,
 ) {
     val context = LocalMapContext.current ?: return
     val currentOnClick by rememberUpdatedState(onClick)
@@ -78,7 +78,9 @@ internal fun <T : Any> LiveMapElement(
 
     DisposableEffect(context, shape) {
         val added = context.map.add(shape)
-        context.shapeClickHandlers[added] = { currentOnClick(added) }
+        if (onClick != null) {
+            context.shapeClickHandlers[added] = { currentOnClick?.invoke(added) }
+        }
         onDispose {
             context.shapeClickHandlers.remove(added)
             context.map.remove(added)

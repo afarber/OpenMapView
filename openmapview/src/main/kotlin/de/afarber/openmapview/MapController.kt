@@ -2422,6 +2422,18 @@ class MapController(
     }
 
     /**
+     * Drops the downloaded tiles of a tile overlay, so they are requested again.
+     *
+     * @param tileOverlay The tile overlay whose tiles to drop
+     */
+    fun clearTileOverlayCache(tileOverlay: TileOverlay) {
+        if (tileOverlay !in tileOverlays) return
+        overlayTileCaches[tileOverlay.id] = TileCache()
+        overlayDownloadingTiles[tileOverlay.id] = mutableSetOf()
+        overlayTileRetries[tileOverlay.id] = TileRetryTracker()
+    }
+
+    /**
      * Removes all tile overlays from the map.
      */
     fun clearTileOverlays() {
