@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add">Add circle</string>
+    <string name="clear">Clear</string>
+    <string name="radius">Radius of the selected circle</string>
+    <string name="radius_label">Radius</string>
+    <string name="hint">Tap a circle to select it</string>
+    <string name="selected">%1$s: radius %2$s</string>
+    <string name="cleared">Circles removed</string>
+</resources>
