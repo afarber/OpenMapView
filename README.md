@@ -60,7 +60,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | [DraggableMarkers](examples/compose/DraggableMarkers) | [DraggableMarkers](examples/views/DraggableMarkers) | A route of draggable markers that the line follows while dragging, with drag events |
 | [Circles](examples/compose/Circles) | [Circles](examples/views/Circles) | Circles with radii in meters, selected by tap and resized live with a slider |
 | [Overlays](examples/compose/Overlays) | [Overlays](examples/views/Overlays) | Hiking, cycling and mountain bike tile overlays, turned on and off, with live transparency |
-|  | [GroundOverlays](examples/views/GroundOverlays) | Ground overlays with position or bounds mode, rotation and transparency |
+| [GroundOverlays](examples/compose/GroundOverlays) | [GroundOverlays](examples/views/GroundOverlays) | Site plans placed by position or bounds, rotated and made transparent live |
 |  | [MapTypes](examples/views/MapTypes) | Switching between all 15 map types (OSM, CyclOSM, Thunderforest, CARTO, Stamen and more) |
 |  | [Toolbar](examples/views/Toolbar) | Open the location in external map apps via geo: URI, with a browser fallback |
 | [Tabs](examples/compose/Tabs) |  | A map in a tab that keeps its camera while other tabs are shown |

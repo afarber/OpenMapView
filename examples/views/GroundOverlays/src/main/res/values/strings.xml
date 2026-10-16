@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bearing">Bearing</string>
+    <string name="transparency">Transparency</string>
+    <string name="hint">Tap a plan to select it</string>
+    <string name="festival">Festival plan, %1$d m wide</string>
+    <string name="campus">Campus plan, stretched over its bounds</string>
+    <string name="values">Bearing %1$d°, %2$d%% transparent</string>
+</resources>

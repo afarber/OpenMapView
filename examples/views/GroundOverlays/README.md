@@ -1,144 +1,52 @@
-# GroundOverlays (Views) - Ground Overlay Images on Map
+# GroundOverlays (Views)
 
-[Back to README](../../../README.md)
+[Back to README](../../../README.md) | Same app in Jetpack Compose: [GroundOverlays (Compose)](../../compose/GroundOverlays)
 
-This example demonstrates ground overlays in OpenMapView, showing how to add images positioned on the map with support for rotation and transparency.
+Two site plans placed on the map as ground overlays: a festival plan by position and size, and a campus plan stretched over its bounds. Tap a plan and rotate it or make it transparent.
+The map is declared in an XML layout and driven from a Java `AppCompatActivity`.
 
-## Features Demonstrated
+## Features
 
-- Ground overlays with two positioning modes
-- Position mode: Center point with width/height in meters
-- Bounds mode: Stretch image to geographic bounds
-- Bearing rotation (0-360 degrees)
-- Transparency control (0-100%)
-- Clickable ground overlays with listeners
-- Z-index ordering for multiple overlays
-- Dynamic overlay toggling (show/hide)
-- Jetpack Compose UI with Material3
+- Ground overlays with `GroundOverlayOptions`: `position(latLng, widthInMeters)` or `positionFromBounds(bounds)`
+- Images from vector drawables with `BitmapDescriptorFactory.fromResource()`
+- Taps on clickable overlays through `setOnGroundOverlayClickListener`
+- The overlays are live: `setBearing()` and `setTransparency()` redraw the map while the sliders move
+- The images scale with the map, as they are sized in meters
 
 ## Screenshot
 
-![GroundOverlays Demo](screenshot.gif)
+![GroundOverlays (Views)](screenshot.gif)
 
-## Quick Start
+## Run
 
-### Run in Android Studio
-
-1. Open the OpenMapView project in Android Studio
-2. Select `examples.views.GroundOverlays` from the run configuration dropdown
-3. Click Run
-4. Deploy to your device or emulator
-
-### Build from Command Line
+Select `examples.views.GroundOverlays` in Android Studio, or:
 
 ```bash
-./gradlew :examples:views:GroundOverlays:assembleDebug
-adb install examples/GroundOverlays/build/outputs/apk/debug/GroundOverlays-debug.apk
+./gradlew :examples:views:GroundOverlays:installDebug
 adb shell am start -n de.afarber.openmapview.examples.views.groundoverlays/.MainActivity
 ```
 
 ## Code Highlights
 
-### Position Mode
+```java
+// Placed by position: the image is 1 km wide at the Stadtpark, its height follows the image
+festival = mapView.addGroundOverlay(new GroundOverlayOptions()
+        .image(BitmapDescriptorFactory.fromResource(R.drawable.plan_festival))
+        .position(new LatLng(51.4840, 7.2310), 1000f)
+        .clickable(true));
 
-```kotlin
-val groundOverlay = GroundOverlay(
-    image = BitmapDescriptor.BitmapMarker(bitmap),
-    position = LatLng(51.47, 7.25),
-    width = 2000f,
-    bearing = 0f,
-    transparency = 0f,
-    clickable = true,
-    zIndex = 1f
-)
+// Placed by bounds: the image is stretched over the area of the campus
+mapView.addGroundOverlay(new GroundOverlayOptions()
+        .image(BitmapDescriptorFactory.fromResource(R.drawable.plan_campus))
+        .positionFromBounds(new LatLngBounds(new LatLng(51.4400, 7.2540), new LatLng(51.4500, 7.2730)))
+        .clickable(true));
 
-mapView.addGroundOverlay(groundOverlay)
+// The overlays are live: their setters redraw the map while the sliders move
+bearingSlider.addOnChangeListener((s, value, fromUser) -> selected.setBearing(value));
 ```
 
-### Bounds Mode
+## What to Try
 
-```kotlin
-val groundOverlay = GroundOverlay(
-    image = BitmapDescriptor.BitmapMarker(bitmap),
-    bounds = LatLngBounds(
-        southwest = LatLng(51.46, 7.24),
-        northeast = LatLng(51.47, 7.26)
-    ),
-    transparency = 0f,
-    clickable = true,
-    zIndex = 2f
-)
-
-mapView.addGroundOverlay(groundOverlay)
-```
-
-### Builder Style
-
-```kotlin
-val groundOverlay = mapView.addGroundOverlay(
-    GroundOverlayOptions()
-        .image(BitmapDescriptor.BitmapMarker(bitmap))
-        .position(LatLng(51.465, 7.255), 1500f)
-        .bearing(45f)
-        .transparency(0f)
-        .clickable(true)
-        .zIndex(3f)
-)
-```
-
-### Click Listener
-
-```kotlin
-mapView.setOnGroundOverlayClickListener { groundOverlay ->
-    Toast.makeText(context, "Clicked: ${groundOverlay.tag}", Toast.LENGTH_SHORT).show()
-}
-```
-
-### Update Properties
-
-```kotlin
-val updatedOverlay = currentOverlay.copy(
-    transparency = 0.5f,
-    bearing = 90f
-)
-mapView.removeGroundOverlay(currentOverlay)
-mapView.addGroundOverlay(updatedOverlay)
-```
-
-## What to Test
-
-1. **Toggle Position Mode** - Shows overlay centered at position with 2000m width
-2. **Toggle Bounds Mode** - Shows overlay stretched to geographic bounds
-3. **Toggle Rotated 45deg** - Shows overlay rotated 45 degrees clockwise
-4. **Adjust Transparency** - Slider changes opacity (0-100%)
-5. **Click Overlays** - Tap on overlay to see toast with tag
-6. **Multiple Overlays** - Enable multiple overlays to see z-index ordering
-7. **Clear All** - FAB button removes all overlays and resets transparency
-
-## Key Concepts
-
-- **Position Mode**: Center point + width (and optional height) in meters
-- **Bounds Mode**: Geographic rectangle (LatLngBounds)
-- **Bearing**: Rotation angle in degrees clockwise from north (0-360)
-- **Anchor**: Rotation pivot point, default (0.5, 0.5) = center
-- **Transparency**: 0.0 (opaque) to 1.0 (fully transparent)
-- **Z-index**: Draw order (higher values drawn on top)
-- **Clickable**: Whether overlay responds to touch events
-
-## Use Cases
-
-- Campus maps overlaid on street map
-- Weather radar imagery
-- Historic map comparisons
-- Floor plans for indoor navigation
-- Custom imagery layers
-
-## Map Location
-
-**Default Center:** Bochum, Germany (51.4661°N, 7.2491°E) at zoom 13.0
-
-The example uses programmatically generated colored bitmaps with labels to demonstrate the different positioning and rotation modes clearly.
-
-## API Compatibility
-
-Ground overlays are compatible with the Maps SDK, supporting both positioning modes, rotation, transparency, and click handling.
+1. Tap the festival plan and drag both sliders
+2. Tap the campus plan and rotate it
+3. Zoom in and out: the plans keep their size on the ground
