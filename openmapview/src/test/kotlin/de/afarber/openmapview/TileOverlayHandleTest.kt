@@ -9,6 +9,7 @@ package de.afarber.openmapview
 
 import android.app.Activity
 import android.graphics.Canvas
+import android.os.Looper
 import androidx.core.graphics.createBitmap
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -21,6 +22,8 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Checks that tile overlays are live handles: their setters redraw the map that shows them,
@@ -77,5 +80,41 @@ class TileOverlayHandleTest {
         overlay.clearTileCache()
 
         assertTrue(shadowOf(mapView).wasInvalidated())
+    }
+
+    @Test
+    fun testSlowOverlay_DoesNotBlockOtherOverlays() {
+        mapView.setMapType(MapType.NONE)
+        mapView.setCenter(LatLng(51.4661, 7.2491))
+        mapView.setZoom(13f)
+        // A server that never answers holds every download it gets
+        val release = CountDownLatch(1)
+        val slow =
+            TileProvider { _, _, _ ->
+                release.await()
+                null
+            }
+        val fastCalls = AtomicInteger()
+        val fast =
+            TileProvider { _, _, _ ->
+                fastCalls.incrementAndGet()
+                null
+            }
+        mapView.addTileOverlay(TileOverlay(slow))
+        mapView.addTileOverlay(TileOverlay(fast))
+
+        try {
+            drawn()
+            val deadline = System.nanoTime() + 2_000_000_000L
+            while (fastCalls.get() == 0 && System.nanoTime() < deadline) {
+                Thread.sleep(20)
+                shadowOf(Looper.getMainLooper()).idle()
+            }
+
+            // The other overlay still gets its tiles requested
+            assertTrue(fastCalls.get() > 0)
+        } finally {
+            release.countDown()
+        }
     }
 }

@@ -95,6 +95,9 @@ class MapController(
         private const val TILE_SIZE = 256f
         private const val MAX_CONCURRENT_TILE_DOWNLOADS = 4
 
+        // Per tile overlay, so a slow overlay server only delays its own tiles
+        private const val MAX_CONCURRENT_OVERLAY_DOWNLOADS = 2
+
         // How many zoom levels up drawFallbackTile() looks for a cached tile to scale up
         private const val MAX_FALLBACK_LEVELS = 4
 
@@ -243,6 +246,7 @@ class MapController(
     private val overlayTileCaches = mutableMapOf<String, TileCache>()
     private val overlayDownloadingTiles = mutableMapOf<String, MutableSet<TileCoordinate>>()
     private val overlayTileRetries = mutableMapOf<String, TileRetryTracker>()
+    private val overlayDownloadSemaphores = mutableMapOf<String, Semaphore>()
 
     private var animationJob: Job? = null
 
@@ -269,6 +273,8 @@ class MapController(
     // source can't put their tiles into the cache of the new one
     @Volatile
     private var tileCache = createTileCache(TileSource.STANDARD)
+
+    // For the base map only: tile overlays have their own limits in overlayDownloadSemaphores
     private val tileDownloadSemaphore = Semaphore(MAX_CONCURRENT_TILE_DOWNLOADS)
     private var tileSource: TileSource? = TileSource.STANDARD
     private var downloadingTiles = mutableSetOf<TileCoordinate>()
@@ -2183,11 +2189,12 @@ class MapController(
         overlay: TileOverlay,
     ) {
         val cache = overlayTileCaches[overlay.id] ?: return
+        val semaphore = overlayDownloadSemaphores[overlay.id] ?: return
         scope.launch(Dispatchers.IO) {
             var bitmap: Bitmap? = null
             try {
                 bitmap =
-                    tileDownloadSemaphore.withPermit {
+                    semaphore.withPermit {
                         val cachedBitmap = cache.get(tile)
                         if (cachedBitmap != null) {
                             cachedBitmap
@@ -2402,6 +2409,7 @@ class MapController(
         overlayTileCaches[tileOverlay.id] = TileCache()
         overlayDownloadingTiles[tileOverlay.id] = mutableSetOf()
         overlayTileRetries[tileOverlay.id] = TileRetryTracker()
+        overlayDownloadSemaphores[tileOverlay.id] = Semaphore(MAX_CONCURRENT_OVERLAY_DOWNLOADS)
         return tileOverlay
     }
 
@@ -2417,6 +2425,7 @@ class MapController(
             overlayTileCaches.remove(tileOverlay.id)
             overlayDownloadingTiles.remove(tileOverlay.id)
             overlayTileRetries.remove(tileOverlay.id)
+            overlayDownloadSemaphores.remove(tileOverlay.id)
         }
         return removed
     }
@@ -2441,6 +2450,7 @@ class MapController(
         overlayTileCaches.clear()
         overlayDownloadingTiles.clear()
         overlayTileRetries.clear()
+        overlayDownloadSemaphores.clear()
     }
 
     /**

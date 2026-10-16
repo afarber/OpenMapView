@@ -298,6 +298,8 @@ scope.launch(Dispatchers.IO) {
 }
 ```
 
+At most 4 base map tiles download at once. Each tile overlay has its own limit of 2, so a slow or failing overlay server only delays the tiles of that overlay, not the base map or other overlays.
+
 **Benefits:**
 - Non-blocking tile downloads
 - Bounded bitmap decode pressure during rapid camera changes
