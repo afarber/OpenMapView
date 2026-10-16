@@ -35,6 +35,9 @@ private const val TAP_SLOP_PX = 10f
 // Duration of the camera animation to the device location for the my-location button
 private const val MY_LOCATION_ANIMATION_MS = 250
 
+// Duration of the zoom animation for the built-in zoom buttons
+private const val ZOOM_BUTTON_ANIMATION_MS = 250
+
 /**
  * A MapView powered by OpenStreetMap tiles.
  *
@@ -374,14 +377,14 @@ class OpenMapView
                             if (uiSettings.isZoomControlsEnabled) {
                                 val zoomAction = zoomControlsOverlay.handleTouch(event.x, event.y)
                                 if (zoomAction != 0) {
-                                    if (zoomAction > 0) {
-                                        controller.setZoom(controller.getZoom() + 1.0f)
-                                    } else {
-                                        controller.setZoom(controller.getZoom() - 1.0f)
-                                    }
-                                    controller.commitPan()
-                                    // Like Google Maps, zoom buttons report an API animation
-                                    controller.reportInstantMove(OnCameraMoveStartedListener.REASON_API_ANIMATION)
+                                    val update = if (zoomAction > 0) CameraUpdateFactory.zoomIn() else CameraUpdateFactory.zoomOut()
+                                    // The map's own buttons animate and report an API animation
+                                    controller.animateCamera(
+                                        update,
+                                        ZOOM_BUTTON_ANIMATION_MS,
+                                        null,
+                                        OnCameraMoveStartedListener.REASON_API_ANIMATION,
+                                    )
                                     invalidate()
                                     return true
                                 }
