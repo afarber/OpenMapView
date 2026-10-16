@@ -439,13 +439,7 @@ class OpenMapView
                                 val consumed = controller.onMarkerClickListener?.onMarkerClick(touchedMarker) == true
                                 if (!consumed) {
                                     if (!touchedMarker.isInfoWindowShown) {
-                                        // Hide all other info windows (only one can be shown at a time)
-                                        controller.getMarkers().forEach { marker ->
-                                            if (marker.isInfoWindowShown) {
-                                                marker.setInfoWindowShownInternal(false)
-                                                controller.onInfoWindowCloseListener?.onInfoWindowClose(marker)
-                                            }
-                                        }
+                                        closeOtherInfoWindows(touchedMarker)
                                         openInfoWindow(touchedMarker)
                                     }
                                     controller.animateCamera(
@@ -1299,10 +1293,21 @@ class OpenMapView
          * @see UiSettings.infoWindowAutoDismiss
          */
         fun showInfoWindow(marker: Marker) {
-            // Hide all other info windows (only one can be shown at a time)
-            controller.getMarkers().forEach { it.setInfoWindowShownInternal(false) }
+            closeOtherInfoWindows(marker)
+            // Draws the window again, e.g. after the title changed
+            marker.setInfoWindowShownInternal(false)
             openInfoWindow(marker)
             invalidate()
+        }
+
+        // Only one info window is shown at a time: closes the others and reports it
+        private fun closeOtherInfoWindows(marker: Marker) {
+            controller.getMarkers().forEach { other ->
+                if (other !== marker && other.isInfoWindowShown) {
+                    other.setInfoWindowShownInternal(false)
+                    controller.onInfoWindowCloseListener?.onInfoWindowClose(other)
+                }
+            }
         }
 
         /**

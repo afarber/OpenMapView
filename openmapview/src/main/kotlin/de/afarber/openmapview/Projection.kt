@@ -18,8 +18,8 @@ import android.graphics.Point
  * This class provides methods for converting between screen coordinates and geographic coordinates,
  * as well as querying the visible region of the map.
  *
- * When map padding is set, the projection accounts for the logical viewport shift, ensuring that
- * coordinate conversions reflect the visible (non-padded) area of the map.
+ * Screen locations are where the map draws a location, also when map padding is set. Only the
+ * visible region is limited to the area inside the padding.
  */
 class Projection
     internal constructor(
@@ -34,18 +34,11 @@ class Projection
         private val paddingRight: Int = 0,
         private val paddingBottom: Int = 0,
     ) {
-        // Calculate the padding offset for the logical center
-        private val paddingOffsetX = (paddingLeft - paddingRight) / 2f
-        private val paddingOffsetY = (paddingTop - paddingBottom) / 2f
-
         /**
          * Returns the geographic location that corresponds to a screen location.
          *
          * The screen location is specified in screen pixels (not display pixels)
          * relative to the top left of the map.
-         *
-         * If map padding is set, the conversion accounts for the logical viewport offset,
-         * ensuring accurate coordinate mapping in the visible (non-padded) area.
          *
          * @param point The screen location in pixels
          * @return The geographic location (LatLng) corresponding to the screen point
@@ -67,12 +60,8 @@ class Projection
         ): LatLng {
             val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
 
-            // Adjust screen coordinates to account for padding offset
-            val adjustedScreenX = screenX - paddingOffsetX
-            val adjustedScreenY = screenY - paddingOffsetY
-
-            val pixelX = (centerPixelX + adjustedScreenX - viewWidth / 2 + panOffsetX).toDouble()
-            val pixelY = (centerPixelY + adjustedScreenY - viewHeight / 2 + panOffsetY).toDouble()
+            val pixelX = (centerPixelX + screenX - viewWidth / 2 + panOffsetX).toDouble()
+            val pixelY = (centerPixelY + screenY - viewHeight / 2 + panOffsetY).toDouble()
 
             return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom)
         }
@@ -83,9 +72,6 @@ class Projection
          * The screen location is specified in screen pixels (not display pixels)
          * relative to the top left of the map.
          *
-         * If map padding is set, the returned screen coordinates account for the logical
-         * viewport offset, reflecting where the location appears in the padded view.
-         *
          * @param location The geographic location (LatLng)
          * @return The screen location in pixels
          */
@@ -93,8 +79,8 @@ class Projection
             val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
             val (locationPixelX, locationPixelY) = ProjectionUtils.latLngToPixel(location, zoom)
 
-            val screenX = (locationPixelX - centerPixelX + viewWidth / 2 - panOffsetX + paddingOffsetX).toInt()
-            val screenY = (locationPixelY - centerPixelY + viewHeight / 2 - panOffsetY + paddingOffsetY).toInt()
+            val screenX = (locationPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toInt()
+            val screenY = (locationPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toInt()
 
             return Point(screenX, screenY)
         }

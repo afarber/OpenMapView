@@ -88,11 +88,23 @@ internal object ProjectionUtils {
         latLng: LatLng,
         zoom: Float,
     ): Pair<Float, Float> {
+        val (xPixel, yPixel) = latLngToPixelExact(latLng, zoom)
+        return Pair(xPixel.toFloat(), yPixel.toFloat())
+    }
+
+    /**
+     * Like [latLngToPixel], but with double precision, e.g. for converting a location back
+     * and forth without drift.
+     */
+    fun latLngToPixelExact(
+        latLng: LatLng,
+        zoom: Float,
+    ): Pair<Double, Double> {
         val worldSize = worldSize(zoom)
         val xPixel = (latLng.longitude + 180.0) / 360.0 * worldSize
         val latRad = latLng.latitude * PI / 180.0
         val yPixel = (1.0 - ln(tan(latRad) + 1.0 / cos(latRad)) / PI) / 2.0 * worldSize
-        return Pair(xPixel.toFloat(), yPixel.toFloat())
+        return Pair(xPixel, yPixel)
     }
 
     /**
