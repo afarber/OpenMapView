@@ -17,7 +17,7 @@ import de.afarber.openmapview.CameraPosition
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -66,7 +66,7 @@ class PolylineComposableTest {
     }
 
     @Test
-    fun testChangingParameter_ReplacesPolyline() {
+    fun testChangingParameter_UpdatesPolylineInPlace() {
         var color by mutableStateOf(Color.Red)
         showMap { Polyline(points = points, strokeColor = color) }
         val old = map.getPolylines()[0]
@@ -77,7 +77,8 @@ class PolylineComposableTest {
         val polylines = map.getPolylines()
         assertEquals(1, polylines.size)
         assertEquals(Color.Blue, polylines[0].strokeColor)
-        assertNotSame(old, polylines[0])
+        // The same live shape, changed through its setters
+        assertSame(old, polylines[0])
     }
 
     @Test

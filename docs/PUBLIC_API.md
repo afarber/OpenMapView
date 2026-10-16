@@ -68,6 +68,22 @@ This document lists all public non-deprecated methods of the `MapView` and `Goog
 | `addGroundOverlay(GroundOverlayOptions)` | `GroundOverlay` |                                                                                          |
 | `addTileOverlay(TileOverlayOptions)`     | `TileOverlay`   | Includes predefined providers for public OSM services (OpenSeaMap, OpenRailwayMap, etc.) |
 
+### Polyline, Polygon and Circle Handles
+
+The returned `Polyline`, `Polygon` and `Circle` are live handles, as in the Maps SDK: setting a property redraws the map right away, and `remove()` takes the shape off the map.
+
+| Maps SDK | OpenMapView | Notes |
+|---|---|---|
+| `Polyline.setPoints`, `setGeodesic`, `setVisible`, `setClickable`, `setZIndex`, `setTag` and getters | Same | Kotlin properties `points`, `geodesic`, `visible`, ... |
+| `Polyline.setColor(int)`, `getColor()`, `setWidth(float)`, `getWidth()` | Same | Kotlin: `strokeColor` (Compose `Color`), `strokeColorArgb`, `strokeWidth` |
+| `Polygon` / `Circle` `setStrokeColor(int)`, `getStrokeColor()`, `setFillColor(int)`, `getFillColor()`, `setStrokeWidth(float)` | Same | Kotlin: `strokeColor`, `fillColor` (Compose `Color`), `strokeColorArgb`, `fillColorArgb`, `strokeWidth` |
+| `Polygon.setHoles`, `Circle.setCenter`, `setRadius` | Same | |
+| `setPattern(List<PatternItem>)`, `setStartCap`, `setEndCap`, `setJointType` | `strokePattern`, `startCap`, `endCap`, `strokeJoin` | Compose `PathEffect`, `StrokeCap`, `StrokeJoin`, see below |
+| `remove()` | Same | |
+| `PolylineOptions.add(LatLng...)`, `PolygonOptions.add(LatLng...)` | Same | |
+
+A setter that gets an invalid value (fewer than 2 polyline points or 3 polygon points, a radius of 0 or less) throws `IllegalArgumentException` and keeps the old value. In Kotlin, `copy(...)` returns a new shape with some properties changed, which is not on any map.
+
 ---
 
 ## Polyline, Polygon, and Circle Styling
@@ -108,7 +124,7 @@ Java code calls the same API directly:
 - Listeners are functional interfaces, so Java lambdas work: `mapView.setOnMapClickListener(latLng -> ...)`
 - `UiSettings.setInfoWindowAutoDismissMillis(long)` replaces the Kotlin `Duration` property
 
-Compose types without a Java-friendly form remain Kotlin-only: the shape constructors and `copy()` (because of their `Color` parameters), and the stroke caps and joins (`StrokeCap`, `StrokeJoin`). `PathEffect` works from Java through `PathEffect.Companion.dashPathEffect(...)`.
+Compose types without a Java-friendly form remain Kotlin-only: the shape constructors and `copy()` (because of their `Color` parameters), and the stroke caps and joins (`StrokeCap`, `StrokeJoin`). Java changes a shape on the map through its setters, e.g. `polyline.setWidth(16f)` and `polygon.setFillColor(0x400000FF)`. `PathEffect` works from Java through `PathEffect.Companion.dashPathEffect(...)`.
 
 ### Stroke Styling API
 

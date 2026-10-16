@@ -14,39 +14,88 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.toArgb
 
 /**
- * Represents a polyline on the map, consisting of connected line segments.
+ * A polyline on the map: connected line segments.
  *
- * @property points List of geographic coordinates that define the polyline path
- * @property strokeColor Color of the line stroke (default: black). Used when spans is empty.
- * @property strokeWidth Width of the line in pixels (default: 10f)
- * @property strokePattern Pattern for the stroke (dashed, dotted, etc.). Null means solid line (default: null)
- * @property startCap Shape of the start endpoint (default: Butt)
- * @property endCap Shape of the end endpoint (default: Butt)
- * @property strokeJoin Shape of line corners (default: Round)
- * @property geodesic Whether segments are drawn as geodesics (great-circle paths) instead of straight
- *                    lines on the Mercator projection. Default is false.
- * @property spans List of style spans for multi-colored polylines. When provided, overrides strokeColor
- *                 for the specified segments. Default is empty (use strokeColor for all segments).
- * @property visible Whether the polyline is visible. Default is true
- * @property clickable Whether the polyline is clickable. Default is false
- * @property zIndex Draw order. Polylines with higher zIndex are drawn on top. Default is 0.0
- * @property tag Optional user data associated with the polyline
+ * The polyline is a live handle, as returned by [OpenMapView.addPolyline]: setting a property, e.g.
+ * `polyline.strokeWidth = 16f`, redraws the map right away, and [remove] takes it off the map.
+ * Java code uses the getters and setters, e.g. `polyline.setWidth(16f)`.
+ *
+ * @param points the geographic coordinates of the path, at least 2
+ * @param strokeColor the line color, used where no [spans] apply
+ * @param strokeWidth the line width in pixels
+ * @param strokePattern the stroke pattern, e.g. dashed; null for a solid line
+ * @param startCap the shape of the start
+ * @param endCap the shape of the end
+ * @param strokeJoin the shape of the corners
+ * @param geodesic whether segments are drawn as great-circle paths instead of straight lines on the Mercator map
+ * @param spans style spans for a multi-colored line, overriding [strokeColor] for their segments
+ * @param visible whether the polyline is visible
+ * @param clickable whether a tap on the polyline is reported to its click listener
+ * @param zIndex draw order: polylines with a higher zIndex are drawn on top
+ * @param tag optional user data
  */
-data class Polyline(
-    val points: List<LatLng>,
-    val strokeColor: Color = Color.Black,
-    val strokeWidth: Float = 10f,
-    val strokePattern: PathEffect? = null,
-    val startCap: StrokeCap = StrokeCap.Butt,
-    val endCap: StrokeCap = StrokeCap.Butt,
-    val strokeJoin: StrokeJoin = StrokeJoin.Round,
-    val geodesic: Boolean = false,
-    val spans: List<StyleSpan> = emptyList(),
-    val visible: Boolean = true,
-    val clickable: Boolean = false,
-    val zIndex: Float = 0f,
-    val tag: Any? = null,
+class Polyline(
+    points: List<LatLng>,
+    strokeColor: Color = Color.Black,
+    strokeWidth: Float = 10f,
+    strokePattern: PathEffect? = null,
+    startCap: StrokeCap = StrokeCap.Butt,
+    endCap: StrokeCap = StrokeCap.Butt,
+    strokeJoin: StrokeJoin = StrokeJoin.Round,
+    geodesic: Boolean = false,
+    spans: List<StyleSpan> = emptyList(),
+    visible: Boolean = true,
+    clickable: Boolean = false,
+    zIndex: Float = 0f,
+    tag: Any? = null,
 ) {
+    // The map that shows the polyline, redrawn when a property changes
+    internal var mapView: OpenMapView? = null
+
+    private fun <T> property(
+        initial: T,
+        check: (T) -> Unit = {},
+    ) = ShapeProperty(initial, check) { mapView?.invalidate() }
+
+    /** The geographic coordinates of the path, at least 2 */
+    var points: List<LatLng> by property(points) { require(it.size >= 2) { "Polyline must have at least 2 points" } }
+
+    /** The line color, used where no [spans] apply */
+    var strokeColor: Color by property(strokeColor)
+
+    /** The line width in pixels */
+    var strokeWidth: Float by property(strokeWidth)
+
+    /** The stroke pattern, e.g. dashed; null for a solid line */
+    var strokePattern: PathEffect? by property(strokePattern)
+
+    /** The shape of the start */
+    var startCap: StrokeCap by property(startCap)
+
+    /** The shape of the end */
+    var endCap: StrokeCap by property(endCap)
+
+    /** The shape of the corners */
+    var strokeJoin: StrokeJoin by property(strokeJoin)
+
+    /** Whether segments are drawn as great-circle paths instead of straight lines on the Mercator map */
+    var geodesic: Boolean by property(geodesic)
+
+    /** Style spans for a multi-colored line, overriding [strokeColor] for their segments */
+    var spans: List<StyleSpan> by property(spans)
+
+    /** Whether the polyline is visible */
+    var visible: Boolean by property(visible)
+
+    /** Whether a tap on the polyline is reported to its click listener */
+    var clickable: Boolean by property(clickable)
+
+    /** Draw order: polylines with a higher zIndex are drawn on top */
+    var zIndex: Float by property(zIndex)
+
+    /** Optional user data */
+    var tag: Any? by property(tag)
+
     /**
      * Unique identifier for this polyline instance.
      * Used internally for management and callbacks.
@@ -54,12 +103,64 @@ data class Polyline(
     internal val id: String = "polyline_${System.nanoTime()}_${System.identityHashCode(this)}"
 
     /** [strokeColor] as an ARGB color int, e.g. for Java code. */
-    val strokeColorArgb: Int
+    var strokeColorArgb: Int
         get() = strokeColor.toArgb()
+        set(value) {
+            strokeColor = Color(value)
+        }
 
-    init {
-        require(points.size >= 2) { "Polyline must have at least 2 points" }
+    /** The stroke color as an ARGB color int, like `getColor()` of the Maps SDK. */
+    fun getColor(): Int = strokeColorArgb
+
+    /** Sets the stroke color from an ARGB color int, like `setColor(int)` of the Maps SDK. */
+    fun setColor(color: Int) {
+        strokeColorArgb = color
     }
+
+    /** The stroke width in pixels, like `getWidth()` of the Maps SDK. */
+    fun getWidth(): Float = strokeWidth
+
+    /** Sets the stroke width in pixels, like `setWidth(float)` of the Maps SDK. */
+    fun setWidth(width: Float) {
+        strokeWidth = width
+    }
+
+    /** Removes the polyline from the map that shows it. */
+    fun remove() {
+        mapView?.removePolyline(this)
+    }
+
+    /** Returns a new polyline with the given properties changed, not added to any map. */
+    fun copy(
+        points: List<LatLng> = this.points,
+        strokeColor: Color = this.strokeColor,
+        strokeWidth: Float = this.strokeWidth,
+        strokePattern: PathEffect? = this.strokePattern,
+        startCap: StrokeCap = this.startCap,
+        endCap: StrokeCap = this.endCap,
+        strokeJoin: StrokeJoin = this.strokeJoin,
+        geodesic: Boolean = this.geodesic,
+        spans: List<StyleSpan> = this.spans,
+        visible: Boolean = this.visible,
+        clickable: Boolean = this.clickable,
+        zIndex: Float = this.zIndex,
+        tag: Any? = this.tag,
+    ): Polyline =
+        Polyline(
+            points,
+            strokeColor,
+            strokeWidth,
+            strokePattern,
+            startCap,
+            endCap,
+            strokeJoin,
+            geodesic,
+            spans,
+            visible,
+            clickable,
+            zIndex,
+            tag,
+        )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

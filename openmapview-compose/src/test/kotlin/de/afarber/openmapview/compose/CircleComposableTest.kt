@@ -17,7 +17,7 @@ import de.afarber.openmapview.CameraPosition
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -63,7 +63,7 @@ class CircleComposableTest {
     }
 
     @Test
-    fun testMovingCenter_ReplacesCircle() {
+    fun testMovingCenter_UpdatesCircleInPlace() {
         val other = LatLng(51.47, 7.25)
         var circleCenter by mutableStateOf(center)
         showMap { Circle(center = circleCenter, radius = 300f) }
@@ -75,7 +75,8 @@ class CircleComposableTest {
         val circles = map.getCircles()
         assertEquals(1, circles.size)
         assertEquals(other, circles[0].center)
-        assertNotSame(old, circles[0])
+        // The same live shape, changed through its setters
+        assertSame(old, circles[0])
     }
 
     @Test

@@ -17,7 +17,7 @@ import de.afarber.openmapview.CameraPosition
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -69,7 +69,7 @@ class PolygonComposableTest {
     }
 
     @Test
-    fun testChangingParameter_ReplacesPolygon() {
+    fun testChangingParameter_UpdatesPolygonInPlace() {
         var fill by mutableStateOf(Color.Green)
         showMap { Polygon(points = square(0.01), fillColor = fill) }
         val old = map.getPolygons()[0]
@@ -80,7 +80,8 @@ class PolygonComposableTest {
         val polygons = map.getPolygons()
         assertEquals(1, polygons.size)
         assertEquals(Color.Red, polygons[0].fillColor)
-        assertNotSame(old, polygons[0])
+        // The same live shape, changed through its setters
+        assertSame(old, polygons[0])
     }
 
     @Test

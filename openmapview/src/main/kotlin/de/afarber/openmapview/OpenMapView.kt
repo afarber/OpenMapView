@@ -1640,6 +1640,8 @@ class OpenMapView
          */
         fun addPolyline(polyline: Polyline): Polyline {
             val result = controller.addPolyline(polyline)
+            // A live handle: its setters redraw this map
+            result.mapView = this
             invalidate()
             return result
         }
@@ -1674,7 +1676,10 @@ class OpenMapView
          */
         fun removePolyline(polyline: Polyline): Boolean {
             val result = controller.removePolyline(polyline)
-            if (result) invalidate()
+            if (result) {
+                polyline.mapView = null
+                invalidate()
+            }
             return result
         }
 
@@ -1682,6 +1687,7 @@ class OpenMapView
          * Removes all polylines from the map.
          */
         fun clearPolylines() {
+            controller.getPolylines().forEach { it.mapView = null }
             controller.clearPolylines()
             invalidate()
         }
@@ -1701,6 +1707,8 @@ class OpenMapView
          */
         fun addPolygon(polygon: Polygon): Polygon {
             val result = controller.addPolygon(polygon)
+            // A live handle: its setters redraw this map
+            result.mapView = this
             invalidate()
             return result
         }
@@ -1735,7 +1743,10 @@ class OpenMapView
          */
         fun removePolygon(polygon: Polygon): Boolean {
             val result = controller.removePolygon(polygon)
-            if (result) invalidate()
+            if (result) {
+                polygon.mapView = null
+                invalidate()
+            }
             return result
         }
 
@@ -1743,6 +1754,7 @@ class OpenMapView
          * Removes all polygons from the map.
          */
         fun clearPolygons() {
+            controller.getPolygons().forEach { it.mapView = null }
             controller.clearPolygons()
             invalidate()
         }
@@ -1794,6 +1806,8 @@ class OpenMapView
          */
         fun addCircle(circle: Circle): Circle {
             val result = controller.addCircle(circle)
+            // A live handle: its setters redraw this map
+            result.mapView = this
             invalidate()
             return result
         }
@@ -1806,7 +1820,10 @@ class OpenMapView
          */
         fun removeCircle(circle: Circle): Boolean {
             val result = controller.removeCircle(circle)
-            if (result) invalidate()
+            if (result) {
+                circle.mapView = null
+                invalidate()
+            }
             return result
         }
 
@@ -1814,6 +1831,7 @@ class OpenMapView
          * Removes all circles from the map.
          */
         fun clearCircles() {
+            controller.getCircles().forEach { it.mapView = null }
             controller.clearCircles()
             invalidate()
         }
@@ -1952,6 +1970,8 @@ class OpenMapView
          */
         fun addGeoJson(geoJsonString: String): GeoJsonResult {
             val result = controller.addGeoJson(geoJsonString)
+            result.polylines.forEach { it.mapView = this }
+            result.polygons.forEach { it.mapView = this }
             invalidate()
             return result
         }

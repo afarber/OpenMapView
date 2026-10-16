@@ -404,7 +404,7 @@ The test suite currently covers:
 - Core projection math (Web Mercator)
 - Tile coordinate calculations
 - Marker API and bitmap generation
-- Polyline and polygon data classes with validation
+- Polyline, polygon and circle live handles with validation
 - Vector shape management (add, remove, clear operations)
 - Memory cache (LRU) behavior
 - Disk cache (persistent storage)
