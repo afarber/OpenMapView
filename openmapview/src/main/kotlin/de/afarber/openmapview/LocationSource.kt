@@ -10,11 +10,11 @@ package de.afarber.openmapview
 import android.location.Location
 
 /**
- * Provides locations for the my-location layer, as in Google's `LocationSource`.
+ * Provides locations for the my-location layer.
  *
  * By default the map uses the platform `LocationManager` with the GPS and network
  * providers. Set your own source with [OpenMapView.setLocationSource], e.g. to use the
- * fused location provider of Google Play Services or to replay a recorded track.
+ * fused location provider of Play Services or to replay a recorded track.
  */
 interface LocationSource {
     /**

@@ -485,4 +485,4 @@ mapView.setMapType(MapType.CYCLOSM)  // Switch map types dynamically
 
 ---
 
-**Note**: OpenMapView is designed to be a drop-in replacement for Google MapView but uses free OpenStreetMap tiles. Several map types, including the default `STANDARD`, work without any API keys or registration - a key advantage over Google Maps SDK which requires API keys and billing setup for all usage.
+**Note**: OpenMapView is designed to be a drop-in replacement for MapView but uses free OpenStreetMap tiles. Several map types, including the default `STANDARD`, work without any API keys or registration.

@@ -2,13 +2,13 @@
 
 [Back to README](../README.md)
 
-This document explains the architectural design of OpenMapView and how it compares to Google Maps SDK.
+This document explains the architectural design of OpenMapView and how it compares to the Maps SDK for Android (below: Maps SDK).
 
 ---
 
-## Google's Two-Class Architecture
+## The Two-Class Architecture of the Maps SDK
 
-Google Maps SDK uses a **two-tier architecture** that separates the view container from the map controller:
+The Maps SDK uses a **two-tier architecture** that separates the view container from the map controller:
 
 ### 1. MapView - The Android View Component
 
@@ -24,7 +24,7 @@ Google Maps SDK uses a **two-tier architecture** that separates the view contain
 - Camera control, markers, shapes, settings, listeners
 - Not a View, just a controller object
 
-**Google's Usage Pattern:**
+**Usage Pattern of the Maps SDK:**
 
 ```kotlin
 // Step 1: Get the view
@@ -68,7 +68,7 @@ mapView.animateCamera(update)
 
 ## How OpenMapView Covers Both APIs
 
-OpenMapView consolidates the functionality of both Google classes into a single, simpler interface:
+OpenMapView consolidates the functionality of both classes into a single, simpler interface:
 
 ```kotlin
 class OpenMapView : FrameLayout, DefaultLifecycleObserver {
@@ -141,9 +141,9 @@ class OpenMapView : FrameLayout, DefaultLifecycleObserver {
    - Click listeners
    - GeoJSON import
 
-4. Google-specific features intentionally not planned:
-   - Traffic layers (requires Google data)
-   - Indoor maps (requires Google data)
+4. Features intentionally not planned:
+   - Traffic layers (requires traffic data)
+   - Indoor maps (requires indoor data)
    - POI data (not available in OSM tiles)
 
 ---
@@ -156,7 +156,7 @@ OpenMapView offers several key advantages over the reference implementation:
 
 OpenMapView's single-class approach is **simpler** than the two-class pattern:
 
-### Google Maps (complex)
+### Maps SDK (complex)
 
 ```kotlin
 class MyActivity : AppCompatActivity() {

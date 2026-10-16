@@ -1,115 +1,55 @@
-# Zoom (Views) - Zoom Controls and Gestures
+# Zoom (Views)
 
-[Back to README](../../../README.md)
+[Back to README](../../../README.md) | Same app in Jetpack Compose: [Zoom (Compose)](../../compose/Zoom)
 
-This example demonstrates zoom functionality in OpenMapView, including custom zoom controls and pinch-to-zoom gestures with real-time status display.
+Zoom by pinching, with big +/- buttons or to preset levels, limit the zoom range and show the map's own zoom buttons.
+A status card shows the zoom level and why the camera moves.
+The map is declared in an XML layout and driven from a Java `AppCompatActivity`.
 
-## Features Demonstrated
+## Features
 
-- Map tile rendering with zoom support
-- Custom zoom toolbar with +/- buttons
-- Pinch-to-zoom gesture detection
-- Real-time zoom level display
-- Camera state tracking (Idle/Moving)
-- Zoom limits (min: 2.0, max: 19.0)
+- Smooth pinch zoom, which also pans when both fingers move
+- +/- buttons that animate `CameraUpdateFactory.zoomIn()` and `zoomOut()`
+- City, District and Street buttons that animate `CameraUpdateFactory.zoomTo(12 / 14 / 17)`
+- "Limit zoom to 10-16" with `setMinZoomPreference()`, `setMaxZoomPreference()` and `resetMinMaxZoomPreference()`; the map edges glow when a pinch goes past the limit
+- "Built-in zoom buttons" with `getUiSettings().setZoomControlsEnabled()`
+- A status card from `setOnCameraMoveStartedListener` (gesture, app or map buttons), `setOnCameraMoveListener`, `setOnCameraIdleListener` and `setOnCameraMoveCanceledListener`
 
 ## Screenshot
 
-![Zoom Demo](screenshot.gif)
+![Zoom (Views)](screenshot.gif)
 
-## Quick Start
+## Run
 
-### Option 1: Run in Android Studio
-
-1. Open the OpenMapView project in Android Studio
-2. Select `examples.views.Zoom` from the run configuration dropdown
-3. Click Run (green play button)
-4. Deploy to your device or emulator
-
-### Option 2: Build and Install from Command Line
+Select `examples.views.Zoom` in Android Studio, or:
 
 ```bash
-# From project root - build, install, and launch
 ./gradlew :examples:views:Zoom:installDebug
-
-# Launch the app
 adb shell am start -n de.afarber.openmapview.examples.views.zoom/.MainActivity
-```
-
-## Project Structure
-
-```
-example02zoom/
-├── MainActivity.kt      # Main activity and MapViewScreen composable
-├── ZoomToolbar.kt       # Vertical toolbar with +/- zoom buttons
-├── StatusToolbar.kt     # Status overlay showing zoom level and camera state
-└── Colors.kt            # OSM-inspired colors and shared dimensions
 ```
 
 ## Code Highlights
 
-### MainActivity.kt
+```java
+// One level per tap, animated like the built-in zoom buttons
+findViewById(R.id.button_zoom_in).setOnClickListener(
+        v -> mapView.animateCamera(CameraUpdateFactory.zoomIn(), 300));
 
-```kotlin
-@Composable
-fun MapViewScreen() {
-    var mapView: OpenMapView? by remember { mutableStateOf(null) }
-    var zoomLevel by remember { mutableStateOf("14.0") }
+// Zooming in or out beyond the limits makes the map edges glow
+mapView.setMinZoomPreference(10f);
+mapView.setMaxZoomPreference(16f);
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            factory = { ctx ->
-                OpenMapView(ctx).apply {
-                    setCenter(LatLng(51.4661, 7.2491))
-                    setZoom(14.0f)
-                    mapView = this
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
-        )
-
-        StatusToolbar(zoomLevel = zoomLevel, cameraState = cameraState, ...)
-        ZoomToolbar(onZoomInClick = { ... }, onZoomOutClick = { ... }, ...)
-    }
-}
+// Why the camera moves: a gesture, the app or the map's own buttons
+mapView.setOnCameraMoveStartedListener(reason -> {
+    moving = true;
+    moveReason = reason;
+    showStatus();
+});
 ```
 
-### Key Concepts
+## What to Try
 
-- **setZoom()**: Sets zoom level (2.0 = world view, 19.0 = street level)
-- **getZoom()**: Returns current zoom level
-- **Pinch gesture**: Built-in ScaleGestureDetector in OpenMapView
-- **Zoom limits**: Automatically enforced to prevent over-zoom
-- **OnCameraMoveListener**: Callback for camera changes during zoom
-
-## What to Test
-
-1. **Tap + button** to zoom in, observe zoom level update
-2. **Tap - button** to zoom out, observe zoom level update
-3. **Pinch to zoom** using two fingers
-4. **Check zoom focus** - pinch-to-zoom zooms toward pinch center
-5. **Test limits** - zooming beyond min/max stops at the limit
-6. **Observe status** - zoom level and camera state update in real-time
-
-## Technical Details
-
-### Zoom Levels
-
-- **2.0** - World view
-- **10.0** - Country/state view
-- **14.0** - City view (default)
-- **17.0** - Street view
-- **19.0** - Maximum detail (building level)
-
-### Zoom Implementation
-
-OpenMapView uses:
-
-- `ScaleGestureDetector` for pinch-to-zoom
-- Fractional zoom (Float) for smooth transitions
-- Web Mercator projection for tile calculation
-
-## Map Location
-
-**Default Center:** Bochum, Germany (51.4661N, 7.2491E) at zoom 14.0
-
+1. Pinch to zoom, and move both fingers while pinching to pan at the same time
+2. Tap +/- and watch the status say "moving by the app"
+3. Tap Street, then turn on "Limit zoom to 10-16": the map zooms out to 16
+4. Turn on "Built-in zoom buttons" and use them: the status says "moving by the map"

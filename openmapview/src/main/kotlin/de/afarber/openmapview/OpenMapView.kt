@@ -654,7 +654,6 @@ class OpenMapView
          *
          * @return false - indoor maps are not supported by OpenMapView.
          *         Standard OSM tiles do not include indoor map rendering.
-         *         Use Google Maps SDK if indoor maps are required.
          */
         fun isIndoorEnabled(): Boolean = false
 
@@ -683,7 +682,7 @@ class OpenMapView
         fun isMyLocationEnabled(): Boolean = isMyLocationLayerEnabled
 
         /**
-         * Enables or disables the my-location layer, as in Google Maps: a blue dot at the
+         * Enables or disables the my-location layer: a blue dot at the
          * device location with an accuracy circle, and the my-location button (see
          * [UiSettings.isMyLocationButtonEnabled]).
          *
@@ -714,7 +713,7 @@ class OpenMapView
          * Sets the source of locations for the my-location layer, or null for the default
          * platform `LocationManager`.
          *
-         * Example, with the fused location provider of Google Play Services:
+         * Example, with the fused location provider of Play Services:
          * ```kotlin
          * mapView.setLocationSource(object : LocationSource {
          *     override fun activate(listener: LocationSource.OnLocationChangedListener) {
@@ -857,12 +856,12 @@ class OpenMapView
         /**
          * Opens the current map center in an external map application.
          *
-         * Attempts to launch installed map apps (Google Maps, OsmAnd, Maps.me, HERE WeGo,
+         * Attempts to launch installed map apps (OsmAnd, Maps.me, HERE WeGo,
          * Waze, Organic Maps, etc.) using the geo: URI scheme. If no map app is available,
          * falls back to opening OpenStreetMap.org in the device browser.
          *
-         * This provides functionality similar to Google Maps SDK's map toolbar, but opens
-         * OpenStreetMap instead of requiring Google services.
+         * This provides functionality similar to a map toolbar, but opens OpenStreetMap in
+         * the browser when no map app is installed.
          *
          * The geo: URI format follows RFC 5870 and is compatible with most map applications.
          * Android will either open the user's default map app or show an app picker if
@@ -1162,7 +1161,7 @@ class OpenMapView
                         if (bitmap.width == width && bitmap.height == height) {
                             bitmap
                         } else {
-                            // Allocate new bitmap at correct size (matches Google Maps behavior)
+                            // Allocate new bitmap at correct size
                             createBitmap(width, height)
                         }
 
@@ -1203,7 +1202,7 @@ class OpenMapView
         }
 
         /**
-         * Adds a marker to the map using MarkerOptions builder (Google Maps API style).
+         * Adds a marker to the map using MarkerOptions builder.
          *
          * Example:
          * ```kotlin
@@ -1612,7 +1611,7 @@ class OpenMapView
         }
 
         /**
-         * Adds a polyline to the map using PolylineOptions builder (Google Maps API style).
+         * Adds a polyline to the map using PolylineOptions builder.
          *
          * Example:
          * ```kotlin
@@ -1673,7 +1672,7 @@ class OpenMapView
         }
 
         /**
-         * Adds a polygon to the map using PolygonOptions builder (Google Maps API style).
+         * Adds a polygon to the map using PolygonOptions builder.
          *
          * Example:
          * ```kotlin
@@ -1722,7 +1721,7 @@ class OpenMapView
         fun getPolygons(): List<Polygon> = controller.getPolygons()
 
         /**
-         * Adds a circle to the map using CircleOptions builder (Google Maps API style).
+         * Adds a circle to the map using CircleOptions builder.
          *
          * Example:
          * ```kotlin

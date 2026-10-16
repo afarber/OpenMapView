@@ -10,7 +10,7 @@ package de.afarber.openmapview.clustering
 import de.afarber.openmapview.LatLng
 
 /**
- * An item that a [ClusterManager] groups into clusters, as in the Google Maps Utility Library.
+ * An item that a [ClusterManager] groups into clusters.
  *
  * Example:
  * ```kotlin

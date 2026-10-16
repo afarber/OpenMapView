@@ -9,7 +9,7 @@ This example demonstrates how to open the current map location in external map a
 - Open current location in external map apps
 - Long-press gesture to select and open location
 - Automatic fallback to OpenStreetMap.org browser
-- Works with Google Maps, OsmAnd, Maps.me, HERE WeGo, Waze, Organic Maps
+- Works with OsmAnd, Organic Maps, Maps.me, HERE WeGo, Waze and other map apps
 - Custom location labels in geo: URI
 - Material3 floating action button UI
 
@@ -163,7 +163,7 @@ context.startActivity(chooser)
 
 - **Navigation**: Open location in preferred navigation app
 - **Sharing**: Let user choose how to view/share location
-- **Cross-app workflow**: Start in your app, continue in Google Maps
+- **Cross-app workflow**: Start in your app, continue in a navigation app
 - **Fallback**: Ensure location is always accessible even without map apps
 
 ## Map Location

@@ -9,7 +9,7 @@ package de.afarber.openmapview
 
 /**
  * Builder class for creating TileOverlay instances with a fluent API.
- * Matches the Google Maps API pattern for tile overlay configuration.
+ * A builder for tile overlay configuration.
  *
  * Example usage:
  * ```

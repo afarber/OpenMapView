@@ -334,7 +334,7 @@ Before pushing, developers can run the same checks locally:
 ### Creating a Release
 
 The library version is derived from the latest Git tag, so the only files that carry it are
-`README.md` and `docs/REPLACING_GOOGLE_MAPS.md`. The release script bumps both, commits them as
+`README.md` and `docs/MIGRATING.md`. The release script bumps both, commits them as
 "Release vX.Y.Z", creates an SSH-signed tag and atomically pushes `main` and the tag.
 
 ```bash

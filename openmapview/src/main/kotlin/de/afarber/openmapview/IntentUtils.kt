@@ -17,7 +17,7 @@ import androidx.core.net.toUri
  * Opens a location in an external map application with automatic fallback to browser.
  *
  * Attempts to open the location using the geo: URI scheme, which is supported by
- * most map applications (Google Maps, OsmAnd, Maps.me, HERE WeGo, Waze, etc.).
+ * most map applications (OsmAnd, Organic Maps, HERE WeGo, Waze, etc.).
  * If no map app is installed, falls back to opening OpenStreetMap.org in the
  * device's browser.
  *

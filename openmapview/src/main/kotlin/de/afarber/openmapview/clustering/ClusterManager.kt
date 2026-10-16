@@ -24,10 +24,10 @@ import de.afarber.openmapview.OpenMapView
 import kotlin.math.floor
 
 /**
- * Groups nearby markers into clusters that show their count, as in the Google Maps Utility
- * Library. Clusters are computed again when the map stops at a new integer zoom level.
+ * Groups nearby markers into clusters that show their count. Clusters are computed again
+ * when the map stops at a new integer zoom level.
  *
- * Like there, the manager is the map's camera idle and marker click listener:
+ * The manager is the map's camera idle and marker click listener:
  * ```kotlin
  * val clusterManager = ClusterManager<Shop>(context, mapView)
  * mapView.setOnCameraIdleListener(clusterManager)
@@ -89,7 +89,7 @@ class ClusterManager<T : ClusterItem>(
 
     /**
      * The smallest group drawn as a cluster; smaller groups show their items' markers.
-     * Default is 4, as in the Google Maps Utility Library.
+     * Default is 4.
      */
     var minClusterSize: Int = 4
 

@@ -10,7 +10,7 @@ package de.afarber.openmapview
 import android.view.View
 
 /**
- * Provides custom views for marker info windows, as in Google's `GoogleMap.InfoWindowAdapter`.
+ * Provides custom views for marker info windows.
  *
  * When an info window opens, [getInfoWindow] is called first. If it returns null,
  * [getInfoContents] is called. If that returns null too, the default window with the

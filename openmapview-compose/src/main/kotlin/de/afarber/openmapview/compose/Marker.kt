@@ -166,7 +166,7 @@ fun Marker(
 /**
  * A [Marker] whose whole info window is drawn by [content], without the default frame.
  *
- * Like in Google's Maps Compose, the content is drawn once into an image when the info
+ * The content is drawn once into an image when the info
  * window opens: call [MarkerState.showInfoWindow] again to show changes. Taps on the window
  * call [onInfoWindowClick], not clickables inside the content.
  *

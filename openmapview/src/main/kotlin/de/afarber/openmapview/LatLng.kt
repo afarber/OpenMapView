@@ -10,7 +10,7 @@ package de.afarber.openmapview
 /**
  * An immutable class representing a pair of latitude and longitude coordinates.
  *
- * Like Google's `LatLng`, out-of-range values are normalized instead of rejected:
+ * Out-of-range values are normalized instead of rejected:
  * the latitude is clamped to the range -90 to 90 degrees, and a longitude outside
  * the range -180 to 180 degrees is wrapped into it (for example 190 becomes -170).
  *

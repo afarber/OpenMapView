@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 
 /**
  * Builder class for creating Polyline instances with a fluent API.
- * Matches the Google Maps API pattern for polyline configuration.
+ * A builder for polyline configuration.
  *
  * Example usage:
  * ```
@@ -70,7 +70,7 @@ class PolylineOptions {
     }
 
     /**
-     * Sets the stroke color of the polyline as an ARGB color int, as in the Google Maps API.
+     * Sets the stroke color of the polyline as an ARGB color int.
      * Use this overload from Java, e.g. with android.graphics.Color.RED or 0x800000FF.
      * @param color ARGB color int
      */

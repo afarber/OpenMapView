@@ -1,8 +1,8 @@
-# Google MapView Public API Compatibility
+# Public API Compatibility
 
 [Back to README](../README.md) | [Architecture](ARCHITECTURE.md) | [API Documentation (KDoc)](https://afarber.github.io/OpenMapView/)
 
-This document lists all public non-deprecated methods from Google's MapView and GoogleMap classes and notes any differences in OpenMapView's implementation.
+This document lists all public non-deprecated methods of the `MapView` and `GoogleMap` classes of the Google Maps SDK for Android (below: Maps SDK) and notes any differences in OpenMapView's implementation.
 
 ---
 
@@ -24,7 +24,7 @@ This document lists all public non-deprecated methods from Google's MapView and 
 
 ---
 
-## GoogleMap Class - Camera Movement
+## Camera Movement
 
 | Method                                                 | Return Type      | Notes |
 | ------------------------------------------------------ | ---------------- | ----- |
@@ -37,7 +37,7 @@ This document lists all public non-deprecated methods from Google's MapView and 
 
 ---
 
-## GoogleMap Class - Marker Management
+## Marker Management
 
 | Method                     | Return Type | Notes |
 | -------------------------- | ----------- | ----- |
@@ -58,7 +58,7 @@ This document lists all public non-deprecated methods from Google's MapView and 
 
 ---
 
-## GoogleMap Class - Shapes & Overlays
+## Shapes & Overlays
 
 | Method                                   | Return Type     | Notes                                                                                    |
 | ---------------------------------------- | --------------- | ---------------------------------------------------------------------------------------- |
@@ -76,7 +76,7 @@ OpenMapView uses Jetpack Compose graphics primitives for advanced stroke styling
 
 ### Color API
 
-| Google Maps API                | OpenMapView API                                   | Notes                                                 |
+| Maps SDK API                   | OpenMapView API                                   | Notes                                                 |
 | ------------------------------ | ------------------------------------------------- | ----------------------------------------------------- |
 | `setColor(int)`                | `strokeColor: androidx.compose.ui.graphics.Color` | Uses Compose Color instead of Android Color           |
 | `setFillColor(int)`            | `fillColor: androidx.compose.ui.graphics.Color`   | Uses Compose Color instead of Android Color           |
@@ -86,7 +86,7 @@ OpenMapView uses Jetpack Compose graphics primitives for advanced stroke styling
 **Migration Example:**
 
 ```kotlin
-// Google Maps
+// Maps SDK
 import android.graphics.Color
 val polyline = PolylineOptions()
     .color(Color.RED)
@@ -97,11 +97,11 @@ val polyline = PolylineOptions()
     .color(Color.Red)
 ```
 
-The `*Options` builders also accept ARGB color ints like Google Maps: `PolylineOptions.color(int)`, and `strokeColor(int)` and `fillColor(int)` on `PolygonOptions` and `CircleOptions`. So `.color(Color.RED)` with `android.graphics.Color` keeps working unchanged. The shapes report their colors as ints through `strokeColorArgb` and `fillColorArgb`.
+The `*Options` builders also accept ARGB color ints: `PolylineOptions.color(int)`, and `strokeColor(int)` and `fillColor(int)` on `PolygonOptions` and `CircleOptions`. So `.color(Color.RED)` with `android.graphics.Color` keeps working unchanged. The shapes report their colors as ints through `strokeColorArgb` and `fillColorArgb`.
 
 ### Using OpenMapView from Java
 
-Java code calls the Google-style API directly:
+Java code calls the same API directly:
 
 - Factory methods are static: `CameraUpdateFactory.newLatLngZoom(...)`, `BitmapDescriptorFactory.defaultMarker(...)`, `PredefinedTileProviders.openSeaMap()`, `GeoJsonParser.parse(...)`
 - Shapes are built with the `*Options` builders and int colors, as shown above
@@ -112,8 +112,8 @@ Compose types without a Java-friendly form remain Kotlin-only: the shape constru
 
 ### Stroke Styling API
 
-| Google Maps Property | OpenMapView Equivalent | Notes |
-|---------------------|------------------------|-------|
+| Maps SDK Property | OpenMapView Equivalent | Notes |
+|-------------------|------------------------|-------|
 | `setWidth(float)` | `strokeWidth: Float` | Same concept, pixels (not dp) |
 | `setPattern(List<PatternItem>)` | `strokePattern: PathEffect?` | Different API: uses Compose PathEffect instead of PatternItem list |
 | `setStartCap(Cap)` / `setEndCap(Cap)` | `strokeCap: StrokeCap` | Single property for both start and end (OpenMapView uses same cap for both) |
@@ -177,7 +177,7 @@ These properties apply to:
 
 ---
 
-## GoogleMap Class - View Information
+## View Information
 
 | Method              | Return Type  | Notes |
 | ------------------- | ------------ | ----- |
@@ -187,20 +187,20 @@ These properties apply to:
 
 ---
 
-## GoogleMap Class - Map Configuration
+## Map Configuration
 
 | Method                         | Return Type | Notes                                                            |
 | ------------------------------ | ----------- | ---------------------------------------------------------------- |
-| `setCenter(LatLng)`            | `void`      | Direct method on OpenMapView (not via separate GoogleMap object) |
-| `setZoom(float)`               | `void`      | Direct method on OpenMapView (not via separate GoogleMap object) |
-| `getZoom()`                    | `float`     | Direct method on OpenMapView (not via separate GoogleMap object) |
+| `setCenter(LatLng)`            | `void`      | Direct method on OpenMapView (not via a separate map object) |
+| `setZoom(float)`               | `void`      | Direct method on OpenMapView (not via a separate map object) |
+| `getZoom()`                    | `float`     | Direct method on OpenMapView (not via a separate map object) |
 | `setMapType(int)`              | `void`      | Supports all 15 `MapType` constants, see MAP_TYPES.md            |
 | `getMapType()`                 | `int`       |                                                                  |
 | `setMapStyle(MapStyleOptions)` | `boolean`   | Not implemented                                                   |
 
 ---
 
-## GoogleMap Class - Zoom Preferences
+## Zoom Preferences
 
 | Method                        | Return Type | Notes |
 | ----------------------------- | ----------- | ----- |
@@ -210,7 +210,7 @@ These properties apply to:
 
 ---
 
-## GoogleMap Class - UI Settings
+## UI Settings
 
 | Method                           | Return Type  | Notes                                                                   |
 | -------------------------------- | ------------ | ----------------------------------------------------------------------- |
@@ -251,7 +251,7 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 ---
 
-## GoogleMap Class - Feature Toggles
+## Feature Toggles
 
 | Method                         | Return Type | Notes                                                |
 | ------------------------------ | ----------- | ---------------------------------------------------- |
@@ -264,7 +264,7 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 ---
 
-## GoogleMap Class - Location Layer
+## Location Layer
 
 | Method                              | Return Type | Notes                                                                               |
 | ----------------------------------- | ----------- | ----------------------------------------------------------------------------------- |
@@ -274,7 +274,7 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 ---
 
-## GoogleMap Class - Camera Constraints
+## Camera Constraints
 
 | Method                                         | Return Type | Notes |
 | ---------------------------------------------- | ----------- | ----- |
@@ -282,7 +282,7 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 ---
 
-## GoogleMap Class - Snapshots
+## Snapshots
 
 | Method                                    | Return Type | Notes |
 | ----------------------------------------- | ----------- | ----- |
@@ -291,7 +291,7 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 ---
 
-## GoogleMap Class - Event Listeners
+## Event Listeners
 
 OpenMapView provides comprehensive event listener support using Kotlin `fun interface` for single-method listeners (enabling lambda syntax) and regular `interface` for multi-method listeners. All callbacks execute on the UI thread.
 
@@ -311,7 +311,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 | `setOnCameraIdleListener(OnCameraIdleListener)`                       | `void`           |                                                                      |
 | `setOnCameraMoveCanceledListener(OnCameraMoveCanceledListener)`       | `void`           |                                                                      |
 | `setOnMapLoadedCallback(OnMapLoadedCallback)`                         | `void`           | Fires once when all visible base tiles are drawn (tile overlays are not awaited) |
-| `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | Views are drawn into an image when the window opens, like in Google Maps |
+| `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | Views are drawn into an image when the window opens |
 | `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           |                                                                      |
 | `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | Called when info window is closed (manual or auto-dismiss)           |
 | `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | Not implemented                                                      |
@@ -364,7 +364,7 @@ mapView.setOnMarkerDragListener(object : OnMarkerDragListener {
 
 | Feature              | Return Type | Notes                                                 |
 | -------------------- | ----------- | ----------------------------------------------------- |
-| `addGeoJson(String)` | `void`      | OpenMapView-specific feature (not in Google Maps API) |
+| `addGeoJson(String)` | `void`      | OpenMapView-specific feature |
 
 ---
 
@@ -372,7 +372,7 @@ mapView.setOnMarkerDragListener(object : OnMarkerDragListener {
 
 | Feature                     | Return Type | Notes                                                                                                                                                  |
 | --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `openInExternalApp(String)` | `void`      | OpenMapView-specific feature (not in Google Maps API). Opens location in external apps via geo: URI. See [MAP_TOOLBAR.md](MAP_TOOLBAR.md) for details. |
+| `openInExternalApp(String)` | `void`      | OpenMapView-specific feature. Opens location in external apps via geo: URI. See [MAP_TOOLBAR.md](MAP_TOOLBAR.md) for details. |
 
 ---
 
@@ -414,11 +414,11 @@ mapView.setOnMarkerDragListener(object : OnMarkerDragListener {
 **Implementation Summary:**
 
 - 83 methods fully implemented (81.4%)
-- 19 methods not planned (18.6%) - mostly features requiring Google-specific data (traffic, indoor maps, POI) or unsupported map capabilities (rotation, tilt)
+- 19 methods not planned (18.6%) - mostly features requiring proprietary data (traffic, indoor maps, POI) or unsupported map capabilities (rotation, tilt)
 
 **OpenMapView-Specific Features:**
 
-In addition to Google Maps API compatibility, OpenMapView provides:
+In addition to the compatible API, OpenMapView provides:
 
 - **GeoJSON import** (`addGeoJson`) - supports Point, LineString, Polygon, Multi\* variants, FeatureCollection
 - **External map integration** (`openInExternalApp`) - opens location in external map apps via geo: URI with OpenStreetMap browser fallback
@@ -427,7 +427,7 @@ In addition to Google Maps API compatibility, OpenMapView provides:
 
 **Key Architectural Differences:**
 
-OpenMapView uses a **single-class architecture** (vs. Google Maps' MapView + GoogleMap pattern):
+OpenMapView uses a **single-class architecture** (vs. the MapView + GoogleMap pattern of the Maps SDK):
 
 - Map methods called directly on `OpenMapView` instance (e.g., `mapView.setCenter()`, `mapView.getZoom()`)
 - No async initialization needed - map ready immediately after view creation
@@ -437,13 +437,13 @@ OpenMapView uses a **single-class architecture** (vs. Google Maps' MapView + Goo
 
 ## Marker Clustering
 
-The `de.afarber.openmapview.clustering` package follows the clustering of the [Google Maps Utility Library](https://github.com/googlemaps/android-maps-utils), with no extra artifact:
+The `de.afarber.openmapview.clustering` package follows the clustering of [android-maps-utils](https://github.com/googlemaps/android-maps-utils), with no extra artifact:
 
-| Google Maps Utility Library | OpenMapView | Notes |
+| android-maps-utils | OpenMapView | Notes |
 |---|---|---|
 | `ClusterItem` (`getPosition`, `getTitle`, `getSnippet`, `getZIndex`) | Same | |
 | `Cluster` (`getPosition`, `getItems`, `getSize`) | Same, as Kotlin properties | |
-| `ClusterManager(context, map)`, `addItem(s)`, `removeItem(s)`, `clearItems`, `cluster()` | Same | Set it as the map's camera idle and marker click listener, as with Google |
+| `ClusterManager(context, map)`, `addItem(s)`, `removeItem(s)`, `clearItems`, `cluster()` | Same | Set it as the map's camera idle and marker click listener |
 | `setOnClusterClickListener`, `setOnClusterItemClickListener` | Same | Without a consuming cluster listener, a tap zooms in to the cluster's items |
 | `NonHierarchicalDistanceBasedAlgorithm` | Default algorithm | 100 dp, items join the closest cluster |
 | `DefaultClusterRenderer` | Colored circles with bucketed counts (10+, 20+, 50+, ...) | `minClusterSize` (default 4); custom icons via `clusterIconProvider` and `clusterItemIconProvider` |
@@ -452,7 +452,7 @@ The `de.afarber.openmapview.clustering` package follows the clustering of the [G
 
 ## Jetpack Compose
 
-The optional `openmapview-compose` artifact follows the API of Google's [maps-compose](https://github.com/googlemaps/android-maps-compose) library:
+The optional `openmapview-compose` artifact follows the API of the [maps-compose](https://github.com/googlemaps/android-maps-compose) library:
 
 | maps-compose | openmapview-compose | Notes |
 |---|---|---|
@@ -472,4 +472,4 @@ The optional `openmapview-compose` artifact follows the API of Google's [maps-co
 
 ---
 
-For an in-depth explanation of OpenMapView's architectural design and how it compares to Google Maps SDK, see [ARCHITECTURE.md](ARCHITECTURE.md).
+For an in-depth explanation of OpenMapView's architectural design and how it compares to the Maps SDK, see [ARCHITECTURE.md](ARCHITECTURE.md).

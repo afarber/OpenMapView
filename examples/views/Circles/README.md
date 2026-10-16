@@ -7,7 +7,7 @@ This example demonstrates the circle system in OpenMapView, including circle ren
 ## Features Demonstrated
 
 - Multiple circles with different radii (in meters)
-- Both API styles: Kotlin direct instantiation and Google Maps builder pattern
+- Both API styles: Kotlin direct instantiation and the builder pattern
 - Circle styling (stroke color, fill color, stroke width)
 - Z-index ordering for overlapping circles
 - Circle click detection with hit testing
@@ -41,10 +41,10 @@ adb shell am start -n de.afarber.openmapview.examples.views.circles/.MainActivit
 
 ## Code Highlights
 
-### Adding Circles - Google Maps Style
+### Adding Circles - Builder Style
 
 ```kotlin
-// CircleOptions builder pattern (Google Maps compatible)
+// CircleOptions builder pattern
 mapView.addCircle(
     CircleOptions()
         .center(LatLng(51.4661, 7.2491))
@@ -96,7 +96,7 @@ setOnCircleClickListener { circle ->
 ### Key Concepts
 
 - **Circle**: Data class with center (LatLng), radius (meters), styling, and z-index
-- **CircleOptions**: Fluent builder for Google Maps API compatibility
+- **CircleOptions**: Fluent builder, compatible with the Maps SDK
 - **Radius in meters**: Real-world distances, converted to pixels via Mercator projection
 - **addCircle()**: Accepts both Circle objects and CircleOptions builders
 - **removeCircle()**: Remove a specific circle

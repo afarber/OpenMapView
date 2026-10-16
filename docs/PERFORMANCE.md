@@ -235,7 +235,7 @@ Prefetch downloads don't trigger redraws, reducing rendering overhead.
 
 - Tiles are drawn directly with `canvas.drawBitmap()` without intermediate transformations
 - Placeholder rectangles use simple fill and stroke operations
-- Fallback tiles: while a tile downloads, the nearest cached ancestor (up to 4 zoom levels up) is drawn in its place, its matching part scaled up, and any cached children one level down are drawn scaled down on top. This replaces the gray grid with a preview during camera animations and zooming, as Google Maps does. Only the memory cache is used, so no disk I/O happens while drawing, and `OnMapLoadedCallback` still waits for the real tiles
+- Fallback tiles: while a tile downloads, the nearest cached ancestor (up to 4 zoom levels up) is drawn in its place, its matching part scaled up, and any cached children one level down are drawn scaled down on top. This replaces the gray grid with a preview during camera animations and zooming. Only the memory cache is used, so no disk I/O happens while drawing, and `OnMapLoadedCallback` still waits for the real tiles
 - Marker rendering uses pre-cached bitmaps from `MarkerIconFactory`
 
 ### Download Deduplication

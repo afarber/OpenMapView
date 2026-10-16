@@ -1,8 +1,8 @@
-# Replacing Google Maps with OpenStreetMap
+# Migrating to OpenMapView
 
 [Back to README](../README.md) | [API Compatibility](PUBLIC_API.md) | [Architecture](ARCHITECTURE.md) | [Lifecycle](LIFECYCLE.md)
 
-This guide helps developers migrate from Google Maps SDK to OpenMapView, an open-source alternative powered by OpenStreetMap. Whether you're building consumer apps, creating AOSP devices, or developing for Android Automotive OS (AAOS), this migration guide will help you make the transition.
+This guide helps developers migrate an app from the Google Maps SDK for Android (below: the Maps SDK) to OpenMapView, an open-source map view powered by OpenStreetMap. Whether you're building consumer apps, creating AOSP devices, or developing for Android Automotive OS (AAOS), it shows the changes step by step.
 
 ---
 
@@ -10,7 +10,7 @@ This guide helps developers migrate from Google Maps SDK to OpenMapView, an open
 
 ### Android App Developers
 
-Replace Google Maps in your applications without vendor lock-in, API key requirements, or usage restrictions. Perfect for apps that need:
+Use a map view without vendor lock-in, API key requirements, or usage restrictions. Useful for apps that need:
 
 - Freedom from rate limits and usage quotas
 - Predictable costs (no per-request billing)
@@ -20,12 +20,7 @@ Replace Google Maps in your applications without vendor lock-in, API key require
 
 ### AOSP Device Manufacturers
 
-Google Maps is not part of the Android Open Source Project (AOSP). Device manufacturers who want to include mapping functionality typically need to:
-
-- Enter into licensing agreements with Google
-- Meet Google Mobile Services (GMS) certification requirements
-- Bundle multiple Google applications together as part of GMS
-- Accept Google's terms regarding app distribution and updates
+Map SDKs that are not part of the Android Open Source Project (AOSP) may come with their own license terms and certification requirements.
 
 **OpenMapView provides an alternative that:**
 
@@ -33,17 +28,17 @@ Google Maps is not part of the Android Open Source Project (AOSP). Device manufa
 - Requires no licensing agreements or certifications
 - Has no app bundling requirements
 - Allows complete customization and white-labeling
-- Works on any Android device without Google dependencies
+- Works on any Android device without Play Services
 
 Reference: [Android Open Source Project documentation](https://source.android.com/)
 
 ### Android Automotive OS (AAOS) Manufacturers
 
-While Android Automotive OS itself is open-source, Google's automotive services including Google Maps require separate licensing agreements. Automotive manufacturers concerned about:
+Android Automotive OS itself is open-source, and automotive manufacturers often want:
 
 - **Data Privacy**: Full control over customer location data and usage analytics
 - **Customization**: No restrictions on UI/UX modifications or branding
-- **Vendor Independence**: Freedom from service-level agreements with Google
+- **Vendor Independence**: No service-level agreements for the map view
 - **Cost Predictability**: No per-vehicle or per-activation licensing fees
 
 OpenMapView allows automotive OEMs to integrate mapping functionality with complete control over the user experience and data handling.
@@ -53,12 +48,6 @@ Reference: [Android Automotive OS documentation](https://source.android.com/devi
 ---
 
 ## Privacy and Data Control
-
-### Google Maps Data Collection
-
-Google Maps, as a cloud-connected service, collects various types of user data including location history, search queries, and navigation patterns according to Google's privacy policy. This data is used for service improvements, personalization, and other business purposes.
-
-### OpenMapView Privacy Model
 
 OpenMapView gives you complete control:
 
@@ -71,21 +60,18 @@ Note: Privacy benefits depend on implementation. Developers are responsible for 
 
 ---
 
-## Quick Comparison: Google Maps SDK vs OpenMapView
+## Quick Comparison: Maps SDK vs OpenMapView
 
-| Feature | Google Maps SDK | OpenMapView |
-|---------|----------------|-------------|
+| Feature | Maps SDK | OpenMapView |
+|---------|----------|-------------|
 | **Licensing** | Proprietary, requires API key | MIT licensed, no keys needed |
-| **Cost** | Pay per request after free tier | Free (OSM tile servers may have usage policies) |
 | **Architecture** | Two classes (MapView + GoogleMap) | Single unified class |
 | **Initialization** | Async callback (`getMapAsync`) | Immediate availability |
 | **Lifecycle** | Manual forwarding (6 methods) | Automatic |
 | **API Compatibility** | N/A | See [PUBLIC_API.md](PUBLIC_API.md) for detailed coverage |
 | **Core Features** | Full support | Full support (markers, shapes, camera, overlays) |
-| **Google Services** | Traffic, indoor maps, POI data | Not available (requires Google data) |
-| **Data Control** | Data flows through Google | Full control over all data |
-| **Tile Sources** | Google tiles only | OSM tiles, custom servers, offline tiles |
-| **Customization** | Limited by TOS | Complete freedom |
+| **Traffic, indoor maps, POI data** | Available | Not available |
+| **Tile Sources** | The SDK's own tiles | OSM tiles, custom servers, offline tiles |
 
 ---
 
@@ -93,7 +79,7 @@ Note: Privacy benefits depend on implementation. Developers are responsible for 
 
 ### Step 1: Update Dependencies
 
-**Remove Google Maps:**
+**Remove the Maps SDK:**
 
 ```kotlin
 // Remove from build.gradle.kts
@@ -117,7 +103,7 @@ Available on [Maven Central](https://central.sonatype.com/artifact/de.afarber/op
 
 ### Step 2: Update Imports
 
-**Before (Google Maps):**
+**Before (Maps SDK):**
 
 ```kotlin
 import com.google.android.gms.maps.MapView
@@ -139,7 +125,7 @@ import de.afarber.openmapview.MarkerOptions
 
 ### Step 3: Update XML Layouts
 
-**Before (Google Maps):**
+**Before (Maps SDK):**
 
 ```xml
 <com.google.android.gms.maps.MapView
@@ -159,7 +145,7 @@ import de.afarber.openmapview.MarkerOptions
 
 ### Step 4: Simplify Lifecycle Management
 
-**Before (Google Maps) - Manual Forwarding:**
+**Before (Maps SDK) - Manual Forwarding:**
 
 ```kotlin
 class MainActivity : AppCompatActivity() {
@@ -215,7 +201,7 @@ See [LIFECYCLE.md](LIFECYCLE.md) for detailed comparison.
 
 ### Step 5: Replace Async Map Initialization
 
-**Before (Google Maps) - Async Pattern:**
+**Before (Maps SDK) - Async Pattern:**
 
 ```kotlin
 mapView.onCreate(savedInstanceState)
@@ -247,9 +233,9 @@ mapView.addMarker(MarkerOptions()
 
 ### Step 6: Update Marker Code
 
-OpenMapView supports both Kotlin direct instantiation and Google Maps builder pattern:
+OpenMapView supports both Kotlin direct instantiation and the builder pattern:
 
-**Google Maps Style (still works):**
+**Builder Style (still works):**
 
 ```kotlin
 val marker = mapView.addMarker(
@@ -280,7 +266,7 @@ OpenMapView uses Jetpack Compose graphics primitives instead of Android graphics
 
 #### Color Migration
 
-**Before (Google Maps):**
+**Before (Maps SDK):**
 
 ```kotlin
 import android.graphics.Color
@@ -318,13 +304,13 @@ val polygon = PolygonOptions()
 - Custom colors use named parameters: `Color(red = 255, green = 0, blue = 0, alpha = 128)`
 - Hex colors still work: `Color(0xFF0066CC)` or `Color(0x800066CC)` with alpha
 
-In Java code, or to keep the change minimal, the `*Options` builders also take the ARGB ints of the Google Maps API, so `.color(android.graphics.Color.RED)` and `.fillColor(0x80FF0000)` compile unchanged. See [Using OpenMapView from Java](PUBLIC_API.md#using-openmapview-from-java).
+In Java code, or to keep the change minimal, the `*Options` builders also take ARGB ints, so `.color(android.graphics.Color.RED)` and `.fillColor(0x80FF0000)` compile unchanged. See [Using OpenMapView from Java](PUBLIC_API.md#using-openmapview-from-java).
 
 #### Pattern/PathEffect Migration
 
-Google Maps uses `PatternItem` lists, OpenMapView uses Compose `PathEffect`.
+The Maps SDK uses `PatternItem` lists, OpenMapView uses Compose `PathEffect`.
 
-**Before (Google Maps):**
+**Before (Maps SDK):**
 
 ```kotlin
 import com.google.android.gms.maps.model.Dash
@@ -365,7 +351,7 @@ polylineOptions
 
 #### Stroke Cap/Join Migration
 
-**Before (Google Maps):**
+**Before (Maps SDK):**
 
 ```kotlin
 import com.google.android.gms.maps.model.Cap
@@ -402,7 +388,7 @@ polylineOptions
 
 #### Complete Migration Example
 
-**Before (Google Maps):**
+**Before (Maps SDK):**
 
 ```kotlin
 import android.graphics.Color
@@ -447,7 +433,7 @@ val polyline = mapView.addPolyline(
 
 Camera APIs are nearly identical:
 
-**Google Maps:**
+**Maps SDK:**
 
 ```kotlin
 googleMap.animateCamera(
@@ -477,7 +463,7 @@ mapView.animateCamera(
 
 ## API Compatibility
 
-OpenMapView implements the vast majority of Google MapView's public API. For a complete method-by-method compatibility matrix, see [PUBLIC_API.md](PUBLIC_API.md).
+OpenMapView implements the vast majority of the public MapView API. For a complete method-by-method compatibility matrix, see [PUBLIC_API.md](PUBLIC_API.md).
 
 **Fully Implemented:**
 
@@ -490,20 +476,20 @@ OpenMapView implements the vast majority of Google MapView's public API. For a c
 - Projection API (coordinate conversion)
 - UI settings and gesture controls
 - Click and long-click listeners
-- My-location layer (`setMyLocationEnabled`, `LocationSource`, my-location button). Without Play Services the default source is the platform `LocationManager`. As with Google Maps, declare `ACCESS_FINE_LOCATION` or `ACCESS_COARSE_LOCATION` in your manifest and request it at runtime first.
+- My-location layer (`setMyLocationEnabled`, `LocationSource`, my-location button). Without Play Services the default source is the platform `LocationManager`. As with the Maps SDK, declare `ACCESS_FINE_LOCATION` or `ACCESS_COARSE_LOCATION` in your manifest and request it at runtime first.
 
-**Not Implemented (Google-Specific Features):**
+**Not Implemented:**
 
-- Traffic layers (requires Google traffic data)
-- Indoor maps (requires Google indoor data)
-- Street View (requires Google imagery)
+- Traffic layers (requires traffic data)
+- Indoor maps (requires indoor data)
+- Street View (requires street-level imagery)
 - POI (Places of Interest) data
 
 ---
 
 ## Architecture Differences
 
-OpenMapView uses a simpler architecture than Google Maps SDK. Instead of two classes (`MapView` + `GoogleMap`), everything is in one unified `OpenMapView` class.
+OpenMapView uses a simpler architecture than the Maps SDK. Instead of two classes (`MapView` + `GoogleMap`), everything is in one unified `OpenMapView` class.
 
 **Benefits:**
 
@@ -522,8 +508,8 @@ For architectural deep dive, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Start using maps immediately without:
 
-- Creating a Google Cloud project
-- Enabling Maps SDK
+- Creating a cloud project
+- Enabling the Maps SDK
 - Generating API keys
 - Configuring billing
 - Setting up usage restrictions
@@ -559,10 +545,10 @@ Note: If using public OpenStreetMap tile servers, follow their [Tile Usage Polic
 
 Use this checklist to track your migration progress:
 
-- [ ] Remove Google Maps SDK dependency
+- [ ] Remove the Maps SDK dependency
 - [ ] Add OpenMapView dependency
 - [ ] Update all imports (replace `com.google.android.gms.maps.*` with `de.afarber.openmapview.*`)
-- [ ] Update XML layouts (replace Google MapView with OpenMapView)
+- [ ] Update XML layouts (replace MapView with OpenMapView)
 - [ ] Remove manual lifecycle forwarding (`onCreate`, `onResume`, `onDestroy`, ...)
 - [ ] Remove `getMapAsync()` callbacks (use map immediately)
 - [ ] Update marker creation code
