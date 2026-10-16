@@ -41,32 +41,80 @@ package de.afarber.openmapview
  * mapView.addTileOverlay(overlay)
  * ```
  *
- * @property tileProvider Provider for tile data
- * @property transparency Overlay transparency (0.0 = opaque, 1.0 = fully transparent)
- * @property zIndex Draw order (higher values drawn on top, base tiles are at 0.0)
- * @property visible Whether the overlay is visible
- * @property fadeIn Whether tiles fade in when loaded (currently not implemented)
- * @property tag User data associated with this overlay
+ * The overlay is a live handle, as returned by [OpenMapView.addTileOverlay]: setting a
+ * property, e.g. `overlay.transparency = 0.5f`, redraws the map right away and keeps the
+ * overlay's downloaded tiles, and [remove] takes it off the map. Java code uses the getters
+ * and setters, e.g. `overlay.setTransparency(0.5f)`.
+ *
+ * @param tileProvider Provider for tile data
+ * @param transparency Overlay transparency (0.0 = opaque, 1.0 = fully transparent)
+ * @param zIndex Draw order (higher values drawn on top, base tiles are at 0.0)
+ * @param visible Whether the overlay is visible
+ * @param fadeIn Whether tiles fade in when loaded (currently not implemented)
+ * @param tag User data associated with this overlay
  *
  * @see TileOverlayOptions
  * @see TileProvider
  * @see UrlTileProvider
  */
-data class TileOverlay(
+class TileOverlay(
+    /** Provider for tile data */
     val tileProvider: TileProvider,
-    val transparency: Float = 0f,
-    val zIndex: Float = 0f,
-    val visible: Boolean = true,
-    val fadeIn: Boolean = false,
-    val tag: Any? = null,
+    transparency: Float = 0f,
+    zIndex: Float = 0f,
+    visible: Boolean = true,
+    fadeIn: Boolean = false,
+    tag: Any? = null,
 ) {
+    // The map that shows the overlay, redrawn when a property changes
+    internal var mapView: OpenMapView? = null
+
+    private fun <T> property(
+        initial: T,
+        check: (T) -> Unit = {},
+    ) = ShapeProperty(initial, check) { mapView?.invalidate() }
+
+    /** Overlay transparency (0.0 = opaque, 1.0 = fully transparent) */
+    var transparency: Float by property(transparency) {
+        require(it in 0f..1f) { "Transparency must be between 0.0 and 1.0: $it" }
+    }
+
+    /** Draw order (higher values drawn on top, base tiles are at 0.0) */
+    var zIndex: Float by property(zIndex)
+
+    /** Whether the overlay is visible */
+    var visible: Boolean by property(visible)
+
+    /** Whether tiles fade in when loaded (currently not implemented) */
+    var fadeIn: Boolean by property(fadeIn)
+
+    /** User data associated with this overlay */
+    var tag: Any? by property(tag)
+
     internal val id: String = "tileOverlay_${System.nanoTime()}_${System.identityHashCode(this)}"
 
-    init {
-        require(transparency in 0f..1f) {
-            "Transparency must be between 0.0 and 1.0: $transparency"
-        }
+    /** Removes the overlay from the map that shows it. */
+    fun remove() {
+        mapView?.removeTileOverlay(this)
     }
+
+    /**
+     * Drops the downloaded tiles of this overlay, so they are requested again, e.g. after
+     * the data behind the [tileProvider] changed.
+     */
+    fun clearTileCache() {
+        mapView?.clearTileOverlayCache(this)
+    }
+
+    /** Returns a new overlay with the given properties changed, not added to any map. */
+    fun copy(
+        tileProvider: TileProvider = this.tileProvider,
+        transparency: Float = this.transparency,
+        zIndex: Float = this.zIndex,
+        visible: Boolean = this.visible,
+        fadeIn: Boolean = this.fadeIn,
+        tag: Any? = this.tag,
+    ): TileOverlay = TileOverlay(tileProvider, transparency, zIndex, visible, fadeIn, tag)
 
     /**
      * Returns a copy of this overlay with modified properties.
@@ -91,6 +139,14 @@ data class TileOverlay(
      * @return New TileOverlay instance with updated z-index
      */
     fun withZIndex(zIndex: Float): TileOverlay = copy(zIndex = zIndex)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is TileOverlay) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
 
     override fun toString(): String = "TileOverlay(id=$id, transparency=$transparency, zIndex=$zIndex, visible=$visible)"
 }

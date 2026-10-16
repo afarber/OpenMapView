@@ -1917,6 +1917,8 @@ class OpenMapView
          */
         fun addTileOverlay(tileOverlay: TileOverlay): TileOverlay {
             val result = controller.addTileOverlay(tileOverlay)
+            // A live handle: its setters redraw this map
+            result.mapView = this
             invalidate()
             return result
         }
@@ -1929,14 +1931,29 @@ class OpenMapView
          */
         fun removeTileOverlay(tileOverlay: TileOverlay): Boolean {
             val result = controller.removeTileOverlay(tileOverlay)
-            if (result) invalidate()
+            if (result) {
+                tileOverlay.mapView = null
+                invalidate()
+            }
             return result
+        }
+
+        /**
+         * Drops the downloaded tiles of a tile overlay, so they are requested again, e.g.
+         * after the data behind its tile provider changed.
+         *
+         * @param tileOverlay The tile overlay whose tiles to drop
+         */
+        fun clearTileOverlayCache(tileOverlay: TileOverlay) {
+            controller.clearTileOverlayCache(tileOverlay)
+            invalidate()
         }
 
         /**
          * Removes all tile overlays from the map.
          */
         fun clearTileOverlays() {
+            controller.getTileOverlays().forEach { it.mapView = null }
             controller.clearTileOverlays()
             invalidate()
         }

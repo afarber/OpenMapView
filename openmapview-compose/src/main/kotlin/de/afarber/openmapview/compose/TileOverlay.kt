@@ -8,6 +8,7 @@
 package de.afarber.openmapview.compose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import de.afarber.openmapview.TileProvider
 import de.afarber.openmapview.TileOverlay as MapTileOverlay
 
@@ -16,8 +17,8 @@ import de.afarber.openmapview.TileOverlay as MapTileOverlay
  * content, e.g. sea marks or hiking trails.
  *
  * The overlay is added to the map when it enters the composition and removed when it
- * leaves. Changing any parameter replaces it; keep [tileProvider] in a `remember` so it is
- * not replaced on every recomposition. Outside of [OpenMap]'s content it does nothing.
+ * leaves. Changing a parameter updates it on the map and keeps its downloaded tiles; a
+ * different [tileProvider] replaces it, so keep the provider in a `remember`. Outside of [OpenMap]'s content it does nothing.
  *
  * Example:
  * ```kotlin
@@ -43,19 +44,28 @@ fun TileOverlay(
     fadeIn: Boolean = false,
     tag: Any? = null,
 ) {
-    MapElement(
-        tileProvider, transparency, zIndex, visible, fadeIn, tag,
-        create = {
-            MapTileOverlay(
-                tileProvider = tileProvider,
-                transparency = transparency,
-                zIndex = zIndex,
-                visible = visible,
-                fadeIn = fadeIn,
-                tag = tag,
-            )
-        },
-        add = { addTileOverlay(it) },
-        remove = { removeTileOverlay(it) },
-    )
+    // A new provider needs a new overlay with its own tiles; other changes update it in place
+    key(tileProvider) {
+        LiveMapElement(
+            create = {
+                MapTileOverlay(
+                    tileProvider = tileProvider,
+                    transparency = transparency,
+                    zIndex = zIndex,
+                    visible = visible,
+                    fadeIn = fadeIn,
+                    tag = tag,
+                )
+            },
+            update = {
+                this.transparency = transparency
+                this.zIndex = zIndex
+                this.visible = visible
+                this.fadeIn = fadeIn
+                this.tag = tag
+            },
+            add = { addTileOverlay(it) },
+            remove = { removeTileOverlay(it) },
+        )
+    }
 }
