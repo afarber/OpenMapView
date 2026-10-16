@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_stop">Add stop</string>
+    <string name="reset">Reset</string>
+    <string name="hint">Drag a marker to change the route</string>
+    <string name="drag_started">Dragging %1$s</string>
+    <string name="dragging">Dragging %1$s: %2$.5f, %3$.5f</string>
+    <string name="dropped">Dropped %1$s at %2$.5f, %3$.5f</string>
+    <string name="stop_added">%1$s added</string>
+</resources>
