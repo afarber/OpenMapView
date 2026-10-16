@@ -1560,8 +1560,12 @@ class MapController(
             }
 
         canvas.withSave {
-            if (groundOverlay.bounds != null) {
-                val bounds = groundOverlay.bounds
+            // Read once: the overlay is a live handle, so its properties can change
+            val bounds = groundOverlay.bounds
+            val position = groundOverlay.position
+            val width = groundOverlay.width
+            val height = groundOverlay.height
+            if (bounds != null) {
                 val (nwPixelX, nwPixelY) =
                     ProjectionUtils.latLngToPixel(
                         LatLng(bounds.northeast.latitude, bounds.southwest.longitude),
@@ -1589,15 +1593,15 @@ class MapController(
 
                 val destRect = android.graphics.RectF(left, top, right, bottom)
                 canvas.drawBitmap(bitmap, null, destRect, paint)
-            } else if (groundOverlay.position != null && groundOverlay.width != null) {
-                val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(groundOverlay.position, zoom)
+            } else if (position != null && width != null) {
+                val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(position, zoom)
 
-                val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(groundOverlay.position.latitude, zoom)
-                val widthPixels = groundOverlay.width / metersPerPixel
+                val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(position.latitude, zoom)
+                val widthPixels = width / metersPerPixel
 
                 val heightPixels =
-                    if (groundOverlay.height != null) {
-                        groundOverlay.height / metersPerPixel
+                    if (height != null) {
+                        height / metersPerPixel
                     } else {
                         val aspectRatio = bitmap.height.toFloat() / bitmap.width.toFloat()
                         widthPixels * aspectRatio
@@ -2679,8 +2683,12 @@ class MapController(
         for (groundOverlay in groundOverlays.reversed()) {
             if (!groundOverlay.clickable) continue
 
-            if (groundOverlay.bounds != null) {
-                val bounds = groundOverlay.bounds
+            // Read once: the overlay is a live handle, so its properties can change
+            val bounds = groundOverlay.bounds
+            val position = groundOverlay.position
+            val width = groundOverlay.width
+            val height = groundOverlay.height
+            if (bounds != null) {
                 val (nwPixelX, nwPixelY) =
                     ProjectionUtils.latLngToPixel(
                         LatLng(bounds.northeast.latitude, bounds.southwest.longitude),
@@ -2713,15 +2721,15 @@ class MapController(
                         return groundOverlay
                     }
                 }
-            } else if (groundOverlay.position != null && groundOverlay.width != null) {
-                val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(groundOverlay.position, zoom)
-                val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(groundOverlay.position.latitude, zoom)
-                val widthPixels = groundOverlay.width / metersPerPixel
+            } else if (position != null && width != null) {
+                val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(position, zoom)
+                val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(position.latitude, zoom)
+                val widthPixels = width / metersPerPixel
 
                 val bitmap = loadBitmap(groundOverlay.image)
                 val heightPixels =
-                    if (groundOverlay.height != null) {
-                        groundOverlay.height / metersPerPixel
+                    if (height != null) {
+                        height / metersPerPixel
                     } else {
                         val aspectRatio = bitmap.height.toFloat() / bitmap.width.toFloat()
                         widthPixels * aspectRatio
