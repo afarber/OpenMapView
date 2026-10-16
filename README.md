@@ -55,7 +55,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | [Zoom](examples/compose/Zoom) | [Zoom](examples/views/Zoom) | Smooth pinch zoom, zoom buttons and levels, zoom limits and why the camera moves |
 | [Markers](examples/compose/Markers) | [Markers](examples/views/Markers) | Colored markers with info windows, stepping through them and keeping them clear of a side panel with map padding |
 | [Polylines](examples/compose/Polylines) | [Polylines](examples/views/Polylines) | Lines, areas, a polygon with a hole and a geodesic flight, highlighted on tap through live shapes |
-|  | [Camera](examples/views/Camera) | Camera animations with durations, callbacks and cancellation |
+| [Camera](examples/compose/Camera) | [Camera](examples/views/Camera) | Camera flights with durations, finish and cancel callbacks, stopping and interrupting them |
 |  | [Clicks](examples/views/Clicks) | Map click and long-click listeners with coordinate display |
 |  | [DraggableMarkers](examples/views/DraggableMarkers) | Draggable markers with drag event listeners |
 |  | [Circles](examples/views/Circles) | Circles with radius in meters, styling, z-index and click listeners |
