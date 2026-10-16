@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hiking">Hiking trails</string>
+    <string name="cycling">Cycling routes</string>
+    <string name="mtb">Mountain bike routes</string>
+    <string name="transparency">Transparency</string>
+    <string name="overlay_credits">Overlays: © Waymarked Trails, © OpenStreetMap contributors</string>
+    <string name="status">%1$d of 3 overlays, %2$d%% transparent</string>
+</resources>

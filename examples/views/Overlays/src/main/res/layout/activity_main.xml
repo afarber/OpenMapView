@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- The map, declared like any other view -->
+    <de.afarber.openmapview.OpenMapView
+        android:id="@+id/map_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- The visible overlays and their transparency -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_margin="16dp">
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:textAppearance="?attr/textAppearanceTitleMedium" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- One switch per overlay, and the transparency of all overlays -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="260dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingVertical="8dp">
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switch_hiking"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:paddingHorizontal="16dp"
+                android:text="@string/hiking" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switch_cycling"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:paddingHorizontal="16dp"
+                android:text="@string/cycling" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switch_mtb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:paddingHorizontal="16dp"
+                android:text="@string/mtb" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:paddingHorizontal="16dp"
+                android:text="@string/transparency"
+                android:textAppearance="?attr/textAppearanceLabelLarge" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/slider_transparency"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/transparency"
+                android:stepSize="0.1"
+                android:value="0.0"
+                android:valueFrom="0.0"
+                android:valueTo="0.9"
+                app:labelBehavior="gone" />
+
+            <!-- The overlay services require attribution, like the base map -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:text="@string/overlay_credits"
+                android:textAppearance="?attr/textAppearanceBodySmall" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>
