@@ -68,15 +68,6 @@ class ApiKeyErrorOverlay(
             textAlign = Paint.Align.CENTER
         }
 
-    private val linkTextPaint =
-        TextPaint().apply {
-            color = Color.argb(255, 100, 180, 255) // Light blue for link
-            textSize = 13f * density
-            isAntiAlias = true
-            textAlign = Paint.Align.CENTER
-            isUnderlineText = true
-        }
-
     private val padding = 16f * density
     private val lineSpacing = 8f * density
     private val cornerRadius = 8f * density
@@ -85,7 +76,9 @@ class ApiKeyErrorOverlay(
     private val title = "API Key Required"
     private val message = "$mapTypeName requires an API key from $providerName."
     private val instruction = "Configure key in AndroidManifest.xml or via ApiKeyManager."
-    private val learnMore = "See docs/API_KEYS.md for details"
+
+    // What the map shows instead, so users know the map works
+    private val learnMore = "Showing the OpenStreetMap standard map instead."
 
     // Text bounds for measuring
     private val titleBounds = Rect()
@@ -98,7 +91,7 @@ class ApiKeyErrorOverlay(
         titleTextPaint.getTextBounds(title, 0, title.length, titleBounds)
         bodyTextPaint.getTextBounds(message, 0, message.length, messageBounds)
         bodyTextPaint.getTextBounds(instruction, 0, instruction.length, instructionBounds)
-        linkTextPaint.getTextBounds(learnMore, 0, learnMore.length, learnMoreBounds)
+        bodyTextPaint.getTextBounds(learnMore, 0, learnMore.length, learnMoreBounds)
     }
 
     /**
@@ -115,6 +108,20 @@ class ApiKeyErrorOverlay(
         canvas: Canvas,
         viewWidth: Int,
         viewHeight: Int,
+    ) = draw(canvas, viewWidth, viewHeight, 0f, 0f, viewWidth.toFloat(), viewHeight.toFloat())
+
+    /**
+     * Draws the overlay with its message box centered in an area of the view, e.g. the
+     * area inside the map padding.
+     */
+    fun draw(
+        canvas: Canvas,
+        viewWidth: Int,
+        viewHeight: Int,
+        areaLeft: Float,
+        areaTop: Float,
+        areaRight: Float,
+        areaBottom: Float,
     ) {
         // Draw semi-transparent overlay over entire view
         canvas.drawRect(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat(), overlayPaint)
@@ -134,9 +141,9 @@ class ApiKeyErrorOverlay(
                 instructionBounds.height() + lineSpacing +
                 learnMoreBounds.height() + padding * 2
 
-        // Center the message box at view center
-        val centerX = viewWidth / 2f
-        val centerY = viewHeight / 2f
+        // Center the message box in the area
+        val centerX = (areaLeft + areaRight) / 2f
+        val centerY = (areaTop + areaBottom) / 2f
         val boxLeft = centerX - boxWidth / 2
         val boxTop = centerY - boxHeight / 2
         val boxRight = centerX + boxWidth / 2
@@ -160,8 +167,8 @@ class ApiKeyErrorOverlay(
         canvas.drawText(instruction, centerX, currentY, bodyTextPaint)
         currentY += lineSpacing + learnMoreBounds.height()
 
-        // Learn more link
-        canvas.drawText(learnMore, centerX, currentY, linkTextPaint)
+        // What the map shows instead
+        canvas.drawText(learnMore, centerX, currentY, bodyTextPaint)
     }
 
     /**

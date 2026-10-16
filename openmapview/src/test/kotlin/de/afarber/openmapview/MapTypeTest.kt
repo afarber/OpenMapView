@@ -166,4 +166,26 @@ class MapTypeTest {
         mapView.setMapType(MapType.STAMEN_WATERCOLOR)
         assertEquals(MapType.STAMEN_WATERCOLOR, mapView.getMapType())
     }
+
+    @Test
+    fun testMissingApiKey_CreditsTheFallbackTiles() {
+        ApiKeyManager.clearProgrammaticKeys()
+
+        mapView.setMapType(MapType.CARTO_LIGHT)
+
+        // Without a CARTO key, the map shows the standard tiles and credits them
+        assertEquals(TileSource.STANDARD.attributionUrl, mapView.getAttributionUrl())
+    }
+
+    @Test
+    fun testWithApiKey_CreditsTheRequestedTiles() {
+        ApiKeyManager.setApiKey("carto", "test-key")
+        try {
+            mapView.setMapType(MapType.CARTO_LIGHT)
+
+            assertEquals(TileSource.CARTO_LIGHT.attributionUrl, mapView.getAttributionUrl())
+        } finally {
+            ApiKeyManager.clearProgrammaticKeys()
+        }
+    }
 }
