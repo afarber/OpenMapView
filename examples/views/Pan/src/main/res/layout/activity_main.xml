@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- The map, declared like any other view -->
+    <de.afarber.openmapview.OpenMapView
+        android:id="@+id/map_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Camera position, updated while the map moves -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_margin="16dp">
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:textAppearance="?attr/textAppearanceTitleMedium" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Places to fly to, and the camera bounds switch -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|center_vertical"
+        android:layout_margin="16dp"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/button_museum"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mining_museum" />
+
+        <Button
+            android:id="@+id/button_station"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/main_station" />
+
+        <Button
+            android:id="@+id/button_university"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/university" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switch_bounds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="12dp"
+                android:text="@string/stay_in_bochum" />
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+    <!-- Arrow pad that pans the map by a fixed distance -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_margin="16dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/button_left"
+            style="@style/ArrowButton"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="@string/pan_left"
+            app:icon="@drawable/ic_arrow_back" />
+
+        <Button
+            android:id="@+id/button_up"
+            style="@style/ArrowButton"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="@string/pan_up"
+            app:icon="@drawable/ic_arrow_upward" />
+
+        <Button
+            android:id="@+id/button_down"
+            style="@style/ArrowButton"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="@string/pan_down"
+            app:icon="@drawable/ic_arrow_downward" />
+
+        <Button
+            android:id="@+id/button_right"
+            style="@style/ArrowButton"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:contentDescription="@string/pan_right"
+            app:icon="@drawable/ic_arrow_forward" />
+    </LinearLayout>
+</FrameLayout>

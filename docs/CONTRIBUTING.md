@@ -261,7 +261,7 @@ Each example exists twice, with the same name and the same functionality:
 
 `settings.gradle.kts` includes every folder there that has a `build.gradle.kts`, so a new example needs no registration. Give it the package and application id `de.afarber.openmapview.examples.<compose|views>.<name>`, a README linking its counterpart, and a row in the examples table of the root `README.md`.
 
-Each example README shows a `screenshot.gif` below 2 MB, recorded on a landscape automotive emulator with `./scripts/capture-gif.sh`.
+Each example README shows a `screenshot.gif` below 4 MB, recorded on a landscape automotive emulator with `./scripts/capture-gif.sh`.
 
 ## Questions or Issues?
 
