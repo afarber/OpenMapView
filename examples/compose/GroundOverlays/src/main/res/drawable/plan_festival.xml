@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A made-up festival site plan: a meadow with a stage, tents and paths -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="240dp"
+    android:viewportWidth="320"
+    android:viewportHeight="240">
+    <!-- Meadow -->
+    <path
+        android:fillColor="#E87CB342"
+        android:pathData="M12,4 h296 a8,8 0 0 1 8,8 v216 a8,8 0 0 1 -8,8 h-296 a8,8 0 0 1 -8,-8 v-216 a8,8 0 0 1 8,-8z"
+        android:strokeColor="#FF33691E"
+        android:strokeWidth="4" />
+    <!-- Paths -->
+    <path
+        android:pathData="M20,120 H300 M160,30 V220"
+        android:strokeColor="#FFF5F5DC"
+        android:strokeLineCap="round"
+        android:strokeWidth="10" />
+    <!-- Stage -->
+    <path
+        android:fillColor="#FFD81B60"
+        android:pathData="M110,24 h100 v44 h-100z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M150,36 l20,10 l-20,10z" />
+    <!-- Tents -->
+    <path
+        android:fillColor="#FFFB8C00"
+        android:pathData="M36,150 l22,-24 l22,24z M90,150 l22,-24 l22,24z M36,206 l22,-24 l22,24z M90,206 l22,-24 l22,24z" />
+    <!-- Food court -->
+    <path
+        android:fillColor="#FF1E88E5"
+        android:pathData="M196,140 h96 v64 h-96z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M210,156 h16 v16 h-16z M236,156 h16 v16 h-16z M262,156 h16 v16 h-16z" />
+    <!-- Entrance -->
+    <path
+        android:fillColor="#FF212121"
+        android:pathData="M300,104 h16 v32 h-16z" />
+</vector>

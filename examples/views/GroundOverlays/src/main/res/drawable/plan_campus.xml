@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A made-up campus plan: building rows around a central square -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="256dp"
+    android:viewportWidth="320"
+    android:viewportHeight="256">
+    <!-- Grounds -->
+    <path
+        android:fillColor="#D0ECEFF1"
+        android:pathData="M4,4 h312 v248 h-312z"
+        android:strokeColor="#FF3949AB"
+        android:strokeWidth="4" />
+    <!-- Building rows -->
+    <path
+        android:fillColor="#FF5C6BC0"
+        android:pathData="M24,24 h40 v80 h-40z M80,24 h40 v80 h-40z M200,24 h40 v80 h-40z M256,24 h40 v80 h-40z M24,152 h40 v80 h-40z M80,152 h40 v80 h-40z M200,152 h40 v80 h-40z M256,152 h40 v80 h-40z" />
+    <!-- Central square with the library -->
+    <path
+        android:fillColor="#FFB0BEC5"
+        android:pathData="M136,24 h48 v208 h-48z" />
+    <path
+        android:fillColor="#FF283593"
+        android:pathData="M144,104 h32 v48 h-32z" />
+    <!-- Lake -->
+    <path
+        android:fillColor="#FF4FC3F7"
+        android:pathData="M24,128 a48,12 0 1 0 96,0 a48,12 0 1 0 -96,0z" />
+</vector>
