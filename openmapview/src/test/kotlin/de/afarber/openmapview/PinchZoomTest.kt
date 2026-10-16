@@ -10,6 +10,7 @@ package de.afarber.openmapview
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Point
+import android.os.Looper
 import android.view.MotionEvent
 import androidx.core.graphics.createBitmap
 import androidx.test.core.app.ApplicationProvider
@@ -20,6 +21,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import java.time.Duration
 
 /**
  * Checks that pinch zooming and the zoom buttons report camera moves like panning does.
@@ -236,11 +238,20 @@ class PinchZoomTest {
 
         tap(SIZE - 36f, SIZE - 60f)
 
+        // The buttons animate the zoom instead of jumping to the next level
+        assertEquals(10f, mapView.getCameraPosition().zoom)
+        assertEquals(listOf("started:${OnCameraMoveStartedListener.REASON_API_ANIMATION}"), events)
+
+        // The animation runs on wall clock time
+        val deadline = System.nanoTime() + 2_000_000_000L
+        while (events.lastOrNull() != "idle" && System.nanoTime() < deadline) {
+            Thread.sleep(20)
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20))
+        }
         assertEquals(11f, mapView.getCameraPosition().zoom)
-        assertEquals(
-            listOf("started:${OnCameraMoveStartedListener.REASON_API_ANIMATION}", "move", "idle"),
-            events,
-        )
+        assertTrue("move events", events.count { it == "move" } >= 1)
+        assertEquals("idle", events.last())
+        assertEquals(1, events.count { it.startsWith("started") })
     }
 
     private fun tap(
