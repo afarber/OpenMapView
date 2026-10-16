@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="free">No API key needed</string>
+    <string name="key_set">Uses your %1$s API key</string>
+    <string name="key_missing">Needs a %1$s API key: shows the standard map with a notice</string>
+    <string name="key_hint">needs a key</string>
+</resources>

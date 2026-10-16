@@ -61,7 +61,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | [Circles](examples/compose/Circles) | [Circles](examples/views/Circles) | Circles with radii in meters, selected by tap and resized live with a slider |
 | [Overlays](examples/compose/Overlays) | [Overlays](examples/views/Overlays) | Hiking, cycling and mountain bike tile overlays, turned on and off, with live transparency |
 | [GroundOverlays](examples/compose/GroundOverlays) | [GroundOverlays](examples/views/GroundOverlays) | Site plans placed by position or bounds, rotated and made transparent live |
-|  | [MapTypes](examples/views/MapTypes) | Switching between all 15 map types (OSM, CyclOSM, Thunderforest, CARTO, Stamen and more) |
+| [MapTypes](examples/compose/MapTypes) | [MapTypes](examples/views/MapTypes) | All 15 map types, their attribution and the notice for types that need an API key |
 |  | [Toolbar](examples/views/Toolbar) | Open the location in external map apps via geo: URI, with a browser fallback |
 | [Tabs](examples/compose/Tabs) |  | A map in a tab that keeps its camera while other tabs are shown |
 

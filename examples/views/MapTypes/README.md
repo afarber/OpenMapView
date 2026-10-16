@@ -1,97 +1,52 @@
-# MapTypes (Views) - Switching Between Map Types
+# MapTypes (Views)
 
-[Back to README](../../../README.md)
+[Back to README](../../../README.md) | Same app in Jetpack Compose: [MapTypes (Compose)](../../compose/MapTypes)
 
-This example demonstrates switching between different map types in OpenMapView, showing all OpenStreetMap-based tile sources built into the library with automatic attribution updates.
+All 15 map types in a list: OpenStreetMap styles, CARTO, Thunderforest, Tracestrack, Stamen and no base map at all. The status shows whether the selected type needs an API key.
+The map is declared in an XML layout and driven from a Java `AppCompatActivity`.
 
-## Features Demonstrated
+## Features
 
-- All 15 map types (`MapType.NONE` to `MapType.STAMEN_WATERCOLOR`), one button each
-- Automatic attribution text updates
-- Each map type keeps its own tile cache, so switching back shows cached tiles right away
-- Fallback to the standard map with an "API key required" overlay when a key is missing
-- Material3 UI with button controls
+- `setMapType()` with the `MapType` constants and their names from `TileSource.getMapTypeName()`
+- The attribution in the bottom-left corner changes with the map type
+- Each map type keeps its own tile cache, so switching back shows its tiles right away
+- Map types that need an API key without one show the standard map with a notice; `TileSource.hasApiKey()` and `getProviderName()` explain it in the status
+- `setMapPadding()` keeps the notice and the attribution clear of the list
 
 ## Screenshot
 
-![MapTypes Demo](screenshot.gif)
+![MapTypes (Views)](screenshot.gif)
 
-## Quick Start
+## API Keys
 
-### Option 1: Run in Android Studio
+Keys go into the app manifest or are set with `ApiKeyManager.setApiKey()`, see [Map Types](../../../docs/MAP_TYPES.md):
 
-1. Open the OpenMapView project in Android Studio
-2. Select `examples.views.MapTypes` from the run configuration dropdown
-3. Click Run (green play button)
-4. Deploy to your device or emulator
+```xml
+<meta-data android:name="de.afarber.openmapview.CARTO_API_KEY" android:value="..." />
+```
 
-### Option 2: Build and Install from Command Line
+## Run
+
+Select `examples.views.MapTypes` in Android Studio, or:
 
 ```bash
-# From project root - build, install, and launch
 ./gradlew :examples:views:MapTypes:installDebug
-
-# Launch the app
 adb shell am start -n de.afarber.openmapview.examples.views.maptypes/.MainActivity
 ```
 
 ## Code Highlights
 
-### Setting Map Type
+```java
+// Each map type keeps its own tile cache, so switching back shows its tiles right away.
+// The attribution in the corner changes with the map type.
+mapView.setMapType(MapType.CYCLOSM);
 
-```kotlin
-val mapView = OpenMapView(context)
-
-// Set map type
-mapView.setMapType(MapType.OPENTOPOMAP)
-
-// Get current map type
-val currentType = mapView.getMapType()
+TileSource source = TileSource.fromMapType(mapType);
+keyText.setText(source.hasApiKey() ? "Uses your key" : "Needs a " + source.getProviderName() + " API key");
 ```
 
-### Handle Invalid Types
+## What to Try
 
-`setMapType()` throws for values outside the `MapType` constants:
-
-```kotlin
-try {
-    mapView.setMapType(99)
-} catch (e: IllegalArgumentException) {
-    Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
-}
-```
-
-## Map Types Reference
-
-| Button | Constant | Tile Source | API Key |
-| ------ | -------- | ----------- | ------- |
-| None | `MapType.NONE` | No tiles | |
-| Standard | `MapType.STANDARD` | OpenStreetMap | |
-| CyclOSM | `MapType.CYCLOSM` | CyclOSM | |
-| Cycle Map | `MapType.CYCLEMAP` | Thunderforest | Thunderforest |
-| Transport | `MapType.TRANSPORT` | Thunderforest | Thunderforest |
-| Transport Dark | `MapType.TRANSPORT_DARK` | Thunderforest | Thunderforest |
-| Tracestrack Topo | `MapType.TRACESTRACK_TOPO` | Tracestrack | Tracestrack |
-| Humanitarian | `MapType.HUMANITARIAN` | Humanitarian OSM Team | |
-| OPNVKarte | `MapType.OPNVKARTE` | MeMoMaps | |
-| OpenTopoMap | `MapType.OPENTOPOMAP` | OpenTopoMap | |
-| Carto Light | `MapType.CARTO_LIGHT` | CARTO | CARTO |
-| Carto Dark | `MapType.CARTO_DARK` | CARTO | CARTO |
-| Carto Voyager | `MapType.CARTO_VOYAGER` | CARTO | CARTO |
-| Stamen Toner | `MapType.STAMEN_TONER` | Stadia Maps | Stadia Maps |
-| Stamen Watercolor | `MapType.STAMEN_WATERCOLOR` | Stadia Maps | Stadia Maps |
-
-See the [Map Types Guide](../../../docs/MAP_TYPES.md) for details on each type and on configuring API keys.
-
-## What to Test
-
-1. **Launch the app** - The standard OSM map of Switzerland loads
-2. **Click through the buttons** - The map and the attribution text change for each source
-3. **Click a type that needs a key** - Without a key, the standard map stays and an "API key required" overlay appears
-4. **Click None** - Removes all base tiles
-5. **Switch back** - Tiles of a type you already viewed come from its cache
-6. **Pan and zoom** - New tiles load from the current source
-
-## Map Location
-
-**Default Center:** Switzerland (46.8182N, 8.2275E) at zoom 12, a good place to compare the topographic styles.
+1. Tap through the free map types: Humanitarian, CyclOSM, OpenTopoMap, OPNVKarte
+2. Tap a type that needs a key, e.g. Carto Light
+3. Scroll down and tap None
