@@ -32,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -180,11 +179,11 @@ fun PolylinesScreen() {
         scope.launch { cameraPositionState.animate(CameraUpdateFactory.newLatLngBounds(OVERVIEW, 64), 1000) }
     }
 
-    // Once the card is measured, show all shapes in Bochum, without animation
-    LaunchedEffect(cardBottom) {
-        if (cardBottom > 0.dp && !fittedOverview) {
-            // After the next frame, when the map has the new content padding
-            withFrameNanos {}
+    // Once the card is measured, show all shapes in Bochum, without animation. The effect
+    // uses the value of this composition, which the map's content padding also gets.
+    val measuredCardBottom = cardBottom
+    LaunchedEffect(measuredCardBottom) {
+        if (measuredCardBottom > 0.dp && !fittedOverview) {
             cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(OVERVIEW, 64))
             fittedOverview = true
         }
