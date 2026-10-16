@@ -254,6 +254,22 @@ class PinchZoomTest {
         assertEquals(1, events.count { it.startsWith("started") })
     }
 
+    @Test
+    fun testZoomButtons_StayInsideMapPadding() {
+        mapView.getUiSettings().isZoomControlsEnabled = true
+        // E.g. a side panel on the right and a bottom bar
+        mapView.setMapPadding(0, 0, 200, 100)
+        mapView.draw(Canvas(createBitmap(SIZE, SIZE)))
+
+        // The old place of the zoom-in button is now under the side panel
+        tap(SIZE - 36f, SIZE - 60f)
+        assertEquals(emptyList<String>(), events)
+
+        // The button moved left and up by the padding
+        tap(SIZE - 200 - 36f, SIZE - 100 - 60f)
+        assertEquals(listOf("started:${OnCameraMoveStartedListener.REASON_API_ANIMATION}"), events)
+    }
+
     private fun tap(
         x: Float,
         y: Float,

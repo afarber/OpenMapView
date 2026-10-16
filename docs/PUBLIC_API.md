@@ -215,7 +215,7 @@ These properties apply to:
 | Method                           | Return Type  | Notes                                                                   |
 | -------------------------------- | ------------ | ----------------------------------------------------------------------- |
 | `getUiSettings()`                | `UiSettings` |                                                                         |
-| `setPadding(int, int, int, int)` | `void`       | Implemented as setMapPadding() to avoid conflict with View.setPadding() |
+| `setPadding(int, int, int, int)` | `void`       | Implemented as setMapPadding() to avoid conflict with View.setPadding(). The zoom buttons, my-location button and attribution stay inside the padding |
 | `setContentDescription(String)`  | `void`       | Inherited from View class                                               |
 
 ---
@@ -460,6 +460,7 @@ The optional `openmapview-compose` artifact follows the API of the [maps-compose
 | `GoogleMap(locationSource, onMyLocationButtonClick, onMyLocationClick)`, `MapProperties(isMyLocationEnabled)`, `MapUiSettings(myLocationButtonEnabled)` | Same | |
 | `MapProperties(mapType, minZoomPreference, maxZoomPreference, latLngBoundsForCameraTarget)` | Same | `mapType` is one of the `MapType` constants |
 | `MapUiSettings(zoomControlsEnabled, zoomGesturesEnabled, scrollGesturesEnabled)` | Same, plus `infoWindowAutoDismiss` | |
+| `GoogleMap(contentPadding)` | `OpenMap(contentPadding)` | Calls `setMapPadding()` with the padding in pixels |
 | `rememberCameraPositionState`, `CameraPositionState.animate` | Same | |
 | `CameraPositionState.isMoving`, `cameraMoveStartedReason`, `CameraMoveStartedReason` | Same | `isMoving` also becomes false when an animation is stopped |
 | `ScaleBar`, `DisappearingScaleBar` (maps-compose-widgets) | Same, in `openmapview-compose` | Metric and imperial bars for the camera's latitude and zoom |
