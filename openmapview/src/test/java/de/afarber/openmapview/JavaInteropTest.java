@@ -127,5 +127,15 @@ public class JavaInteropTest {
         assertNotNull(Collections.singletonList(mapView.getTileOverlays()));
         mapView.setMapType(MapType.CARTO_LIGHT);
         assertEquals(MapType.CARTO_LIGHT, mapView.getMapType());
+        assertEquals(TileSource.CARTO_LIGHT, TileSource.fromMapType(MapType.CARTO_LIGHT));
+        assertNotNull(TileSource.getMapTypeName(MapType.CARTO_LIGHT));
+    }
+
+    @Test
+    public void boundsBuilderIsStatic() {
+        LatLngBounds bounds = LatLngBounds.builder().include(BOCHUM).include(UNIVERSITY).build();
+
+        assertTrue(bounds.contains(BOCHUM));
+        assertTrue(bounds.contains(UNIVERSITY));
     }
 }
