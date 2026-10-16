@@ -137,8 +137,12 @@ class OpenMapView
                 object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
                     override fun onScale(detector: ScaleGestureDetector): Boolean {
                         val scaleFactor = detector.scaleFactor
-                        val focusX = detector.focusX
-                        val focusY = detector.focusY
+                        // When moving fingers also pan the map, zoom around their previous
+                        // center; the pan in onTouchEvent then moves it to the new one, so
+                        // the content stays under the fingers
+                        val pans = uiSettings.isScrollGesturesEnabled && uiSettings.isScrollGesturesEnabledDuringRotateOrZoom
+                        val focusX = if (pans) lastTouchX else detector.focusX
+                        val focusY = if (pans) lastTouchY else detector.focusY
                         val oldZoom = controller.getZoom()
                         controller.zoom(scaleFactor, focusX, focusY)
                         // Nothing to report when the zoom is already at its limit
@@ -154,6 +158,8 @@ class OpenMapView
         init {
             setWillNotDraw(false)
             controller.setUiSettings(uiSettings)
+            // E.g. the zoom buttons appear right away when they are enabled
+            uiSettings.onDrawnSettingChanged = { invalidate() }
             controller.setOnTileLoadedCallback {
                 invalidate()
             }
@@ -254,6 +260,17 @@ class OpenMapView
                 }
             }
             if (scaleGestureDetector.isInProgress) {
+                // Moving both fingers while pinching also pans the map, unless disabled
+                val allowScroll = uiSettings.isScrollGesturesEnabled && uiSettings.isScrollGesturesEnabledDuringRotateOrZoom
+                if (event.actionMasked == MotionEvent.ACTION_MOVE && allowScroll) {
+                    val dx = focalX - lastTouchX
+                    val dy = focalY - lastTouchY
+                    if (dx != 0f || dy != 0f) {
+                        controller.updatePanOffset(dx, dy)
+                        controller.reportGestureMove()
+                        invalidate()
+                    }
+                }
                 lastTouchX = focalX
                 lastTouchY = focalY
             }
@@ -308,11 +325,7 @@ class OpenMapView
                         }
 
                         // Pan the map if not dragging a marker and scroll gestures are enabled
-                        // Also check if scrolling during zoom is allowed
-                        val allowScroll =
-                            !isDragging &&
-                                uiSettings.isScrollGesturesEnabled &&
-                                (!scaleGestureDetector.isInProgress || uiSettings.isScrollGesturesEnabledDuringRotateOrZoom)
+                        val allowScroll = !isDragging && uiSettings.isScrollGesturesEnabled
 
                         if (allowScroll) {
                             controller.updatePanOffset(dx, dy)
