@@ -32,6 +32,9 @@ import kotlin.time.Duration
 // Finger movement in pixels below which a touch counts as a tap and a marker drag does not start
 private const val TAP_SLOP_PX = 10f
 
+// Duration of the camera animation to the device location for the my-location button
+private const val MY_LOCATION_ANIMATION_MS = 250
+
 /**
  * A MapView powered by OpenStreetMap tiles.
  *
@@ -790,7 +793,13 @@ class OpenMapView
                 val consumed = onMyLocationButtonClickListener?.onMyLocationButtonClick() ?: false
                 val location = myLocation
                 if (!consumed && location != null) {
-                    animateCamera(CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)))
+                    // Like the zoom buttons, the map's own button reports an API animation
+                    controller.animateCamera(
+                        CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)),
+                        MY_LOCATION_ANIMATION_MS,
+                        null,
+                        OnCameraMoveStartedListener.REASON_API_ANIMATION,
+                    )
                 }
                 return true
             }

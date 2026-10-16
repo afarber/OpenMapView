@@ -54,6 +54,20 @@ class CameraPositionState(
      */
     var position: CameraPosition by mutableStateOf(position)
 
+    /**
+     * Whether the camera is moving, by a gesture or an animation. Becomes false when the
+     * camera is idle again or its animation was stopped.
+     */
+    var isMoving: Boolean by mutableStateOf(false)
+        internal set
+
+    /**
+     * Why the camera started its last move, or [CameraMoveStartedReason.NO_MOVEMENT_YET]
+     * before the first one. Kept after the camera stopped.
+     */
+    var cameraMoveStartedReason: CameraMoveStartedReason by mutableStateOf(CameraMoveStartedReason.NO_MOVEMENT_YET)
+        internal set
+
     // The map shown by OpenMap, or null when no map is attached
     internal var map: OpenMapView? = null
 
@@ -93,6 +107,12 @@ class CameraPositionState(
             )
             continuation.invokeOnCancellation { map.stopAnimation() }
         }
+    }
+
+    // Called when the map's camera starts moving
+    internal fun onMoveStarted(reason: Int) {
+        cameraMoveStartedReason = CameraMoveStartedReason.fromInt(reason)
+        isMoving = true
     }
 
     // Called when the map's camera moved

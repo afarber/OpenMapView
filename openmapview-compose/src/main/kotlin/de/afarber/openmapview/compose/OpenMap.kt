@@ -50,10 +50,11 @@ import de.afarber.openmapview.Marker as MapMarker
  * }
  * ```
  *
- * OpenMap sets the camera move and idle listeners, the marker click, drag and info window
+ * OpenMap sets the camera move started, move, idle and canceled listeners, the marker click, drag and info window
  * listeners, the info window adapter, and the polyline, polygon, circle and ground overlay
  * click listeners of the map.
- * Observe the camera through [cameraPositionState] (e.g. with `snapshotFlow`), and markers and
+ * Observe the camera through [cameraPositionState] (its position, [CameraPositionState.isMoving]
+ * and [CameraPositionState.cameraMoveStartedReason], e.g. with `snapshotFlow`), and markers and
  * shapes through the state and callbacks of their composables, instead of setting those
  * listeners in [onMapCreated].
  *
@@ -117,11 +118,15 @@ fun OpenMap(
                 setOnMyLocationButtonClickListener { currentOnMyLocationButtonClick?.invoke() ?: false }
                 setOnMyLocationClickListener { currentOnMyLocationClick(it) }
                 onMapCreated(this)
+                setOnCameraMoveStartedListener { cameraPositionState.onMoveStarted(it) }
                 setOnCameraMoveListener { cameraPositionState.readFrom(this) }
                 setOnCameraIdleListener {
                     cameraPositionState.readFrom(this)
+                    cameraPositionState.isMoving = false
                     cameraIdleListeners.toList().forEach { it() }
                 }
+                // A stopped animation reports no idle event
+                setOnCameraMoveCanceledListener { cameraPositionState.isMoving = false }
                 setOnMarkerClickListener { marker ->
                     markerNodes[marker]?.onClick?.invoke(marker)
                         ?: markerClickHandlers.toList().any { it(marker) }
@@ -147,7 +152,10 @@ fun OpenMap(
         onRelease = { view ->
             // Pinch zooming alone doesn't report camera moves, so read the final position
             cameraPositionState.readFrom(view)
-            if (cameraPositionState.map === view) cameraPositionState.map = null
+            if (cameraPositionState.map === view) {
+                cameraPositionState.map = null
+                cameraPositionState.isMoving = false
+            }
             if (map === view) map = null
         },
     )
