@@ -126,6 +126,8 @@ class MarkerComposableTest {
 
         assertNotEquals(bochum, state.position)
         assertEquals(map.getMarkers()[0].position, state.position)
+        // The drag has ended
+        assertEquals(false, state.isDragging)
         assertEquals(true, state.position.latitude < bochum.latitude)
     }
 
@@ -157,6 +159,26 @@ class MarkerComposableTest {
         composeRule.waitForIdle()
 
         assertEquals(true, state.isInfoWindowShown)
+    }
+
+    @Test
+    fun testDraggingMarker_SetsIsDragging() {
+        val state = MarkerState(bochum)
+        showMap { Marker(state = state, draggable = true) }
+
+        composeRule.runOnIdle {
+            val point = map.getProjection().toScreenLocation(bochum)
+            val x = point.x.toFloat()
+            val startY = point.y - 10f
+            send(MotionEvent.ACTION_DOWN, x, startY, 0)
+            for (step in 1..10) send(MotionEvent.ACTION_MOVE, x, startY + step * 5f, step * 16L)
+        }
+        composeRule.waitForIdle()
+        assertEquals(true, state.isDragging)
+
+        composeRule.runOnIdle { send(MotionEvent.ACTION_UP, map.getProjection().toScreenLocation(state.position).x.toFloat(), 0f, 11 * 16L) }
+        composeRule.waitForIdle()
+        assertEquals(false, state.isDragging)
     }
 
     @Test
