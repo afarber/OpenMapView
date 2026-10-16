@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="show_all">Show all</string>
+    <string name="selected">%1$d of %2$d: %3$s</string>
+    <string name="nothing_selected">Tap a marker or Next</string>
+    <string name="info_window_clicked">Info window tapped: %1$s</string>
+    <string name="info_window_closed">Info window closed: %1$s</string>
+</resources>

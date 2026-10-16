@@ -1,191 +1,58 @@
-# Markers (Views) - Marker Navigation and Info Windows
+# Markers (Views)
 
-[Back to README](../../../README.md)
+[Back to README](../../../README.md) | Same app in Jetpack Compose: [Markers (Compose)](../../compose/Markers)
 
-This example demonstrates the marker system in OpenMapView, including marker rendering, touch detection, info windows, and marker navigation.
+Eight places in Bochum as colored markers with info windows. Step through them with Previous and Next, tap them, or show all.
+The map padding keeps the selected marker in the free area next to the button panel.
+The map is declared in an XML layout and driven from a Java `AppCompatActivity`.
 
-## Features Demonstrated
+## Features
 
-- Multiple markers at real Bochum landmark locations
-- Default teardrop marker icons with color variations
-- Marker click detection and selection tracking
-- Info windows showing marker titles and snippets with auto-dismiss
-- Navigation between markers with prev/next buttons
-- Info window toggle via FAB or marker tap
-- Real-time status display (selection index, camera state)
-- Visual feedback when info window is shown (red text)
+- Markers in eight colors with `MarkerOptions` and `BitmapDescriptorFactory.defaultMarker(hue)`; title and snippet appear in the info window
+- Tapping a marker opens its info window and moves the camera there; the click listener returns false to keep this default
+- Previous and Next call `Marker.showInfoWindow()` and `animateCamera(CameraUpdateFactory.newLatLng(...))`
+- Show all hides the info window and fits all places with `newLatLngBounds()`
+- `setMapPadding()` from the panel width, so the camera centers in the area left of the panel
+- A status card with the selection and the last `setOnInfoWindowClickListener` / `setOnInfoWindowCloseListener` event
 
 ## Screenshot
 
-![Markers Demo](screenshot.gif)
+![Markers (Views)](screenshot.gif)
 
-## Quick Start
+## Run
 
-### Option 1: Run in Android Studio
-
-1. Open the OpenMapView project in Android Studio
-2. Select `examples.views.Markers` from the run configuration dropdown
-3. Click Run (green play button)
-4. Deploy to your device or emulator
-
-### Option 2: Build and Install from Command Line
+Select `examples.views.Markers` in Android Studio, or:
 
 ```bash
-# From project root - build, install, and launch
 ./gradlew :examples:views:Markers:installDebug
-
-# Launch the app
 adb shell am start -n de.afarber.openmapview.examples.views.markers/.MainActivity
-```
-
-## Project Structure
-
-```
-example03markers/
-├── MainActivity.kt      # Main activity and MapViewScreen composable
-├── MarkerToolbar.kt     # Horizontal toolbar with prev/next navigation buttons
-├── StatusToolbar.kt     # Status overlay showing selection index and camera state
-├── MarkerData.kt        # Marker data class and Bochum POI locations
-└── Colors.kt            # OSM-inspired colors and shared dimensions
 ```
 
 ## Code Highlights
 
-### MainActivity.kt
+```java
+// Title and snippet are shown in the marker's info window
+markers.add(mapView.addMarker(
+        new MarkerOptions()
+                .position(place.position)
+                .title(place.title)
+                .snippet(place.snippet)
+                .icon(BitmapDescriptorFactory.defaultMarker(place.hue))));
 
-```kotlin
-@Composable
-fun MapViewScreen() {
-    var mapView: OpenMapView? by remember { mutableStateOf(null) }
-    var selectedIndex by remember { mutableIntStateOf(0) }
-    var selectedMarker: Marker? by remember { mutableStateOf(null) }
-    var isInfoWindowShown by remember { mutableStateOf(false) }
+// The camera centers in the area left of the panel, so the selected marker isn't hidden
+panel.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) ->
+        mapView.setMapPadding(0, 0, mapView.getWidth() - left, 0));
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            factory = { ctx ->
-                OpenMapView(ctx).apply {
-                    setCenter(initialLocation)
-                    setZoom(15.0f)
-                    getUiSettings().infoWindowAutoDismiss = 5.seconds
-
-                    setOnMarkerClickListener { marker ->
-                        selectedMarker = marker
-                        isInfoWindowShown = marker.isInfoWindowShown
-                        true
-                    }
-                    setOnInfoWindowCloseListener {
-                        isInfoWindowShown = false
-                    }
-                    mapView = this
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
-        )
-
-        StatusToolbar(selectedIndex, selectedMarker?.title, cameraState, isInfoWindowShown, ...)
-        MarkerToolbar(onPrevClick = { ... }, onNextClick = { ... })
-    }
-}
+// Returning false keeps the default: the info window opens and the camera moves there
+mapView.setOnMarkerClickListener(marker -> {
+    selected = markers.indexOf(marker);
+    showSelection();
+    return false;
+});
 ```
 
-### Adding Markers - Kotlin Style
+## What to Try
 
-```kotlin
-addMarker(
-    Marker(
-        position = LatLng(51.4783, 7.2231),
-        title = "Bochum Hauptbahnhof",
-        snippet = "Main Railway Station",
-        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
-    )
-)
-```
-
-### Adding Markers - Builder Style
-
-```kotlin
-addMarker(
-    MarkerOptions()
-        .position(LatLng(51.4650, 7.2500))
-        .title("Builder Pattern")
-        .snippet("Created with MarkerOptions")
-        .alpha(0.8f)
-)
-```
-
-### Key Concepts
-
-- **Marker**: Data class with position, title, snippet, icon, anchor, and tag
-- **addMarker()**: Add a marker to the map
-- **getMarkers()**: Get list of all markers
-- **setOnMarkerClickListener()**: Handle marker click events
-- **setOnInfoWindowClickListener()**: Handle info window click events
-- **setOnInfoWindowCloseListener()**: Handle info window close events (manual or auto-dismiss)
-
-## What to Test
-
-1. **Launch the app** - you should see 6 colored markers at Bochum landmarks
-2. **Tap a marker** - info window shows title and snippet, status text turns red
-3. **Tap the same marker again** - info window closes, status text turns black
-4. **Tap info window** - toast message confirms the click
-5. **Tap prev/next buttons** - navigate between markers with camera animation
-6. **Tap the FAB** - toggles info window on selected marker
-7. **Wait 10 seconds** - info window auto-dismisses, status text turns black
-8. **Pan/zoom the map** - markers stay at correct geographic positions
-
-## Custom Marker Icons
-
-To use custom marker icons instead of the default teardrop:
-
-```kotlin
-// Create custom bitmap (e.g., from resources)
-val customIcon = BitmapFactory.decodeResource(
-    resources,
-    R.drawable.my_custom_marker
-)
-
-// Add marker with custom icon
-addMarker(
-    Marker(
-        position = LatLng(51.4661, 7.2491),
-        title = "Custom Marker",
-        icon = customIcon,
-        anchor = Pair(0.5f, 1.0f) // Center-bottom anchor
-    )
-)
-```
-
-## Technical Details
-
-### Marker Anchor Point
-
-The anchor determines which point of the icon aligns with the geographic position:
-
-- `Pair(0.5f, 1.0f)` - Center horizontally, bottom vertically (default for pins)
-- `Pair(0.5f, 0.5f)` - Center of icon
-- `Pair(0.0f, 0.0f)` - Top-left corner
-
-### Marker Rendering
-
-Markers are drawn:
-
-1. On top of map tiles (layered correctly)
-2. In the order they were added (first added = bottom layer)
-3. With proper screen-to-geographic coordinate conversion
-4. Using the Web Mercator projection
-
-### Touch Detection
-
-Click detection uses:
-
-- Bounding box hit testing on marker icons
-- Reverse z-order checking (top markers checked first)
-- Configurable movement threshold (10px) to distinguish clicks from drags
-
-## Map Location
-
-**Default Center:** Calculated from marker positions (~51.47°N, 7.22°E) at zoom 13.0
-
-All 8 markers are positioned around Bochum at real landmark locations.
-
+1. Tap Next a few times: each marker's info window opens left of the panel
+2. Tap the open info window, then tap Next again: the status shows both events
+3. Tap Show all, then tap a marker on the map
