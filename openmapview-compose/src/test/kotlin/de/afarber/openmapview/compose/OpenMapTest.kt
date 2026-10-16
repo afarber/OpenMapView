@@ -18,6 +18,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import de.afarber.openmapview.CameraPosition
 import de.afarber.openmapview.CameraUpdateFactory
 import de.afarber.openmapview.LatLng
+import de.afarber.openmapview.LatLngBounds
 import de.afarber.openmapview.OnCameraMoveStartedListener
 import de.afarber.openmapview.OpenMapView
 import kotlinx.coroutines.CoroutineScope
@@ -55,6 +56,7 @@ class OpenMapTest {
         var map: OpenMapView? = null
         composeRule.setContent {
             OpenMap(
+                modifier = FillTestWindow,
                 cameraPositionState = state,
                 onMapCreated = { map = it },
             )
@@ -144,6 +146,54 @@ class OpenMapTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertEquals("cancelled", result)
+    }
+
+    @Test
+    fun testMove_MovesAttachedMapAndState() {
+        val state = CameraPositionState(bochum)
+        val map = showMap(state)
+
+        composeRule.runOnIdle { state.move(CameraUpdateFactory.newCameraPosition(london)) }
+        composeRule.waitForIdle()
+
+        assertPosition(london, map.getCameraPosition())
+        assertPosition(london, state.position)
+        assertFalse(state.isMoving)
+    }
+
+    @Test
+    fun testMove_BeforeMapIsShown_FitsBoundsOnceLaidOut() {
+        val state = CameraPositionState(bochum)
+        val bounds = LatLngBounds(LatLng(51.44, 7.20), LatLng(51.50, 7.30))
+        // Called before the map exists, e.g. when the screen is set up
+        state.move(CameraUpdateFactory.newLatLngBounds(bounds, 0))
+        var map: OpenMapView? = null
+
+        composeRule.setContent {
+            OpenMap(modifier = FillTestWindow, cameraPositionState = state, onMapCreated = { map = it })
+        }
+        composeRule.waitForIdle()
+
+        // The bounds fit the laid out map, which needs its size
+        val view = map!!
+        val southwest = view.getProjection().toScreenLocation(bounds.southwest)
+        val northeast = view.getProjection().toScreenLocation(bounds.northeast)
+        assertTrue(southwest.x >= -1 && northeast.x <= view.width + 1)
+        assertTrue(northeast.y >= -1 && southwest.y <= view.height + 1)
+        assertTrue(northeast.x - southwest.x >= view.width - 2 || southwest.y - northeast.y >= view.height - 2)
+        assertPosition(view.getCameraPosition(), state.position)
+    }
+
+    @Test
+    fun testMove_LaterMoveReplacesPendingOne() {
+        val state = CameraPositionState(bochum)
+        state.move(CameraUpdateFactory.newCameraPosition(london))
+        state.move(CameraUpdateFactory.zoomTo(9f))
+
+        val map = showMap(state)
+
+        assertEquals(9f, map.getCameraPosition().zoom, DELTA.toFloat())
+        assertEquals(bochum.target.latitude, map.getCameraPosition().target.latitude, DELTA)
     }
 
     @Test

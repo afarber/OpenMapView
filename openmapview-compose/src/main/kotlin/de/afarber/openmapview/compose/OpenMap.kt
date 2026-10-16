@@ -151,6 +151,7 @@ fun OpenMap(
                 setOnGroundOverlayClickListener { shapeClickHandlers[it]?.invoke() }
                 cameraPositionState.readFrom(this)
                 cameraPositionState.map = this
+                cameraPositionState.applyPendingUpdate(this)
                 map = this
             }
         },
