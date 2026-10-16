@@ -558,6 +558,49 @@ class MapControllerTest {
         assertEquals(12.0f, controller.getMaxZoomLevel(), DELTA)
     }
 
+    private fun recordCameraEvents(): MutableList<String> {
+        val events = mutableListOf<String>()
+        controller.onCameraMoveStartedListener = OnCameraMoveStartedListener { events.add("started:$it") }
+        controller.onCameraMoveListener = OnCameraMoveListener { events.add("move") }
+        controller.onCameraIdleListener = OnCameraIdleListener { events.add("idle") }
+        return events
+    }
+
+    @Test
+    fun testSetMaxZoomPreference_ReportsClampedZoom() {
+        controller.setZoom(17.0f)
+        val events = recordCameraEvents()
+
+        controller.setMaxZoomPreference(16.0f)
+
+        // The camera moved, so the listeners must hear about it, e.g. to update their state
+        val started = "started:${OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION}"
+        assertEquals(listOf(started, "move", "idle"), events)
+    }
+
+    @Test
+    fun testSetMinZoomPreference_ReportsClampedZoom() {
+        controller.setZoom(5.0f)
+        val events = recordCameraEvents()
+
+        controller.setMinZoomPreference(7.0f)
+
+        val started = "started:${OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION}"
+        assertEquals(listOf(started, "move", "idle"), events)
+    }
+
+    @Test
+    fun testZoomPreferences_WithinRangeReportNothing() {
+        controller.setZoom(12.0f)
+        val events = recordCameraEvents()
+
+        controller.setMinZoomPreference(10.0f)
+        controller.setMaxZoomPreference(16.0f)
+        controller.resetMinMaxZoomPreference()
+
+        assertEquals(emptyList<String>(), events)
+    }
+
     @Test
     fun testSetZoom_RespectsMinPreference() {
         controller.setMinZoomPreference(5.0f)
