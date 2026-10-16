@@ -374,21 +374,39 @@ class MapController(
     /**
      * Sets the minimum zoom level preference.
      *
+     * If the camera is zoomed out further, it zooms in to the new minimum and reports the
+     * move to the camera listeners.
+     *
      * @param minZoom The minimum zoom level (will be clamped to 2.0-19.0)
      */
     fun setMinZoomPreference(minZoom: Float) {
         minZoomPreference = minZoom.coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
-        zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
+        clampZoomToPreferences()
     }
 
     /**
      * Sets the maximum zoom level preference.
      *
+     * If the camera is zoomed in further, it zooms out to the new maximum and reports the
+     * move to the camera listeners.
+     *
      * @param maxZoom The maximum zoom level (will be clamped to 2.0-19.0)
      */
     fun setMaxZoomPreference(maxZoom: Float) {
         maxZoomPreference = maxZoom.coerceIn(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)
-        zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
+        clampZoomToPreferences()
+    }
+
+    // Keeps the zoom within the preferences. A changed zoom is a camera move the listeners
+    // must hear about, e.g. to update a status or the Compose camera state; a running gesture
+    // or animation reports its own idle event when it ends.
+    private fun clampZoomToPreferences() {
+        val clamped = zoom.coerceIn(minZoomPreference, maxZoomPreference)
+        if (clamped == zoom) return
+        zoom = clamped
+        if (!isCameraMoving) {
+            reportInstantMove(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION)
+        }
     }
 
     /**

@@ -113,6 +113,23 @@ class MapPropertiesTest {
     }
 
     @Test
+    fun testLowerMaxZoom_UpdatesCameraState() {
+        val state = CameraPositionState(CameraPosition(bochum, 17f))
+        var properties by mutableStateOf(MapProperties())
+        composeRule.setContent {
+            OpenMap(modifier = FillTestWindow, cameraPositionState = state, properties = properties)
+        }
+        composeRule.waitForIdle()
+
+        properties = MapProperties(minZoomPreference = 10f, maxZoomPreference = 16f)
+        composeRule.waitForIdle()
+
+        // The map zoomed out to the new limit, and the state follows it
+        assertEquals(16f, state.position.zoom, 0.001f)
+        assertFalse(state.isMoving)
+    }
+
+    @Test
     fun testUiSettings_AreSetAndUpdated() {
         var uiSettings by mutableStateOf(MapUiSettings(zoomControlsEnabled = true, scrollGesturesEnabled = false))
         showMap(uiSettings = { uiSettings })
