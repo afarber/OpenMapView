@@ -241,6 +241,9 @@ class OpenMapView
             // over drags the map handles itself. The parent resets this when the gesture ends.
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
+                    // Touching the map stops a camera animation, which reports onCancel()
+                    // and onCameraMoveCanceled
+                    controller.stopAnimation()
                     if (uiSettings.isScrollGesturesEnabled || isOnDraggableMarker(event)) {
                         parent?.requestDisallowInterceptTouchEvent(true)
                     }
@@ -1041,7 +1044,7 @@ class OpenMapView
          * Animates the camera to a new position with callbacks.
          *
          * The callback will receive notifications when the animation completes or is cancelled.
-         * An animation can be cancelled by calling [stopAnimation] or by starting another
+         * An animation is cancelled by touching the map, by calling [stopAnimation] or by starting another
          * camera move or animation. If the camera already is at the target, onFinish() is
          * called right away and no camera listeners are called.
          *
@@ -1059,7 +1062,7 @@ class OpenMapView
          * Animates the camera to a new position with custom duration and callbacks.
          *
          * The callback will receive notifications when the animation completes or is cancelled.
-         * An animation can be cancelled by calling [stopAnimation] or by starting another
+         * An animation is cancelled by touching the map, by calling [stopAnimation] or by starting another
          * camera move or animation. If the camera already is at the target, onFinish() is
          * called right away and no camera listeners are called.
          *

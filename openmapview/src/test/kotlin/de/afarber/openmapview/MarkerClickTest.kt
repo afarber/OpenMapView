@@ -137,6 +137,36 @@ class MarkerClickTest {
         assertEquals(listOf<String?>("Bochum"), closed)
     }
 
+    @Test
+    fun testTouch_StopsCameraAnimation() {
+        val canceled = mutableListOf<String>()
+        mapView.setOnCameraMoveCanceledListener { canceled.add("canceled") }
+        var callback = ""
+        mapView.animateCamera(
+            CameraUpdateFactory.zoomTo(17f),
+            60_000,
+            object : CancelableCallback {
+                override fun onFinish() {
+                    callback = "finished"
+                }
+
+                override fun onCancel() {
+                    callback = "canceled"
+                }
+            },
+        )
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(50))
+
+        val down = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 50f, 50f, 0)
+        mapView.onTouchEvent(down)
+        down.recycle()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals("canceled", callback)
+        assertEquals(listOf("canceled"), canceled)
+        assertTrue(mapView.getCameraPosition().zoom < 17f)
+    }
+
     private companion object {
         const val SIZE = 400
     }

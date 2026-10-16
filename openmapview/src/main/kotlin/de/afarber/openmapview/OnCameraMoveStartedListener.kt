@@ -21,13 +21,14 @@ fun interface OnCameraMoveStartedListener {
         const val REASON_GESTURE = 1
 
         /**
-         * Camera movement initiated by an [OpenMapView.animateCamera] call or a tap on the
-         * zoom buttons (see [UiSettings.isZoomControlsEnabled]).
+         * Camera movement initiated by the map itself: a tap on the zoom buttons (see
+         * [UiSettings.isZoomControlsEnabled]), the my-location button or a marker.
          */
         const val REASON_API_ANIMATION = 2
 
         /**
-         * Camera movement initiated by [OpenMapView.moveCamera] call.
+         * Camera movement initiated by the app, with [OpenMapView.moveCamera] or
+         * [OpenMapView.animateCamera].
          */
         const val REASON_DEVELOPER_ANIMATION = 3
     }
