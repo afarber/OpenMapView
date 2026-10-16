@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="clear">Clear markers</string>
+    <string name="hint">Tap the map, or long-press to drop a marker</string>
+    <string name="tapped">Tap at %1$.5f, %2$.5f</string>
+    <string name="dropped">Marker %1$d at %2$.5f, %3$.5f</string>
+    <string name="marker_title">Marker %1$d</string>
+    <string name="cleared">Markers removed</string>
+</resources>
