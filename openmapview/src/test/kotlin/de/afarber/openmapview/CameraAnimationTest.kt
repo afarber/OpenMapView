@@ -55,6 +55,16 @@ class CameraAnimationTest {
     }
 
     @Test
+    fun testAnimateCamera_ReportsDeveloperAnimation() {
+        val reasons = mutableListOf<Int>()
+        controller.onCameraMoveStartedListener = OnCameraMoveStartedListener { reasons.add(it) }
+
+        animate(CountingCallback())
+
+        assertEquals(listOf(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION), reasons)
+    }
+
+    @Test
     fun testStopAnimation_CallsOnCancel() {
         val callback = CountingCallback()
         animate(callback)

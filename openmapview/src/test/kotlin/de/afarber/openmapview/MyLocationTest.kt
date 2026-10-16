@@ -189,8 +189,8 @@ class MyLocationTest {
         val source = FakeLocationSource()
         mapView.setLocationSource(source)
         mapView.setMyLocationEnabled(true)
-        var moves = 0
-        mapView.setOnCameraMoveStartedListener { moves++ }
+        val reasons = mutableListOf<Int>()
+        mapView.setOnCameraMoveStartedListener { reasons.add(it) }
         source.send(nearby)
         drawMap()
 
@@ -198,8 +198,9 @@ class MyLocationTest {
         tap(364f, 36f)
         shadowOf(Looper.getMainLooper()).idle()
 
-        // The animation runs on wall clock time, so only its start is checked
-        assertEquals(1, moves)
+        // The animation runs on wall clock time, so only its start is checked. Like the
+        // zoom buttons, the map's own button reports an API animation.
+        assertEquals(listOf(OnCameraMoveStartedListener.REASON_API_ANIMATION), reasons)
     }
 
     @Test

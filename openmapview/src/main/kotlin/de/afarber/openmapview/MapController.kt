@@ -909,6 +909,9 @@ class MapController(
      * If the camera already is at the target, the listener's onFinish() is called right
      * away and no camera listeners are called.
      *
+     * The move is reported to [OnCameraMoveStartedListener] with
+     * [OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION], like in Google Maps.
+     *
      * @param cameraUpdate The camera update to animate to
      * @param durationMs Duration of the animation in milliseconds (default 250ms)
      * @param listener Optional listener for animation completion callbacks
@@ -917,6 +920,15 @@ class MapController(
         cameraUpdate: CameraUpdate,
         durationMs: Int = 250,
         listener: CancelableCallback? = null,
+    ) = animateCamera(cameraUpdate, durationMs, listener, OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION)
+
+    // Animates the camera, reporting the given reason, e.g. REASON_API_ANIMATION for the
+    // map's own buttons
+    internal fun animateCamera(
+        cameraUpdate: CameraUpdate,
+        durationMs: Int,
+        listener: CancelableCallback?,
+        reason: Int,
     ) {
         stopAnimation()
         commitPan()
@@ -933,8 +945,8 @@ class MapController(
         // Fire camera move started event
         if (!isCameraMoving) {
             isCameraMoving = true
-            currentMoveReason = OnCameraMoveStartedListener.REASON_API_ANIMATION
-            onCameraMoveStartedListener?.onCameraMoveStarted(OnCameraMoveStartedListener.REASON_API_ANIMATION)
+            currentMoveReason = reason
+            onCameraMoveStartedListener?.onCameraMoveStarted(reason)
         }
 
         // The listener is captured by the coroutine: a cancelled animation finishes only after

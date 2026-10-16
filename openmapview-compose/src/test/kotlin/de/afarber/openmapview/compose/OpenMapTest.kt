@@ -8,6 +8,7 @@
 package de.afarber.openmapview.compose
 
 import android.os.Looper
+import android.view.MotionEvent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
@@ -17,12 +18,15 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import de.afarber.openmapview.CameraPosition
 import de.afarber.openmapview.CameraUpdateFactory
 import de.afarber.openmapview.LatLng
+import de.afarber.openmapview.OnCameraMoveStartedListener
 import de.afarber.openmapview.OpenMapView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -155,6 +159,91 @@ class OpenMapTest {
 
         assertEquals("returned", result)
         assertPosition(bochum, state.position)
+    }
+
+    @Test
+    fun testMovingState_StartsIdleWithoutMovement() {
+        val state = CameraPositionState(bochum)
+        showMap(state)
+
+        assertFalse(state.isMoving)
+        assertEquals(CameraMoveStartedReason.NO_MOVEMENT_YET, state.cameraMoveStartedReason)
+    }
+
+    @Test
+    fun testMovingState_DuringAndAfterAnimation() {
+        val state = CameraPositionState(bochum)
+        val map = showMap(state)
+
+        composeRule.runOnIdle {
+            CoroutineScope(Dispatchers.Main).launch {
+                try {
+                    state.animate(CameraUpdateFactory.zoomTo(16f), 60_000)
+                } catch (_: CancellationException) {
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        assertTrue(state.isMoving)
+        assertEquals(CameraMoveStartedReason.DEVELOPER_ANIMATION, state.cameraMoveStartedReason)
+
+        // A stopped animation reports no idle event, but the camera doesn't move anymore
+        composeRule.runOnIdle { map.stopAnimation() }
+        composeRule.waitForIdle()
+        assertFalse(state.isMoving)
+        assertEquals(CameraMoveStartedReason.DEVELOPER_ANIMATION, state.cameraMoveStartedReason)
+    }
+
+    @Test
+    fun testMovingState_InstantMoveEndsIdle() {
+        val state = CameraPositionState(bochum)
+        val map = showMap(state)
+
+        composeRule.runOnIdle { map.moveCamera(CameraUpdateFactory.newCameraPosition(london)) }
+        composeRule.waitForIdle()
+
+        assertFalse(state.isMoving)
+        assertEquals(CameraMoveStartedReason.DEVELOPER_ANIMATION, state.cameraMoveStartedReason)
+    }
+
+    @Test
+    fun testMovingState_PanGesture() {
+        val state = CameraPositionState(bochum)
+        val map = showMap(state)
+
+        fun touch(
+            time: Long,
+            action: Int,
+            x: Float,
+        ) {
+            val event = MotionEvent.obtain(0, time, action, x, 300f, 0)
+            map.onTouchEvent(event)
+            event.recycle()
+        }
+        composeRule.runOnIdle {
+            touch(0, MotionEvent.ACTION_DOWN, 200f)
+            touch(16, MotionEvent.ACTION_MOVE, 250f)
+            touch(32, MotionEvent.ACTION_MOVE, 300f)
+        }
+        composeRule.waitForIdle()
+        assertTrue(state.isMoving)
+        assertEquals(CameraMoveStartedReason.GESTURE, state.cameraMoveStartedReason)
+
+        composeRule.runOnIdle { touch(48, MotionEvent.ACTION_UP, 300f) }
+        composeRule.waitForIdle()
+        assertFalse(state.isMoving)
+        assertEquals(CameraMoveStartedReason.GESTURE, state.cameraMoveStartedReason)
+    }
+
+    @Test
+    fun testCameraMoveStartedReason_FromInt() {
+        assertEquals(CameraMoveStartedReason.GESTURE, CameraMoveStartedReason.fromInt(OnCameraMoveStartedListener.REASON_GESTURE))
+        assertEquals(CameraMoveStartedReason.API_ANIMATION, CameraMoveStartedReason.fromInt(OnCameraMoveStartedListener.REASON_API_ANIMATION))
+        assertEquals(
+            CameraMoveStartedReason.DEVELOPER_ANIMATION,
+            CameraMoveStartedReason.fromInt(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION),
+        )
+        assertEquals(CameraMoveStartedReason.UNKNOWN, CameraMoveStartedReason.fromInt(42))
     }
 
     @Test

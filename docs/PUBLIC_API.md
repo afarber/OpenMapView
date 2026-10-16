@@ -335,6 +335,8 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 - **Successful animation:** onCameraMoveStarted(reason) → onCameraMove\* → onCameraIdle
 - **Interrupted animation:** onCameraMoveStarted(reason) → onCameraMove\* → onCameraMoveCanceled → onCameraMoveStarted(REASON_GESTURE) → ...
 
+**Camera Move Reasons:** `REASON_GESTURE` for panning and pinch zooming, `REASON_DEVELOPER_ANIMATION` for `moveCamera()` and `animateCamera()` called by the app, `REASON_API_ANIMATION` for the map's own zoom and my-location buttons.
+
 **Kotlin Lambda Syntax Examples:**
 
 ```kotlin
@@ -459,6 +461,7 @@ The optional `openmapview-compose` artifact follows the API of Google's [maps-co
 | `MapProperties(mapType, minZoomPreference, maxZoomPreference, latLngBoundsForCameraTarget)` | Same | `mapType` is one of the `MapType` constants |
 | `MapUiSettings(zoomControlsEnabled, zoomGesturesEnabled, scrollGesturesEnabled)` | Same, plus `infoWindowAutoDismiss` | |
 | `rememberCameraPositionState`, `CameraPositionState.animate` | Same | |
+| `CameraPositionState.isMoving`, `cameraMoveStartedReason`, `CameraMoveStartedReason` | Same | `isMoving` also becomes false when an animation is stopped |
 | `ScaleBar`, `DisappearingScaleBar` (maps-compose-widgets) | Same, in `openmapview-compose` | Metric and imperial bars for the camera's latitude and zoom |
 | `Marker(state, title, snippet, onClick, onInfoWindowClick, onInfoWindowClose)` | Same | |
 | `MarkerState.showInfoWindow()`, `hideInfoWindow()`, `isInfoWindowShown` | Same | |
