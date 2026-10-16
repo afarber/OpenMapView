@@ -19,6 +19,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 
 /**
  * Checks that pinch zooming and the zoom buttons report camera moves like panning does.
@@ -160,6 +161,61 @@ class PinchZoomTest {
         assertEquals(start.x + 70, end.x)
         assertEquals(start.y, end.y)
         send(eventWithIds(152, MotionEvent.ACTION_UP, intArrayOf(1), 570f to 400f))
+    }
+
+    // Two fingers spreading from 200 to 600 px apart while their center moves from
+    // (startX, 400) to (endX, 400)
+    private fun movingPinch(
+        startX: Float,
+        endX: Float,
+    ) {
+        fun fingers(
+            centerX: Float,
+            span: Float,
+        ) = arrayOf(centerX - span / 2 to 400f, centerX + span / 2 to 400f)
+        send(event(0, MotionEvent.ACTION_DOWN, fingers(startX, 200f)[0]))
+        val pointerDown = MotionEvent.ACTION_POINTER_DOWN or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT)
+        send(event(10, pointerDown, *fingers(startX, 200f)))
+        for (step in 1..STEPS) {
+            val centerX = startX + (endX - startX) * step / STEPS
+            send(event(10L + step * 16, MotionEvent.ACTION_MOVE, *fingers(centerX, 200f + 400f * step / STEPS)))
+        }
+    }
+
+    @Test
+    fun testPinchWhileMoving_PansWithTheFingers() {
+        val place = mapView.getProjection().fromScreenLocation(Point(300, 400))
+
+        movingPinch(startX = 300f, endX = 450f)
+
+        // The content under the fingers moves with them
+        val point = mapView.getProjection().toScreenLocation(place)
+        assertTrue("zoomed in", mapView.getCameraPosition().zoom > 10.5f)
+        assertEquals(450f, point.x.toFloat(), 3f)
+        assertEquals(400f, point.y.toFloat(), 3f)
+    }
+
+    @Test
+    fun testPinchWhileMoving_WithoutScrollDuringZoom_OnlyZooms() {
+        mapView.getUiSettings().isScrollGesturesEnabledDuringRotateOrZoom = false
+        val place = mapView.getProjection().fromScreenLocation(Point(300, 400))
+
+        movingPinch(startX = 300f, endX = 450f)
+
+        // The map zooms around the moving fingers, but doesn't follow them
+        val point = mapView.getProjection().toScreenLocation(place)
+        assertTrue("zoomed in", mapView.getCameraPosition().zoom > 10.5f)
+        assertTrue("not panned along, x = ${point.x}", point.x < 400)
+    }
+
+    @Test
+    fun testZoomControlsEnabled_RedrawsMap() {
+        mapView.draw(Canvas(createBitmap(SIZE, SIZE)))
+        shadowOf(mapView).clearWasInvalidated()
+
+        mapView.getUiSettings().isZoomControlsEnabled = true
+
+        assertTrue(shadowOf(mapView).wasInvalidated())
     }
 
     @Test

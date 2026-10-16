@@ -16,6 +16,9 @@ import kotlin.time.Duration.Companion.milliseconds
  * Configure which user interactions are enabled on the map.
  */
 class UiSettings {
+    // Redraws the map when a setting that is drawn changes, set by OpenMapView
+    internal var onDrawnSettingChanged: (() -> Unit)? = null
+
     /**
      * Whether zoom gestures (pinch-to-zoom) are enabled.
      * Default is true.
@@ -37,6 +40,11 @@ class UiSettings {
      * Default is false to avoid UI clutter.
      */
     var isZoomControlsEnabled: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            onDrawnSettingChanged?.invoke()
+        }
 
     /**
      * Whether the edge effect (visual glow at map boundaries) is enabled.
@@ -50,7 +58,8 @@ class UiSettings {
 
     /**
      * Whether scroll gestures are enabled during rotate or zoom gestures.
-     * When false, panning is disabled while pinch-zooming.
+     * When true, moving both fingers while pinch-zooming also pans the map; when false,
+     * the map only zooms around the fingers.
      * Default is true.
      */
     var isScrollGesturesEnabledDuringRotateOrZoom: Boolean = true
@@ -80,6 +89,11 @@ class UiSettings {
      * Default is true, as in Google Maps.
      */
     var isMyLocationButtonEnabled: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            onDrawnSettingChanged?.invoke()
+        }
 
     /**
      * Whether the indoor level picker is enabled.
