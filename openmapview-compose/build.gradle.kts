@@ -58,8 +58,8 @@ dependencies {
     api(project(":openmapview"))
     // OpenMap takes a Modifier
     api(libs.androidx.compose.ui)
-    // Canvas, BasicText and AnimatedVisibility for ScaleBar
-    implementation(libs.androidx.compose.foundation)
+    // OpenMap takes PaddingValues; Canvas, BasicText and AnimatedVisibility for ScaleBar
+    api(libs.androidx.compose.foundation)
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)

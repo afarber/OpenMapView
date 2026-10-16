@@ -204,6 +204,29 @@ class MyLocationTest {
     }
 
     @Test
+    fun testButton_StaysInsideMapPadding() {
+        val source = FakeLocationSource()
+        mapView.setLocationSource(source)
+        mapView.setMyLocationEnabled(true)
+        var clicks = 0
+        mapView.setOnMyLocationButtonClickListener {
+            clicks++
+            true
+        }
+        // E.g. a toolbar at the top and a side panel on the right
+        mapView.setMapPadding(0, 100, 50, 0)
+        source.send(nearby)
+        drawMap()
+
+        tap(364f, 36f)
+        assertEquals(0, clicks)
+
+        // The button moved down and left by the padding
+        tap(314f, 136f)
+        assertEquals(1, clicks)
+    }
+
+    @Test
     fun testButtonListenerReturningTrue_KeepsCamera() {
         val source = FakeLocationSource()
         mapView.setLocationSource(source)

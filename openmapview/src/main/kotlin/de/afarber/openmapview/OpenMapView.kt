@@ -21,6 +21,7 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withClip
+import androidx.core.graphics.withTranslation
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -83,10 +84,12 @@ class OpenMapView
         private val myLocationOverlay = MyLocationOverlay(context)
         private val uiSettings = UiSettings()
         private var currentMapType: Int = MapType.STANDARD
-        private var paddingLeft = 0
-        private var paddingTop = 0
-        private var paddingRight = 0
-        private var paddingBottom = 0
+
+        // Set by setMapPadding(); the map's own controls stay inside it
+        private var mapPaddingLeft = 0
+        private var mapPaddingTop = 0
+        private var mapPaddingRight = 0
+        private var mapPaddingBottom = 0
         private var lastTouchX = 0f
         private var lastTouchY = 0f
 
@@ -176,10 +179,16 @@ class OpenMapView
                 controller.draw(this)
                 drawMyLocation(this)
 
-                if (uiSettings.isZoomControlsEnabled) {
-                    zoomControlsOverlay.draw(this, width, height)
+                // The map's own controls are drawn inside the map padding
+                withTranslation(mapPaddingLeft.toFloat(), mapPaddingTop.toFloat()) {
+                    if (isMyLocationLayerEnabled && uiSettings.isMyLocationButtonEnabled) {
+                        myLocationOverlay.drawButton(this, controlsWidth())
+                    }
+                    if (uiSettings.isZoomControlsEnabled) {
+                        zoomControlsOverlay.draw(this, controlsWidth(), controlsHeight())
+                    }
+                    attributionOverlay.draw(this, controlsWidth(), controlsHeight())
                 }
-                attributionOverlay.draw(this, width, height)
 
                 // Draw custom edge glow effects LAST to ensure they're on top
                 controller.drawEdgeEffects(this, width, height)
@@ -375,7 +384,7 @@ class OpenMapView
 
                             // Check zoom controls first (if enabled)
                             if (uiSettings.isZoomControlsEnabled) {
-                                val zoomAction = zoomControlsOverlay.handleTouch(event.x, event.y)
+                                val zoomAction = zoomControlsOverlay.handleTouch(event.x - mapPaddingLeft, event.y - mapPaddingTop)
                                 if (zoomAction != 0) {
                                     val update = if (zoomAction > 0) CameraUpdateFactory.zoomIn() else CameraUpdateFactory.zoomOut()
                                     // The map's own buttons animate and report an API animation
@@ -397,7 +406,13 @@ class OpenMapView
                             }
 
                             // Check attribution overlay
-                            if (attributionOverlay.handleTouch(event.x, event.y, width, height)) {
+                            if (attributionOverlay.handleTouch(
+                                    event.x - mapPaddingLeft,
+                                    event.y - mapPaddingTop,
+                                    controlsWidth(),
+                                    controlsHeight(),
+                                )
+                            ) {
                                 controller.commitPan()
                                 invalidate()
                                 return true
@@ -791,11 +806,12 @@ class OpenMapView
                 val accuracy = if (location.hasAccuracy()) (location.accuracy / metersPerPixel).toFloat() else 0f
                 myLocationOverlay.drawLocation(canvas, point.x.toFloat(), point.y.toFloat(), accuracy)
             }
-
-            if (uiSettings.isMyLocationButtonEnabled) {
-                myLocationOverlay.drawButton(canvas, width)
-            }
         }
+
+        // The size of the area inside the map padding, where the map's own controls are drawn
+        private fun controlsWidth(): Int = (width - mapPaddingLeft - mapPaddingRight).coerceAtLeast(0)
+
+        private fun controlsHeight(): Int = (height - mapPaddingTop - mapPaddingBottom).coerceAtLeast(0)
 
         // Handles a tap on the my-location button or dot; returns whether it hit one of them
         private fun handleMyLocationTap(
@@ -804,7 +820,7 @@ class OpenMapView
         ): Boolean {
             if (!isMyLocationLayerEnabled) return false
 
-            if (uiSettings.isMyLocationButtonEnabled && myLocationOverlay.isOnButton(x, y)) {
+            if (uiSettings.isMyLocationButtonEnabled && myLocationOverlay.isOnButton(x - mapPaddingLeft, y - mapPaddingTop)) {
                 val consumed = onMyLocationButtonClickListener?.onMyLocationButtonClick() ?: false
                 val location = myLocation
                 if (!consumed && location != null) {
@@ -948,6 +964,9 @@ class OpenMapView
          * This is useful when you have UI elements (toolbars, FABs, etc.) overlaying parts
          * of the map and want camera operations to center content in the visible area.
          *
+         * The map's own controls (zoom buttons, my-location button and attribution) are drawn
+         * inside the padding, so the UI elements don't cover them.
+         *
          * Note: This is different from View.setPadding(). View padding reduces the drawable
          * area, while map padding keeps the map full-size but adjusts camera positioning.
          *
@@ -969,11 +988,12 @@ class OpenMapView
             right: Int,
             bottom: Int,
         ) {
-            paddingLeft = left
-            paddingTop = top
-            paddingRight = right
-            paddingBottom = bottom
+            mapPaddingLeft = left
+            mapPaddingTop = top
+            mapPaddingRight = right
+            mapPaddingBottom = bottom
             controller.setMapPadding(left, top, right, bottom)
+            invalidate()
         }
 
         /**

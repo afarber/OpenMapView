@@ -7,13 +7,17 @@
 
 package de.afarber.openmapview.compose
 
+import android.graphics.Canvas
 import android.os.Looper
 import android.view.MotionEvent
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.unit.dp
+import androidx.core.graphics.createBitmap
 import de.afarber.openmapview.CameraPosition
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.LatLngBounds
@@ -127,6 +131,40 @@ class MapPropertiesTest {
         // The map zoomed out to the new limit, and the state follows it
         assertEquals(16f, state.position.zoom, 0.001f)
         assertFalse(state.isMoving)
+    }
+
+    @Test
+    fun testContentPadding_MovesZoomButtons() {
+        val state = CameraPositionState(CameraPosition(bochum, 14f))
+        var map: OpenMapView? = null
+        composeRule.setContent {
+            OpenMap(
+                modifier = FillTestWindow,
+                cameraPositionState = state,
+                uiSettings = MapUiSettings(zoomControlsEnabled = true),
+                contentPadding = PaddingValues(end = 200.dp, bottom = 100.dp),
+                onMapCreated = { map = it },
+            )
+        }
+        composeRule.waitForIdle()
+        val view = map!!
+        val density = view.resources.displayMetrics.density
+        // Drawing places the buttons
+        composeRule.runOnIdle { view.draw(Canvas(createBitmap(view.width, view.height))) }
+
+        // The zoom-in button sits inside the padding: 36 dp from its right and 60 dp from its bottom
+        val x = view.width - (200 + 36) * density
+        val y = view.height - (100 + 60) * density
+        composeRule.runOnIdle {
+            for ((action, time) in listOf(MotionEvent.ACTION_DOWN to 0L, MotionEvent.ACTION_UP to 50L)) {
+                val event = MotionEvent.obtain(0, time, action, x, y, 0)
+                view.onTouchEvent(event)
+                event.recycle()
+            }
+        }
+        composeRule.waitForIdle()
+
+        assertEquals(CameraMoveStartedReason.API_ANIMATION, state.cameraMoveStartedReason)
     }
 
     @Test
