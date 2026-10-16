@@ -482,6 +482,7 @@ The optional `openmapview-compose` artifact follows the API of the [maps-compose
 | `ScaleBar`, `DisappearingScaleBar` (maps-compose-widgets) | Same, in `openmapview-compose` | Metric and imperial bars for the camera's latitude and zoom |
 | `Marker(state, title, snippet, onClick, onInfoWindowClick, onInfoWindowClose)` | Same | |
 | `MarkerState.showInfoWindow()`, `hideInfoWindow()`, `isInfoWindowShown` | Same | |
+| `MarkerState.isDragging` | Same | |
 | `MarkerInfoWindow(state, ...) { marker -> }`, `MarkerInfoWindowContent(state, ...) { marker -> }` | Same | The content is drawn into an image when the window opens |
 | `Polyline`, `Polygon`, `Circle`, `GroundOverlay`, `TileOverlay` | Same | Parameters match the OpenMapView model classes |
 | `MarkerComposable(vararg keys, state, ...) { }` | Same | The content is drawn into the icon again when a key changes |

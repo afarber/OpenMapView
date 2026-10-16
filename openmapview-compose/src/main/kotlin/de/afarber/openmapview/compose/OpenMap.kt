@@ -254,13 +254,18 @@ private fun PaddingValues.toPixels(
 private class MarkerDragDispatcher(
     private val markerNodes: Map<MapMarker, MarkerNode>,
 ) : OnMarkerDragListener {
-    override fun onMarkerDragStart(marker: MapMarker) = update(marker)
+    override fun onMarkerDragStart(marker: MapMarker) = update(marker, dragging = true)
 
-    override fun onMarkerDrag(marker: MapMarker) = update(marker)
+    override fun onMarkerDrag(marker: MapMarker) = update(marker, dragging = true)
 
-    override fun onMarkerDragEnd(marker: MapMarker) = update(marker)
+    override fun onMarkerDragEnd(marker: MapMarker) = update(marker, dragging = false)
 
-    private fun update(marker: MapMarker) {
-        markerNodes[marker]?.state?.position = marker.position
+    private fun update(
+        marker: MapMarker,
+        dragging: Boolean,
+    ) {
+        val state = markerNodes[marker]?.state ?: return
+        state.position = marker.position
+        state.isDragging = dragging
     }
 }

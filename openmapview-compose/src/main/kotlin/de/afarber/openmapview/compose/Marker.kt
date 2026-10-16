@@ -38,6 +38,10 @@ class MarkerState(
     /** The marker position, updated while the user drags the marker. */
     var position: LatLng by mutableStateOf(position)
 
+    /** Whether the user is dragging the marker right now. Observable, e.g. to show a status. */
+    var isDragging: Boolean by mutableStateOf(false)
+        internal set
+
     // The marker currently shown for this state and its map, set by the Marker composable
     internal var shown: Pair<OpenMapView, MapMarker>? = null
 
