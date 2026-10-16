@@ -104,8 +104,10 @@ androidComponents {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.compose.ui.graphics)
+    // Part of the public API: OpenMapView is a DefaultLifecycleObserver, and the shapes are
+    // styled with Compose Color, PathEffect, StrokeCap and StrokeJoin
+    api(libs.androidx.lifecycle.runtime.ktx)
+    api(libs.androidx.compose.ui.graphics)
     implementation(libs.ktor.client.android)
 
     // Unit testing
