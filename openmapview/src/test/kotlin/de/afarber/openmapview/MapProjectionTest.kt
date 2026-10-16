@@ -71,12 +71,16 @@ class MapProjectionTest {
     }
 
     @Test
-    fun testPaddingShiftsLogicalCenter() {
+    fun testPaddingDoesNotShiftScreenLocations() {
         val projection =
             Projection(center, 2f, 512, 512, 0f, 0f, paddingLeft = 0, paddingTop = 100, paddingRight = 0, paddingBottom = 0)
 
-        // The logical center moves down by half the top padding
-        assertEquals(Point(256, 306), projection.toScreenLocation(center))
+        // The center passed in is the location drawn at the view center; padding only moves
+        // the camera target, which the controller already accounts for
+        assertEquals(Point(256, 256), projection.toScreenLocation(center))
+        val latLng = projection.fromScreenLocation(Point(256, 256))
+        assertEquals(0.0, latLng.latitude, DELTA)
+        assertEquals(0.0, latLng.longitude, DELTA)
     }
 
     @Test
@@ -98,9 +102,10 @@ class MapProjectionTest {
             Projection(center, 2f, 512, 512, 0f, 0f, paddingLeft = 128, paddingTop = 0, paddingRight = 0, paddingBottom = 0)
                 .getVisibleRegion()
 
-        // Only 384 of 512 pixels remain, centered on the camera target: 135 instead of 180 degrees
-        assertEquals(-67.5, region.farLeft.longitude, DELTA)
-        assertEquals(67.5, region.farRight.longitude, DELTA)
+        // Only the 384 pixels right of the padding are visible: from x 128 to 512, while the
+        // view center (x 256) shows longitude 0 and the world is 1024 pixels wide
+        assertEquals(-45.0, region.farLeft.longitude, DELTA)
+        assertEquals(90.0, region.farRight.longitude, DELTA)
     }
 
     @Test

@@ -361,7 +361,9 @@ class MapController(
      * @param z The desired zoom level (will be clamped to current min/max zoom preferences)
      */
     fun setZoom(z: Float) {
+        val target = getCenter()
         zoom = z.coerceIn(minZoomPreference, maxZoomPreference)
+        center = viewCenterOf(target, zoom)
     }
 
     /**
@@ -403,7 +405,7 @@ class MapController(
     private fun clampZoomToPreferences() {
         val clamped = zoom.coerceIn(minZoomPreference, maxZoomPreference)
         if (clamped == zoom) return
-        zoom = clamped
+        setZoom(clamped)
         if (!isCameraMoving) {
             reportInstantMove(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION)
         }
@@ -429,7 +431,6 @@ class MapController(
     fun resetMinMaxZoomPreference() {
         minZoomPreference = DEFAULT_MIN_ZOOM
         maxZoomPreference = DEFAULT_MAX_ZOOM
-        zoom = zoom.coerceIn(minZoomPreference, maxZoomPreference)
     }
 
     /**
@@ -808,22 +809,48 @@ class MapController(
     }
 
     /**
-     * Sets the map center to the specified location.
+     * Sets the camera target: the location shown at the center of the area inside the map
+     * padding, or at the view center without padding.
      *
-     * If camera target bounds are set, the center will be clamped to stay within those bounds.
+     * If camera target bounds are set, the target will be clamped to stay within those bounds.
      *
-     * @param latLng The new center location
+     * @param latLng The new camera target
      */
     fun setCenter(latLng: LatLng) {
-        center = clampToTargetBounds(latLng)
+        center = viewCenterOf(clampToTargetBounds(latLng), zoom)
     }
 
     /**
-     * Returns the current map center.
+     * Returns the camera target: the location shown at the center of the area inside the map
+     * padding, or at the view center without padding.
      *
-     * @return The current center location
+     * @return The current camera target
      */
-    fun getCenter(): LatLng = center
+    fun getCenter(): LatLng = targetOf(center, zoom)
+
+    // The map is drawn around `center`, the location at the view center. The camera target is
+    // the location at the center of the area inside the map padding, half the difference of
+    // the opposite paddings away from it.
+    private fun viewCenterOf(
+        target: LatLng,
+        atZoom: Float,
+    ): LatLng = shiftedByPixels(target, (paddingRight - paddingLeft) / 2.0, (paddingBottom - paddingTop) / 2.0, atZoom)
+
+    private fun targetOf(
+        viewCenter: LatLng,
+        atZoom: Float,
+    ): LatLng = shiftedByPixels(viewCenter, (paddingLeft - paddingRight) / 2.0, (paddingTop - paddingBottom) / 2.0, atZoom)
+
+    private fun shiftedByPixels(
+        latLng: LatLng,
+        dx: Double,
+        dy: Double,
+        atZoom: Float,
+    ): LatLng {
+        if (dx == 0.0 && dy == 0.0) return latLng
+        val (x, y) = ProjectionUtils.latLngToPixelExact(latLng, atZoom)
+        return ProjectionUtils.pixelToLatLng(x + dx, y + dy, atZoom)
+    }
 
     /**
      * Returns the current camera position.
@@ -832,7 +859,7 @@ class MapController(
      */
     fun getCameraPosition(): CameraPosition =
         CameraPosition(
-            target = center,
+            target = getCenter(),
             zoom = zoom,
         )
 
@@ -900,8 +927,7 @@ class MapController(
         commitPan()
 
         val targetPosition = calculateTargetPosition(cameraUpdate, getCameraPosition())
-        val targetCenter = applyPaddingOffset(targetPosition.target, targetPosition.zoom)
-        if (targetCenter == center && targetPosition.zoom == zoom) return
+        if (targetPosition == getCameraPosition()) return
 
         // Fire camera move started event
         if (!isCameraMoving) {
@@ -910,8 +936,8 @@ class MapController(
             onCameraMoveStartedListener?.onCameraMoveStarted(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION)
         }
 
-        setCenter(targetCenter)
         setZoom(targetPosition.zoom)
+        setCenter(targetPosition.target)
 
         // Fire camera idle event immediately since moveCamera is instant
         isCameraMoving = false
@@ -998,8 +1024,8 @@ class MapController(
                                 progress,
                             )
 
-                        setCenter(LatLng(interpolatedLat, interpolatedLng))
                         setZoom(interpolatedZoom)
+                        setCenter(LatLng(interpolatedLat, interpolatedLng))
 
                         // Fire camera move event during animation
                         onCameraMoveListener?.onCameraMove()
@@ -1008,8 +1034,8 @@ class MapController(
                         kotlinx.coroutines.delay(16)
                     }
 
-                    setCenter(targetPosition.target)
                     setZoom(targetPosition.zoom)
+                    setCenter(targetPosition.target)
                     onTileLoadedCallback?.invoke()
 
                     listener?.onFinish()
@@ -1045,44 +1071,6 @@ class MapController(
                 currentMoveReason = null
             }
         }
-    }
-
-    /**
-     * Applies padding offset to a target LatLng position.
-     *
-     * Converts the pixel padding offset to a LatLng offset at the given zoom level,
-     * then adjusts the target position to compensate for the padding.
-     *
-     * @param target The original target position
-     * @param targetZoom The zoom level at which to calculate the offset
-     * @return The adjusted LatLng position accounting for padding
-     */
-    private fun applyPaddingOffset(
-        target: LatLng,
-        targetZoom: Float,
-    ): LatLng {
-        // If no padding, return original target
-        if (paddingLeft == 0 && paddingTop == 0 && paddingRight == 0 && paddingBottom == 0) {
-            return target
-        }
-
-        // Calculate pixel offset from padding (positive values shift the "logical center")
-        val xOffsetPixels = (paddingLeft - paddingRight) / 2.0
-        val yOffsetPixels = (paddingTop - paddingBottom) / 2.0
-
-        // Convert the offset to lat/lng degrees
-        // At the target location, calculate the degrees per pixel
-        val scale = 256.0 * 2.0.pow(targetZoom.toDouble())
-
-        // Convert pixel offsets to world coordinate offsets
-        val worldXOffset = xOffsetPixels * (1.0 / scale) * 360.0
-        val worldYOffset = yOffsetPixels * (1.0 / scale) * 360.0
-
-        // Apply the offset to the target (subtract because padding pushes content away)
-        return LatLng(
-            target.latitude + worldYOffset,
-            target.longitude - worldXOffset,
-        )
     }
 
     /**
@@ -1210,8 +1198,8 @@ class MapController(
             is CameraUpdate.NewLatLngBounds -> {
                 cameraPositionForBounds(
                     bounds = cameraUpdate.bounds,
-                    viewWidth = viewWidth - cameraUpdate.padding * 2,
-                    viewHeight = viewHeight - cameraUpdate.padding * 2,
+                    viewWidth = viewWidth - paddingLeft - paddingRight - cameraUpdate.padding * 2,
+                    viewHeight = viewHeight - paddingTop - paddingBottom - cameraUpdate.padding * 2,
                 )
             }
 
@@ -1269,10 +1257,13 @@ class MapController(
         right: Int,
         bottom: Int,
     ) {
+        // The camera target stays where it is, so the map moves into the new padded area
+        val target = getCenter()
         paddingLeft = left
         paddingTop = top
         paddingRight = right
         paddingBottom = bottom
+        center = viewCenterOf(target, zoom)
     }
 
     /**
@@ -1321,7 +1312,7 @@ class MapController(
         if (cameraTargetBounds != null) {
             val newCenter = pannedCenter(newPanOffsetX, newPanOffsetY)
 
-            val (_, hitEdges) = clampToTargetBoundsWithEdges(newCenter)
+            val (_, hitEdges) = clampToTargetBoundsWithEdges(targetOf(newCenter, zoom))
             if (hitEdges.isNotEmpty()) {
                 triggerEdgeEffect(hitEdges, 0.6f)
             }
@@ -1358,7 +1349,7 @@ class MapController(
     fun commitPan() {
         if (panOffsetX != 0f || panOffsetY != 0f) {
             // Convert accumulated pan offset to new center
-            setCenter(pannedCenter(panOffsetX, panOffsetY))
+            setCenter(targetOf(pannedCenter(panOffsetX, panOffsetY), zoom))
 
             // Reset pan offset
             panOffsetX = 0f

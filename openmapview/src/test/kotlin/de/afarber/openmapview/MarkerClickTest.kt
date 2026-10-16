@@ -123,6 +123,20 @@ class MarkerClickTest {
         assertEquals(emptyList<Marker>(), closed)
     }
 
+    @Test
+    fun testShowInfoWindow_ReportsClosingTheOtherWindow() {
+        val other = mapView.addMarker(Marker(position = LatLng(51.47, 7.25), title = "Other"))
+        val closed = mutableListOf<String?>()
+        mapView.setOnInfoWindowCloseListener { closed.add(it.title) }
+
+        marker.showInfoWindow()
+        other.showInfoWindow()
+
+        assertFalse(marker.isInfoWindowShown)
+        assertTrue(other.isInfoWindowShown)
+        assertEquals(listOf<String?>("Bochum"), closed)
+    }
+
     private companion object {
         const val SIZE = 400
     }

@@ -9,7 +9,9 @@ package de.afarber.openmapview
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Point
 import android.graphics.RectF
+import android.os.Looper
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.After
@@ -23,6 +25,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
 import kotlin.math.abs
 import kotlin.math.log2
 import kotlin.math.pow
@@ -878,68 +881,139 @@ class MapControllerTest {
         assertEquals(targetLatLng.longitude, position.target.longitude, 0.0001)
     }
 
+    // Checks that the map draws the location at the screen point. screenToLatLng() converts
+    // from the drawn map directly, without the projection or the camera target.
+    private fun assertDrawnAt(
+        location: LatLng,
+        x: Int,
+        y: Int,
+    ) {
+        val drawn = controller.screenToLatLng(x.toFloat(), y.toFloat())
+        // Within one pixel
+        val degreesPerPixel = 360.0 / ProjectionUtils.worldSize(controller.getZoom())
+        assertEquals(location.longitude, drawn.longitude, degreesPerPixel)
+        assertEquals(location.latitude, drawn.latitude, degreesPerPixel)
+    }
+
+    // The view is 1080 x 1920; the padded area's center is the middle between the paddings
+    private fun paddedCenter(
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+    ) = Point((left + 1080 - right) / 2, (top + 1920 - bottom) / 2)
+
     @Test
-    fun testSetMapPadding_TopPadding() {
-        val targetLatLng = LatLng(51.5, 0.0)
-        controller.setZoom(10.0f)
+    fun testSetMapPadding_TargetIsDrawnAtPaddedCenter() {
+        val target = LatLng(51.5, 7.2)
+        controller.setZoom(12.5f)
+        for ((left, top, right, bottom) in listOf(listOf(200, 0, 0, 0), listOf(0, 300, 0, 0), listOf(0, 0, 400, 0), listOf(0, 0, 0, 500))) {
+            controller.setMapPadding(left, top, right, bottom)
+            controller.moveCamera(CameraUpdateFactory.newLatLng(target))
 
-        // Set top padding - camera should move down to compensate
-        controller.setMapPadding(0, 200, 0, 0)
-        controller.moveCamera(CameraUpdateFactory.newLatLng(targetLatLng))
-
-        val position = controller.getCameraPosition()
-        // With top padding, the center should be shifted south (higher latitude value means north, so lower means south)
-        assertTrue(position.target.latitude > targetLatLng.latitude)
+            // The camera target stays the target, as the app set it
+            val position = controller.getCameraPosition()
+            assertEquals(target.latitude, position.target.latitude, 1e-6)
+            assertEquals(target.longitude, position.target.longitude, 1e-6)
+            // and it is drawn at the center of the area inside the padding
+            val expected = paddedCenter(left, top, right, bottom)
+            assertDrawnAt(target, expected.x, expected.y)
+        }
     }
 
     @Test
-    fun testSetMapPadding_LeftPadding() {
-        val targetLatLng = LatLng(51.5, 0.0)
-        controller.setZoom(10.0f)
-
-        // Set left padding - camera should move right to compensate
-        controller.setMapPadding(200, 0, 0, 0)
-        controller.moveCamera(CameraUpdateFactory.newLatLng(targetLatLng))
-
-        val position = controller.getCameraPosition()
-        // With left padding, the center should be shifted west (lower longitude)
-        assertTrue(position.target.longitude < targetLatLng.longitude)
-    }
-
-    @Test
-    fun testSetMapPadding_SymmetricPadding() {
-        val targetLatLng = LatLng(51.5, 0.0)
-        controller.setZoom(10.0f)
-
-        // Symmetric padding should not shift the center
+    fun testSetMapPadding_SymmetricPaddingDrawsTargetAtViewCenter() {
+        val target = LatLng(51.5, 7.2)
         controller.setMapPadding(100, 100, 100, 100)
-        controller.moveCamera(CameraUpdateFactory.newLatLng(targetLatLng))
+        controller.moveCamera(CameraUpdateFactory.newLatLng(target))
 
-        val position = controller.getCameraPosition()
-        // With symmetric padding, center should remain the same
-        assertEquals(targetLatLng.latitude, position.target.latitude, 0.0001)
-        assertEquals(targetLatLng.longitude, position.target.longitude, 0.0001)
+        assertDrawnAt(target, 540, 960)
     }
 
     @Test
-    fun testSetMapPadding_UpdatePadding() {
-        val targetLatLng = LatLng(51.5, 0.0)
-        controller.setZoom(10.0f)
+    fun testSetMapPadding_ChangingPaddingKeepsTarget() {
+        val target = LatLng(51.5, 7.2)
+        controller.setZoom(12f)
+        controller.moveCamera(CameraUpdateFactory.newLatLng(target))
 
-        // Set initial padding
-        controller.setMapPadding(0, 200, 0, 0)
-        controller.moveCamera(CameraUpdateFactory.newLatLng(targetLatLng))
-        val position1 = controller.getCameraPosition()
+        controller.setMapPadding(0, 0, 400, 0)
 
-        // Update padding
-        controller.setMapPadding(0, 0, 0, 0)
-        controller.moveCamera(CameraUpdateFactory.newLatLng(targetLatLng))
-        val position2 = controller.getCameraPosition()
+        // The map moves into the new padded area, the target stays
+        val position = controller.getCameraPosition()
+        assertEquals(target.latitude, position.target.latitude, 1e-6)
+        assertEquals(target.longitude, position.target.longitude, 1e-6)
+        assertDrawnAt(target, 340, 960)
+    }
 
-        // Positions should be different
-        assertTrue(position1.target.latitude != position2.target.latitude)
-        // Second position should match target exactly (no padding)
-        assertEquals(targetLatLng.latitude, position2.target.latitude, 0.0001)
+    @Test
+    fun testSetMapPadding_ZoomKeepsTarget() {
+        val target = LatLng(51.5, 7.2)
+        controller.setMapPadding(0, 0, 400, 0)
+        controller.moveCamera(CameraUpdateFactory.newLatLngZoom(target, 12f))
+
+        controller.moveCamera(CameraUpdateFactory.zoomIn())
+
+        assertEquals(13f, controller.getZoom(), DELTA)
+        assertDrawnAt(target, 340, 960)
+    }
+
+    @Test
+    fun testSetMapPadding_AnimationEndsAtPaddedCenter() {
+        val target = LatLng(51.48, 7.22)
+        controller.setMapPadding(0, 0, 400, 0)
+        controller.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(51.5, 7.2), 12f))
+        var finished = false
+
+        controller.animateCamera(
+            CameraUpdateFactory.newLatLng(target),
+            100,
+            object : CancelableCallback {
+                override fun onFinish() {
+                    finished = true
+                }
+
+                override fun onCancel() {}
+            },
+        )
+        // The animation runs on wall clock time
+        val deadline = System.nanoTime() + 2_000_000_000L
+        while (!finished && System.nanoTime() < deadline) {
+            Thread.sleep(20)
+            shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(20))
+        }
+
+        assertTrue(finished)
+        assertDrawnAt(target, 340, 960)
+    }
+
+    @Test
+    fun testSetMapPadding_PanKeepsTargetAtPaddedCenter() {
+        controller.setMapPadding(0, 0, 400, 0)
+        controller.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(51.5, 7.2), 12f))
+
+        controller.updatePanOffset(-100f, 50f)
+        controller.commitPan()
+
+        // The reported target is the location now drawn at the padded center
+        assertDrawnAt(controller.getCameraPosition().target, 340, 960)
+    }
+
+    @Test
+    fun testSetMapPadding_NewLatLngBoundsFitsIntoPaddedArea() {
+        val bounds = LatLngBounds(LatLng(51.44, 7.20), LatLng(51.50, 7.30))
+        controller.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0))
+        val zoomWithoutPadding = controller.getZoom()
+
+        controller.setMapPadding(0, 0, 680, 0)
+        controller.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0))
+
+        // Only 400 of 1080 pixels are left for the width, so the camera zooms out
+        assertTrue(controller.getZoom() < zoomWithoutPadding)
+        // The bounds fit between the left edge and x 400, where the padding starts
+        val leftEdge = controller.screenToLatLng(0f, 960f)
+        val paddingEdge = controller.screenToLatLng(400f, 960f)
+        assertTrue(leftEdge.longitude <= bounds.southwest.longitude + 1e-6)
+        assertTrue(paddingEdge.longitude >= bounds.northeast.longitude - 1e-6)
     }
 
     @Test

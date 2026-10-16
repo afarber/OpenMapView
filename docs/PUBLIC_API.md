@@ -215,7 +215,7 @@ These properties apply to:
 | Method                           | Return Type  | Notes                                                                   |
 | -------------------------------- | ------------ | ----------------------------------------------------------------------- |
 | `getUiSettings()`                | `UiSettings` |                                                                         |
-| `setPadding(int, int, int, int)` | `void`       | Implemented as setMapPadding() to avoid conflict with View.setPadding(). The zoom buttons, my-location button and attribution stay inside the padding |
+| `setPadding(int, int, int, int)` | `void`       | Implemented as setMapPadding() to avoid conflict with View.setPadding(). The camera target is the center of the area inside the padding, for all camera updates, animations and getCameraPosition(); the zoom buttons, my-location button and attribution stay inside it |
 | `setContentDescription(String)`  | `void`       | Inherited from View class                                               |
 
 ---
