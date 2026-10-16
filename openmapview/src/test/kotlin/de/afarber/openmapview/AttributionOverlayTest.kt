@@ -37,7 +37,7 @@ class AttributionOverlayTest {
     }
 
     @Test
-    fun `handleTouch detects click in bottom right corner`() {
+    fun `handleTouch detects click in bottom left corner`() {
         val viewWidth = 800
         val viewHeight = 600
 
@@ -46,10 +46,10 @@ class AttributionOverlayTest {
             clicked = true
         }
 
-        // Touch at bottom-right corner where attribution should be
+        // Touch at bottom-left corner where attribution should be
         // Note: In Robolectric, text bounds may be zero, causing touch detection to fail
         // This is expected test behavior - touch detection works correctly on real devices
-        val result = overlay.handleTouch(750f, 580f, viewWidth, viewHeight)
+        val result = overlay.handleTouch(50f, 580f, viewWidth, viewHeight)
 
         // Skip assertion if text bounds are not calculated (Robolectric limitation)
         if (result) {
@@ -67,8 +67,8 @@ class AttributionOverlayTest {
             clicked = true
         }
 
-        // Touch far from attribution area (top-left quadrant)
-        val result = overlay.handleTouch(100f, 100f, viewWidth, viewHeight)
+        // Touch far from attribution area (bottom-right corner)
+        val result = overlay.handleTouch(780f, 580f, viewWidth, viewHeight)
 
         assertFalse(result, "Touch outside attribution area should return false")
         assertFalse(clicked, "Attribution click listener should not be invoked")
@@ -81,7 +81,7 @@ class AttributionOverlayTest {
 
         // Note: In Robolectric, text bounds may be zero, so touch detection may return false
         // This is a limitation of the test environment, not the actual implementation
-        val result = overlay.handleTouch(750f, 580f, viewWidth, viewHeight)
+        val result = overlay.handleTouch(50f, 580f, viewWidth, viewHeight)
 
         // No assertion here - just verify it doesn't crash without a listener
         // On real devices with proper text rendering, this would return true
