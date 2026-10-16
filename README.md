@@ -56,7 +56,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | [Markers](examples/compose/Markers) | [Markers](examples/views/Markers) | Colored markers with info windows, stepping through them and keeping them clear of a side panel with map padding |
 | [Polylines](examples/compose/Polylines) | [Polylines](examples/views/Polylines) | Lines, areas, a polygon with a hole and a geodesic flight, highlighted on tap through live shapes |
 | [Camera](examples/compose/Camera) | [Camera](examples/views/Camera) | Camera flights with durations, finish and cancel callbacks, stopping and interrupting them |
-|  | [Clicks](examples/views/Clicks) | Map click and long-click listeners with coordinate display |
+| [Clicks](examples/compose/Clicks) | [Clicks](examples/views/Clicks) | Tap and long-press coordinates, a circle following taps and markers dropped by long press |
 |  | [DraggableMarkers](examples/views/DraggableMarkers) | Draggable markers with drag event listeners |
 |  | [Circles](examples/views/Circles) | Circles with radius in meters, styling, z-index and click listeners |
 |  | [Overlays](examples/views/Overlays) | Tile overlays with transparency (OpenSeaMap, Railways, Trails, Snow) |
