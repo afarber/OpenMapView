@@ -20,7 +20,7 @@ import de.afarber.openmapview.Polyline as MapPolyline
  * A polyline on an [OpenMap], declared in its content.
  *
  * The polyline is added to the map when it enters the composition and removed when it
- * leaves. Changing any parameter replaces it. Outside of [OpenMap]'s content it does nothing.
+ * leaves. Changing a parameter updates it on the map. Outside of [OpenMap]'s content it does nothing.
  *
  * Example:
  * ```kotlin
@@ -66,9 +66,7 @@ fun Polyline(
     tag: Any? = null,
     onClick: (MapPolyline) -> Unit = {},
 ) {
-    MapElement(
-        points, strokeColor, strokeWidth, strokePattern, startCap, endCap,
-        strokeJoin, geodesic, spans, visible, clickable, zIndex, tag,
+    LiveMapElement(
         create = {
             MapPolyline(
                 points = points,
@@ -85,6 +83,21 @@ fun Polyline(
                 zIndex = zIndex,
                 tag = tag,
             )
+        },
+        update = {
+            this.points = points
+            this.strokeColor = strokeColor
+            this.strokeWidth = strokeWidth
+            this.strokePattern = strokePattern
+            this.startCap = startCap
+            this.endCap = endCap
+            this.strokeJoin = strokeJoin
+            this.geodesic = geodesic
+            this.spans = spans
+            this.visible = visible
+            this.clickable = clickable
+            this.zIndex = zIndex
+            this.tag = tag
         },
         add = { addPolyline(it) },
         remove = { removePolyline(it) },

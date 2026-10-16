@@ -52,6 +52,15 @@ class PolygonOptions {
     }
 
     /**
+     * Adds several vertices in order, e.g. `add(a, b, c)` from Java.
+     * @param points Geographic coordinates to add
+     */
+    fun add(vararg points: LatLng): PolygonOptions {
+        this.points.addAll(points)
+        return this
+    }
+
+    /**
      * Adds vertices to the outline of the polygon.
      * @param points Geographic coordinates to add
      */

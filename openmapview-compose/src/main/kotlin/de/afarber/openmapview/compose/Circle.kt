@@ -19,7 +19,7 @@ import de.afarber.openmapview.Circle as MapCircle
  * A circle on an [OpenMap], declared in its content.
  *
  * The circle is added to the map when it enters the composition and removed when it leaves.
- * Changing any parameter replaces it, so it can follow e.g. a [MarkerState]'s position.
+ * Changing a parameter updates it on the map, so it can follow e.g. a [MarkerState]'s position.
  * Outside of [OpenMap]'s content it does nothing.
  *
  * Example:
@@ -59,9 +59,7 @@ fun Circle(
     tag: Any? = null,
     onClick: (MapCircle) -> Unit = {},
 ) {
-    MapElement(
-        center, radius, strokeColor, strokeWidth, strokePattern, strokeCap,
-        strokeJoin, fillColor, visible, clickable, zIndex, tag,
+    LiveMapElement(
         create = {
             MapCircle(
                 center = center,
@@ -77,6 +75,20 @@ fun Circle(
                 zIndex = zIndex,
                 tag = tag,
             )
+        },
+        update = {
+            this.center = center
+            this.radius = radius
+            this.strokeColor = strokeColor
+            this.strokeWidth = strokeWidth
+            this.strokePattern = strokePattern
+            this.strokeCap = strokeCap
+            this.strokeJoin = strokeJoin
+            this.fillColor = fillColor
+            this.visible = visible
+            this.clickable = clickable
+            this.zIndex = zIndex
+            this.tag = tag
         },
         add = { addCircle(it) },
         remove = { removeCircle(it) },

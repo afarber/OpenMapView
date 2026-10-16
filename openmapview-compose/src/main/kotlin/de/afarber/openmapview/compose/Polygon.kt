@@ -19,7 +19,7 @@ import de.afarber.openmapview.Polygon as MapPolygon
  * A polygon on an [OpenMap], declared in its content.
  *
  * The polygon is added to the map when it enters the composition and removed when it
- * leaves. Changing any parameter replaces it. Outside of [OpenMap]'s content it does nothing.
+ * leaves. Changing a parameter updates it on the map. Outside of [OpenMap]'s content it does nothing.
  *
  * Example:
  * ```kotlin
@@ -65,9 +65,7 @@ fun Polygon(
     tag: Any? = null,
     onClick: (MapPolygon) -> Unit = {},
 ) {
-    MapElement(
-        points, holes, strokeColor, strokeWidth, strokePattern, strokeCap,
-        strokeJoin, fillColor, geodesic, visible, clickable, zIndex, tag,
+    LiveMapElement(
         create = {
             MapPolygon(
                 points = points,
@@ -84,6 +82,21 @@ fun Polygon(
                 zIndex = zIndex,
                 tag = tag,
             )
+        },
+        update = {
+            this.points = points
+            this.strokeColor = strokeColor
+            this.strokeWidth = strokeWidth
+            this.strokePattern = strokePattern
+            this.strokeCap = strokeCap
+            this.strokeJoin = strokeJoin
+            this.fillColor = fillColor
+            this.holes = holes
+            this.geodesic = geodesic
+            this.visible = visible
+            this.clickable = clickable
+            this.zIndex = zIndex
+            this.tag = tag
         },
         add = { addPolygon(it) },
         remove = { removePolygon(it) },

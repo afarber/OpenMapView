@@ -138,4 +138,34 @@ public class JavaInteropTest {
         assertTrue(bounds.contains(BOCHUM));
         assertTrue(bounds.contains(UNIVERSITY));
     }
+
+    @Test
+    public void shapesAreLiveHandles() {
+        Polyline polyline = mapView.addPolyline(new PolylineOptions().add(BOCHUM, UNIVERSITY));
+        polyline.setWidth(16f);
+        polyline.setColor(0xFF00FF00);
+        assertEquals(16f, polyline.getWidth(), 0f);
+        assertEquals(0xFF00FF00, polyline.getColor());
+
+        Polygon polygon = mapView.addPolygon(
+            new PolygonOptions().add(BOCHUM).add(UNIVERSITY).add(new LatLng(51.46, 7.20)));
+        polygon.setStrokeColor(0xFF0000FF);
+        polygon.setFillColor(0x400000FF);
+        polygon.setStrokeWidth(4f);
+        assertEquals(0xFF0000FF, polygon.getStrokeColor());
+        assertEquals(0x400000FF, polygon.getFillColor());
+
+        Circle circle = mapView.addCircle(new CircleOptions().center(BOCHUM).radius(300f));
+        circle.setRadius(500f);
+        circle.setCenter(UNIVERSITY);
+        circle.setZIndex(2f);
+        assertEquals(500f, circle.getRadius(), 0f);
+
+        polyline.remove();
+        polygon.remove();
+        circle.remove();
+        assertTrue(mapView.getPolylines().isEmpty());
+        assertTrue(mapView.getPolygons().isEmpty());
+        assertTrue(mapView.getCircles().isEmpty());
+    }
 }
