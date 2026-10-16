@@ -650,8 +650,9 @@ class OpenMapView
             currentMapType = type
             controller.setMapType(type)
 
-            // Update attribution for the actual tile source being used
-            val source = TileSource.fromMapType(type)
+            // Credit the tiles that are actually shown: without its API key, a map type
+            // falls back to the standard map
+            val source = controller.getTileSource() ?: TileSource.fromMapType(type)
             if (type != MapType.NONE) {
                 attributionOverlay.setAttributionText(source.attributionText)
                 attributionOverlay.setAttributionUrl(source.attributionUrl)

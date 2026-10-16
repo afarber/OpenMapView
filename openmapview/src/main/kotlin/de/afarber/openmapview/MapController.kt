@@ -1475,7 +1475,16 @@ class MapController(
         drawInfoWindows(canvas)
 
         // Draw API key error overlay if present (on top of everything, but touch events pass through)
-        apiKeyErrorOverlay?.draw(canvas, viewWidth, viewHeight)
+        // Centered in the area inside the map padding, like the map's own controls
+        apiKeyErrorOverlay?.draw(
+            canvas,
+            viewWidth,
+            viewHeight,
+            paddingLeft.toFloat(),
+            paddingTop.toFloat(),
+            (viewWidth - paddingRight).toFloat(),
+            (viewHeight - paddingBottom).toFloat(),
+        )
 
         if (allTilesDrawn && !isCameraMoving) {
             onMapLoadedCallback?.let { callback ->
