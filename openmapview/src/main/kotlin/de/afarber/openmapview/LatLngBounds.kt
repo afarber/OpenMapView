@@ -97,6 +97,7 @@ data class LatLngBounds(
          *
          * @return A new Builder instance
          */
+        @JvmStatic
         fun builder(): Builder = Builder()
     }
 

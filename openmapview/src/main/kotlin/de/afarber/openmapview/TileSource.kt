@@ -315,6 +315,7 @@ enum class TileSource(
          * @param mapType The MapType constant
          * @return The corresponding TileSource, or STANDARD for unknown types
          */
+        @JvmStatic
         fun fromMapType(mapType: Int): TileSource =
             when (mapType) {
                 // NONE uses STANDARD but doesn't render
@@ -357,6 +358,7 @@ enum class TileSource(
          * @param mapType The MapType constant
          * @return The display name
          */
+        @JvmStatic
         fun getMapTypeName(mapType: Int): String =
             when (mapType) {
                 MapType.NONE -> "None"

@@ -103,7 +103,7 @@ The `*Options` builders also accept ARGB color ints: `PolylineOptions.color(int)
 
 Java code calls the same API directly:
 
-- Factory methods are static: `CameraUpdateFactory.newLatLngZoom(...)`, `BitmapDescriptorFactory.defaultMarker(...)`, `PredefinedTileProviders.openSeaMap()`, `GeoJsonParser.parse(...)`
+- Factory methods are static: `CameraUpdateFactory.newLatLngZoom(...)`, `BitmapDescriptorFactory.defaultMarker(...)`, `LatLngBounds.builder()`, `PredefinedTileProviders.openSeaMap()`, `GeoJsonParser.parse(...)`, `TileSource.fromMapType(...)`
 - Shapes are built with the `*Options` builders and int colors, as shown above
 - Listeners are functional interfaces, so Java lambdas work: `mapView.setOnMapClickListener(latLng -> ...)`
 - `UiSettings.setInfoWindowAutoDismissMillis(long)` replaces the Kotlin `Duration` property

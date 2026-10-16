@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         eventText = findViewById(R.id.event);
         mapView.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(51.4687, 7.2392), 13f));
 
-        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+        LatLngBounds.Builder bounds = LatLngBounds.builder();
         for (Place place : PLACES) {
             // Title and snippet are shown in the marker's info window
             markers.add(mapView.addMarker(
