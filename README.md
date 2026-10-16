@@ -53,7 +53,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 |---|---|---|
 | [Pan](examples/compose/Pan) | [Pan](examples/views/Pan) | Panning by touch and arrow buttons, flying to places and keeping the camera inside bounds |
 | [Zoom](examples/compose/Zoom) | [Zoom](examples/views/Zoom) | Smooth pinch zoom, zoom buttons and levels, zoom limits and why the camera moves |
-|  | [Markers](examples/views/Markers) | Markers with custom colors and info windows at Bochum landmarks |
+| [Markers](examples/compose/Markers) | [Markers](examples/views/Markers) | Colored markers with info windows, stepping through them and keeping them clear of a side panel with map padding |
 |  | [Polylines](examples/views/Polylines) | Polylines, polygons and polygons with holes, highlighted on click |
 |  | [Camera](examples/views/Camera) | Camera animations with durations, callbacks and cancellation |
 |  | [Clicks](examples/views/Clicks) | Map click and long-click listeners with coordinate display |
