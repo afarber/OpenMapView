@@ -9,15 +9,16 @@
 # emulator, 1408:620:0:76 removes the status bar and the car's system bar.
 #
 # Start the example on a landscape automotive emulator first, then run this script and
-# use the app while it records. The GIF must stay below 2 MB so the README loads quickly:
-# if it is larger, the script retries with fewer frames and colors and then a smaller size.
+# use the app while it records. The GIF must stay below 4 MB so the README loads quickly:
+# if it is larger, the script retries with a smaller size and fewer frames. Moving maps change
+# every pixel of a frame, so keep the moves short with pauses in between: still frames are free.
 
 set -euo pipefail
 
-MAX_BYTES=$((2 * 1024 * 1024))
+MAX_BYTES=$((4 * 1024 * 1024))
 
 if [ $# -lt 1 ] || [ ! -d "$1" ]; then
-    echo "Usage: $0 <example dir> [seconds]"
+    echo "Usage: $0 <example dir> [seconds] [crop]"
     exit 1
 fi
 
@@ -33,18 +34,18 @@ adb pull /sdcard/capture.mp4 "$WORK_DIR/capture.mp4" > /dev/null
 adb shell rm /sdcard/capture.mp4
 
 # Convert with a palette computed from the whole video, which keeps map tiles sharp
-# at a small file size. The longer side of the GIF is scaled to the given size.
+# at a small file size. Dithering would add noise that changes in every frame and grows the GIF. The longer side of the GIF is scaled to the given size.
 convert() {
     local size=$1 fps=$2 colors=$3
     local filters="${CROP}fps=$fps,scale=$size:$size:force_original_aspect_ratio=decrease:flags=lanczos"
     ffmpeg -loglevel error -y -i "$WORK_DIR/capture.mp4" \
         -vf "$filters,palettegen=max_colors=$colors" -update 1 "$WORK_DIR/palette.png"
     ffmpeg -loglevel error -y -i "$WORK_DIR/capture.mp4" -i "$WORK_DIR/palette.png" \
-        -lavfi "$filters [x]; [x][1:v] paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" \
+        -lavfi "$filters [x]; [x][1:v] paletteuse=dither=none:diff_mode=rectangle" \
         "$OUTPUT"
 }
 
-for setting in "800 10 128" "800 8 96" "720 8 64" "640 6 64"; do
+for setting in "800 8 64" "704 8 64" "704 6 64" "640 6 64"; do
     read -r size fps colors <<< "$setting"
     convert "$size" "$fps" "$colors"
     bytes=$(wc -c < "$OUTPUT" | tr -d ' ')
@@ -54,5 +55,5 @@ for setting in "800 10 128" "800 8 96" "720 8 64" "640 6 64"; do
     fi
 done
 
-echo "ERROR: $OUTPUT is still 2 MB or larger, record a shorter clip"
+echo "ERROR: $OUTPUT is still 4 MB or larger, record a calmer or shorter clip"
 exit 1

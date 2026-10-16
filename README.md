@@ -51,7 +51,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 
 | Jetpack Compose (Kotlin) | Views with XML (Java) | Synopsis |
 |---|---|---|
-|  | [Pan](examples/views/Pan) | Map panning with touch gestures and arrow buttons, preset places and camera bounds |
+| [Pan](examples/compose/Pan) | [Pan](examples/views/Pan) | Panning by touch and arrow buttons, flying to places and keeping the camera inside bounds |
 |  | [Zoom](examples/views/Zoom) | Zoom controls (+/- buttons), pinch zoom and the current zoom level |
 |  | [Markers](examples/views/Markers) | Markers with custom colors and info windows at Bochum landmarks |
 |  | [Polylines](examples/views/Polylines) | Polylines, polygons and polygons with holes, highlighted on click |

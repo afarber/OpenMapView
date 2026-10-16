@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mining_museum">Mining Museum</string>
+    <string name="main_station">Main Station</string>
+    <string name="university">Ruhr University</string>
+    <string name="stay_in_bochum">Stay in Bochum</string>
+    <string name="camera_status">%1$.4f, %2$.4f at zoom %3$.1f</string>
+    <string name="pan_left">Pan left</string>
+    <string name="pan_up">Pan up</string>
+    <string name="pan_down">Pan down</string>
+    <string name="pan_right">Pan right</string>
+</resources>

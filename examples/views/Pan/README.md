@@ -1,110 +1,57 @@
-# Pan (Views) - Basic Map Panning
+# Pan (Views)
 
-[Back to README](../../../README.md)
+[Back to README](../../../README.md) | Same app in Jetpack Compose: [Pan (Compose)](../../compose/Pan)
 
-This example demonstrates the core functionality of OpenMapView: displaying OpenStreetMap tiles, responding to touch pan gestures, and using camera controls with status display.
+Pan the map by finger, with an arrow pad, or fly to places in Bochum. A switch keeps the camera inside Bochum.
+The map is declared in an XML layout and driven from a Java `AppCompatActivity`.
 
-## Features Demonstrated
+## Features
 
-- Map tile rendering from OpenStreetMap
-- Touch pan/drag gestures
-- Arrow button toolbar for programmatic panning
-- Preset location buttons with animated camera moves
-- Camera bounds constraints with visual polyline indicator
-- Real-time camera state and position display
-- Colored markers at preset locations
+- `<de.afarber.openmapview.OpenMapView>` in `activity_main.xml`, usable right after `setContentView()`
+- Markers in three colors, added with `MarkerOptions` and `BitmapDescriptorFactory.defaultMarker(hue)`
+- Buttons that fly to a place with `animateCamera(CameraUpdateFactory.newLatLng(...), 1000)`
+- An arrow pad that pans by pixels with `CameraUpdateFactory.scrollBy(x, y)`
+- "Stay in Bochum": `setLatLngBoundsForCameraTarget()` limits the camera, a `Polygon` outlines the area and `newLatLngBounds()` zooms out to show it
+- A status card updated from `setOnCameraMoveListener` and `setOnCameraIdleListener`
 
 ## Screenshot
 
-![Pan Demo](screenshot.gif)
+![Pan (Views)](screenshot.gif)
 
-## Quick Start
+## Run
 
-### Option 1: Run in Android Studio
-
-1. Open the OpenMapView project in Android Studio
-2. Select `examples.views.Pan` from the run configuration dropdown
-3. Click Run (green play button)
-4. Deploy to your device or emulator
-
-### Option 2: Build and Install from Command Line
+Select `examples.views.Pan` in Android Studio, or:
 
 ```bash
-# From project root - build, install, and launch
 ./gradlew :examples:views:Pan:installDebug
-
-# Launch the app
 adb shell am start -n de.afarber.openmapview.examples.views.pan/.MainActivity
-```
-
-## Project Structure
-
-```
-example01pan/
-├── MainActivity.kt      # Main activity and MapViewScreen composable
-├── ArrowToolbar.kt      # Horizontal toolbar with pan arrow buttons
-├── LocationToolbar.kt   # Vertical toolbar with preset location buttons
-├── ControlToolbar.kt    # Vertical toolbar with bounds/reset controls
-├── StatusToolbar.kt     # Status overlay showing camera state
-└── Colors.kt            # OSM-inspired colors and shared dimensions
 ```
 
 ## Code Highlights
 
-### MainActivity.kt
-
-```kotlin
-@Composable
-fun MapViewScreen() {
-    var mapView: OpenMapView? by remember { mutableStateOf(null) }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            factory = { ctx ->
-                OpenMapView(ctx).apply {
-                    setCenter(LatLng(51.4661, 7.2491))
-                    setZoom(14.0f)
-                    mapView = this
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
-        )
-
-        // Toolbars overlay the map
-        StatusToolbar(...)
-        ArrowToolbar(...)
-        LocationToolbar(...)
-        ControlToolbar(...)
-    }
-}
+```xml
+<de.afarber.openmapview.OpenMapView
+    android:id="@+id/map_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
 ```
 
-### Key Concepts
+```java
+// The map is ready right away: no getMapAsync() and no lifecycle forwarding needed
+mapView = findViewById(R.id.map_view);
+mapView.moveCamera(CameraUpdateFactory.newLatLngZoom(CITY_HALL, 14f));
 
-- **LatLng**: Represents geographic coordinates (latitude, longitude)
-- **setCenter()**: Sets the initial map center position
-- **setZoom()**: Sets zoom level (2.0 = world view, 19.0 = street level)
-- **moveCamera()**: Instantly moves the camera (no animation)
-- **animateCamera()**: Smoothly animates camera to new position
-- **setLatLngBoundsForCameraTarget()**: Constrains camera movement to bounds
-- **OnCameraMoveListener**: Callback for camera position changes
+// Panning by pixels, e.g. for a d-pad or rotary controller in a car
+findViewById(R.id.button_left).setOnClickListener(
+        v -> mapView.animateCamera(CameraUpdateFactory.scrollBy(-PAN_STEP, 0f), 300));
 
-## What to Test
+// A null area lets the camera go anywhere again
+mapView.setLatLngBoundsForCameraTarget(stay ? BOCHUM_AREA : null);
+```
 
-1. **Pan the map** by dragging with your finger/mouse
-2. **Use arrow buttons** to pan the map programmatically
-3. **Tap location buttons** (Loc 1, 2, 3) to animate to preset positions
-4. **Toggle bounds** to constrain camera movement (blue polyline shows bounds)
-5. **Tap Reset** to return to initial position
-6. **Observe status overlay** showing camera state and coordinates
+## What to Try
 
-## Map Location
-
-**Default Center:** Bochum, Germany (51.4661N, 7.2491E)
-
-**Preset Locations:**
-- Location 1 (Red marker): North-West of center
-- Location 2 (Green marker): East of center
-- Location 3 (Magenta marker): South-West of center
-- Initial (Cyan marker): Center position
-
+1. Drag the map and watch the coordinates in the status card
+2. Tap Mining Museum, Main Station and Ruhr University
+3. Pan with the arrow buttons
+4. Turn on "Stay in Bochum" and try to drag the map center out of the blue rectangle
