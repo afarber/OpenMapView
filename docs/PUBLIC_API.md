@@ -299,7 +299,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 | --------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------- |
 | `setOnMapClickListener(OnMapClickListener)`                           | `void`           |                                                                      |
 | `setOnMapLongClickListener(OnMapLongClickListener)`                   | `void`           |                                                                      |
-| `setOnMarkerClickListener(OnMarkerClickListener)`                     | `void`           |                                                                      |
+| `setOnMarkerClickListener(OnMarkerClickListener)`                     | `void`           | Runs first; unless it returns true, the info window opens and the camera moves to the marker |
 | `setOnMarkerDragListener(OnMarkerDragListener)`                       | `void`           |                                                                      |
 | `setOnPolylineClickListener(OnPolylineClickListener)`                 | `void`           |                                                                      |
 | `setOnPolygonClickListener(OnPolygonClickListener)`                   | `void`           |                                                                      |
@@ -347,7 +347,7 @@ mapView.setOnMapClickListener { latLng ->
 
 mapView.setOnMarkerClickListener { marker ->
     Toast.makeText(context, marker.title, Toast.LENGTH_SHORT).show()
-    true  // Consume event (prevents info window)
+    true  // Consume the click: no info window, no camera move
 }
 
 // Multi-method listeners use object syntax
