@@ -130,6 +130,36 @@ class MarkerComposableTest {
     }
 
     @Test
+    fun testTappingMarker_OnClickReturningTrue_KeepsInfoWindowClosed() {
+        val state = MarkerState(bochum)
+        showMap { Marker(state = state, title = "Bochum", onClick = { true }) }
+
+        composeRule.runOnIdle {
+            val point = map.getProjection().toScreenLocation(bochum)
+            send(MotionEvent.ACTION_DOWN, point.x.toFloat(), point.y - 10f, 0)
+            send(MotionEvent.ACTION_UP, point.x.toFloat(), point.y - 10f, 50)
+        }
+        composeRule.waitForIdle()
+
+        assertEquals(false, state.isInfoWindowShown)
+    }
+
+    @Test
+    fun testTappingMarker_OnClickReturningFalse_OpensInfoWindow() {
+        val state = MarkerState(bochum)
+        showMap { Marker(state = state, title = "Bochum") }
+
+        composeRule.runOnIdle {
+            val point = map.getProjection().toScreenLocation(bochum)
+            send(MotionEvent.ACTION_DOWN, point.x.toFloat(), point.y - 10f, 0)
+            send(MotionEvent.ACTION_UP, point.x.toFloat(), point.y - 10f, 50)
+        }
+        composeRule.waitForIdle()
+
+        assertEquals(true, state.isInfoWindowShown)
+    }
+
+    @Test
     fun testTappingMarker_CallsOnClick() {
         var clicks = 0
         showMap {

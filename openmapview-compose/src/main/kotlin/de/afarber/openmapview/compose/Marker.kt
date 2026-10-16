@@ -135,7 +135,8 @@ internal val LocalMapContext = staticCompositionLocalOf<MapContext?> { null }
  * @param draggable Whether the user can drag the marker
  * @param zIndex Drawing order relative to other markers and shapes
  * @param tag Any object to associate with the marker
- * @param onClick Called when the marker is tapped, which also opens or closes its info window
+ * @param onClick Called when the marker is tapped. Return true to consume the tap; otherwise
+ *   its info window opens and the camera moves to the marker
  * @param onInfoWindowClick Called when the info window of the marker is tapped
  * @param onInfoWindowClose Called when the info window of the marker is closed
  */

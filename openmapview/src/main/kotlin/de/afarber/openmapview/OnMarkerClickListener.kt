@@ -17,8 +17,8 @@ fun interface OnMarkerClickListener {
      * Called when a marker is clicked.
      *
      * @param marker The marker that was clicked
-     * @return true to consume the event (prevents default behavior like showing info window),
-     *         false to allow default behavior
+     * @return true to consume the event, false for the default behavior: the marker's info
+     *         window opens and the camera moves to the marker
      */
     fun onMarkerClick(marker: Marker): Boolean
 }

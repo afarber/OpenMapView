@@ -39,6 +39,9 @@ private const val MY_LOCATION_ANIMATION_MS = 250
 // Duration of the zoom animation for the built-in zoom buttons
 private const val ZOOM_BUTTON_ANIMATION_MS = 250
 
+// Duration of the camera animation to a clicked marker
+private const val MARKER_CLICK_ANIMATION_MS = 250
+
 /**
  * A MapView powered by OpenStreetMap tiles.
  *
@@ -430,24 +433,28 @@ class OpenMapView
                             // Check for marker touch
                             val touchedMarker = controller.handleMarkerTouch(event.x, event.y)
                             if (touchedMarker != null) {
-                                // Toggle info window if clicking same marker, otherwise show new one
-                                if (touchedMarker.isInfoWindowShown) {
-                                    touchedMarker.setInfoWindowShownInternal(false)
-                                    cancelInfoWindowAutoDismiss()
-                                    controller.onInfoWindowCloseListener?.onInfoWindowClose(touchedMarker)
-                                } else {
-                                    // Hide all other info windows (only one can be shown at a time)
-                                    controller.getMarkers().forEach { marker ->
-                                        if (marker.isInfoWindowShown) {
-                                            marker.setInfoWindowShownInternal(false)
-                                            controller.onInfoWindowCloseListener?.onInfoWindowClose(marker)
-                                        }
-                                    }
-                                    openInfoWindow(touchedMarker)
-                                }
-
-                                controller.onMarkerClickListener?.onMarkerClick(touchedMarker)
                                 controller.commitPan()
+                                // The listener runs first. Unless it consumes the click, the marker's
+                                // info window opens and the camera moves to the marker.
+                                val consumed = controller.onMarkerClickListener?.onMarkerClick(touchedMarker) == true
+                                if (!consumed) {
+                                    if (!touchedMarker.isInfoWindowShown) {
+                                        // Hide all other info windows (only one can be shown at a time)
+                                        controller.getMarkers().forEach { marker ->
+                                            if (marker.isInfoWindowShown) {
+                                                marker.setInfoWindowShownInternal(false)
+                                                controller.onInfoWindowCloseListener?.onInfoWindowClose(marker)
+                                            }
+                                        }
+                                        openInfoWindow(touchedMarker)
+                                    }
+                                    controller.animateCamera(
+                                        CameraUpdateFactory.newLatLng(touchedMarker.position),
+                                        MARKER_CLICK_ANIMATION_MS,
+                                        null,
+                                        OnCameraMoveStartedListener.REASON_API_ANIMATION,
+                                    )
+                                }
                                 invalidate()
                                 return true
                             }
@@ -1382,7 +1389,9 @@ class OpenMapView
          * }
          * ```
          *
-         * @param listener Callback invoked when a marker is clicked. Return true to consume the event, or null to clear the listener.
+         * @param listener Callback invoked when a marker is clicked, before the default behavior:
+         *   unless it returns true, the marker's info window opens and the camera moves to the
+         *   marker. Null clears the listener.
          */
         fun setOnMarkerClickListener(listener: OnMarkerClickListener?) {
             controller.onMarkerClickListener = listener
