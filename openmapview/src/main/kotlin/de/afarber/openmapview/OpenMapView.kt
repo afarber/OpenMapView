@@ -1866,6 +1866,8 @@ class OpenMapView
          */
         fun addGroundOverlay(groundOverlay: GroundOverlay): GroundOverlay {
             val result = controller.addGroundOverlay(groundOverlay)
+            // A live handle: its setters redraw this map
+            result.mapView = this
             invalidate()
             return result
         }
@@ -1878,7 +1880,10 @@ class OpenMapView
          */
         fun removeGroundOverlay(groundOverlay: GroundOverlay): Boolean {
             val result = controller.removeGroundOverlay(groundOverlay)
-            if (result) invalidate()
+            if (result) {
+                groundOverlay.mapView = null
+                invalidate()
+            }
             return result
         }
 
@@ -1886,6 +1891,7 @@ class OpenMapView
          * Removes all ground overlays from the map.
          */
         fun clearGroundOverlays() {
+            controller.getGroundOverlays().forEach { it.mapView = null }
             controller.clearGroundOverlays()
             invalidate()
         }

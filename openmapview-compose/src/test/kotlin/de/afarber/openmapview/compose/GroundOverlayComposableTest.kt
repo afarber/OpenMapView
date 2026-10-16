@@ -18,7 +18,7 @@ import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.LatLngBounds
 import de.afarber.openmapview.OpenMapView
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -74,7 +74,7 @@ class GroundOverlayComposableTest {
     }
 
     @Test
-    fun testChangingTransparency_ReplacesOverlay() {
+    fun testChangingTransparency_UpdatesOverlayInPlace() {
         var transparency by mutableStateOf(0f)
         showMap { GroundOverlay(image = image, bounds = bounds, transparency = transparency) }
         val old = map.getGroundOverlays()[0]
@@ -85,7 +85,8 @@ class GroundOverlayComposableTest {
         val overlays = map.getGroundOverlays()
         assertEquals(1, overlays.size)
         assertEquals(0.5f, overlays[0].transparency)
-        assertNotSame(old, overlays[0])
+        // The same overlay, changed through its setters
+        assertSame(old, overlays[0])
     }
 
     @Test

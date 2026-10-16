@@ -8,6 +8,7 @@
 package de.afarber.openmapview.compose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import de.afarber.openmapview.BitmapDescriptor
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.LatLngBounds
@@ -18,7 +19,7 @@ import de.afarber.openmapview.GroundOverlay as MapGroundOverlay
  *
  * Place it either by [bounds], or by [position] with [width] (and optionally [height]).
  * The overlay is added to the map when it enters the composition and removed when it
- * leaves. Changing any parameter replaces it. Outside of [OpenMap]'s content it does nothing.
+ * leaves. Changing a parameter updates it on the map. Outside of [OpenMap]'s content it does nothing.
  *
  * Example:
  * ```kotlin
@@ -61,27 +62,46 @@ fun GroundOverlay(
     tag: Any? = null,
     onClick: (MapGroundOverlay) -> Unit = {},
 ) {
-    MapElement(
-        image, position, width, height, bounds, anchor,
-        bearing, transparency, visible, zIndex, clickable, tag,
-        create = {
-            MapGroundOverlay(
-                image = image,
-                position = position,
-                width = width,
-                height = height,
-                bounds = bounds,
-                anchor = anchor,
-                bearing = bearing,
-                transparency = transparency,
-                visible = visible,
-                zIndex = zIndex,
-                clickable = clickable,
-                tag = tag,
-            )
-        },
-        add = { addGroundOverlay(it) },
-        remove = { removeGroundOverlay(it) },
-        onClick = onClick,
-    )
+    // A different anchor needs a new overlay; other changes update it in place
+    key(anchor) {
+        LiveMapElement(
+            create = {
+                MapGroundOverlay(
+                    image = image,
+                    position = position,
+                    width = width,
+                    height = height,
+                    bounds = bounds,
+                    anchor = anchor,
+                    bearing = bearing,
+                    transparency = transparency,
+                    visible = visible,
+                    zIndex = zIndex,
+                    clickable = clickable,
+                    tag = tag,
+                )
+            },
+            update = {
+                this.image = image
+                // The placement changes only when the parameters describe a new one
+                if (bounds != null) {
+                    if (bounds != this.bounds) setPositionFromBounds(bounds)
+                } else if (position != null && width != null) {
+                    if (position != this.position || width != this.width || height != this.height) {
+                        setDimensions(width, height)
+                        setPosition(position)
+                    }
+                }
+                this.bearing = bearing
+                this.transparency = transparency
+                this.visible = visible
+                this.zIndex = zIndex
+                this.clickable = clickable
+                this.tag = tag
+            },
+            add = { addGroundOverlay(it) },
+            remove = { removeGroundOverlay(it) },
+            onClick = onClick,
+        )
+    }
 }
