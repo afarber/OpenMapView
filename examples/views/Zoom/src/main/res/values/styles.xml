@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Big square zoom buttons, easy to hit on a car display -->
+    <style name="ZoomButton" parent="Widget.Material3.Button.IconButton.Filled.Tonal">
+        <item name="iconSize">40dp</item>
+    </style>
+</resources>

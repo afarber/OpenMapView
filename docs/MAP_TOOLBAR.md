@@ -10,10 +10,10 @@ This document explains how OpenMapView integrates with external map applications
 
 OpenMapView provides a method to open the current map location in external map applications installed on the device. If no map application is available, it automatically falls back to opening OpenStreetMap.org in the device's browser.
 
-This feature is similar to Google Maps SDK's map toolbar, but instead of requiring Google services, it:
+This feature is similar to a map toolbar, but it:
 - Uses the standard Android geo: URI scheme
-- Works with any map app (Google Maps, OsmAnd, Maps.me, etc.)
-- Falls back to OpenStreetMap.org (not Google Maps web)
+- Works with any map app (OsmAnd, Organic Maps, Maps.me, etc.)
+- Falls back to OpenStreetMap.org in the browser
 - Respects user's default map app preference
 
 ---
@@ -42,13 +42,13 @@ geo:51.4661,7.2491?z=14
 
 ## User Scenarios
 
-### Scenario 1: User Has Google Maps Installed
+### Scenario 1: User Has One Map App Installed
 
 ```
 User action: Taps "Open in External App" button
 → OpenMapView creates geo: intent
-→ Android launches Google Maps
-→ Location opens in Google Maps at specified zoom level
+→ Android launches the map app
+→ Location opens in the map app at specified zoom level
 ```
 
 ### Scenario 2: User Has OsmAnd Installed
@@ -77,7 +77,7 @@ User action: Taps "Open in External App" button
 User action: Taps "Open in External App" button
 → OpenMapView creates geo: intent
 → Android shows app picker dialog
-→ User selects preferred app (Google Maps, OsmAnd, Maps.me, etc.)
+→ User selects preferred app (OsmAnd, Organic Maps, Maps.me, etc.)
 → Selected app opens with location
 ```
 
@@ -87,7 +87,6 @@ User action: Taps "Open in External App" button
 
 The following map applications are known to support geo: URIs:
 
-- **Google Maps** (com.google.android.apps.maps)
 - **OsmAnd** (net.osmand.plus / net.osmand)
 - **Maps.me** (com.mapswithme.maps.pro)
 - **Organic Maps** (app.organicmaps)

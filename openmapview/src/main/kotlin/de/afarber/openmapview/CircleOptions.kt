@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 
 /**
  * Builder class for creating Circle instances with a fluent API.
- * Matches the Google Maps API pattern for circle configuration.
+ * A builder for circle configuration.
  *
  * Example usage:
  * ```
@@ -68,7 +68,7 @@ class CircleOptions {
     }
 
     /**
-     * Sets the stroke color of the circle outline as an ARGB color int, as in the Google Maps API.
+     * Sets the stroke color of the circle outline as an ARGB color int.
      * Use this overload from Java, e.g. with android.graphics.Color.RED or 0x800000FF.
      * @param color ARGB color int
      */
@@ -120,7 +120,7 @@ class CircleOptions {
     }
 
     /**
-     * Sets the fill color of the circle interior as an ARGB color int, as in the Google Maps API.
+     * Sets the fill color of the circle interior as an ARGB color int.
      * Use this overload from Java, e.g. with android.graphics.Color.RED or 0x800000FF.
      * @param color ARGB color int
      */

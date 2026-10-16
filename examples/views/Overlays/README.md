@@ -40,10 +40,10 @@ adb shell am start -n de.afarber.openmapview.examples.views.overlays/.MainActivi
 
 ## Code Highlights
 
-### Adding Tile Overlays - Google Maps Style
+### Adding Tile Overlays - Builder Style
 
 ```kotlin
-// TileOverlayOptions builder pattern (Google Maps compatible)
+// TileOverlayOptions builder pattern
 val seaMapOverlay = TileOverlayOptions()
     .tileProvider(PredefinedTileProviders.openSeaMap())
     .transparency(0.0f)  // 0.0 = opaque, 1.0 = fully transparent
@@ -110,7 +110,7 @@ mapView.addTileOverlay(updatedOverlay)
 ### Key Concepts
 
 - **TileOverlay**: Data class with tileProvider, transparency, zIndex, and visibility
-- **TileOverlayOptions**: Fluent builder for Google Maps API compatibility
+- **TileOverlayOptions**: Fluent builder, compatible with the Maps SDK
 - **TileProvider**: Interface for providing tiles (x, y, zoom)
 - **UrlTileProvider**: Abstract class for URL-based tile sources
 - **PredefinedTileProviders**: Factory for common OSM tile overlay services

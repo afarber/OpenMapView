@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="city">City</string>
+    <string name="district">District</string>
+    <string name="street">Street</string>
+    <string name="limit_zoom">Limit zoom to 10-16</string>
+    <string name="zoom_buttons">Built-in zoom buttons</string>
+    <string name="zoom_in">Zoom in</string>
+    <string name="zoom_out">Zoom out</string>
+    <string name="zoom_status">Zoom %1$.1f, %2$s</string>
+    <string name="idle">idle</string>
+    <string name="moving_gesture">moving by gesture</string>
+    <string name="moving_app">moving by the app</string>
+    <string name="moving_map">moving by the map</string>
+</resources>

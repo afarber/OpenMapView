@@ -86,7 +86,7 @@ class UiSettings {
     /**
      * Whether the my-location button is shown while the my-location layer is enabled,
      * see [OpenMapView.setMyLocationEnabled]. Tapping it moves the camera to the location.
-     * Default is true, as in Google Maps.
+     * Default is true.
      */
     var isMyLocationButtonEnabled: Boolean = true
         set(value) {
@@ -104,7 +104,7 @@ class UiSettings {
 
     /**
      * Whether the map toolbar is enabled.
-     * Map toolbar (Google Maps feature) is not implemented.
+     * The map toolbar is not implemented, see [OpenMapView.openInExternalApp].
      * Always returns false.
      */
     val isMapToolbarEnabled: Boolean = false

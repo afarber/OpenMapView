@@ -32,7 +32,7 @@ package de.afarber.openmapview
  * )
  * mapView.addTileOverlay(overlay)
  *
- * // Builder pattern (Google Maps style)
+ * // Builder pattern
  * val overlay = TileOverlayOptions()
  *     .tileProvider(OpenSeaMapProvider())
  *     .transparency(0.0f)

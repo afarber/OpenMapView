@@ -21,7 +21,7 @@ import de.afarber.openmapview.clustering.ClusterManager
 import de.afarber.openmapview.Marker as MapMarker
 
 /**
- * Groups [items] into clusters that show their count, as in Google's Maps Compose.
+ * Groups [items] into clusters that show their count.
  * Declare it in [OpenMap]'s content; the clusters are computed again when the camera stops
  * at another integer zoom level, and when [items] change.
  *

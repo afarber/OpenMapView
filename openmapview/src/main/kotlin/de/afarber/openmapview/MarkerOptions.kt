@@ -9,7 +9,7 @@ package de.afarber.openmapview
 
 /**
  * Builder class for creating Marker instances with a fluent API.
- * Matches the Google Maps API pattern for marker configuration.
+ * A builder for marker configuration.
  *
  * Example usage:
  * ```

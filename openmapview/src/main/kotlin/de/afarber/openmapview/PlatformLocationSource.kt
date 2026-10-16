@@ -19,7 +19,7 @@ import androidx.core.content.ContextCompat
 
 /**
  * The default [LocationSource]: GPS and network locations from the platform
- * [LocationManager], so no Google Play Services are needed.
+ * [LocationManager], so no Play Services are needed.
  */
 internal class PlatformLocationSource(
     context: Context,

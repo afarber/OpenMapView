@@ -23,7 +23,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 
 /**
- * Uses the public API from Java the way an app migrating from Google Maps would.
+ * Uses the public API from Java the way a migrating Java app would.
  * Most of this test is checked by the compiler: it must compile without Kotlin-only
  * constructs such as INSTANCE, Companion or mangled names of value class parameters.
  */
@@ -77,7 +77,7 @@ public class JavaInteropTest {
     }
 
     @Test
-    public void shapesTakeIntColorsLikeGoogleMaps() {
+    public void shapesTakeIntColors() {
         List<LatLng> route = Arrays.asList(BOCHUM, UNIVERSITY);
         Polyline polyline = mapView.addPolyline(
             new PolylineOptions().addAll(route).color(Color.RED).width(8f).clickable(true));

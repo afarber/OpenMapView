@@ -2,7 +2,7 @@
 
 [Back to README](../README.md)
 
-This document explains how OpenMapView handles Android lifecycle events and compares it with Google's MapView approach.
+This document explains how OpenMapView handles Android lifecycle events and compares it with the MapView of the Maps SDK.
 
 ## Why Lifecycle Management Matters
 
@@ -17,9 +17,9 @@ Without proper lifecycle management, your app will:
 - Leak memory by not cleaning up caches
 - Keep network connections open unnecessarily
 
-## How Google MapView Does It
+## How the Maps SDK Does It
 
-Google provides two approaches:
+The Maps SDK provides two approaches:
 
 ### Approach 1: MapView (XML-based) - Manual Lifecycle
 
@@ -112,7 +112,7 @@ class OpenMapView(context: Context) :
         onDestroy()
     }
 
-    // Also public, like Google's MapView.onDestroy()
+    // Also public, like MapView.onDestroy() of the Maps SDK
     fun onDestroy() {
         // Release resources
     }
@@ -171,7 +171,7 @@ The cleanup can be undone: calling it twice is safe, and a view that is attached
 
 ## Comparison Table
 
-| Feature | Google MapView | Google SupportMapFragment | OpenMapView |
+| Feature | MapView | SupportMapFragment | OpenMapView |
 |---------|---------------|---------------------------|-------------|
 | **Lifecycle Setup** | Manual (6 methods) | Automatic | Automatic |
 | **Memory Leaks if Forgotten** | Yes | No | No (nothing to forget) |

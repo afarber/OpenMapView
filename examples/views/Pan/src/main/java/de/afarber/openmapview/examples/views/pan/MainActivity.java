@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.setLatLngBoundsForCameraTarget(stay ? BOCHUM_AREA : null);
 
         if (stay) {
-            // Outline the area, with Google Maps style int colors
+            // Outline the area, with ARGB int colors
             LatLng sw = BOCHUM_AREA.getSouthwest();
             LatLng ne = BOCHUM_AREA.getNortheast();
             boundsOutline = mapView.addPolygon(

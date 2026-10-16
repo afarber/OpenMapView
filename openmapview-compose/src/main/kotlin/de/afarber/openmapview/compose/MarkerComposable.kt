@@ -23,7 +23,7 @@ import de.afarber.openmapview.Marker as MapMarker
 /**
  * A [Marker] whose icon is drawn by [content].
  *
- * Like in Google's Maps Compose, the content is drawn once into an image and is not live:
+ * The content is drawn once into an image and is not live:
  * it is drawn again when one of [keys] changes. Pass the values the content shows, e.g. a
  * count or a selection state. Taps on the icon call [onClick], not clickables inside it.
  *

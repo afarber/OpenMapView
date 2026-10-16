@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 
 /**
  * Builder class for creating Polygon instances with a fluent API.
- * Matches the Google Maps API pattern for polygon configuration.
+ * A builder for polygon configuration.
  *
  * Example usage:
  * ```
@@ -79,7 +79,7 @@ class PolygonOptions {
     }
 
     /**
-     * Sets the stroke color of the polygon outline as an ARGB color int, as in the Google Maps API.
+     * Sets the stroke color of the polygon outline as an ARGB color int.
      * Use this overload from Java, e.g. with android.graphics.Color.RED or 0x800000FF.
      * @param color ARGB color int
      */
@@ -131,7 +131,7 @@ class PolygonOptions {
     }
 
     /**
-     * Sets the fill color of the polygon interior as an ARGB color int, as in the Google Maps API.
+     * Sets the fill color of the polygon interior as an ARGB color int.
      * Use this overload from Java, e.g. with android.graphics.Color.RED or 0x800000FF.
      * @param color ARGB color int
      */

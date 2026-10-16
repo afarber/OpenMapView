@@ -49,7 +49,7 @@ val DefaultScaleBarWidth: Dp = 65.dp
 val DefaultScaleBarHeight: Dp = 50.dp
 
 /**
- * A scale bar for an [OpenMap], as in Google's maps-compose-widgets: a metric distance
+ * A scale bar for an [OpenMap]: a metric distance
  * above a line and an imperial distance below it. The bars show round distances such as
  * 200 m or 500 ft, up to [width] long, at the latitude of the camera target.
  *
@@ -103,7 +103,7 @@ fun ScaleBar(
 
 /**
  * A [ScaleBar] that appears while the camera moves and fades out [visibilityDurationMillis]
- * after it stops, as in Google's maps-compose-widgets.
+ * after it stops.
  *
  * @param visibilityDurationMillis How long the scale bar stays after the last camera change
  * @param enterTransition How the scale bar appears

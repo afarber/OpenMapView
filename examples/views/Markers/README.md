@@ -102,7 +102,7 @@ addMarker(
 )
 ```
 
-### Adding Markers - Google Maps Style
+### Adding Markers - Builder Style
 
 ```kotlin
 addMarker(

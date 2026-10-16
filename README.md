@@ -30,14 +30,14 @@ OpenMapView is MIT licensed, so you can use it in commercial apps. Its four runt
 
 ## Features
 
-- Drop-in compatible with Google `MapView` (non-deprecated methods only)
-- Lightweight, pure Kotlin implementation with zero Google dependencies
+- Drop-in compatible with the `MapView` API of the Maps SDK for Android (non-deprecated methods only)
+- Lightweight, pure Kotlin implementation without Play Services
 - OSM tiles via standard APIs (free, no API keys required)
 - Smooth camera animations with customizable durations and callbacks
 - Multiple overlay types: Markers, Polylines, Polygons, Circles, Ground Overlays, Tile Overlays, Info Windows
 - Multiple map types (see [Map Types Guide](docs/MAP_TYPES.md))
 - Built-in zoom controls (+/- buttons) via UiSettings
-- External app integration (open in Google Maps, OsmAnd, etc. via geo: URI)
+- External app integration (open in OsmAnd, Organic Maps and other map apps via geo: URI)
 - GeoJSON import support
 - Extensible marker, overlay, and gesture handling
 
@@ -52,7 +52,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | Jetpack Compose (Kotlin) | Views with XML (Java) | Synopsis |
 |---|---|---|
 | [Pan](examples/compose/Pan) | [Pan](examples/views/Pan) | Panning by touch and arrow buttons, flying to places and keeping the camera inside bounds |
-|  | [Zoom](examples/views/Zoom) | Zoom controls (+/- buttons), pinch zoom and the current zoom level |
+| [Zoom](examples/compose/Zoom) | [Zoom](examples/views/Zoom) | Smooth pinch zoom, zoom buttons and levels, zoom limits and why the camera moves |
 |  | [Markers](examples/views/Markers) | Markers with custom colors and info windows at Bochum landmarks |
 |  | [Polylines](examples/views/Polylines) | Polylines, polygons and polygons with holes, highlighted on click |
 |  | [Camera](examples/views/Camera) | Camera animations with durations, callbacks and cancellation |
@@ -69,9 +69,9 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 
 ## Documentation
 
-- [Public API Compatibility](docs/PUBLIC_API.md) - Google MapView API implementation status and compatibility matrix
-- [Architecture](docs/ARCHITECTURE.md) - Architectural design and comparison with Google Maps SDK
-- [Replacing Google Maps](docs/REPLACING_GOOGLE_MAPS.md) - Migration guide for switching from Google Maps SDK to OpenMapView
+- [Public API Compatibility](docs/PUBLIC_API.md) - API implementation status and compatibility matrix
+- [Architecture](docs/ARCHITECTURE.md) - Architectural design and comparison with the Maps SDK
+- [Migrating](docs/MIGRATING.md) - Migration guide for switching from the Maps SDK to OpenMapView
 - [Map Types](docs/MAP_TYPES.md) - Available map types and tile sources
 - [Map Toolbar](docs/MAP_TOOLBAR.md) - External map app integration using geo: URIs with browser fallback
 - [Performance](docs/PERFORMANCE.md) - Performance optimization and benchmarking

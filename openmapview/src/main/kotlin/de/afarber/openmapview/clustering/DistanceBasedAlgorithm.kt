@@ -15,8 +15,7 @@ import kotlin.math.pow
 import kotlin.math.tan
 
 /**
- * Groups items like the default algorithm of the Google Maps Utility Library
- * (NonHierarchicalDistanceBasedAlgorithm): each item not yet visited starts a cluster that
+ * Groups items with a non-hierarchical distance based algorithm: each item not yet visited starts a cluster that
  * takes all items within a square of [maxDistance] pixels around it at the zoom level.
  * An item in reach of several clusters joins the closest one.
  */

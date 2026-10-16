@@ -928,7 +928,7 @@ class MapController(
      * away and no camera listeners are called.
      *
      * The move is reported to [OnCameraMoveStartedListener] with
-     * [OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION], like in Google Maps.
+     * [OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION].
      *
      * @param cameraUpdate The camera update to animate to
      * @param durationMs Duration of the animation in milliseconds (default 250ms)
@@ -1086,8 +1086,7 @@ class MapController(
     }
 
     /**
-     * Calculates the camera position that shows the bounds as large as possible in a viewport,
-     * like Google's `CameraUpdateFactory.newLatLngBounds`.
+     * Calculates the camera position that shows the bounds as large as possible in a viewport.
      *
      * The zoom is fractional, so the bounds touch the viewport edges on one axis. The target
      * is the middle of the bounds on the Web Mercator map, which is a bit north of the average

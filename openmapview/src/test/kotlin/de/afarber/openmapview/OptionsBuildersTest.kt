@@ -21,7 +21,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 /**
- * Tests for the Google-style *Options builders: every setter must reach the built object.
+ * Tests for the *Options builders: every setter must reach the built object.
  */
 @RunWith(RobolectricTestRunner::class)
 class OptionsBuildersTest {

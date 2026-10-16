@@ -72,7 +72,7 @@ val groundOverlay = GroundOverlay(
 mapView.addGroundOverlay(groundOverlay)
 ```
 
-### Google Maps Style
+### Builder Style
 
 ```kotlin
 val groundOverlay = mapView.addGroundOverlay(
@@ -141,4 +141,4 @@ The example uses programmatically generated colored bitmaps with labels to demon
 
 ## API Compatibility
 
-Ground overlays are Google Maps Android API compatible, supporting both positioning modes, rotation, transparency, and click handling.
+Ground overlays are compatible with the Maps SDK, supporting both positioning modes, rotation, transparency, and click handling.

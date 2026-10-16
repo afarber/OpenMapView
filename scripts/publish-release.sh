@@ -3,7 +3,7 @@
 # Publish a new OpenMapView release to Maven Central
 # Usage: ./scripts/publish-release.sh [vX.Y.Z]
 #
-# Bumps the dependency version shown in README.md and docs/REPLACING_GOOGLE_MAPS.md,
+# Bumps the dependency version shown in README.md and docs/MIGRATING.md,
 # commits it as "Release vX.Y.Z", creates an SSH-signed tag and atomically pushes
 # main and the tag. The tag push triggers .github/workflows/release.yml.
 #
@@ -17,7 +17,7 @@ REPOSITORY_DIRECTORY="$(cd -- "$SCRIPT_DIRECTORY/.." && pwd -P)"
 readonly SCRIPT_DIRECTORY REPOSITORY_DIRECTORY
 cd "$REPOSITORY_DIRECTORY"
 
-readonly VERSION_FILES=(README.md docs/REPLACING_GOOGLE_MAPS.md)
+readonly VERSION_FILES=(README.md docs/MIGRATING.md)
 
 fail() {
     printf 'Error: %s\n' "$*" >&2
