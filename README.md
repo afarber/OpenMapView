@@ -58,7 +58,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | [Camera](examples/compose/Camera) | [Camera](examples/views/Camera) | Camera flights with durations, finish and cancel callbacks, stopping and interrupting them |
 | [Clicks](examples/compose/Clicks) | [Clicks](examples/views/Clicks) | Tap and long-press coordinates, a circle following taps and markers dropped by long press |
 | [DraggableMarkers](examples/compose/DraggableMarkers) | [DraggableMarkers](examples/views/DraggableMarkers) | A route of draggable markers that the line follows while dragging, with drag events |
-|  | [Circles](examples/views/Circles) | Circles with radius in meters, styling, z-index and click listeners |
+| [Circles](examples/compose/Circles) | [Circles](examples/views/Circles) | Circles with radii in meters, selected by tap and resized live with a slider |
 |  | [Overlays](examples/views/Overlays) | Tile overlays with transparency (OpenSeaMap, Railways, Trails, Snow) |
 |  | [GroundOverlays](examples/views/GroundOverlays) | Ground overlays with position or bounds mode, rotation and transparency |
 |  | [MapTypes](examples/views/MapTypes) | Switching between all 15 map types (OSM, CyclOSM, Thunderforest, CARTO, Stamen and more) |
