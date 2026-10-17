@@ -116,30 +116,6 @@ class TileOverlay(
         tag: Any? = this.tag,
     ): TileOverlay = TileOverlay(tileProvider, transparency, zIndex, visible, fadeIn, tag)
 
-    /**
-     * Returns a copy of this overlay with modified properties.
-     *
-     * @param transparency New transparency value (0.0 = opaque, 1.0 = fully transparent)
-     * @return New TileOverlay instance with updated transparency
-     */
-    fun withTransparency(transparency: Float): TileOverlay = copy(transparency = transparency)
-
-    /**
-     * Returns a copy of this overlay with modified visibility.
-     *
-     * @param visible New visibility state
-     * @return New TileOverlay instance with updated visibility
-     */
-    fun withVisibility(visible: Boolean): TileOverlay = copy(visible = visible)
-
-    /**
-     * Returns a copy of this overlay with modified z-index.
-     *
-     * @param zIndex New z-index value (higher values drawn on top)
-     * @return New TileOverlay instance with updated z-index
-     */
-    fun withZIndex(zIndex: Float): TileOverlay = copy(zIndex = zIndex)
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is TileOverlay) return false
