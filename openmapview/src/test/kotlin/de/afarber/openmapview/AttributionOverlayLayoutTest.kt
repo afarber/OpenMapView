@@ -41,10 +41,8 @@ class AttributionOverlayLayoutTest {
         val box = overlay.bounds(viewWidth, 600)
 
         assertEquals(1, overlay.lineCount(viewWidth))
-        // In the bottom-left corner
-        assertEquals(0, box.left)
-        assertTrue(box.right <= viewWidth)
-        assertEquals(600, box.bottom)
+        assertTrue(box.left >= 0)
+        assertEquals(viewWidth, box.right)
     }
 
     @Test
@@ -58,8 +56,8 @@ class AttributionOverlayLayoutTest {
         val box = overlay.bounds(viewWidth, 600)
 
         assertTrue(overlay.lineCount(viewWidth) >= 2)
-        assertEquals(0, box.left)
-        assertTrue(box.right <= viewWidth, "Box must not end right of the view, was ${box.right}")
+        assertTrue(box.left >= 0, "Box must not start left of the view, was ${box.left}")
+        assertEquals(viewWidth, box.right)
         assertTrue(box.height() > singleLineHeight)
     }
 

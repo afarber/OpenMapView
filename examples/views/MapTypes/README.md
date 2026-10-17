@@ -8,7 +8,7 @@ The map is declared in an XML layout and driven from a Java `AppCompatActivity`.
 ## Features
 
 - `setMapType()` with the `MapType` constants and their names from `TileSource.getMapTypeName()`
-- The attribution in the bottom-left corner changes with the map type
+- The attribution in the corner changes with the map type
 - Each map type keeps its own tile cache, so switching back shows its tiles right away
 - Map types that need an API key without one show the standard map with a notice; `TileSource.hasApiKey()` and `getProviderName()` explain it in the status
 - `setMapPadding()` keeps the notice and the attribution clear of the list
