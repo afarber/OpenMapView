@@ -17,7 +17,7 @@ import android.text.TextPaint
 /**
  * Zoom controls overlay displaying +/- buttons for zooming.
  *
- * Renders two circular buttons in the bottom-right corner
+ * Renders two circular buttons in the bottom-right corner (above attribution)
  * for zooming in and out.
  */
 class ZoomControlsOverlay(

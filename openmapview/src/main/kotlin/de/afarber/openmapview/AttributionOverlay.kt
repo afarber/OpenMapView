@@ -22,7 +22,7 @@ import kotlin.math.ceil
  * Attribution overlay displaying tile source copyright notice.
  *
  * Required by tile provider usage policies to show attribution on all maps.
- * Renders a semi-transparent background with clickable attribution text in the bottom-left corner.
+ * Renders a semi-transparent background with clickable attribution text in the bottom-right corner.
  * Text wider than the view wraps onto more lines, so no part of the attribution is cut off.
  */
 class AttributionOverlay(
@@ -82,7 +82,7 @@ class AttributionOverlay(
     fun getAttributionUrl(): String = attributionUrl
 
     /**
-     * Returns the text laid out left-aligned, at most as wide as the view minus padding.
+     * Returns the text laid out right-aligned, at most as wide as the view minus padding.
      */
     private fun layoutFor(viewWidth: Int): StaticLayout {
         layout?.let { if (layoutViewWidth == viewWidth) return it }
@@ -92,7 +92,7 @@ class AttributionOverlay(
         val width = desiredWidth.coerceIn(1, maxWidth)
         return StaticLayout.Builder
             .obtain(attributionText, 0, attributionText.length, textPaint, width)
-            .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            .setAlignment(Layout.Alignment.ALIGN_OPPOSITE)
             .setIncludePad(false)
             .build()
             .also {
@@ -102,8 +102,7 @@ class AttributionOverlay(
     }
 
     /**
-     * Returns the background box of the attribution in the bottom-left corner of the view,
-     * away from the zoom buttons at the bottom right.
+     * Returns the background box of the attribution in the bottom-right corner of the view.
      * The returned [Rect] is reused, so it is only valid until the next call.
      */
     internal fun bounds(
@@ -112,9 +111,9 @@ class AttributionOverlay(
     ): Rect {
         val textLayout = layoutFor(viewWidth)
         box.set(
-            0,
+            viewWidth - textLayout.width - padding * 2,
             viewHeight - textLayout.height - padding * 2,
-            textLayout.width + padding * 2,
+            viewWidth,
             viewHeight,
         )
         return box
