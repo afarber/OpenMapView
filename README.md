@@ -67,7 +67,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | [GeoJson](examples/compose/GeoJson) | [GeoJson](examples/views/GeoJson) | Points, lines and areas loaded from a GeoJSON file with their styles, tapped for details and fitted into view |
 | [ScrollingPage](examples/compose/ScrollingPage) | [ScrollingPage](examples/views/ScrollingPage) | A static preview map that lets the page scroll over it and an interactive map inside a scrolling page |
 
-![Pan Demo](examples/views/Pan/screenshot.gif)
+![GeoJson example in Jetpack Compose](examples/compose/GeoJson/screenshot.gif)
 
 ## Documentation
 
