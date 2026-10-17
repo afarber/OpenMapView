@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_map">Map</string>
+    <string name="tab_camera">Camera</string>
+    <string name="zoom_in">Zoom in</string>
+    <string name="drag_me">Drag me</string>
+    <string name="camera_kept">Camera kept while the map tab is not shown:</string>
+    <string name="camera">%1$.4f, %2$.4f at zoom %3$.1f</string>
+    <string name="marker">Marker:</string>
+    <string name="marker_position">%1$.4f, %2$.4f</string>
+    <string name="back_to_bochum">Back to Bochum</string>
+</resources>

@@ -8,7 +8,8 @@
         android:allowBackup="true"
         android:icon="@android:drawable/ic_dialog_map"
         android:label="Tabs (Compose)"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar">
 
         <activity
             android:name=".MainActivity"

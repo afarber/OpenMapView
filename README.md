@@ -63,7 +63,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | [GroundOverlays](examples/compose/GroundOverlays) | [GroundOverlays](examples/views/GroundOverlays) | Site plans placed by position or bounds, rotated and made transparent live |
 | [MapTypes](examples/compose/MapTypes) | [MapTypes](examples/views/MapTypes) | All 15 map types, their attribution and the notice for types that need an API key |
 | [Toolbar](examples/compose/Toolbar) | [Toolbar](examples/views/Toolbar) | Open a picked or long-pressed place in another map app, with a browser and QR code fallback |
-| [Tabs](examples/compose/Tabs) |  | A map in a tab that keeps its camera while other tabs are shown |
+| [Tabs](examples/compose/Tabs) | [Tabs](examples/views/Tabs) | A map in a tab that keeps its camera, marker and route while other tabs are shown |
 
 ![Pan Demo](examples/views/Pan/screenshot.gif)
 
