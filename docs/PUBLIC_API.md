@@ -384,7 +384,10 @@ mapView.setOnMarkerDragListener(object : OnMarkerDragListener {
 
 | Feature              | Return Type | Notes                                                 |
 | -------------------- | ----------- | ----------------------------------------------------- |
-| `addGeoJson(String)` | `void`      | OpenMapView-specific feature |
+| `addGeoJson(String)` | `GeoJsonResult` | OpenMapView-specific feature. Returns the added markers, polylines and polygons and their `bounds` |
+| `GeoJsonParser.parse(String)` | `GeoJsonResult` | Parses without adding to a map |
+
+Features use the [simplestyle](https://github.com/mapbox/simplestyle-spec) properties `name` or `title` and `description` for markers, and `stroke`, `stroke-width`, `stroke-opacity`, `fill` and `fill-opacity` for lines and polygons. Each marker, polyline and polygon gets its feature's `properties` as its `tag`.
 
 ---
 
