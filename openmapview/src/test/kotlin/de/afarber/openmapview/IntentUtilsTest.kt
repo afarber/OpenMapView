@@ -123,8 +123,8 @@ class IntentUtilsTest {
 
         // The label is encoded, so its "&" and parentheses don't end the query or the label
         val uri = started[0].data!!
-        assertEquals("0,0?q=51.4783,7.2231(Main%20Station%20%28Hbf%29%20%26%20Bars)", uri.encodedSchemeSpecificPart)
-        assertEquals("0,0?q=51.4783,7.2231(Main Station (Hbf) & Bars)", uri.schemeSpecificPart)
+        assertEquals("0,0?q=51.478300,7.223100(Main%20Station%20%28Hbf%29%20%26%20Bars)", uri.encodedSchemeSpecificPart)
+        assertEquals("0,0?q=51.478300,7.223100(Main Station (Hbf) & Bars)", uri.schemeSpecificPart)
     }
 
     @Test
@@ -140,8 +140,19 @@ class IntentUtilsTest {
         openLocationInExternalApp(LatLng(51.4783, 7.2231), 15f, context)
 
         val uri = started[0].data!!
-        assertEquals("51.4783", uri.getQueryParameter("mlat"))
-        assertEquals("7.2231", uri.getQueryParameter("mlon"))
-        assertEquals("map=15/51.4783/7.2231", uri.fragment)
+        assertEquals("51.478300", uri.getQueryParameter("mlat"))
+        assertEquals("7.223100", uri.getQueryParameter("mlon"))
+        assertEquals("map=15/51.478300/7.223100", uri.fragment)
+    }
+
+    @Test
+    fun testOpenLocation_RoundsToSixDecimals() {
+        val started = mutableListOf<Intent>()
+        val context = mockk<Context>()
+        every { context.startActivity(any()) } answers { started += firstArg<Intent>() }
+
+        openLocationInExternalApp(LatLng(51.4765919477482, 7.217931747436523), 15f, context)
+
+        assertEquals("geo:51.476592,7.217932?z=15", started[0].data.toString())
     }
 }
