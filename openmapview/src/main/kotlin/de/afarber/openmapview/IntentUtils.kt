@@ -13,6 +13,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
+import java.util.Locale
 
 /**
  * Opens a location in an external map application with automatic fallback to browser.
@@ -42,6 +43,9 @@ fun openLocationInExternalApp(
     try {
         // Clamp zoom to valid range for map applications
         val clampedZoom = zoom.coerceIn(2.0f, 19.0f).toInt()
+        // Six decimals are about 10 cm, and keep links and QR codes short
+        val lat = "%.6f".format(Locale.ROOT, latLng.latitude)
+        val lng = "%.6f".format(Locale.ROOT, latLng.longitude)
 
         // Build geo URI based on whether label is provided
         val geoUri =
@@ -51,11 +55,11 @@ fun openLocationInExternalApp(
                 // The label is encoded, so characters such as "&", "#" or ")" don't break the
                 // URI. Uri.encode() keeps parentheses, which would end the label early.
                 val encodedLabel = Uri.encode(label).replace("(", "%28").replace(")", "%29")
-                "geo:0,0?q=${latLng.latitude},${latLng.longitude}($encodedLabel)".toUri()
+                "geo:0,0?q=$lat,$lng($encodedLabel)".toUri()
             } else {
                 // Format with zoom parameter centers the view
                 // geo:latitude,longitude?z=zoom
-                "geo:${latLng.latitude},${latLng.longitude}?z=$clampedZoom".toUri()
+                "geo:$lat,$lng?z=$clampedZoom".toUri()
             }
 
         val geoIntent = Intent(Intent.ACTION_VIEW, geoUri)
@@ -70,8 +74,8 @@ fun openLocationInExternalApp(
             // No map app installed: fall back to the browser with OpenStreetMap
             // mlat and mlon mark the location on the map
             val osmUrl =
-                "https://www.openstreetmap.org/?mlat=${latLng.latitude}&mlon=${latLng.longitude}" +
-                    "#map=$clampedZoom/${latLng.latitude}/${latLng.longitude}"
+                "https://www.openstreetmap.org/?mlat=$lat&mlon=$lng" +
+                    "#map=$clampedZoom/$lat/$lng"
             val browserIntent = Intent(Intent.ACTION_VIEW, osmUrl.toUri())
             context.startActivity(browserIntent)
             Log.d("OpenMapView", "Launched browser fallback: $osmUrl")
