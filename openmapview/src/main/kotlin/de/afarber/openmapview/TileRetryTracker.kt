@@ -8,7 +8,8 @@
 package de.afarber.openmapview
 
 /**
- * Remembers tiles that failed to load and delays the next attempt with exponential backoff.
+ * Remembers tiles that failed to load and delays the next attempt with exponential backoff,
+ * and tiles that do not exist, which are not requested again.
  *
  * Without it, a failed tile would be requested again on every redraw, which floods the
  * tile server when the device is offline or the server is rate limiting.
@@ -54,6 +55,13 @@ internal class TileRetryTracker {
         val delay = (INITIAL_DELAY_MS shl (count - 1).coerceAtMost(5)).coerceAtMost(MAX_DELAY_MS)
         failures[tile] = Failure(count, now + delay)
         return delay
+    }
+
+    /**
+     * Records that there is no tile at these coordinates, so it is never requested again.
+     */
+    fun onNoTile(tile: TileCoordinate) {
+        failures[tile] = Failure(0, Long.MAX_VALUE)
     }
 
     /**

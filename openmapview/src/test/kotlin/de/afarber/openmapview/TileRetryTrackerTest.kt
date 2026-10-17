@@ -48,4 +48,12 @@ class TileRetryTrackerTest {
         assertTrue(tracker.canRequest(tile, 0L))
         assertEquals(TileRetryTracker.INITIAL_DELAY_MS, tracker.onFailure(tile, 0L))
     }
+
+    @Test
+    fun testNoTileIsNeverRequestedAgain() {
+        tracker.onNoTile(tile)
+
+        assertFalse(tracker.canRequest(tile, Long.MAX_VALUE - 1))
+        assertTrue("Other tiles are not affected", tracker.canRequest(TileCoordinate(4, 5, 6), 0L))
+    }
 }

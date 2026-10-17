@@ -176,6 +176,6 @@ object PredefinedTileProviders {
                 x: Int,
                 y: Int,
                 zoom: Int,
-            ): String = super.getTileUrl(x, y, zoom).replace("{apikey}", ApiKeyManager.getApiKey("stadia").orEmpty())
+            ): String? = super.getTileUrl(x, y, zoom)?.replace("{apikey}", ApiKeyManager.getApiKey("stadia").orEmpty())
         }
 }

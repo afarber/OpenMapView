@@ -67,17 +67,57 @@ class UrlTileProviderTest {
         }
 
     @Test
-    fun testGetTile_NotFoundReturnsNull() =
-        runTest {
-            val provider =
-                createProvider(
-                    MockEngine {
-                        respond(ByteReadChannel("Not Found"), HttpStatusCode.NotFound)
-                    },
-                )
+    fun testGetTile_NotFoundReturnsNoTile() {
+        val provider =
+            createProvider(
+                MockEngine {
+                    respond(ByteReadChannel("Not Found"), HttpStatusCode.NotFound)
+                },
+            )
 
-            assertNull(provider.getTile(1, 2, 3))
-        }
+        assertSame(TileProvider.NO_TILE, provider.getTile(1, 2, 3))
+    }
+
+    @Test
+    fun testGetTile_ServerErrorReturnsNull() {
+        val provider =
+            createProvider(
+                MockEngine {
+                    respond(ByteReadChannel("Unavailable"), HttpStatusCode.ServiceUnavailable)
+                },
+            )
+
+        assertNull(provider.getTile(1, 2, 3))
+    }
+
+    @Test
+    fun testGetTile_NoUrlReturnsNoTile() {
+        var requests = 0
+        val provider =
+            object : UrlTileProvider("https://example.com/{z}/{x}/{y}.png") {
+                // Only tiles from zoom 10 on
+                override fun getTileUrl(
+                    x: Int,
+                    y: Int,
+                    zoom: Int,
+                ): String? = if (zoom < 10) null else super.getTileUrl(x, y, zoom)
+            }
+        val reflectionField = UrlTileProvider::class.java.getDeclaredField("client")
+        reflectionField.isAccessible = true
+        reflectionField.set(
+            provider,
+            HttpClient(
+                MockEngine {
+                    requests++
+                    respond(ByteReadChannel(byteArrayOf(1)), HttpStatusCode.OK)
+                },
+            ),
+        )
+
+        assertSame(TileProvider.NO_TILE, provider.getTile(1, 2, 3))
+        assertEquals(0, requests)
+        assertNotNull(provider.getTile(1, 2, 12))
+    }
 
     @Test
     fun testProvidersShareOneClient() {

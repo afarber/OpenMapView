@@ -21,14 +21,16 @@ package de.afarber.openmapview
  * - y: Tile row (0 to 2^zoom - 1, north to south)
  * - zoom: Zoom level (0 = world, 19 = building level)
  *
- * Example implementation:
+ * The map calls [getTile] on a background thread, so it may block, e.g. to read a file or
+ * render the tile. Implement it from Kotlin or Java:
  * ```kotlin
- * class CustomTileProvider : TileProvider {
- *     override suspend fun getTile(x: Int, y: Int, zoom: Int): Tile? {
- *         // Return tile data or null if tile is not available
- *         return Tile(256, 256, pngByteArray)
- *     }
+ * val provider = TileProvider { x, y, zoom ->
+ *     if (zoom < 10) TileProvider.NO_TILE else Tile(256, 256, renderTile(x, y, zoom))
  * }
+ * ```
+ * ```java
+ * TileProvider provider = (x, y, zoom) ->
+ *     zoom < 10 ? TileProvider.NO_TILE : new Tile(256, 256, renderTile(x, y, zoom));
  * ```
  *
  * @see UrlTileProvider
@@ -37,19 +39,30 @@ package de.afarber.openmapview
  */
 fun interface TileProvider {
     /**
-     * Returns a [Tile] for the specified coordinates.
+     * Returns the [Tile] for the specified coordinates.
      *
-     * This method is called asynchronously when tiles are needed for rendering.
-     * Implementations should be thread-safe and non-blocking.
+     * Called on a background thread; several calls may run at the same time, so
+     * implementations must be thread-safe.
      *
      * @param x Tile column (0 to 2^zoom - 1)
      * @param y Tile row (0 to 2^zoom - 1)
      * @param zoom Zoom level (0-19)
-     * @return [Tile] containing image data, or null if tile is not available
+     * @return The tile, [NO_TILE] if there is no tile at these coordinates (it is not
+     * requested again), or null if it cannot be loaded right now (it is retried later)
      */
-    suspend fun getTile(
+    fun getTile(
         x: Int,
         y: Int,
         zoom: Int,
     ): Tile?
+
+    companion object {
+        /**
+         * Returned by [getTile] where there is no tile, e.g. outside the area a provider
+         * covers. The map then draws nothing there and does not request the tile again.
+         * Compared by reference: only this instance has that meaning.
+         */
+        @JvmField
+        val NO_TILE: Tile = Tile(1, 1, byteArrayOf(0))
+    }
 }

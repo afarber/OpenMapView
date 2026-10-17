@@ -2205,6 +2205,7 @@ class MapController(
         val semaphore = overlayDownloadSemaphores[overlay.id] ?: return
         scope.launch(Dispatchers.IO) {
             var bitmap: Bitmap? = null
+            var noTile = false
             try {
                 bitmap =
                     semaphore.withPermit {
@@ -2212,8 +2213,12 @@ class MapController(
                         if (cachedBitmap != null) {
                             cachedBitmap
                         } else {
+                            // The provider may block: this runs on an IO thread
                             val tileData = overlay.tileProvider.getTile(tile.x, tile.y, tile.zoom)
-                            if (tileData != null) {
+                            if (tileData === TileProvider.NO_TILE) {
+                                noTile = true
+                                null
+                            } else if (tileData != null) {
                                 val options =
                                     BitmapFactory.Options().apply {
                                         inPreferredConfig = Bitmap.Config.ARGB_8888 // Support transparency
@@ -2235,8 +2240,11 @@ class MapController(
                     if (bitmap != null) {
                         retries.onSuccess(tile)
                         onTileLoadedCallback?.invoke()
+                    } else if (noTile) {
+                        // Nothing to draw there, now or later
+                        retries.onNoTile(tile)
                     } else {
-                        // Also covers providers without a tile for this area, so they aren't asked every frame
+                        // Not loaded now: asked again after a delay, not on every frame
                         scheduleRedraw(retries.onFailure(tile, SystemClock.elapsedRealtime()))
                     }
                 }
