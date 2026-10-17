@@ -38,12 +38,14 @@ class TileOverlayTest {
     }
 
     @Test
-    fun testWithMethodsReturnModifiedCopies() {
+    fun testCopy_ChangesOnlyTheCopy() {
         val overlay = TileOverlay(tileProvider = provider)
 
-        assertEquals(0.5f, overlay.withTransparency(0.5f).transparency)
-        assertFalse(overlay.withVisibility(false).visible)
-        assertEquals(3f, overlay.withZIndex(3f).zIndex)
+        val copy = overlay.copy(transparency = 0.5f, visible = false, zIndex = 3f)
+
+        assertEquals(0.5f, copy.transparency)
+        assertFalse(copy.visible)
+        assertEquals(3f, copy.zIndex)
         // The original is unchanged
         assertEquals(0f, overlay.transparency)
         assertTrue(overlay.visible)
