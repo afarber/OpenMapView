@@ -1035,27 +1035,9 @@ class MapController(
                         val currentTime = System.currentTimeMillis()
                         val progress = ((currentTime - startTime).toFloat() / durationMs).coerceIn(0f, 1f)
 
-                        val interpolatedLat =
-                            interpolate(
-                                startPosition.target.latitude,
-                                targetPosition.target.latitude,
-                                progress,
-                            )
-                        val interpolatedLng =
-                            interpolate(
-                                startPosition.target.longitude,
-                                targetPosition.target.longitude,
-                                progress,
-                            )
-                        val interpolatedZoom =
-                            interpolate(
-                                startPosition.zoom,
-                                targetPosition.zoom,
-                                progress,
-                            )
-
-                        setZoom(interpolatedZoom)
-                        setCenter(LatLng(interpolatedLat, interpolatedLng))
+                        val camera = interpolateCamera(startPosition, targetPosition, progress)
+                        setZoom(camera.zoom)
+                        setCenter(camera.target)
 
                         // Fire camera move event during animation
                         onCameraMoveListener?.onCameraMove()
@@ -1241,18 +1223,6 @@ class MapController(
                 )
             }
         }
-
-    private fun interpolate(
-        start: Float,
-        end: Float,
-        progress: Float,
-    ): Float = start + (end - start) * progress
-
-    private fun interpolate(
-        start: Double,
-        end: Double,
-        progress: Float,
-    ): Double = start + (end - start) * progress
 
     /**
      * Sets the view dimensions for rendering calculations.
