@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 lastTap.setCenter(latLng);
             }
-            status.setText(getString(R.string.tapped, latLng.getLatitude(), latLng.getLongitude()));
+            status.setText(getString(R.string.tapped, latLng.latitude, latLng.longitude));
         });
 
         // A long press drops a numbered marker; tapping it opens its info window
@@ -61,9 +61,9 @@ public class MainActivity extends AppCompatActivity {
             markers.add(mapView.addMarker(new MarkerOptions()
                     .position(latLng)
                     .title(getString(R.string.marker_title, number))
-                    .snippet(String.format(java.util.Locale.ROOT, "%.5f, %.5f", latLng.getLatitude(), latLng.getLongitude()))
+                    .snippet(String.format(java.util.Locale.ROOT, "%.5f, %.5f", latLng.latitude, latLng.longitude))
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))));
-            status.setText(getString(R.string.dropped, number, latLng.getLatitude(), latLng.getLongitude()));
+            status.setText(getString(R.string.dropped, number, latLng.latitude, latLng.longitude));
         });
 
         findViewById(R.id.button_clear).setOnClickListener(v -> {

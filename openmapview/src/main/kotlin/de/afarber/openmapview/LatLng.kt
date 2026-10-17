@@ -28,9 +28,11 @@ class LatLng(
     }
 
     /** The latitude in degrees, between -90 and 90. */
+    @JvmField
     val latitude: Double = latitude.coerceIn(-90.0, 90.0)
 
     /** The longitude in degrees, between -180 and 180. */
+    @JvmField
     val longitude: Double = normalizeLongitude(longitude)
 
     operator fun component1(): Double = latitude

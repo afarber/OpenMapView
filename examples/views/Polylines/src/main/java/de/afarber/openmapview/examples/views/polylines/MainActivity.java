@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         // All shapes in Bochum, without the flight
         LatLngBounds.Builder bounds = LatLngBounds.builder();
         for (Item item : items.subList(0, items.size() - 1)) {
-            bounds.include(item.bounds().getSouthwest()).include(item.bounds().getNortheast());
+            bounds.include(item.bounds().southwest).include(item.bounds().northeast);
         }
         overview = bounds.build();
 

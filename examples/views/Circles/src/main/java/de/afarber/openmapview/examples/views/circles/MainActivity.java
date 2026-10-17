@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.button_add).setOnClickListener(
-                v -> select(addCircle("Circle " + (circles.size() + 1), mapView.getCameraPosition().getTarget(), 800f)));
+                v -> select(addCircle("Circle " + (circles.size() + 1), mapView.getCameraPosition().target, 800f)));
         findViewById(R.id.button_clear).setOnClickListener(v -> {
             mapView.clearCircles();
             circles.clear();
