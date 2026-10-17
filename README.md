@@ -13,10 +13,10 @@ Add to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("de.afarber:openmapview:0.24.0")
+    implementation("de.afarber:openmapview:0.25.0")
 
     // Optional: the OpenMap composable for Jetpack Compose
-    implementation("de.afarber:openmapview-compose:0.24.0")
+    implementation("de.afarber:openmapview-compose:0.25.0")
 }
 ```
 
