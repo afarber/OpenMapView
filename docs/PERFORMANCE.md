@@ -300,6 +300,10 @@ scope.launch(Dispatchers.IO) {
 
 At most 4 base map tiles download at once. Each tile overlay has its own limit of 2, so a slow or failing overlay server only delays the tiles of that overlay, not the base map or other overlays.
 
+Every frame of a camera animation requests the tiles it shows, so a long flight queues hundreds of tiles that are off screen again a moment later. When a queued base map download gets its permit, it is skipped unless its tile is still needed: visible, prefetched, or at the animation target. A skipped tile is requested again as soon as it is visible.
+
+When a camera animation starts, the tiles at its target are requested right away, ahead of the tiles the camera flies over: first a few tiles 3 zoom levels up, which the fallback drawing scales up while the camera zooms in, then the target tiles themselves. So the map is usually complete shortly after the animation ends, instead of waiting for the downloads queued during the flight.
+
 **Benefits:**
 - Non-blocking tile downloads
 - Bounded bitmap decode pressure during rapid camera changes
