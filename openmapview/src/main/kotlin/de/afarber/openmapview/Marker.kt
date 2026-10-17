@@ -10,35 +10,75 @@ package de.afarber.openmapview
 import android.graphics.Bitmap
 
 /**
- * Represents a marker on the map at a specific geographic location.
+ * A marker on the map at a specific geographic location.
  *
- * @property position The geographic location of the marker (mutable for dragging)
- * @property title Optional title text displayed when marker is clicked
- * @property snippet Optional snippet text displayed below the title
- * @property icon Custom icon descriptor. If null, a default red marker icon will be used
- * @property anchor Anchor point for the marker icon. Default (0.5f, 1.0f) means
- *                  the marker is centered horizontally and anchored at the bottom
- * @property visible Whether the marker is visible. Default is true
- * @property alpha Opacity of the marker from 0.0 (transparent) to 1.0 (opaque). Default is 1.0
- * @property draggable Whether the marker can be dragged. Default is false
- * @property zIndex Draw order. Markers with higher zIndex are drawn on top. Default is 0.0
- * @property tag Optional user data associated with the marker
+ * The marker returned by [OpenMapView.addMarker] is a live handle, as in the Maps SDK: setting a
+ * property redraws the map right away, and [remove] takes the marker off the map.
+ *
+ * @param position The geographic location of the marker
+ * @param title Optional title text displayed when marker is clicked
+ * @param snippet Optional snippet text displayed below the title
+ * @param icon Custom icon descriptor. If null, a default red marker icon will be used
+ * @param anchor Anchor point for the marker icon. Default (0.5f, 1.0f) means
+ *               the marker is centered horizontally and anchored at the bottom
+ * @param visible Whether the marker is visible. Default is true
+ * @param alpha Opacity of the marker from 0.0 (transparent) to 1.0 (opaque). Default is 1.0
+ * @param draggable Whether the marker can be dragged. Default is false
+ * @param zIndex Draw order. Markers with higher zIndex are drawn on top. Default is 0.0
+ * @param tag Optional user data associated with the marker
  */
-data class Marker(
-    var position: LatLng,
-    val title: String? = null,
-    val snippet: String? = null,
-    val icon: BitmapDescriptor? = null,
-    val anchor: Pair<Float, Float> = Pair(0.5f, 1.0f),
-    val visible: Boolean = true,
-    val alpha: Float = 1.0f,
-    val draggable: Boolean = false,
-    val zIndex: Float = 0f,
-    val tag: Any? = null,
+class Marker(
+    position: LatLng,
+    title: String? = null,
+    snippet: String? = null,
+    icon: BitmapDescriptor? = null,
+    anchor: Pair<Float, Float> = Pair(0.5f, 1.0f),
+    visible: Boolean = true,
+    alpha: Float = 1.0f,
+    draggable: Boolean = false,
+    zIndex: Float = 0f,
+    tag: Any? = null,
 ) {
-    init {
-        require(alpha in 0.0f..1.0f) { "Alpha must be between 0.0 and 1.0" }
-    }
+    /**
+     * Reference to the parent map view.
+     * Set when the marker is added to a map, cleared when removed.
+     */
+    internal var mapView: OpenMapView? = null
+
+    private fun <T> property(
+        initial: T,
+        check: (T) -> Unit = {},
+    ) = ShapeProperty(initial, check) { mapView?.invalidate() }
+
+    /** The geographic location of the marker, also changed while it is dragged */
+    var position: LatLng by property(position)
+
+    /** Title text shown in the info window */
+    var title: String? by property(title)
+
+    /** Snippet text shown below the title in the info window */
+    var snippet: String? by property(snippet)
+
+    /** Custom icon, or null for the default red marker */
+    var icon: BitmapDescriptor? by property(icon)
+
+    /** The point of the icon at [position], as fractions of its width and height */
+    var anchor: Pair<Float, Float> by property(anchor)
+
+    /** Whether the marker is visible */
+    var visible: Boolean by property(visible)
+
+    /** Opacity from 0.0 (transparent) to 1.0 (opaque) */
+    var alpha: Float by property(alpha) { require(it in 0.0f..1.0f) { "Alpha must be between 0.0 and 1.0" } }
+
+    /** Whether the marker can be dragged */
+    var draggable: Boolean by property(draggable)
+
+    /** Draw order: markers with a higher zIndex are drawn on top */
+    var zIndex: Float by property(zIndex)
+
+    /** Optional user data */
+    var tag: Any? by property(tag)
 
     /**
      * Unique identifier for this marker instance.
@@ -46,11 +86,34 @@ data class Marker(
      */
     internal val id: String = "marker_${System.nanoTime()}_${System.identityHashCode(this)}"
 
-    /**
-     * Reference to the parent map view.
-     * Set when the marker is added to a map, cleared when removed.
-     */
-    internal var mapView: OpenMapView? = null
+    /** Sets the [anchor] from its two fractions, like `setAnchor(float, float)` of the Maps SDK. */
+    fun setAnchor(
+        anchorU: Float,
+        anchorV: Float,
+    ) {
+        anchor = Pair(anchorU, anchorV)
+    }
+
+    /** Removes the marker from the map that shows it, closing its info window. */
+    fun remove() {
+        mapView?.removeMarker(this)
+    }
+
+    /** Returns a new marker with the given properties changed, not added to any map. */
+    fun copy(
+        position: LatLng = this.position,
+        title: String? = this.title,
+        snippet: String? = this.snippet,
+        icon: BitmapDescriptor? = this.icon,
+        anchor: Pair<Float, Float> = this.anchor,
+        visible: Boolean = this.visible,
+        alpha: Float = this.alpha,
+        draggable: Boolean = this.draggable,
+        zIndex: Float = this.zIndex,
+        tag: Any? = this.tag,
+    ): Marker = Marker(position, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag)
+
+    override fun toString(): String = "Marker(id=$id, position=$position, title=$title)"
 
     /**
      * Whether the info window is currently shown for this marker.

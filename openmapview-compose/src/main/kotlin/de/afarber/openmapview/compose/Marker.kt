@@ -277,8 +277,8 @@ private fun MarkerImpl(
     val context = LocalMapContext.current ?: return
     val node = remember(state) { MarkerNode(state) }
 
-    // The marker's properties can't be changed, so a change replaces it
-    DisposableEffect(context, node, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag) {
+    // The marker is added once; changed properties are set on it below
+    DisposableEffect(context, node) {
         val marker =
             context.map.addMarker(
                 MapMarker(
@@ -313,10 +313,17 @@ private fun MarkerImpl(
         node.onInfoWindowClose = onInfoWindowClose
         node.infoWindow = infoWindow
         node.infoContent = infoContent
+        // Each setter redraws the map only when the value changed
         val marker = node.marker ?: return@SideEffect
-        if (marker.position != position) {
-            marker.position = position
-            context.map.invalidate()
-        }
+        marker.position = position
+        marker.title = title
+        marker.snippet = snippet
+        marker.icon = icon
+        marker.anchor = anchor
+        marker.visible = visible
+        marker.alpha = alpha
+        marker.draggable = draggable
+        marker.zIndex = zIndex
+        marker.tag = tag
     }
 }

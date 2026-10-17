@@ -22,7 +22,8 @@ import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -94,9 +95,10 @@ class MarkerComposableTest {
     }
 
     @Test
-    fun testChangingTitle_ReplacesMarker() {
+    fun testChangingTitle_UpdatesMarkerInPlace() {
+        val state = MarkerState(bochum)
         var title by mutableStateOf("Old")
-        showMap { Marker(state = MarkerState(bochum), title = title) }
+        showMap { Marker(state = state, title = title) }
         val oldMarker = map.getMarkers()[0]
 
         title = "New"
@@ -105,7 +107,21 @@ class MarkerComposableTest {
         val markers = map.getMarkers()
         assertEquals(1, markers.size)
         assertEquals("New", markers[0].title)
-        assertNotSame(oldMarker, markers[0])
+        assertSame(oldMarker, markers[0])
+    }
+
+    @Test
+    fun testChangingSnippet_KeepsInfoWindowOpen() {
+        val state = MarkerState(bochum)
+        var snippet by mutableStateOf("Before")
+        showMap { Marker(state = state, title = "Bochum", snippet = snippet) }
+        composeRule.runOnIdle { state.showInfoWindow() }
+
+        snippet = "After"
+        composeRule.waitForIdle()
+
+        assertTrue(state.isInfoWindowShown)
+        assertEquals("After", map.getMarkers()[0].snippet)
     }
 
     @Test
