@@ -82,6 +82,19 @@ class MarkerDragTest {
     }
 
     @Test
+    fun testDrag_MovesTheMarkerByTheFingerMovement() {
+        val start = mapView.getProjection().toScreenLocation(marker.position)
+
+        // Grab the pin by its head, 10 px above its tip at the anchor, and move it 100 px down
+        swipe(x = start.x.toFloat(), startY = start.y - 10f, stepY = 5f, steps = 20)
+
+        // The tip moved as far as the finger, it did not jump to the finger first
+        val end = mapView.getProjection().toScreenLocation(marker.position)
+        assertEquals(start.x, end.x)
+        assertEquals(start.y + 100, end.y)
+    }
+
+    @Test
     fun testMoveWithinSlop_OnDraggableMarker_NeitherDragsNorPans() {
         swipe(x = 200f, startY = 190f, stepY = 4f, steps = 2)
 

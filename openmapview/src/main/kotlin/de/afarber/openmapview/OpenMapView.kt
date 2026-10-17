@@ -119,6 +119,10 @@ class OpenMapView
         private var onMarkerDragListener: OnMarkerDragListener? = null
         private var draggedMarker: Marker? = null
         private var isDragging = false
+
+        // Where the finger grabbed the dragged marker, relative to its anchor point
+        private var grabOffsetX = 0f
+        private var grabOffsetY = 0f
         private val infoWindowHandler = Handler(Looper.getMainLooper())
         private var infoWindowDismissRunnable: Runnable? = null
 
@@ -327,12 +331,17 @@ class OpenMapView
                                 }
                                 isDragging = true
                                 controller.commitPan()
+                                // The marker keeps its place under the finger instead of
+                                // jumping with its anchor point to the finger
+                                val anchor = controller.createProjection().toScreenLocation(draggedMarker!!.position)
+                                grabOffsetX = initialTouchX - anchor.x
+                                grabOffsetY = initialTouchY - anchor.y
                                 onMarkerDragListener?.onMarkerDragStart(draggedMarker!!)
                             }
 
                             // Continue dragging
                             if (isDragging) {
-                                val latLng = controller.screenToLatLng(event.x, event.y)
+                                val latLng = controller.screenToLatLng(event.x - grabOffsetX, event.y - grabOffsetY)
                                 draggedMarker!!.position = latLng
                                 onMarkerDragListener?.onMarkerDrag(draggedMarker!!)
                                 invalidate()
