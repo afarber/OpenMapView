@@ -9,6 +9,7 @@ package de.afarber.openmapview;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
@@ -154,6 +155,26 @@ public class JavaInteropTest {
         assertEquals(256, tile.width);
         assertEquals(128, tile.height);
         assertEquals(3, tile.data.length);
+    }
+
+    @Test
+    public void tileProvidersAreJavaClasses() {
+        // A blocking provider: called on a background thread
+        TileProvider provider = (x, y, zoom) ->
+            zoom < 10 ? TileProvider.NO_TILE : new Tile(256, 256, new byte[] {1, 2, 3});
+        assertSame(TileProvider.NO_TILE, provider.getTile(1, 2, 3));
+        assertEquals(256, provider.getTile(1, 2, 12).width);
+
+        UrlTileProvider urls = new UrlTileProvider("https://example.com/{z}/{x}/{y}.png") {
+            @Override
+            protected String getTileUrl(int x, int y, int zoom) {
+                return zoom < 10 ? null : super.getTileUrl(x, y, zoom);
+            }
+        };
+        assertSame(TileProvider.NO_TILE, urls.getTile(1, 2, 3));
+
+        TileOverlay overlay = mapView.addTileOverlay(new TileOverlayOptions().tileProvider(provider));
+        assertNotNull(overlay);
     }
 
     @Test

@@ -13,8 +13,10 @@ import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.readRawBytes
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.runBlocking
 
 /**
  * Abstract base class for [TileProvider] implementations that fetch tiles from URLs.
@@ -80,45 +82,57 @@ abstract class UrlTileProvider(
      * Builds the URL for the specified tile coordinates by replacing placeholders
      * in the URL template.
      *
-     * Subclasses can override to customize URL generation.
+     * Subclasses can override to customize URL generation, or return null where the
+     * source has no tiles, e.g. outside its area or zoom range.
      *
      * @param x Tile column
      * @param y Tile row
      * @param zoom Zoom level
-     * @return Complete URL for the tile
+     * @return Complete URL for the tile, or null for [TileProvider.NO_TILE]
      */
     protected open fun getTileUrl(
         x: Int,
         y: Int,
         zoom: Int,
-    ): String =
+    ): String? =
         urlTemplate
             .replace("{z}", zoom.toString())
             .replace("{x}", x.toString())
             .replace("{y}", y.toString())
 
     /**
-     * Fetches tile data from the URL for the specified coordinates.
+     * Downloads the tile for the specified coordinates, blocking the calling thread.
      *
      * @param x Tile column
      * @param y Tile row
      * @param zoom Zoom level
-     * @return [Tile] with image data, or null if download fails
+     * @return [Tile] with image data, [TileProvider.NO_TILE] if there is no URL for it or
+     * the server has no tile (HTTP 404), or null if the download failed
      */
-    override suspend fun getTile(
+    override fun getTile(
         x: Int,
         y: Int,
         zoom: Int,
-    ): Tile? =
-        try {
-            val url = getTileUrl(x, y, zoom)
+    ): Tile? = runBlocking { download(x, y, zoom) }
+
+    private suspend fun download(
+        x: Int,
+        y: Int,
+        zoom: Int,
+    ): Tile? {
+        val url = getTileUrl(x, y, zoom) ?: return TileProvider.NO_TILE
+        return try {
             val response =
                 client.get(url) {
                     header("User-Agent", getUserAgent())
                 }
-            if (!response.status.isSuccess()) {
+            if (response.status == HttpStatusCode.NotFound) {
                 // Sparse overlays commonly answer 404 for areas without data
-                Log.d(TAG, "No tile ($x, $y, $zoom) from $url: HTTP ${response.status.value}")
+                Log.d(TAG, "No tile ($x, $y, $zoom) from $url")
+                return TileProvider.NO_TILE
+            }
+            if (!response.status.isSuccess()) {
+                Log.w(TAG, "Failed to download tile ($x, $y, $zoom) from $url: HTTP ${response.status.value}")
                 return null
             }
             val bytes = response.readRawBytes()
@@ -140,6 +154,7 @@ abstract class UrlTileProvider(
             )
             null
         }
+    }
 
     /**
      * Does nothing. All providers share one HTTP client, which must stay open

@@ -22,6 +22,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -115,6 +116,50 @@ class TileOverlayHandleTest {
             assertTrue(fastCalls.get() > 0)
         } finally {
             release.countDown()
+        }
+    }
+
+    @Test
+    fun testNoTile_IsRequestedOnceUntilCacheCleared() {
+        mapView.setMapType(MapType.NONE)
+        mapView.setCenter(LatLng(51.4661, 7.2491))
+        mapView.setZoom(13f)
+        val calls = AtomicInteger()
+        val overlay =
+            mapView.addTileOverlay(
+                TileOverlay(
+                    TileProvider { _, _, _ ->
+                        calls.incrementAndGet()
+                        TileProvider.NO_TILE
+                    },
+                ),
+            )
+
+        drawn()
+        waitFor { calls.get() > 0 }
+        // Let every first request finish
+        Thread.sleep(200)
+        shadowOf(Looper.getMainLooper()).idle()
+        val firstRound = calls.get()
+        // Past the longest retry delay a failed tile would be requested again, a missing one not
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(TileRetryTracker.MAX_DELAY_MS + 1))
+        drawn()
+        Thread.sleep(200)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(firstRound, calls.get())
+
+        // Clearing the cache asks the provider again
+        overlay.clearTileCache()
+        drawn()
+        waitFor { calls.get() > firstRound }
+        assertTrue(calls.get() > firstRound)
+    }
+
+    private fun waitFor(condition: () -> Boolean) {
+        val deadline = System.nanoTime() + 2_000_000_000L
+        while (!condition() && System.nanoTime() < deadline) {
+            Thread.sleep(20)
+            shadowOf(Looper.getMainLooper()).idle()
         }
     }
 }

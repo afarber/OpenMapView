@@ -86,6 +86,8 @@ The returned `Polyline`, `Polygon` and `Circle` are live handles, as in the Maps
 
 `TileOverlay` is a live handle too: `setTransparency(float)`, `setZIndex(float)`, `setVisible(boolean)`, `setFadeIn(boolean)`, `setTag(Object)`, `clearTileCache()` and `remove()`, as in the Maps SDK. A changed property keeps the overlay's downloaded tiles.
 
+A `TileProvider` implements the blocking `getTile(int x, int y, int zoom)`, which the map calls on a background thread. It returns a `Tile`, `TileProvider.NO_TILE` where there is no tile (not requested again until `clearTileCache()`), or null when the tile cannot be loaded right now (retried after a growing delay). A `UrlTileProvider` subclass overrides `getTileUrl()`, which may return null for `NO_TILE`; an HTTP 404 also counts as `NO_TILE`.
+
 A setter that gets an invalid value (fewer than 2 polyline points or 3 polygon points, a radius of 0 or less) throws `IllegalArgumentException` and keeps the old value. In Kotlin, `copy(...)` returns a new shape with some properties changed, which is not on any map.
 
 ---
@@ -128,6 +130,7 @@ Java code calls the same API directly:
 - Listeners are functional interfaces, so Java lambdas work: `mapView.setOnMapClickListener(latLng -> ...)`
 - The immutable values are read through public final fields: `latLng.latitude`, `latLng.longitude`, `camera.target`, `camera.zoom`, `bounds.southwest`, `bounds.northeast`, `nearLeft`, `nearRight`, `farLeft`, `farRight` and `latLngBounds` on `VisibleRegion`, and `tile.width`, `tile.height` and `tile.data`
 - `UiSettings.setInfoWindowAutoDismissMillis(long)` replaces the Kotlin `Duration` property
+- Tile providers are plain Java classes or lambdas: `TileProvider provider = (x, y, zoom) -> ...`
 
 Compose types without a Java-friendly form remain Kotlin-only: the shape constructors and `copy()` (because of their `Color` parameters), and the stroke caps and joins (`StrokeCap`, `StrokeJoin`). Java changes a shape on the map through its setters, e.g. `polyline.setWidth(16f)` and `polygon.setFillColor(0x400000FF)`. `PathEffect` works from Java through `PathEffect.Companion.dashPathEffect(...)`.
 
