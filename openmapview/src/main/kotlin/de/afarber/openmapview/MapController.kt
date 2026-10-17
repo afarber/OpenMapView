@@ -367,7 +367,7 @@ class MapController(
      * @param z The desired zoom level (will be clamped to current min/max zoom preferences)
      */
     fun setZoom(z: Float) {
-        val target = getCenter()
+        val target = takePanOffset()
         zoom = z.coerceIn(minZoomPreference, maxZoomPreference)
         center = viewCenterOf(target, zoom)
     }
@@ -830,9 +830,26 @@ class MapController(
      * Returns the camera target: the location shown at the center of the area inside the map
      * padding, or at the view center without padding.
      *
+     * During a pan or pinch gesture this includes the not yet committed pan offset, so
+     * camera move listeners see where the camera is now.
+     *
      * @return The current camera target
      */
-    fun getCenter(): LatLng = targetOf(center, zoom)
+    fun getCenter(): LatLng =
+        if (panOffsetX != 0f || panOffsetY != 0f) {
+            targetOf(pannedCenter(panOffsetX, panOffsetY), zoom)
+        } else {
+            targetOf(center, zoom)
+        }
+
+    // Moves `center` to the current camera target, which then no longer depends on the pan
+    // offset, before the zoom or padding changes how the offset maps to a location
+    private fun takePanOffset(): LatLng {
+        val target = getCenter()
+        panOffsetX = 0f
+        panOffsetY = 0f
+        return target
+    }
 
     // The map is drawn around `center`, the location at the view center. The camera target is
     // the location at the center of the area inside the map padding, half the difference of
@@ -1264,7 +1281,7 @@ class MapController(
         bottom: Int,
     ) {
         // The camera target stays where it is, so the map moves into the new padded area
-        val target = getCenter()
+        val target = takePanOffset()
         paddingLeft = left
         paddingTop = top
         paddingRight = right

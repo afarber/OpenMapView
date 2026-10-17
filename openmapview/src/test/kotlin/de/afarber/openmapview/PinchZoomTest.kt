@@ -210,6 +210,69 @@ class PinchZoomTest {
         assertTrue("not panned along, x = ${point.x}", point.x < 400)
     }
 
+    // The location at the view center, where the camera target is without map padding
+    private fun viewCenter(): LatLng = mapView.getProjection().fromScreenLocation(Point(SIZE / 2, SIZE / 2))
+
+    private fun assertSameLocation(
+        expected: LatLng,
+        actual: LatLng,
+    ) {
+        assertEquals(expected.latitude, actual.latitude, 1e-6)
+        assertEquals(expected.longitude, actual.longitude, 1e-6)
+    }
+
+    @Test
+    fun testPan_CameraPositionFollowsTheFinger() {
+        val targets = mutableListOf<LatLng>()
+        mapView.setOnCameraMoveListener { targets.add(mapView.getCameraPosition().target) }
+        // Dragging the map right and down by (100, 50) moves the camera to the location
+        // that was up and left of the view center by as much
+        val expected = mapView.getProjection().fromScreenLocation(Point(SIZE / 2 - 100, SIZE / 2 - 50))
+
+        send(event(0, MotionEvent.ACTION_DOWN, 300f to 300f))
+        for (step in 1..STEPS) {
+            send(event(step * 16L, MotionEvent.ACTION_MOVE, 300f + 10f * step to 300f + 5f * step))
+        }
+
+        // Each move reports where the camera is now, while the finger is still down
+        assertEquals(STEPS, targets.size)
+        assertSameLocation(expected, targets.last())
+        assertSameLocation(viewCenter(), mapView.getCameraPosition().target)
+        send(event(200, MotionEvent.ACTION_UP, 400f to 350f))
+        assertSameLocation(expected, mapView.getCameraPosition().target)
+    }
+
+    @Test
+    fun testPinchWhileMoving_CameraPositionIsAtTheViewCenter() {
+        val misses = mutableListOf<String>()
+        mapView.setOnCameraMoveListener {
+            val target = mapView.getCameraPosition().target
+            val center = viewCenter()
+            if (kotlin.math.abs(target.latitude - center.latitude) > 1e-6 ||
+                kotlin.math.abs(target.longitude - center.longitude) > 1e-6
+            ) {
+                misses.add("$target != $center")
+            }
+        }
+
+        movingPinch(startX = 300f, endX = 450f)
+
+        assertTrue("zoomed in", mapView.getCameraPosition().zoom > 10.5f)
+        assertEquals(emptyList<String>(), misses)
+    }
+
+    @Test
+    fun testSetZoomWhilePanning_KeepsTheTarget() {
+        send(event(0, MotionEvent.ACTION_DOWN, 300f to 300f))
+        send(event(16, MotionEvent.ACTION_MOVE, 400f to 350f))
+        val target = mapView.getCameraPosition().target
+
+        mapView.setZoom(12f)
+
+        assertSameLocation(target, mapView.getCameraPosition().target)
+        assertSameLocation(target, viewCenter())
+    }
+
     @Test
     fun testZoomControlsEnabled_RedrawsMap() {
         mapView.draw(Canvas(createBitmap(SIZE, SIZE)))
