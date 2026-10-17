@@ -20,9 +20,9 @@ package de.afarber.openmapview
  * @property latLngBounds The smallest bounding box that includes the visible region
  */
 data class VisibleRegion(
-    val nearLeft: LatLng,
-    val nearRight: LatLng,
-    val farLeft: LatLng,
-    val farRight: LatLng,
-    val latLngBounds: LatLngBounds,
+    @JvmField val nearLeft: LatLng,
+    @JvmField val nearRight: LatLng,
+    @JvmField val farLeft: LatLng,
+    @JvmField val farRight: LatLng,
+    @JvmField val latLngBounds: LatLngBounds,
 )

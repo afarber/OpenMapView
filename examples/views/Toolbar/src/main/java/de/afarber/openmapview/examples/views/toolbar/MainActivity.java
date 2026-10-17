@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         // The selected place becomes the camera target, which openInExternalApp() opens
         mapView.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 15f), 800);
         placeText.setText(name);
-        coordinatesText.setText(getString(R.string.coordinates, position.getLatitude(), position.getLongitude()));
+        coordinatesText.setText(getString(R.string.coordinates, position.latitude, position.longitude));
         openButton.setEnabled(true);
     }
 }

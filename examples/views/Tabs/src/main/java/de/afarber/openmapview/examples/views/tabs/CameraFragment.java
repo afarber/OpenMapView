@@ -32,9 +32,9 @@ public class CameraFragment extends Fragment {
         // The state of the map, while no map exists
         TextView camera = view.findViewById(R.id.camera);
         camera.setText(getString(R.string.camera,
-                state.camera.getTarget().getLatitude(), state.camera.getTarget().getLongitude(), state.camera.getZoom()));
+                state.camera.target.latitude, state.camera.target.longitude, state.camera.zoom));
         TextView marker = view.findViewById(R.id.marker);
-        marker.setText(getString(R.string.marker_position, state.marker.getLatitude(), state.marker.getLongitude()));
+        marker.setText(getString(R.string.marker_position, state.marker.latitude, state.marker.longitude));
 
         // Changes the state the next map starts from
         view.findViewById(R.id.button_back).setOnClickListener(v -> {

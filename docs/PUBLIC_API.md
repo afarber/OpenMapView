@@ -126,6 +126,7 @@ Java code calls the same API directly:
 - Factory methods are static: `CameraUpdateFactory.newLatLngZoom(...)`, `BitmapDescriptorFactory.defaultMarker(...)`, `LatLngBounds.builder()`, `PredefinedTileProviders.openSeaMap()`, `GeoJsonParser.parse(...)`, `TileSource.fromMapType(...)`
 - Shapes are built with the `*Options` builders and int colors, as shown above
 - Listeners are functional interfaces, so Java lambdas work: `mapView.setOnMapClickListener(latLng -> ...)`
+- The immutable values are read through public final fields: `latLng.latitude`, `latLng.longitude`, `camera.target`, `camera.zoom`, `bounds.southwest`, `bounds.northeast`, and `nearLeft`, `nearRight`, `farLeft`, `farRight` and `latLngBounds` on `VisibleRegion`
 - `UiSettings.setInfoWindowAutoDismissMillis(long)` replaces the Kotlin `Duration` property
 
 Compose types without a Java-friendly form remain Kotlin-only: the shape constructors and `copy()` (because of their `Color` parameters), and the stroke caps and joins (`StrokeCap`, `StrokeJoin`). Java changes a shape on the map through its setters, e.g. `polyline.setWidth(16f)` and `polygon.setFillColor(0x400000FF)`. `PathEffect` works from Java through `PathEffect.Companion.dashPathEffect(...)`.

@@ -62,14 +62,14 @@ public class MainActivity extends AppCompatActivity {
                 // The route follows the dragged marker: the polyline is a live shape
                 updateLine();
                 LatLng position = marker.getPosition();
-                status.setText(getString(R.string.dragging, marker.getTitle(), position.getLatitude(), position.getLongitude()));
+                status.setText(getString(R.string.dragging, marker.getTitle(), position.latitude, position.longitude));
             }
 
             @Override
             public void onMarkerDragEnd(Marker marker) {
                 updateLine();
                 LatLng position = marker.getPosition();
-                status.setText(getString(R.string.dropped, marker.getTitle(), position.getLatitude(), position.getLongitude()));
+                status.setText(getString(R.string.dropped, marker.getTitle(), position.latitude, position.longitude));
             }
         });
     }
@@ -88,8 +88,8 @@ public class MainActivity extends AppCompatActivity {
         LatLng previous = route.get(route.size() - 2).getPosition();
         LatLng next = destination.getPosition();
         LatLng middle = new LatLng(
-                (previous.getLatitude() + next.getLatitude()) / 2,
-                (previous.getLongitude() + next.getLongitude()) / 2);
+                (previous.latitude + next.latitude) / 2,
+                (previous.longitude + next.longitude) / 2);
         String title = "Stop " + (route.size() - 1);
         route.add(route.size() - 1, addMarker(middle, title, BitmapDescriptorFactory.HUE_ORANGE));
         updateLine();

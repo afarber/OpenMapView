@@ -18,8 +18,8 @@ package de.afarber.openmapview
  * @throws IllegalArgumentException if zoom is outside the valid range
  */
 data class CameraPosition(
-    val target: LatLng,
-    val zoom: Float,
+    @JvmField val target: LatLng,
+    @JvmField val zoom: Float,
 ) {
     init {
         require(zoom >= MIN_ZOOM) { "Zoom level must be at least $MIN_ZOOM" }

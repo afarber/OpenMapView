@@ -89,15 +89,15 @@ public class MainActivity extends AppCompatActivity {
 
         if (stay) {
             // Outline the area, with ARGB int colors
-            LatLng sw = BOCHUM_AREA.getSouthwest();
-            LatLng ne = BOCHUM_AREA.getNortheast();
+            LatLng sw = BOCHUM_AREA.southwest;
+            LatLng ne = BOCHUM_AREA.northeast;
             boundsOutline = mapView.addPolygon(
                     new PolygonOptions()
                             .addAll(Arrays.asList(
                                     sw,
-                                    new LatLng(sw.getLatitude(), ne.getLongitude()),
+                                    new LatLng(sw.latitude, ne.longitude),
                                     ne,
-                                    new LatLng(ne.getLatitude(), sw.getLongitude())))
+                                    new LatLng(ne.latitude, sw.longitude)))
                             .strokeColor(0xFF1565C0)
                             .strokeWidth(6f)
                             .fillColor(0x201565C0));
@@ -113,8 +113,8 @@ public class MainActivity extends AppCompatActivity {
         CameraPosition camera = mapView.getCameraPosition();
         status.setText(getString(
                 R.string.camera_status,
-                camera.getTarget().getLatitude(),
-                camera.getTarget().getLongitude(),
-                camera.getZoom()));
+                camera.target.latitude,
+                camera.target.longitude,
+                camera.zoom));
     }
 }

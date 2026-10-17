@@ -43,7 +43,7 @@ public class JavaInteropTest {
     @Test
     public void cameraUpdatesAreStaticFactoryMethods() {
         mapView.moveCamera(CameraUpdateFactory.newLatLngZoom(BOCHUM, 14f));
-        assertEquals(14f, mapView.getCameraPosition().getZoom(), 0.01f);
+        assertEquals(14f, mapView.getCameraPosition().zoom, 0.01f);
 
         mapView.moveCamera(CameraUpdateFactory.zoomIn());
         mapView.moveCamera(CameraUpdateFactory.zoomTo(12f));
@@ -129,6 +129,26 @@ public class JavaInteropTest {
         assertEquals(MapType.CARTO_LIGHT, mapView.getMapType());
         assertEquals(TileSource.CARTO_LIGHT, TileSource.fromMapType(MapType.CARTO_LIGHT));
         assertNotNull(TileSource.getMapTypeName(MapType.CARTO_LIGHT));
+    }
+
+    @Test
+    public void valuesArePublicFields() {
+        mapView.moveCamera(CameraUpdateFactory.newLatLngZoom(BOCHUM, 14f));
+        CameraPosition camera = mapView.getCameraPosition();
+        assertEquals(BOCHUM.latitude, camera.target.latitude, 1e-6);
+        assertEquals(BOCHUM.longitude, camera.target.longitude, 1e-6);
+        assertEquals(14f, camera.zoom, 0.01f);
+
+        LatLngBounds bounds = new LatLngBounds(UNIVERSITY, BOCHUM);
+        assertEquals(UNIVERSITY, bounds.southwest);
+        assertEquals(BOCHUM, bounds.northeast);
+
+        VisibleRegion region = new VisibleRegion(UNIVERSITY, UNIVERSITY, BOCHUM, BOCHUM, bounds);
+        assertEquals(UNIVERSITY, region.nearLeft);
+        assertEquals(UNIVERSITY, region.nearRight);
+        assertEquals(BOCHUM, region.farLeft);
+        assertEquals(BOCHUM, region.farRight);
+        assertEquals(bounds, region.latLngBounds);
     }
 
     @Test

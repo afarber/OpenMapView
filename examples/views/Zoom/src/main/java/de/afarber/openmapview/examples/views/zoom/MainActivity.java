@@ -102,6 +102,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             state = R.string.moving_app;
         }
-        status.setText(getString(R.string.zoom_status, mapView.getCameraPosition().getZoom(), getString(state)));
+        status.setText(getString(R.string.zoom_status, mapView.getCameraPosition().zoom, getString(state)));
     }
 }

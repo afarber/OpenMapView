@@ -32,7 +32,7 @@ adb shell am start -n de.afarber.openmapview.examples.views.clicks/.MainActivity
 // A tap reports its coordinates; the circle is a live shape, moved with a setter
 mapView.setOnMapClickListener(latLng -> {
     lastTap.setCenter(latLng);
-    status.setText(getString(R.string.tapped, latLng.getLatitude(), latLng.getLongitude()));
+    status.setText(getString(R.string.tapped, latLng.latitude, latLng.longitude));
 });
 
 // A long press drops a numbered marker; tapping it opens its info window

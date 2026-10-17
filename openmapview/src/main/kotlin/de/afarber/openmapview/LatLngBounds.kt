@@ -19,8 +19,8 @@ import kotlin.math.min
  * @property northeast The northeast corner of the bounds
  */
 data class LatLngBounds(
-    val southwest: LatLng,
-    val northeast: LatLng,
+    @JvmField val southwest: LatLng,
+    @JvmField val northeast: LatLng,
 ) {
     /**
      * Returns whether this bounds contains the given point.
