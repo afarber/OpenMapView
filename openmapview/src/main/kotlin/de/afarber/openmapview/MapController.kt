@@ -29,6 +29,7 @@ import androidx.core.graphics.withSave
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -275,7 +276,10 @@ class MapController(
     private var tileCache = createTileCache(TileSource.STANDARD)
 
     // For the base map only: tile overlays have their own limits in overlayDownloadSemaphores
-    private val tileDownloadSemaphore = Semaphore(MAX_CONCURRENT_TILE_DOWNLOADS)
+    // The downloads of the current base map source and their permits. A new source cancels
+    // them and gets its own permits, so slow downloads of the old source can't hold up its tiles
+    private var sourceDownloads: Job = SupervisorJob(scope.coroutineContext[Job])
+    private var tileDownloadSemaphore = Semaphore(MAX_CONCURRENT_TILE_DOWNLOADS)
     private var tileSource: TileSource? = TileSource.STANDARD
     private var downloadingTiles = mutableSetOf<TileCoordinate>()
     private var tileRetries = TileRetryTracker()
@@ -733,6 +737,9 @@ class MapController(
         tileCache = createTileCache(source)
         downloadingTiles = mutableSetOf()
         tileRetries = TileRetryTracker()
+        sourceDownloads.cancel()
+        sourceDownloads = SupervisorJob(scope.coroutineContext[Job])
+        tileDownloadSemaphore = Semaphore(MAX_CONCURRENT_TILE_DOWNLOADS)
     }
 
     private fun createTileCache(source: TileSource?): TileCache = TileCache(context, source?.name ?: DiskTileCache.DEFAULT_NAMESPACE)
@@ -2028,8 +2035,9 @@ class MapController(
         val cache = tileCache
         val downloading = downloadingTiles
         val retries = tileRetries
+        val semaphore = tileDownloadSemaphore
         val downloader = tileDownloader ?: TileDownloader().also { tileDownloader = it }
-        scope.launch(Dispatchers.IO) {
+        scope.launch(sourceDownloads + Dispatchers.IO) {
             var bitmap: Bitmap? = null
             var skipped = false
             var stale = false
@@ -2045,7 +2053,7 @@ class MapController(
                 }
                 if (bitmap == null) {
                     bitmap =
-                        tileDownloadSemaphore.withPermit {
+                        semaphore.withPermit {
                             if (cache !== tileCache) {
                                 skipped = true
                                 return@withPermit null
@@ -2921,6 +2929,8 @@ class MapController(
     fun onDestroy() {
         stopAnimation()
         scope.coroutineContext.cancelChildren()
+        // cancelChildren() also canceled the downloads job, which could not start new ones
+        sourceDownloads = SupervisorJob(scope.coroutineContext[Job])
         tileDownloader?.close()
         tileDownloader = null
         // Cancelled downloads never remove their tiles, so start with empty sets
