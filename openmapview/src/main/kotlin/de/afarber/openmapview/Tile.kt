@@ -33,9 +33,9 @@ package de.afarber.openmapview
  * @see TileOverlay
  */
 data class Tile(
-    val width: Int,
-    val height: Int,
-    val data: ByteArray,
+    @JvmField val width: Int,
+    @JvmField val height: Int,
+    @JvmField val data: ByteArray,
 ) {
     init {
         require(width > 0) { "Tile width must be positive: $width" }

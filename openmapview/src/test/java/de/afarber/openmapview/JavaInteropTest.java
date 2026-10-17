@@ -149,6 +149,11 @@ public class JavaInteropTest {
         assertEquals(BOCHUM, region.farLeft);
         assertEquals(BOCHUM, region.farRight);
         assertEquals(bounds, region.latLngBounds);
+
+        Tile tile = new Tile(256, 128, new byte[] {1, 2, 3});
+        assertEquals(256, tile.width);
+        assertEquals(128, tile.height);
+        assertEquals(3, tile.data.length);
     }
 
     @Test
