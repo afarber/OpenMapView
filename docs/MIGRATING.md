@@ -93,7 +93,7 @@ dependencies {
 ```kotlin
 // Add to build.gradle.kts
 dependencies {
-    implementation("de.afarber:openmapview:0.21.0")
+    implementation("de.afarber:openmapview:0.22.0")
 }
 ```
 
