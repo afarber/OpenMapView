@@ -50,8 +50,13 @@ This document lists all public non-deprecated methods of the `MapView` and `Goog
 
 ## Marker Class
 
+The returned `Marker` is a live handle, as in the Maps SDK: setting a property redraws the map right away, and `remove()` takes the marker off the map and closes its info window.
+
 | Method             | Return Type | Notes                                                                |
 | ------------------ | ----------- | -------------------------------------------------------------------- |
+| `setPosition(LatLng)`, `setTitle(String)`, `setSnippet(String)`, `setIcon(BitmapDescriptor)`, `setAlpha(float)`, `setVisible(boolean)`, `setDraggable(boolean)`, `setZIndex(float)`, `setTag(Object)` and getters | `void` | Kotlin properties `position`, `title`, ... |
+| `setAnchor(float, float)` | `void` | Kotlin: `anchor` as a `Pair` |
+| `remove()` | `void` | |
 | `showInfoWindow()` | `void`      | Shows this marker's info window (auto-dismiss if configured via UiSettings) |
 | `hideInfoWindow()` | `void`      | Hides this marker's info window                                      |
 | `isInfoWindowShown`| `Boolean`   | Returns whether this marker's info window is currently shown         |

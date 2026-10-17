@@ -54,8 +54,15 @@ class ShapeHandleTest {
         val polyline = mapView.addPolyline(Polyline(listOf(a, b)))
         val polygon = mapView.addPolygon(Polygon(listOf(a, b, c)))
         val circle = mapView.addCircle(Circle(a, 100f))
+        val marker = mapView.addMarker(Marker(a, title = "A"))
         val changes =
             listOf<() -> Unit>(
+                { marker.position = b },
+                { marker.title = "B" },
+                { marker.icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE) },
+                { marker.setAnchor(0.5f, 0.5f) },
+                { marker.alpha = 0.5f },
+                { marker.visible = false },
                 { polyline.strokeWidth = 20f },
                 { polyline.points = listOf(a, b, c) },
                 { polygon.fillColor = Color.Red },
@@ -72,6 +79,30 @@ class ShapeHandleTest {
         }
         assertEquals(20f, mapView.getPolylines()[0].strokeWidth)
         assertEquals(200f, mapView.getCircles()[0].radius)
+        assertEquals(b, mapView.getMarkers()[0].position)
+        assertEquals(Pair(0.5f, 0.5f), mapView.getMarkers()[0].anchor)
+    }
+
+    @Test
+    fun testMarkerRemove_TakesItOffTheMap() {
+        val marker = mapView.addMarker(Marker(a, title = "A"))
+        marker.showInfoWindow()
+
+        marker.remove()
+
+        assertTrue(mapView.getMarkers().isEmpty())
+        assertFalse(marker.isInfoWindowShown)
+        // A removed marker no longer redraws the map
+        drawn()
+        marker.title = "B"
+        assertFalse(shadowOf(mapView).wasInvalidated())
+    }
+
+    @Test
+    fun testMarkerAlphaOutOfRange_Throws() {
+        val marker = Marker(a)
+        assertThrows(IllegalArgumentException::class.java) { marker.alpha = 1.5f }
+        assertEquals(1f, marker.alpha)
     }
 
     @Test

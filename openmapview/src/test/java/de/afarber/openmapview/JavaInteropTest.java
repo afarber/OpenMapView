@@ -207,11 +207,26 @@ public class JavaInteropTest {
         circle.setZIndex(2f);
         assertEquals(500f, circle.getRadius(), 0f);
 
+        Marker marker = mapView.addMarker(new MarkerOptions().position(BOCHUM).title("Bochum"));
+        marker.setPosition(UNIVERSITY);
+        marker.setTitle("University");
+        marker.setSnippet("Campus");
+        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        marker.setAnchor(0.5f, 0.5f);
+        marker.setAlpha(0.8f);
+        marker.setDraggable(true);
+        marker.setZIndex(1f);
+        marker.setTag("tag");
+        assertEquals(UNIVERSITY, marker.getPosition());
+        assertEquals("University", marker.getTitle());
+
         polyline.remove();
         polygon.remove();
         circle.remove();
+        marker.remove();
         assertTrue(mapView.getPolylines().isEmpty());
         assertTrue(mapView.getPolygons().isEmpty());
         assertTrue(mapView.getCircles().isEmpty());
+        assertTrue(mapView.getMarkers().isEmpty());
     }
 }
