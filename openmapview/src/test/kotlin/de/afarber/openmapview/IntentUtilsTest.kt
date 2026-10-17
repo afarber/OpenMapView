@@ -112,4 +112,36 @@ class IntentUtilsTest {
 
         assertFalse(openLocationInExternalApp(LatLng(51.4661, 7.2491), 14f, context))
     }
+
+    @Test
+    fun testOpenLocation_EncodesTheLabel() {
+        val started = mutableListOf<Intent>()
+        val context = mockk<Context>()
+        every { context.startActivity(any()) } answers { started += firstArg<Intent>() }
+
+        openLocationInExternalApp(LatLng(51.4783, 7.2231), 15f, context, "Main Station (Hbf) & Bars")
+
+        // The label is encoded, so its "&" and parentheses don't end the query or the label
+        val uri = started[0].data!!
+        assertEquals("0,0?q=51.4783,7.2231(Main%20Station%20%28Hbf%29%20%26%20Bars)", uri.encodedSchemeSpecificPart)
+        assertEquals("0,0?q=51.4783,7.2231(Main Station (Hbf) & Bars)", uri.schemeSpecificPart)
+    }
+
+    @Test
+    fun testOpenLocation_BrowserFallbackMarksTheLocation() {
+        val started = mutableListOf<Intent>()
+        val context = mockk<Context>()
+        every { context.startActivity(any()) } answers {
+            val intent = firstArg<Intent>()
+            if (intent.data?.scheme == "geo") throw ActivityNotFoundException()
+            started += intent
+        }
+
+        openLocationInExternalApp(LatLng(51.4783, 7.2231), 15f, context)
+
+        val uri = started[0].data!!
+        assertEquals("51.4783", uri.getQueryParameter("mlat"))
+        assertEquals("7.2231", uri.getQueryParameter("mlon"))
+        assertEquals("map=15/51.4783/7.2231", uri.fragment)
+    }
 }

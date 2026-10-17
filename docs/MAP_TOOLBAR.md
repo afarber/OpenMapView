@@ -144,41 +144,38 @@ openButton.setOnClickListener {
 
 ### Intent Resolution
 
-OpenMapView uses `PackageManager.queryIntentActivities()` to check if any app can handle the geo: URI before launching. This prevents crashes and enables automatic fallback.
+OpenMapView starts the geo: intent directly and falls back to the browser when no app can handle it:
 
 ```kotlin
-private fun canHandleIntent(intent: Intent, context: Context): Boolean {
-    val packageManager = context.packageManager
-    val activities = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        packageManager.queryIntentActivities(
-            intent,
-            PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
-        )
-    } else {
-        packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
-    }
-    return activities.isNotEmpty()
+try {
+    context.startActivity(geoIntent)
+} catch (e: ActivityNotFoundException) {
+    // No map app installed: open OpenStreetMap.org in the browser
+    context.startActivity(browserIntent)
 }
 ```
 
+It doesn't ask the PackageManager first: since Android 11, such queries need a `<queries>` entry in the app manifest, without which installed map apps stay invisible and the browser would always be used.
+
+A label is URL-encoded, including parentheses, so characters such as `&`, `#` or `)` in it don't break the URI.
+
 ### Fallback URL Format
 
-OpenStreetMap.org uses this URL format:
+OpenStreetMap.org uses this URL format; `mlat` and `mlon` mark the location:
 
 ```
-https://www.openstreetmap.org/#map=zoom/latitude/longitude
+https://www.openstreetmap.org/?mlat=latitude&mlon=longitude#map=zoom/latitude/longitude
 ```
 
 Example:
 ```
-https://www.openstreetmap.org/#map=14/51.4661/7.2491
+https://www.openstreetmap.org/?mlat=51.4661&mlon=7.2491#map=14/51.4661/7.2491
 ```
 
 ### Android Version Compatibility
 
 - Geo URI scheme: Supported since Android 1.0
-- PackageManager query: Works on all Android versions
-- API 33+ handling: Uses ResolveInfoFlags for compatibility
+- No `<queries>` manifest entry needed, also on Android 11 and newer
 - Minimum SDK: 23 (Android 6.0) - same as OpenMapView
 
 ---
