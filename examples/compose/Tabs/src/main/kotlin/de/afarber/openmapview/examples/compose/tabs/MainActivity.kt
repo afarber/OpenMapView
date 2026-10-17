@@ -76,8 +76,9 @@ fun TabsScreen() {
         rememberCameraPositionState {
             position = CameraPosition(BOCHUM, 14f)
         }
-    // Also hoisted, so the dragged marker keeps its position
+    // Also hoisted, so the dragged marker keeps its position and the route its selection
     val markerState = rememberMarkerState(BOCHUM)
+    var routeSelected by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         bottomBar = {
@@ -99,7 +100,7 @@ fun TabsScreen() {
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             when (selectedTab) {
-                0 -> MapTab(cameraPositionState, markerState)
+                0 -> MapTab(cameraPositionState, markerState, routeSelected) { routeSelected = !routeSelected }
                 else -> CameraTab(cameraPositionState, markerState) { selectedTab = 0 }
             }
         }
@@ -110,9 +111,10 @@ fun TabsScreen() {
 fun MapTab(
     cameraPositionState: CameraPositionState,
     markerState: MarkerState,
+    routeSelected: Boolean,
+    onRouteClick: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    var routeSelected by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // No lifecycle code and no clipping needed: the map cleans up when the tab is left
@@ -121,7 +123,7 @@ fun MapTab(
             cameraPositionState = cameraPositionState,
         ) {
             Marker(state = markerState, title = "Drag me", draggable = true)
-            // A changed center replaces the circle, so it follows the dragged marker
+            // A changed center moves the same circle, so it follows the dragged marker
             Circle(
                 center = markerState.position,
                 radius = 300f,
@@ -134,7 +136,7 @@ fun MapTab(
                 strokeColor = if (routeSelected) Color.Red else Color.DarkGray,
                 strokeWidth = 12f,
                 clickable = true,
-                onClick = { routeSelected = !routeSelected },
+                onClick = { onRouteClick() },
             )
         }
         Button(
