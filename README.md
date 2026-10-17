@@ -65,6 +65,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | [Toolbar](examples/compose/Toolbar) | [Toolbar](examples/views/Toolbar) | Open a picked or long-pressed place in another map app, with a browser and QR code fallback |
 | [Tabs](examples/compose/Tabs) | [Tabs](examples/views/Tabs) | A map in a tab that keeps its camera, marker and route while other tabs are shown |
 | [GeoJson](examples/compose/GeoJson) | [GeoJson](examples/views/GeoJson) | Points, lines and areas loaded from a GeoJSON file with their styles, tapped for details and fitted into view |
+| [ScrollingPage](examples/compose/ScrollingPage) | [ScrollingPage](examples/views/ScrollingPage) | A static preview map that lets the page scroll over it and an interactive map inside a scrolling page |
 
 ![Pan Demo](examples/views/Pan/screenshot.gif)
 
