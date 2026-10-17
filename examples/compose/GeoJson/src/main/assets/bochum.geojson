@@ -1,0 +1,84 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Mining Museum", "description": "Deutsches Bergbau-Museum" },
+      "geometry": { "type": "Point", "coordinates": [7.2174, 51.4892] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Main Station", "description": "Trains to the whole Ruhr area" },
+      "geometry": { "type": "Point", "coordinates": [7.2231, 51.4783] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Planetarium", "description": "Zeiss Planetarium Bochum" },
+      "geometry": { "type": "Point", "coordinates": [7.2278, 51.4854] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Ruhr University", "description": "University campus" },
+      "geometry": { "type": "Point", "coordinates": [7.2622, 51.4452] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "City walk",
+        "description": "From the station through the center to the Bermuda3eck",
+        "stroke": "#f4511e",
+        "stroke-width": 8
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[7.2231, 51.4783], [7.2166, 51.4816], [7.2140, 51.4790], [7.2161, 51.4761]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Springorum cycle path",
+        "description": "Cycle path on an old railway line",
+        "stroke": "#1e88e5",
+        "stroke-width": 8
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[7.2145, 51.4565], [7.2210, 51.4590], [7.2280, 51.4620], [7.2350, 51.4655], [7.2420, 51.4690]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Stadtpark",
+        "description": "City park north of the center",
+        "stroke": "#2e7d32",
+        "stroke-width": 4,
+        "fill": "#43a047",
+        "fill-opacity": 0.35
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[7.2260, 51.4820], [7.2260, 51.4850], [7.2310, 51.4870], [7.2360, 51.4860], [7.2370, 51.4830], [7.2330, 51.4810], [7.2260, 51.4820]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ruhr University campus",
+        "description": "The campus, with a hole for the lake",
+        "stroke": "#3949ab",
+        "stroke-width": 4,
+        "fill": "#3949ab",
+        "fill-opacity": 0.25
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [[7.2550, 51.4410], [7.2540, 51.4480], [7.2620, 51.4500], [7.2720, 51.4490], [7.2730, 51.4420], [7.2650, 51.4400], [7.2550, 51.4410]],
+          [[7.2620, 51.4440], [7.2615, 51.4460], [7.2660, 51.4465], [7.2665, 51.4445], [7.2620, 51.4440]]
+        ]
+      }
+    }
+  ]
+}

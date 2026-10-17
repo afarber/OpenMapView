@@ -64,6 +64,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | [MapTypes](examples/compose/MapTypes) | [MapTypes](examples/views/MapTypes) | All 15 map types, their attribution and the notice for types that need an API key |
 | [Toolbar](examples/compose/Toolbar) | [Toolbar](examples/views/Toolbar) | Open a picked or long-pressed place in another map app, with a browser and QR code fallback |
 | [Tabs](examples/compose/Tabs) | [Tabs](examples/views/Tabs) | A map in a tab that keeps its camera, marker and route while other tabs are shown |
+| [GeoJson](examples/compose/GeoJson) | [GeoJson](examples/views/GeoJson) | Points, lines and areas loaded from a GeoJSON file with their styles, tapped for details and fitted into view |
 
 ![Pan Demo](examples/views/Pan/screenshot.gif)
 
