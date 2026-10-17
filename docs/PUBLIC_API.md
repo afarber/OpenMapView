@@ -484,6 +484,7 @@ The optional `openmapview-compose` artifact follows the API of the [maps-compose
 | maps-compose | openmapview-compose | Notes |
 |---|---|---|
 | `GoogleMap(cameraPositionState, properties, uiSettings, onMapClick, onMapLongClick, onMapLoaded)` | `OpenMap(...)` with the same parameters | Plus `onMapCreated` for direct access to the `OpenMapView` |
+| `MapEffect(vararg keys) { map -> }` | Same | The block gets the `OpenMapView`, e.g. for `snapshot()` |
 | `GoogleMap(locationSource, onMyLocationButtonClick, onMyLocationClick)`, `MapProperties(isMyLocationEnabled)`, `MapUiSettings(myLocationButtonEnabled)` | Same | |
 | `MapProperties(mapType, minZoomPreference, maxZoomPreference, latLngBoundsForCameraTarget)` | Same | `mapType` is one of the `MapType` constants |
 | `MapUiSettings(zoomControlsEnabled, zoomGesturesEnabled, scrollGesturesEnabled)` | Same, plus `infoWindowAutoDismiss` | |
