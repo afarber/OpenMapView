@@ -50,6 +50,8 @@ class MapControllerTileLoadingTest {
     private var now = 1_000_000_000_000L
     private var serverUp = true
     private var serverHangs = false
+
+    @Volatile
     private var requests = 0
 
     @Before
@@ -65,7 +67,8 @@ class MapControllerTileLoadingTest {
     private fun mockDownloader(): TileDownloader {
         val engine =
             MockEngine {
-                requests++
+                // Several downloads may run at once
+                synchronized(this@MapControllerTileLoadingTest) { requests++ }
                 if (serverHangs) awaitCancellation()
                 if (serverUp) {
                     respond(ByteReadChannel(createPngBytes()), HttpStatusCode.OK)
@@ -198,6 +201,27 @@ class MapControllerTileLoadingTest {
     }
 
     @Test
+    fun testMapTypeChange_HangingDownloadsDoNotHoldUpTheNewSource() {
+        // Downloads of the old source use all permits and never finish
+        serverHangs = true
+        val hanging = (0 until 4).map { TileCoordinate(it, 0, 3) }
+        hanging.forEach { startDownload(it) }
+        val deadline = System.currentTimeMillis() + 5_000
+        while (requests < hanging.size) {
+            check(System.currentTimeMillis() < deadline) { "Requests were not sent" }
+            Thread.sleep(10)
+        }
+
+        controller.setMapType(MapType.HUMANITARIAN)
+        serverHangs = false
+
+        // The new source gets its tile right away
+        download()
+        val newCache = getField(controller, "tileCache") as TileCache
+        assertNotNull(newCache.getMemory(tile))
+    }
+
+    @Test
     fun testOnDestroy_CanBeCalledTwice() {
         controller.onDestroy()
         controller.onDestroy()
@@ -212,7 +236,7 @@ class MapControllerTileLoadingTest {
     private fun downloadingTiles(): MutableSet<TileCoordinate> = getField(controller, "downloadingTiles") as MutableSet<TileCoordinate>
 
     // Calls the private downloadTile() and returns the set it removes the tile from when done
-    private fun startDownload(): MutableSet<TileCoordinate> {
+    private fun startDownload(tile: TileCoordinate = this.tile): MutableSet<TileCoordinate> {
         val downloading = downloadingTiles()
         downloading.add(tile)
         val method =
