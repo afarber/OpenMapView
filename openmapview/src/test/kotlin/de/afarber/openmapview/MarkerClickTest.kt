@@ -138,6 +138,33 @@ class MarkerClickTest {
     }
 
     @Test
+    fun testRemoveMarker_ClosesInfoWindow() {
+        val closed = mutableListOf<String?>()
+        mapView.setOnInfoWindowCloseListener { closed.add(it.title) }
+        marker.showInfoWindow()
+
+        mapView.removeMarker(marker)
+
+        assertFalse(marker.isInfoWindowShown)
+        assertEquals(listOf<String?>("Bochum"), closed)
+        // Added again, the marker does not bring back its old info window
+        mapView.addMarker(marker)
+        assertFalse(marker.isInfoWindowShown)
+    }
+
+    @Test
+    fun testClearMarkers_ClosesInfoWindow() {
+        val closed = mutableListOf<String?>()
+        mapView.setOnInfoWindowCloseListener { closed.add(it.title) }
+        marker.showInfoWindow()
+
+        mapView.clearMarkers()
+
+        assertFalse(marker.isInfoWindowShown)
+        assertEquals(listOf<String?>("Bochum"), closed)
+    }
+
+    @Test
     fun testTouch_StopsCameraAnimation() {
         val canceled = mutableListOf<String>()
         mapView.setOnCameraMoveCanceledListener { canceled.add("canceled") }
