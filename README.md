@@ -62,7 +62,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | [Overlays](examples/compose/Overlays) | [Overlays](examples/views/Overlays) | Hiking, cycling and mountain bike tile overlays, turned on and off, with live transparency |
 | [GroundOverlays](examples/compose/GroundOverlays) | [GroundOverlays](examples/views/GroundOverlays) | Site plans placed by position or bounds, rotated and made transparent live |
 | [MapTypes](examples/compose/MapTypes) | [MapTypes](examples/views/MapTypes) | All 15 map types, their attribution and the notice for types that need an API key |
-|  | [Toolbar](examples/views/Toolbar) | Open the location in external map apps via geo: URI, with a browser fallback |
+| [Toolbar](examples/compose/Toolbar) | [Toolbar](examples/views/Toolbar) | Open a picked or long-pressed place in another map app, with a browser and QR code fallback |
 | [Tabs](examples/compose/Tabs) |  | A map in a tab that keeps its camera while other tabs are shown |
 
 ![Pan Demo](examples/views/Pan/screenshot.gif)
