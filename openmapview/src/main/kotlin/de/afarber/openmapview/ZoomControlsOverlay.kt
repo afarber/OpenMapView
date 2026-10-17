@@ -17,8 +17,8 @@ import android.text.TextPaint
 /**
  * Zoom controls overlay displaying +/- buttons for zooming.
  *
- * Renders two circular buttons in the bottom-right corner (above attribution)
- * for zooming in and out.
+ * Renders two circular buttons in the bottom-right corner (above attribution):
+ * zoom in (+) on top and zoom out (-) below it.
  */
 class ZoomControlsOverlay(
     context: Context,
@@ -67,8 +67,9 @@ class ZoomControlsOverlay(
         viewHeight: Int,
     ) {
         val centerX = viewWidth - margin - buttonRadius
-        val zoomInCenterY = viewHeight - attributionHeight - margin - buttonRadius
-        val zoomOutCenterY = zoomInCenterY - (buttonRadius * 2) - buttonSpacing
+        // Zoom in on top, zoom out below it
+        val zoomOutCenterY = viewHeight - attributionHeight - margin - buttonRadius
+        val zoomInCenterY = zoomOutCenterY - (buttonRadius * 2) - buttonSpacing
 
         // Update bounds for touch detection
         zoomInButtonBounds.set(

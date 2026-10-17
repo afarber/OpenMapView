@@ -233,10 +233,10 @@ class PinchZoomTest {
     fun testZoomButton_ReportsStartedMoveAndIdle() {
         mapView.getUiSettings().isZoomControlsEnabled = true
         // Drawing places the buttons; at density 1 the zoom-in button is centered
-        // 36 px from the right edge and 60 px from the bottom
+        // 36 px from the right edge and 108 px from the bottom, above the zoom-out button
         mapView.draw(Canvas(createBitmap(SIZE, SIZE)))
 
-        tap(SIZE - 36f, SIZE - 60f)
+        tap(SIZE - 36f, SIZE - 108f)
 
         // The buttons animate the zoom instead of jumping to the next level
         assertEquals(10f, mapView.getCameraPosition().zoom)
@@ -262,12 +262,38 @@ class PinchZoomTest {
         mapView.draw(Canvas(createBitmap(SIZE, SIZE)))
 
         // The old place of the zoom-in button is now under the side panel
-        tap(SIZE - 36f, SIZE - 60f)
+        tap(SIZE - 36f, SIZE - 108f)
         assertEquals(emptyList<String>(), events)
 
         // The button moved left and up by the padding
-        tap(SIZE - 200 - 36f, SIZE - 100 - 60f)
+        tap(SIZE - 200 - 36f, SIZE - 100 - 108f)
         assertEquals(listOf("started:${OnCameraMoveStartedListener.REASON_API_ANIMATION}"), events)
+    }
+
+    @Test
+    fun testZoomButtons_ZoomInAboveZoomOut() {
+        mapView.getUiSettings().isZoomControlsEnabled = true
+        mapView.draw(Canvas(createBitmap(SIZE, SIZE)))
+
+        // The lower button, 60 px from the bottom, zooms out
+        tap(SIZE - 36f, SIZE - 60f)
+        waitForIdle()
+        assertEquals(9f, mapView.getCameraPosition().zoom)
+
+        // The upper button zooms in
+        tap(SIZE - 36f, SIZE - 108f)
+        waitForIdle()
+        assertEquals(10f, mapView.getCameraPosition().zoom)
+    }
+
+    // The button animation runs on wall clock time
+    private fun waitForIdle() {
+        events.clear()
+        val deadline = System.nanoTime() + 2_000_000_000L
+        while (events.lastOrNull() != "idle" && System.nanoTime() < deadline) {
+            Thread.sleep(20)
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20))
+        }
     }
 
     private fun tap(
