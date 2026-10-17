@@ -10,6 +10,7 @@ package de.afarber.openmapview
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 
@@ -31,6 +32,7 @@ import androidx.core.net.toUri
  * @see [Android Common Intents - Maps](https://developer.android.com/guide/components/intents-common#Maps)
  * @see [RFC 5870 - Geo URI](https://datatracker.ietf.org/doc/html/rfc5870)
  */
+@JvmOverloads
 fun openLocationInExternalApp(
     latLng: LatLng,
     zoom: Float,
@@ -46,7 +48,10 @@ fun openLocationInExternalApp(
             if (label != null) {
                 // Format with query parameter shows a labeled pin
                 // geo:0,0?q=latitude,longitude(label)
-                "geo:0,0?q=${latLng.latitude},${latLng.longitude}($label)".toUri()
+                // The label is encoded, so characters such as "&", "#" or ")" don't break the
+                // URI. Uri.encode() keeps parentheses, which would end the label early.
+                val encodedLabel = Uri.encode(label).replace("(", "%28").replace(")", "%29")
+                "geo:0,0?q=${latLng.latitude},${latLng.longitude}($encodedLabel)".toUri()
             } else {
                 // Format with zoom parameter centers the view
                 // geo:latitude,longitude?z=zoom
@@ -63,7 +68,10 @@ fun openLocationInExternalApp(
             Log.d("OpenMapView", "Launched geo intent: $geoUri")
         } catch (e: ActivityNotFoundException) {
             // No map app installed: fall back to the browser with OpenStreetMap
-            val osmUrl = "https://www.openstreetmap.org/#map=$clampedZoom/${latLng.latitude}/${latLng.longitude}"
+            // mlat and mlon mark the location on the map
+            val osmUrl =
+                "https://www.openstreetmap.org/?mlat=${latLng.latitude}&mlon=${latLng.longitude}" +
+                    "#map=$clampedZoom/${latLng.latitude}/${latLng.longitude}"
             val browserIntent = Intent(Intent.ACTION_VIEW, osmUrl.toUri())
             context.startActivity(browserIntent)
             Log.d("OpenMapView", "Launched browser fallback: $osmUrl")
