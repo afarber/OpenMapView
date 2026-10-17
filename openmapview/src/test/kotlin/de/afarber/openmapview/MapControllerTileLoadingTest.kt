@@ -222,6 +222,54 @@ class MapControllerTileLoadingTest {
     }
 
     @Test
+    fun testQueuedDownload_IsSkippedWhenTheTileIsNoLongerWanted() {
+        // The camera moved on: only another tile is on screen now
+        setField(controller, "wantedTiles", setOf(TileCoordinate(5, 6, 7)))
+
+        download()
+
+        assertEquals(0, requests)
+        assertNull(cache.getMemory(tile))
+        assertTrue("Requested again at once when it shows up", retries().canRequest(tile, SystemClock.elapsedRealtime()))
+    }
+
+    @Test
+    fun testQueuedDownload_OfAWantedTileIsSent() {
+        setField(controller, "wantedTiles", setOf(tile))
+
+        download()
+
+        assertEquals(1, requests)
+        assertNotNull(cache.getMemory(tile))
+    }
+
+    @Test
+    fun testAnimateCamera_LoadsTheTargetTilesFirst() {
+        controller.setViewSize(800, 600)
+        val target = LatLng(51.4661, 7.2491)
+        val targetTiles = ViewportCalculator.getVisibleTiles(target, 17f, 800, 600)
+        val previewTiles = ViewportCalculator.getVisibleTiles(target, 14f, 800, 600)
+
+        controller.animateCamera(CameraUpdateFactory.newLatLngZoom(target, 17f), 250, null)
+
+        // Requested before the first frame of the animation was drawn
+        assertTrue(downloadingTiles().containsAll(targetTiles))
+        assertTrue(downloadingTiles().containsAll(previewTiles))
+    }
+
+    @Test
+    fun testStopAnimation_TheTargetTilesAreNoLongerWanted() {
+        controller.setViewSize(800, 600)
+        val target = LatLng(51.4661, 7.2491)
+        setField(controller, "wantedTiles", emptySet<TileCoordinate>())
+        controller.animateCamera(CameraUpdateFactory.newLatLngZoom(target, 17f), 250, null)
+
+        controller.stopAnimation()
+
+        assertTrue((getField(controller, "animationTargetTiles") as Set<*>).isEmpty())
+    }
+
+    @Test
     fun testOnDestroy_CanBeCalledTwice() {
         controller.onDestroy()
         controller.onDestroy()

@@ -102,6 +102,10 @@ class MapController(
         // How many zoom levels up drawFallbackTile() looks for a cached tile to scale up
         private const val MAX_FALLBACK_LEVELS = 4
 
+        // How many zoom levels above the target of a camera animation its preview tiles are
+        // loaded, see requestTargetTiles(). Within MAX_FALLBACK_LEVELS, so they get drawn.
+        private const val TARGET_PREVIEW_LEVELS = 3
+
         // Default info window layout, in pixels
         private const val INFO_WINDOW_PADDING = 20f
         private const val INFO_WINDOW_LINE_SPACING = 10f
@@ -282,6 +286,15 @@ class MapController(
     private var tileDownloadSemaphore = Semaphore(MAX_CONCURRENT_TILE_DOWNLOADS)
     private var tileSource: TileSource? = TileSource.STANDARD
     private var downloadingTiles = mutableSetOf<TileCoordinate>()
+
+    // The base tiles the map still needs: the visible ones, the prefetched ones around them
+    // and those at the target of a camera animation. Queued downloads of other tiles are
+    // skipped, so the tiles a camera animation flew over don't hold up the ones on screen.
+    // Written on the main thread, read by the downloads. Null until the first draw.
+    @Volatile
+    private var wantedTiles: Set<TileCoordinate>? = null
+    private var prefetchedTiles = emptySet<TileCoordinate>()
+    private var animationTargetTiles = emptySet<TileCoordinate>()
     private var tileRetries = TileRetryTracker()
     private var onTileLoadedCallback: (() -> Unit)? = null
 
@@ -1023,6 +1036,8 @@ class MapController(
             onCameraMoveStartedListener?.onCameraMoveStarted(reason)
         }
 
+        requestTargetTiles(targetPosition)
+
         // The listener is captured by the coroutine: a cancelled animation finishes only after
         // stopAnimation() returned, possibly when the next animation has already started
         animationJob =
@@ -1060,9 +1075,38 @@ class MapController(
                     listener?.onCancel()
                     throw e
                 } finally {
-                    if (animationJob === coroutineContext[Job]) animationJob = null
+                    if (animationJob === coroutineContext[Job]) {
+                        animationJob = null
+                        animationTargetTiles = emptySet()
+                    }
                 }
             }
+    }
+
+    /**
+     * Starts loading the base tiles at the target of a camera animation before the camera
+     * gets there, ahead of the tiles it flies over:
+     * - a few tiles [TARGET_PREVIEW_LEVELS] zoom levels up, which drawFallbackTile() scales
+     *   up while the camera zooms in
+     * - the tiles of the target itself, so the map is complete when the animation ends
+     */
+    private fun requestTargetTiles(target: CameraPosition) {
+        if (tileSource == null || viewWidth <= 0 || viewHeight <= 0) return
+        val viewCenter = viewCenterOf(clampToTargetBounds(target.target), target.zoom)
+        val previewZoom = (target.zoom - TARGET_PREVIEW_LEVELS).coerceAtLeast(0f)
+        val tiles =
+            ViewportCalculator.getVisibleTiles(viewCenter, previewZoom, viewWidth, viewHeight) +
+                ViewportCalculator.getVisibleTiles(viewCenter, target.zoom, viewWidth, viewHeight)
+        animationTargetTiles = tiles.toSet()
+        wantedTiles = wantedTiles?.plus(animationTargetTiles)
+
+        val now = SystemClock.elapsedRealtime()
+        for (tile in tiles) {
+            if (needsDownload(tile, now)) {
+                downloadingTiles.add(tile)
+                downloadTile(tile)
+            }
+        }
     }
 
     /**
@@ -1075,6 +1119,7 @@ class MapController(
         if (animationJob != null) {
             animationJob?.cancel()
             animationJob = null
+            animationTargetTiles = emptySet()
 
             // Fire camera move canceled event
             if (isCameraMoving) {
@@ -1398,6 +1443,8 @@ class MapController(
             drawTileOverlay(canvas, visibleTiles, centerPixelX, centerPixelY, overlay)
         }
 
+        wantedTiles = visibleTiles.toSet() + prefetchedTiles + animationTargetTiles
+
         // Draw base map tiles (z-index 0). Without a tile source (MapType.NONE) there is
         // nothing to wait for, a stale offline fallback tile counts as drawn.
         var allTilesDrawn = true
@@ -1508,6 +1555,9 @@ class MapController(
                 panOffsetX,
                 panOffsetY,
             )
+
+        prefetchedTiles = prefetchTiles.toSet()
+        wantedTiles = wantedTiles?.plus(prefetchedTiles)
 
         // Download tiles that are adjacent but not yet visible
         val now = SystemClock.elapsedRealtime()
@@ -2024,7 +2074,9 @@ class MapController(
                 if (bitmap == null) {
                     bitmap =
                         semaphore.withPermit {
-                            if (cache !== tileCache) {
+                            // The source changed, or the camera moved on while this
+                            // request was queued
+                            if (cache !== tileCache || wantedTiles?.contains(tile) == false) {
                                 skipped = true
                                 return@withPermit null
                             }
