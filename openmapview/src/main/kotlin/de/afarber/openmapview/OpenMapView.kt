@@ -1248,7 +1248,7 @@ class OpenMapView
         }
 
         /**
-         * Removes a marker from the map.
+         * Removes a marker from the map and closes its info window.
          *
          * @param marker The marker to remove
          * @return true if the marker was found and removed, false otherwise
@@ -1256,6 +1256,8 @@ class OpenMapView
         fun removeMarker(marker: Marker): Boolean {
             val result = controller.removeMarker(marker)
             if (result) {
+                // A marker added again later starts with its info window closed
+                if (marker.isInfoWindowShown) hideInfoWindow(marker)
                 marker.mapView = null
                 invalidate()
             }
@@ -1263,11 +1265,15 @@ class OpenMapView
         }
 
         /**
-         * Removes all markers from the map.
+         * Removes all markers from the map and closes the open info window.
          */
         fun clearMarkers() {
-            controller.getMarkers().forEach { it.mapView = null }
+            val markers = controller.getMarkers()
             controller.clearMarkers()
+            markers.forEach {
+                if (it.isInfoWindowShown) hideInfoWindow(it)
+                it.mapView = null
+            }
             invalidate()
         }
 
