@@ -7,7 +7,9 @@
 
 package de.afarber.openmapview
 
+import org.json.JSONObject
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -370,5 +372,69 @@ class GeoJsonParserTest {
 
         // Should return empty result since < 3 points
         assertEquals(0, result.polygons.size)
+    }
+
+    @Test
+    fun testMissingProperties_GiveNullTitleAndSnippet() {
+        val result = GeoJsonParser.parse("""{"type":"Feature","properties":{},"geometry":{"type":"Point","coordinates":[7.2,51.4]}}""")
+
+        // No empty info window for a point without a name
+        assertNull(result.markers[0].title)
+        assertNull(result.markers[0].snippet)
+    }
+
+    @Test
+    fun testTitleProperty_IsUsedWithoutName() {
+        val result =
+            GeoJsonParser.parse(
+                """{"type":"Feature","properties":{"title":"Mining Museum","description":"Museum"},""" +
+                    """"geometry":{"type":"Point","coordinates":[7.2174,51.4892]}}""",
+            )
+
+        assertEquals("Mining Museum", result.markers[0].title)
+        assertEquals("Museum", result.markers[0].snippet)
+    }
+
+    @Test
+    fun testMarkers_GetTheirPropertiesAsTag() {
+        val result =
+            GeoJsonParser.parse(
+                """{"type":"Feature","properties":{"name":"A"},"geometry":{"type":"Point","coordinates":[7.2,51.4]}}""",
+            )
+
+        assertEquals("A", (result.markers[0].tag as JSONObject).getString("name"))
+    }
+
+    @Test
+    fun testOpacity_IsAppliedToColors() {
+        val result =
+            GeoJsonParser.parse(
+                """{"type":"Feature","properties":{"stroke":"#ff0000","stroke-opacity":0.5,"fill":"#0000ff","fill-opacity":0.25},""" +
+                    """"geometry":{"type":"Polygon","coordinates":[[[7.2,51.4],[7.3,51.4],[7.3,51.5],[7.2,51.4]]]}}""",
+            )
+
+        val polygon = result.polygons[0]
+        assertEquals(0.5f, polygon.strokeColor.alpha, 0.01f)
+        assertEquals(1f, polygon.strokeColor.red, 0.01f)
+        assertEquals(0.25f, polygon.fillColor.alpha, 0.01f)
+        assertEquals(1f, polygon.fillColor.blue, 0.01f)
+    }
+
+    @Test
+    fun testBounds_ContainAllFeatures() {
+        val result =
+            GeoJsonParser.parse(
+                """{"type":"FeatureCollection","features":[""" +
+                    """{"type":"Feature","properties":{},"geometry":{"type":"Point","coordinates":[7.1,51.5]}},""" +
+                    """{"type":"Feature","properties":{},"geometry":{"type":"LineString","coordinates":[[7.2,51.4],[7.4,51.45]]}}""" +
+                    """]}""",
+            )
+
+        val bounds = result.bounds!!
+        assertEquals(51.4, bounds.southwest.latitude, 1e-9)
+        assertEquals(7.1, bounds.southwest.longitude, 1e-9)
+        assertEquals(51.5, bounds.northeast.latitude, 1e-9)
+        assertEquals(7.4, bounds.northeast.longitude, 1e-9)
+        assertNull(GeoJsonResult().bounds)
     }
 }

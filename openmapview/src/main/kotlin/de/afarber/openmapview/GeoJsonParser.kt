@@ -98,8 +98,9 @@ object GeoJsonParser {
         val marker =
             Marker(
                 position = latLng,
-                title = properties?.optString("name") ?: properties?.optString("title"),
-                snippet = properties?.optString("description"),
+                title = properties.text("name") ?: properties.text("title"),
+                snippet = properties.text("description"),
+                tag = properties,
             )
         return GeoJsonResult(markers = listOf(marker))
     }
@@ -115,8 +116,9 @@ object GeoJsonParser {
             val marker =
                 Marker(
                     position = latLng,
-                    title = properties?.optString("name") ?: properties?.optString("title"),
-                    snippet = properties?.optString("description"),
+                    title = properties.text("name") ?: properties.text("title"),
+                    snippet = properties.text("description"),
+                    tag = properties,
                 )
             markers.add(marker)
         }
@@ -133,7 +135,7 @@ object GeoJsonParser {
         val polyline =
             Polyline(
                 points = points,
-                strokeColor = parseColor(properties?.optString("stroke")) ?: Color.Blue,
+                strokeColor = properties.color("stroke", "stroke-opacity") ?: Color.Blue,
                 strokeWidth = properties?.optDouble("stroke-width", 5.0)?.toFloat() ?: 5f,
                 tag = properties,
             )
@@ -152,7 +154,7 @@ object GeoJsonParser {
                 val polyline =
                     Polyline(
                         points = points,
-                        strokeColor = parseColor(properties?.optString("stroke")) ?: Color.Blue,
+                        strokeColor = properties.color("stroke", "stroke-opacity") ?: Color.Blue,
                         strokeWidth = properties?.optDouble("stroke-width", 5.0)?.toFloat() ?: 5f,
                         tag = properties,
                     )
@@ -185,9 +187,11 @@ object GeoJsonParser {
             Polygon(
                 points = outerRing,
                 holes = holes,
-                strokeColor = parseColor(properties?.optString("stroke")) ?: Color.Black,
+                strokeColor = properties.color("stroke", "stroke-opacity") ?: Color.Black,
                 strokeWidth = properties?.optDouble("stroke-width", 3.0)?.toFloat() ?: 3f,
-                fillColor = parseColor(properties?.optString("fill")) ?: Color(red = 128, green = 128, blue = 128, alpha = 100),
+                fillColor =
+                    properties.color("fill", "fill-opacity")
+                        ?: Color(red = 128, green = 128, blue = 128, alpha = 100),
                 tag = properties,
             )
         return GeoJsonResult(polygons = listOf(polygon))
@@ -221,9 +225,20 @@ object GeoJsonParser {
         return points
     }
 
-    private fun parseColor(colorString: String?): Color? {
-        if (colorString == null) return null
-        return colorString.toComposeColor()
+    // A text property, or null when it is missing, null or empty. optString() would
+    // return "" for a missing property, and "null" for a JSON null.
+    private fun JSONObject?.text(name: String): String? =
+        if (this == null || isNull(name)) null else optString(name).takeIf { it.isNotEmpty() }
+
+    // A simplestyle color such as "#ff0000", with its opacity from 0 to 1 if given
+    private fun JSONObject?.color(
+        name: String,
+        opacityName: String,
+    ): Color? {
+        val color = text(name)?.toComposeColor() ?: return null
+        if (this == null || !has(opacityName)) return color
+        val opacity = optDouble(opacityName, 1.0).toFloat().coerceIn(0f, 1f)
+        return color.copy(alpha = opacity)
     }
 }
 
@@ -234,4 +249,17 @@ data class GeoJsonResult(
     val markers: List<Marker> = emptyList(),
     val polylines: List<Polyline> = emptyList(),
     val polygons: List<Polygon> = emptyList(),
-)
+) {
+    /**
+     * The smallest bounds that contain all markers, polylines and polygons, e.g. to show them
+     * with `CameraUpdateFactory.newLatLngBounds()`, or null when there are none.
+     */
+    val bounds: LatLngBounds?
+        get() {
+            val points = markers.map { it.position } + polylines.flatMap { it.points } + polygons.flatMap { it.points }
+            if (points.isEmpty()) return null
+            val builder = LatLngBounds.builder()
+            points.forEach { builder.include(it) }
+            return builder.build()
+        }
+}
