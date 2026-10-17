@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="points">Points</string>
+    <string name="lines">Lines</string>
+    <string name="areas">Areas</string>
+    <string name="fit">Show all</string>
+    <string name="loaded">%1$d points, %2$d lines, %3$d areas</string>
+    <string name="hint">Tap a feature for its details</string>
+</resources>
