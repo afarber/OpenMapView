@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title">A day in Bochum</string>
+    <string name="preview_caption">A static map with all gestures off: swiping over it scrolls the page, a tap jumps to the interactive map</string>
+    <string name="intro">Start at the German Mining Museum, one of the largest mining museums in the world. Its headframe towers over the city center and a visitor mine lies below the building. From there, walk south through the Stadtpark to the Main Station.</string>
+    <string name="interactive_title">Explore the route</string>
+    <string name="interactive_hint">Drag, pinch or use the buttons: the map moves and the page stays put</string>
+    <string name="camera">Camera at %1$.4f, %2$.4f, zoom %3$.1f</string>
+    <string name="campus">In the afternoon, take the U35 subway from the Main Station to the Ruhr University campus. Its concrete buildings line up along a central forum, and the Botanical Garden lies just south of it.</string>
+    <string name="planetarium">End the day at the Zeiss Planetarium next to the Stadtpark, where the evening shows project the night sky onto its dome.</string>
+    <string name="more">The text goes on below the map, so the page scrolls past it in both directions. Swipe over the map to pan it, and swipe over the text to scroll the page.</string>
+    <string name="mining_museum">Mining Museum</string>
+    <string name="main_station">Main Station</string>
+    <string name="ruhr_university">Ruhr University</string>
+    <string name="planetarium_name">Planetarium</string>
+</resources>
