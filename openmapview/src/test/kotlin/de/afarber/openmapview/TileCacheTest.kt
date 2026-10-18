@@ -32,6 +32,7 @@ class TileCacheTest {
 
     @Before
     fun setUp() {
+        TileCache.clearSharedMemory()
         cache = TileCache(RuntimeEnvironment.getApplication())
     }
 
@@ -105,10 +106,62 @@ class TileCacheTest {
         val tile = TileCoordinate(7, 8, 9)
         cache.put(tile, createMockBitmap(256, 256))
 
-        // A new cache has an empty memory cache, so the tile must come from disk
+        // A cache with a memory cache of its own must read the tile from disk
+        val other = TileCache(DiskTileCache(RuntimeEnvironment.getApplication(), DiskTileCache.DEFAULT_NAMESPACE))
+
+        assertNull(other.getMemory(tile))
+        assertNotNull(other.get(tile))
+    }
+
+    @Test
+    fun testCachesOfOneNamespaceShareMemory() {
+        val tile = TileCoordinate(7, 8, 9)
+        val bitmap = createMockBitmap(256, 256)
+        cache.put(tile, bitmap)
+
+        // E.g. the map of a tab that is shown again
         val other = TileCache(RuntimeEnvironment.getApplication())
 
-        assertNotNull(other.get(tile))
+        assertEquals(bitmap, other.getMemory(tile))
+    }
+
+    @Test
+    fun testNamespacesDoNotShareMemory() {
+        val tile = TileCoordinate(1, 2, 3)
+        val standard = TileCache(RuntimeEnvironment.getApplication(), "STANDARD")
+        val cyclosm = TileCache(RuntimeEnvironment.getApplication(), "CYCLOSM")
+
+        standard.put(tile, createMockBitmap(256, 256))
+
+        assertNotNull(standard.getMemory(tile))
+        assertNull(cyclosm.getMemory(tile))
+    }
+
+    @Test
+    fun testClearKeepsTheMemoryOfOtherNamespaces() {
+        val tile = TileCoordinate(1, 2, 3)
+        val standard = TileCache(RuntimeEnvironment.getApplication(), "STANDARD")
+        val cyclosm = TileCache(RuntimeEnvironment.getApplication(), "CYCLOSM")
+        standard.put(tile, createMockBitmap(256, 256))
+        cyclosm.put(tile, createMockBitmap(256, 256))
+
+        standard.clear()
+
+        assertNull(standard.getMemory(tile))
+        assertNotNull(cyclosm.getMemory(tile))
+    }
+
+    @Test
+    fun testMemoryOnlyCachesDoNotShareMemory() {
+        val tile = TileCoordinate(1, 2, 3)
+        // Like the caches of two tile overlays
+        val first = TileCache()
+        val second = TileCache()
+
+        first.put(tile, createMockBitmap(256, 256))
+
+        assertNotNull(first.getMemory(tile))
+        assertNull(second.getMemory(tile))
     }
 
     @Test

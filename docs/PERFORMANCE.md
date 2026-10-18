@@ -87,13 +87,13 @@ Implemented using Android's `LruCache`:
 - **Access time:** Nanoseconds (in-memory lookup)
 - **Size:** Dynamically calculated as 1/8 of max heap
 - **Eviction:** Least Recently Used (LRU) algorithm
-- **Lifecycle:** Freed together with the map view
+- **Lifecycle:** Shared by all maps in the process, with the tiles of each tile source kept apart. A map that is created again, e.g. when its tab or list item is shown again, draws the tiles from the first frame on instead of showing gray placeholders until they are read from disk. Tile overlays have memory caches of their own.
 
 New tiles are written to both levels as soon as they are downloaded, so they survive the process even if they are never evicted from memory:
 
 ```kotlin
 fun put(tile: TileCoordinate, bitmap: Bitmap, bytes: ByteArray) {
-    memoryCache.put(tile, bitmap)
+    memory.bitmaps.put(key(tile), bitmap)
     diskCache?.put(tile, bytes) // the server's bytes, called from the IO download coroutine
 }
 ```
