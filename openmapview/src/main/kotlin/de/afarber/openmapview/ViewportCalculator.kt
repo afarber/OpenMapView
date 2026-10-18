@@ -39,6 +39,7 @@ object ViewportCalculator {
      * @param viewHeight The viewport height in pixels
      * @param panOffsetX The horizontal pan offset in screen pixels (default 0)
      * @param panOffsetY The vertical pan offset in screen pixels (default 0)
+     * @param tileSize The width of a tile on screen at a whole zoom level, in pixels (default 256)
      * @return A list of tile coordinates that should be rendered
      */
     fun getVisibleTiles(
@@ -48,10 +49,11 @@ object ViewportCalculator {
         viewHeight: Int,
         panOffsetX: Float = 0f,
         panOffsetY: Float = 0f,
+        tileSize: Double = ProjectionUtils.TILE_SIZE,
     ): List<TileCoordinate> {
         val tileZoom = tileZoom(zoom)
         // Screen pixels per pixel of the tile zoom level
-        val scale = 2.0.pow((zoom - tileZoom).toDouble()).toFloat()
+        val scale = (2.0.pow((zoom - tileZoom).toDouble()) * tileSize / ProjectionUtils.TILE_SIZE).toFloat()
         return getVisibleTiles(
             center,
             tileZoom,

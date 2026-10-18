@@ -236,9 +236,9 @@ class MapPropertiesTest {
 
         composeRule.runOnIdle {
             state.showInfoWindow()
-            // The window is drawn above the 72 px default icon, its title box is 76 px high
-            touch(MotionEvent.ACTION_DOWN, bochum, 0L, yOffset = -120)
-            touch(MotionEvent.ACTION_UP, bochum, 50L, yOffset = -120)
+            // The window is drawn 4 px above the 42 px default icon, its title box is 30 px high
+            touch(MotionEvent.ACTION_DOWN, bochum, 0L, yOffset = -60)
+            touch(MotionEvent.ACTION_UP, bochum, 50L, yOffset = -60)
         }
 
         assertEquals("Bochum", clickedTitle)

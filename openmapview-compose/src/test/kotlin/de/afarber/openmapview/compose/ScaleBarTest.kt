@@ -32,6 +32,8 @@ class ScaleBarTest {
         assertEquals(156543.03 / 2, metersPerPixel(60.0, 0f), 0.01)
         // A fractional zoom scales smoothly
         assertEquals(metersPerPixel(0.0, 10f) / Math.sqrt(2.0), metersPerPixel(0.0, 10.5f), 0.001)
+        // Tiles are 256 dp, so a screen pixel at density 3 covers a third
+        assertEquals(156543.03 / 3, metersPerPixel(0.0, 0f, 3f), 0.01)
     }
 
     @Test

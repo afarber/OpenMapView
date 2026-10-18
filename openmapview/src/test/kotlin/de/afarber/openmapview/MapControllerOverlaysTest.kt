@@ -167,16 +167,17 @@ class MapControllerOverlaysTest {
 
     @Test
     fun testHandleInfoWindowTouch() {
-        // A 20x40 icon anchored at its bottom center, so the info window starts 50 pixels above the marker
+        // A 20x40 icon anchored at its bottom center, so the info window starts 44 pixels above the marker
+        // and is 46 pixels high at density 1
         val marker =
             controller.addMarker(
                 Marker(position = center, title = "Title", snippet = "Snippet", icon = image()),
             )
 
-        assertNull(controller.handleInfoWindowTouch(centerX, centerY - 100f))
+        assertNull(controller.handleInfoWindowTouch(centerX, centerY - 70f))
 
         marker.showInfoWindow()
-        assertSame(marker, controller.handleInfoWindowTouch(centerX, centerY - 100f))
+        assertSame(marker, controller.handleInfoWindowTouch(centerX, centerY - 70f))
         assertNull(controller.handleInfoWindowTouch(centerX, centerY + 100f))
     }
 

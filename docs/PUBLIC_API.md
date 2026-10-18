@@ -223,6 +223,8 @@ These properties apply to:
 | `setCenter(LatLng)`            | `void`      | Direct method on OpenMapView (not via a separate map object) |
 | `setZoom(float)`               | `void`      | Direct method on OpenMapView (not via a separate map object) |
 | `getZoom()`                    | `float`     | Direct method on OpenMapView (not via a separate map object) |
+| `setTileScale(float)`          | `void`      | OpenMapView only: screen pixels per tile pixel, default is the screen density (256 dp tiles as with the Maps SDK), 1 for one tile pixel per screen pixel |
+| `getTileScale()`               | `float`     | OpenMapView only |
 | `setMapType(int)`              | `void`      | Supports all 15 `MapType` constants, see MAP_TYPES.md            |
 | `getMapType()`                 | `int`       |                                                                  |
 | `setMapStyle(MapStyleOptions)` | `boolean`   | Not implemented                                                   |

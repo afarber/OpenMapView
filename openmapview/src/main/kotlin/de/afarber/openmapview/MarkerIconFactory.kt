@@ -13,39 +13,45 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import androidx.core.graphics.createBitmap
+import kotlin.math.roundToInt
 
 /**
  * Factory for creating default marker icons with customizable colors.
  */
 internal object MarkerIconFactory {
-    private const val DEFAULT_WIDTH = 48
-    private const val DEFAULT_HEIGHT = 72
+    // Icon size in dp, close to the default marker of the Maps SDK
+    private const val DEFAULT_WIDTH_DP = 28f
+    private const val DEFAULT_HEIGHT_DP = 42f
     private const val MAX_CACHE_SIZE = 10
 
-    // LRU cache for colored marker icons (hue -> bitmap)
-    private val iconCache = LinkedHashMap<Float, Bitmap>(MAX_CACHE_SIZE + 1, 0.75f, true)
+    // LRU cache for colored marker icons ((hue, density) -> bitmap)
+    private val iconCache = LinkedHashMap<Pair<Float, Float>, Bitmap>(MAX_CACHE_SIZE + 1, 0.75f, true)
 
     /**
      * Creates or returns a cached marker icon with the specified hue.
      *
      * @param hue The hue value (0-360) on the HSV color wheel. Defaults to 0 (red).
+     * @param density The screen density, the icon is 28x42 dp
      * @return A bitmap of the colored marker icon
      */
-    fun getDefaultIcon(hue: Float = 0f): Bitmap {
-        // Normalize hue to 0-360 range
-        val normalizedHue = hue % 360f
+    fun getDefaultIcon(
+        hue: Float = 0f,
+        density: Float = 1f,
+    ): Bitmap {
+        // Normalize hue to 0-360 range, icons of each density are cached separately
+        val key = Pair(hue % 360f, density)
 
         // Return cached icon if available. If a recycled bitmap somehow ended up in cache,
         // drop it and regenerate below.
-        iconCache[normalizedHue]?.let { cached ->
+        iconCache[key]?.let { cached ->
             if (!cached.isRecycled) {
                 return cached
             }
-            iconCache.remove(normalizedHue)
+            iconCache.remove(key)
         }
 
         // Create new icon
-        val bitmap = createMarkerIcon(normalizedHue)
+        val bitmap = createMarkerIcon(key.first, density)
 
         // Add to cache with LRU eviction.
         // Do not call recycle() here: returned icons may still be used by active map instances.
@@ -53,7 +59,7 @@ internal object MarkerIconFactory {
             val firstKey = iconCache.keys.first()
             iconCache.remove(firstKey)
         }
-        iconCache[normalizedHue] = bitmap
+        iconCache[key] = bitmap
 
         return bitmap
     }
@@ -61,8 +67,13 @@ internal object MarkerIconFactory {
     /**
      * Creates a marker icon bitmap with the specified hue.
      */
-    private fun createMarkerIcon(hue: Float): Bitmap {
-        val bitmap = createBitmap(DEFAULT_WIDTH, DEFAULT_HEIGHT)
+    private fun createMarkerIcon(
+        hue: Float,
+        density: Float,
+    ): Bitmap {
+        val width = (DEFAULT_WIDTH_DP * density).roundToInt().coerceAtLeast(1)
+        val height = (DEFAULT_HEIGHT_DP * density).roundToInt().coerceAtLeast(1)
+        val bitmap = createBitmap(width, height)
         val canvas = Canvas(bitmap)
 
         // Convert HSV to RGB
@@ -80,7 +91,7 @@ internal object MarkerIconFactory {
             Paint().apply {
                 style = Paint.Style.STROKE
                 color = borderColor
-                strokeWidth = 3f
+                strokeWidth = 1.5f * density
                 isAntiAlias = true
             }
 
@@ -93,17 +104,18 @@ internal object MarkerIconFactory {
 
         // Draw teardrop shape
         val path = Path()
-        val centerX = DEFAULT_WIDTH / 2f
-        val circleRadius = DEFAULT_WIDTH / 2f - 4f
-        val circleBottom = circleRadius * 2 + 4f
+        val inset = 1.5f * density
+        val centerX = width / 2f
+        val circleRadius = width / 2f - 2 * inset
+        val circleBottom = circleRadius * 2 + 2 * inset
 
         // Create teardrop using circle + triangle
-        path.addCircle(centerX, circleRadius + 2f, circleRadius, Path.Direction.CW)
+        path.addCircle(centerX, circleRadius + inset, circleRadius, Path.Direction.CW)
 
         // Add the pointy bottom
-        path.moveTo(centerX - circleRadius * 0.5f, circleBottom - 2f)
-        path.lineTo(centerX, DEFAULT_HEIGHT.toFloat() - 2f)
-        path.lineTo(centerX + circleRadius * 0.5f, circleBottom - 2f)
+        path.moveTo(centerX - circleRadius * 0.5f, circleBottom - inset)
+        path.lineTo(centerX, height - inset)
+        path.lineTo(centerX + circleRadius * 0.5f, circleBottom - inset)
         path.close()
 
         // Draw the marker
@@ -111,7 +123,7 @@ internal object MarkerIconFactory {
         canvas.drawPath(path, borderPaint)
 
         // Draw white center circle
-        canvas.drawCircle(centerX, circleRadius + 2f, circleRadius * 0.4f, centerPaint)
+        canvas.drawCircle(centerX, circleRadius + inset, circleRadius * 0.4f, centerPaint)
 
         return bitmap
     }

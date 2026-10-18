@@ -80,8 +80,9 @@ fun ScaleBar(
     shadowColor: Color = Color.White,
 ) {
     val position = cameraPositionState.position
-    val widthPx = with(LocalDensity.current) { width.toPx() }
-    val metersPerPixel = metersPerPixel(position.target.latitude, position.zoom)
+    val density = LocalDensity.current.density
+    val widthPx = width.value * density
+    val metersPerPixel = metersPerPixel(position.target.latitude, position.zoom, density)
     val metric = metricScale(metersPerPixel * widthPx)
     val imperial = imperialScale(metersPerPixel * widthPx)
     val textStyle = TextStyle(color = textColor, fontSize = 12.sp)
@@ -164,13 +165,15 @@ private const val METERS_PER_FOOT = 0.3048
 private const val FEET_PER_MILE = 5280
 
 /**
- * Meters per screen pixel at a latitude and zoom on 256 px Web Mercator tiles, as drawn by
- * OpenMapView: 156543 m at the equator at zoom 0, halved on each zoom level.
+ * Meters per screen pixel at a latitude and zoom on 256 dp Web Mercator tiles, as drawn by
+ * OpenMapView with the default tile scale: 156543 m per dp at the equator at zoom 0, halved
+ * on each zoom level.
  */
 internal fun metersPerPixel(
     latitude: Double,
     zoom: Float,
-): Double = EARTH_CIRCUMFERENCE_METERS / 256 * cos(latitude * PI / 180) / 2.0.pow(zoom.toDouble())
+    density: Float = 1f,
+): Double = EARTH_CIRCUMFERENCE_METERS / (256 * density) * cos(latitude * PI / 180) / 2.0.pow(zoom.toDouble())
 
 /** The largest 1, 2 or 5 times a power of ten that is not above [max], e.g. 500 for 730. */
 internal fun roundDistance(max: Double): Double {

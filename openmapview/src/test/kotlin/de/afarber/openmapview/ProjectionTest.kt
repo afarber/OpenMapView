@@ -141,4 +141,25 @@ class ProjectionTest {
     }
 
     // Note: Projection class padding support is implemented and tested via MapController integration tests
+
+    @Test
+    fun testTileSize_ScalesTheWorld() {
+        assertEquals(768.0, ProjectionUtils.worldSize(0f, 768.0), 0.0)
+        assertEquals(768.0 * 1024, ProjectionUtils.worldSize(10f, 768.0), 0.0)
+
+        val latLng = LatLng(51.4661, 7.2491)
+        val (x, y) = ProjectionUtils.latLngToPixelExact(latLng, 10f)
+        val (x3, y3) = ProjectionUtils.latLngToPixelExact(latLng, 10f, 768.0)
+        assertEquals(x * 3, x3, 1e-6)
+        assertEquals(y * 3, y3, 1e-6)
+
+        val result = ProjectionUtils.pixelToLatLng(x3, y3, 10f, 768.0)
+        assertEquals(latLng.latitude, result.latitude, 1e-9)
+        assertEquals(latLng.longitude, result.longitude, 1e-9)
+        assertEquals(
+            ProjectionUtils.metersPerPixelAtLatitude(51.0, 10f) / 3,
+            ProjectionUtils.metersPerPixelAtLatitude(51.0, 10f, 768.0),
+            1e-9,
+        )
+    }
 }

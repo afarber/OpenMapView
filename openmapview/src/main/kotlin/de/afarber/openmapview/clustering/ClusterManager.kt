@@ -136,7 +136,8 @@ class ClusterManager<T : ClusterItem>(
     /** Computes the clusters for the current zoom level and draws their markers. */
     fun cluster() {
         val zoom = currentZoom()
-        val clusters = DistanceBasedAlgorithm.cluster(items, zoom, maxDistanceDp * density.toDouble())
+        // The algorithm measures in pixels of 256 px tiles, which are drawn tileScale times larger
+        val clusters = DistanceBasedAlgorithm.cluster(items, zoom, maxDistanceDp * density.toDouble() / map.getTileScale())
 
         markers.keys.forEach { map.removeMarker(it) }
         markers.clear()

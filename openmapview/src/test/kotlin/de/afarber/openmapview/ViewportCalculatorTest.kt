@@ -209,4 +209,17 @@ class ViewportCalculatorTest {
         assertTrue(tiles.minOf { it.y } * 256 <= top)
         assertTrue((tiles.maxOf { it.y } + 1) * 256 >= bottom)
     }
+
+    @Test
+    fun testGetVisibleTiles_LargerTilesCoverTheViewWithFewerTiles() {
+        val center = LatLng(51.4661, 7.2491)
+
+        val small = ViewportCalculator.getVisibleTiles(center, 10f, 1080, 1920)
+        val large = ViewportCalculator.getVisibleTiles(center, 10f, 1080, 1920, tileSize = 768.0)
+        // The same view at density 3 shows the area of a 360x640 view at density 1
+        val dp = ViewportCalculator.getVisibleTiles(center, 10f, 360, 640)
+
+        assertEquals(dp, large)
+        assertTrue(large.size < small.size)
+    }
 }

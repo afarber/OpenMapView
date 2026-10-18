@@ -69,12 +69,12 @@ class MarkerInfoWindowTest {
     }
 
     // Draws the map; returns it with the marker's screen position. The default icon is
-    // 72 px high, and its info window ends 10 px above it.
+    // 42 px high, and its info window ends 4 px above it.
     private fun drawMap(): Triple<Bitmap, Int, Int> {
         val bitmap = createBitmap(map.width, map.height)
         map.draw(Canvas(bitmap))
         val point = map.getProjection().toScreenLocation(bochum)
-        return Triple(bitmap, point.x, point.y - 82)
+        return Triple(bitmap, point.x, point.y - 46)
     }
 
     @Test
@@ -99,9 +99,9 @@ class MarkerInfoWindowTest {
         composeRule.runOnIdle { state.showInfoWindow() }
         val (bitmap, x, windowBottom) = composeRule.runOnIdle { drawMap() }
 
-        // The green box with 20 px of white frame padding around it
-        assertEquals(green, bitmap.getPixel(x, windowBottom - 35))
-        assertEquals(white, bitmap.getPixel(x, windowBottom - 8))
+        // The green box with 8 px of white frame padding around it
+        assertEquals(green, bitmap.getPixel(x, windowBottom - 23))
+        assertEquals(white, bitmap.getPixel(x, windowBottom - 4))
     }
 
     @Test
@@ -129,6 +129,6 @@ class MarkerInfoWindowTest {
         val (bitmap, x, windowBottom) = composeRule.runOnIdle { drawMap() }
 
         // The default box is white where it has no text
-        assertEquals(white, bitmap.getPixel(x, windowBottom - 5))
+        assertEquals(white, bitmap.getPixel(x, windowBottom - 3))
     }
 }

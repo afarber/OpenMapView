@@ -36,9 +36,9 @@ class InfoWindowAdapterTest {
     private lateinit var mapView: OpenMapView
     private lateinit var marker: Marker
 
-    // A marker at the center of the 400x400 map: its default icon is 72 px high and
-    // anchored at the bottom, so its info window ends 82 px above the center
-    private val windowBottom = 200 - 72 - 10
+    // A marker at the center of the 400x400 map: its default icon is 42 px high and
+    // anchored at the bottom, so its info window ends 46 px above the center
+    private val windowBottom = 200 - 42 - 4
 
     @Before
     fun setUp() {
@@ -103,11 +103,11 @@ class InfoWindowAdapterTest {
         val bitmap = drawMap()
 
         assertTrue(assertNotNullAndGet(marker.infoWindowImage).framed)
-        // The 100 px high frame: 20 px white padding around the green view
-        val frameTop = windowBottom - 100
-        assertEquals(Color.GREEN, bitmap.getPixel(200, frameTop + 50))
-        assertEquals(Color.WHITE, bitmap.getPixel(200, frameTop + 10))
-        assertEquals(Color.WHITE, bitmap.getPixel(135, frameTop + 50))
+        // The 76 px high frame: 8 dp white padding around the green view
+        val frameTop = windowBottom - 76
+        assertEquals(Color.GREEN, bitmap.getPixel(200, frameTop + 38))
+        assertEquals(Color.WHITE, bitmap.getPixel(200, frameTop + 4))
+        assertEquals(Color.WHITE, bitmap.getPixel(135, frameTop + 38))
     }
 
     @Test
