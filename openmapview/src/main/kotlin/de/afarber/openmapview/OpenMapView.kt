@@ -2062,16 +2062,18 @@ class OpenMapView
         fun getTileOverlays(): List<TileOverlay> = controller.getTileOverlays()
 
         /**
-         * Removes all markers, polylines, polygons, circles, and tile overlays from the map.
+         * Removes all markers, polylines, polygons, circles, ground overlays and tile overlays
+         * from the map.
          *
          * This is equivalent to calling clearMarkers(), clearPolylines(), clearPolygons(),
-         * clearCircles(), and clearTileOverlays().
+         * clearCircles(), clearGroundOverlays() and clearTileOverlays().
          */
         fun clear() {
             clearMarkers()
             clearPolylines()
             clearPolygons()
             clearCircles()
+            clearGroundOverlays()
             clearTileOverlays()
         }
 
