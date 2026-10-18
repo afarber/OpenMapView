@@ -145,6 +145,64 @@ class MapControllerOverlaysTest {
     }
 
     @Test
+    fun testHandleGroundOverlayTouch_BottomCenterAnchorAtPosition() {
+        val overlay =
+            controller.addGroundOverlay(
+                GroundOverlay(
+                    image = image(),
+                    position = center,
+                    width = 5000f,
+                    height = 5000f,
+                    anchor = Pair(0.5f, 1f),
+                    clickable = true,
+                ),
+            )
+
+        // The image stands above the position, like a pin on its tip
+        assertSame(overlay, controller.handleGroundOverlayTouch(centerX, centerY - 10f))
+        assertNull(controller.handleGroundOverlayTouch(centerX, centerY + 10f))
+    }
+
+    @Test
+    fun testHandleGroundOverlayTouch_TopLeftAnchorAtPosition() {
+        val overlay =
+            controller.addGroundOverlay(
+                GroundOverlay(
+                    image = image(),
+                    position = center,
+                    width = 5000f,
+                    height = 5000f,
+                    anchor = Pair(0f, 0f),
+                    clickable = true,
+                ),
+            )
+
+        assertSame(overlay, controller.handleGroundOverlayTouch(centerX + 10f, centerY + 10f))
+        assertNull(controller.handleGroundOverlayTouch(centerX - 10f, centerY + 10f))
+        assertNull(controller.handleGroundOverlayTouch(centerX + 10f, centerY - 10f))
+    }
+
+    @Test
+    fun testHandleGroundOverlayTouch_RotatesAroundAnchorAtPosition() {
+        val overlay =
+            controller.addGroundOverlay(
+                GroundOverlay(
+                    image = image(),
+                    position = center,
+                    width = 5000f,
+                    height = 5000f,
+                    anchor = Pair(0.5f, 1f),
+                    bearing = 180f,
+                    clickable = true,
+                ),
+            )
+
+        // Turned upside down around its tip, the image hangs below the position
+        assertSame(overlay, controller.handleGroundOverlayTouch(centerX, centerY + 10f))
+        assertNull(controller.handleGroundOverlayTouch(centerX, centerY - 10f))
+    }
+
+    @Test
     fun testHandleGroundOverlayTouch_IgnoresNonClickable() {
         controller.addGroundOverlay(GroundOverlay(image = image(), bounds = bounds))
 
