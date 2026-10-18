@@ -10,6 +10,7 @@ package de.afarber.openmapview
 import android.os.Looper
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -139,11 +140,73 @@ class CameraAnimationTest {
     }
 
     @Test
-    fun testMoveToOtherPosition_FiresStartedAndIdle() {
+    fun testMoveToOtherPosition_FiresStartedAndIdleLater() {
         controller.moveCamera(CameraUpdateFactory.zoomTo(12f))
 
-        assertEquals(listOf("started", "idle"), events)
+        // The camera has moved, the listeners hear about it on the main thread
         assertEquals(12f, controller.getCameraPosition().zoom)
+        assertEquals(emptyList<String>(), events)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(listOf("started", "idle"), events)
+    }
+
+    @Test
+    fun testListenerSetAfterMove_HearsAboutIt() {
+        controller.onCameraIdleListener = null
+
+        controller.moveCamera(CameraUpdateFactory.zoomTo(12f))
+        controller.onCameraIdleListener = OnCameraIdleListener { events.add("idle") }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(listOf("started", "idle"), events)
+    }
+
+    @Test
+    fun testTwoMoves_ReportEventsInOrder() {
+        controller.moveCamera(CameraUpdateFactory.zoomTo(12f))
+        controller.moveCamera(CameraUpdateFactory.zoomTo(13f))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(listOf("started", "idle", "started", "idle"), events)
+    }
+
+    @Test
+    fun testAnimationAfterMove_ReportsMoveFirst() {
+        controller.moveCamera(CameraUpdateFactory.zoomTo(12f))
+        controller.animateCamera(CameraUpdateFactory.zoomTo(15f), ANIMATION_MS, null)
+
+        assertEquals(listOf("started", "idle", "started"), events)
+    }
+
+    @Test
+    fun testMoveBeforeLayout_ReportsIdleAfterLayout() {
+        val map = MapController(RuntimeEnvironment.getApplication())
+        var visibleWidth = 0.0
+        map.onCameraIdleListener =
+            OnCameraIdleListener {
+                val region = map.createProjection().getVisibleRegion()
+                visibleWidth = region.latLngBounds.northeast.longitude - region.latLngBounds.southwest.longitude
+                events.add("idle")
+            }
+
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(51.4661, 7.2491), 12f))
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(emptyList<String>(), events)
+
+        map.setViewSize(400, 400)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(listOf("idle"), events)
+        assertTrue(visibleWidth > 0.0)
+        map.onDestroy()
+    }
+
+    @Test
+    fun testDestroyedMap_ReportsNoMove() {
+        controller.moveCamera(CameraUpdateFactory.zoomTo(12f))
+        controller.onDestroy()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(emptyList<String>(), events)
     }
 
     private companion object {
