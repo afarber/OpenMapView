@@ -15,6 +15,7 @@ import android.view.View
 import androidx.core.graphics.createBitmap
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
@@ -103,8 +104,8 @@ class InfoWindowAdapterTest {
         val bitmap = drawMap()
 
         assertTrue(assertNotNullAndGet(marker.infoWindowImage).framed)
-        // The 76 px high frame: 8 dp white padding around the green view
-        val frameTop = windowBottom - 76
+        // The 76 px high frame: 8 dp white padding around the green view, above the 8 dp pointer
+        val frameTop = windowBottom - 8 - 76
         assertEquals(Color.GREEN, bitmap.getPixel(200, frameTop + 38))
         assertEquals(Color.WHITE, bitmap.getPixel(200, frameTop + 4))
         assertEquals(Color.WHITE, bitmap.getPixel(135, frameTop + 38))
@@ -118,6 +119,19 @@ class InfoWindowAdapterTest {
 
         assertTrue(marker.isInfoWindowShown)
         assertNull(marker.infoWindowImage)
+    }
+
+    @Test
+    fun testDefaultWindow_PointsAtMarker() {
+        mapView.showInfoWindow(marker)
+        val bitmap = drawMap()
+
+        // The 16 dp wide pointer narrows down to its tip at the window bottom, above the icon
+        assertEquals(Color.WHITE, bitmap.getPixel(200, windowBottom - 6))
+        assertEquals(Color.WHITE, bitmap.getPixel(200, windowBottom - 2))
+        assertNotEquals(Color.WHITE, bitmap.getPixel(194, windowBottom - 2))
+        assertNotEquals(Color.WHITE, bitmap.getPixel(206, windowBottom - 2))
+        assertNotEquals(Color.WHITE, bitmap.getPixel(200, windowBottom + 2))
     }
 
     @Test

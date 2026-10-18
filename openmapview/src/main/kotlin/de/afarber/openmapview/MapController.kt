@@ -16,6 +16,7 @@ import android.graphics.Color
 import android.graphics.ColorFilter
 import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
@@ -111,6 +112,11 @@ class MapController(
         // Default info window layout, in dp
         private const val INFO_WINDOW_PADDING_DP = 8f
         private const val INFO_WINDOW_LINE_SPACING_DP = 4f
+        private const val INFO_WINDOW_CORNER_DP = 8f
+
+        // The triangle below the default frame, pointing at the marker
+        private const val INFO_WINDOW_POINTER_WIDTH_DP = 16f
+        private const val INFO_WINDOW_POINTER_HEIGHT_DP = 8f
 
         // Between the info window and the top of its marker
         private const val INFO_WINDOW_GAP_DP = 4f
@@ -127,6 +133,13 @@ class MapController(
     private val infoWindowPadding = INFO_WINDOW_PADDING_DP * density
     private val infoWindowLineSpacing = INFO_WINDOW_LINE_SPACING_DP * density
     private val infoWindowGap = INFO_WINDOW_GAP_DP * density
+    private val infoWindowCorner = INFO_WINDOW_CORNER_DP * density
+    private val infoWindowPointerWidth = INFO_WINDOW_POINTER_WIDTH_DP * density
+    private val infoWindowPointerHeight = INFO_WINDOW_POINTER_HEIGHT_DP * density
+
+    // The outline of the default frame and one of its corners, reused for each info window
+    private val infoWindowFramePath = Path()
+    private val infoWindowCornerRect = RectF()
 
     private val infoWindowBackgroundPaint =
         Paint().apply {
@@ -2149,8 +2162,9 @@ class MapController(
                 continue
             }
 
-            canvas.drawRoundRect(rect, 8f, 8f, infoWindowBackgroundPaint)
-            canvas.drawRoundRect(rect, 8f, 8f, infoWindowBorderPaint)
+            buildInfoWindowFrame(rect)
+            canvas.drawPath(infoWindowFramePath, infoWindowBackgroundPaint)
+            canvas.drawPath(infoWindowFramePath, infoWindowBorderPaint)
 
             if (image != null) {
                 // A view from InfoWindowAdapter.getInfoContents, inside the default frame
@@ -2175,8 +2189,41 @@ class MapController(
     }
 
     /**
+     * Sets [infoWindowFramePath] to the outline of the default frame: the rounded [rect]
+     * with a triangle below its bottom center, pointing at the marker. One outline, so the
+     * border has no seam between the two.
+     */
+    private fun buildInfoWindowFrame(rect: RectF) {
+        val r = infoWindowCorner.coerceAtMost(minOf(rect.width(), rect.height()) / 2)
+        val halfPointer = (infoWindowPointerWidth / 2).coerceAtMost(rect.width() / 2 - r)
+        val centerX = rect.centerX()
+        val corner = infoWindowCornerRect
+        infoWindowFramePath.apply {
+            rewind()
+            moveTo(rect.left + r, rect.top)
+            lineTo(rect.right - r, rect.top)
+            corner.set(rect.right - 2 * r, rect.top, rect.right, rect.top + 2 * r)
+            arcTo(corner, 270f, 90f)
+            lineTo(rect.right, rect.bottom - r)
+            corner.set(rect.right - 2 * r, rect.bottom - 2 * r, rect.right, rect.bottom)
+            arcTo(corner, 0f, 90f)
+            lineTo(centerX + halfPointer, rect.bottom)
+            lineTo(centerX, rect.bottom + infoWindowPointerHeight)
+            lineTo(centerX - halfPointer, rect.bottom)
+            lineTo(rect.left + r, rect.bottom)
+            corner.set(rect.left, rect.bottom - 2 * r, rect.left + 2 * r, rect.bottom)
+            arcTo(corner, 90f, 90f)
+            lineTo(rect.left, rect.top + r)
+            corner.set(rect.left, rect.top, rect.left + 2 * r, rect.top + 2 * r)
+            arcTo(corner, 180f, 90f)
+            close()
+        }
+    }
+
+    /**
      * Returns the screen area of the marker's info window, above its icon,
-     * or null if the window is not shown.
+     * or null if the window is not shown. The pointer of the default frame
+     * is below this area, between it and the icon.
      */
     private fun infoWindowRect(marker: Marker): RectF? {
         if (!marker.isInfoWindowShown || !marker.visible) return null
@@ -2221,8 +2268,10 @@ class MapController(
         val icon = loadBitmap(marker.icon)
         val markerHeight = icon.height * marker.anchor.second
 
+        // A view from InfoWindowAdapter.getInfoWindow has no pointer
+        val pointer = if (image != null && !image.framed) 0f else infoWindowPointerHeight
         val left = screenX - boxWidth / 2
-        val top = screenY - markerHeight - boxHeight - infoWindowGap
+        val top = screenY - markerHeight - boxHeight - pointer - infoWindowGap
         return RectF(left, top, left + boxWidth, top + boxHeight)
     }
 
