@@ -549,15 +549,14 @@ class MapController(
     }
 
     // Keeps the zoom within the preferences. A changed zoom is a camera move the listeners
-    // must hear about, e.g. to update a status or the Compose camera state; a running gesture
-    // or animation reports its own idle event when it ends.
+    // must hear about, e.g. to update a status or the Compose camera state. Like a move by
+    // moveCamera(), it is reported later on the main thread; a running gesture or animation
+    // reports its own idle event when it ends.
     private fun clampZoomToPreferences() {
         val clamped = zoom.coerceIn(minZoomPreference, maxZoomPreference)
         if (clamped == zoom) return
         setZoom(clamped)
-        if (!isCameraMoving) {
-            reportInstantMove(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION)
-        }
+        if (!isCameraMoving) postInstantMoveEvents()
     }
 
     /**
@@ -951,21 +950,6 @@ class MapController(
     }
 
     /**
-     * Reports an instant camera change that is not a gesture, e.g. by the zoom buttons:
-     * fires onCameraMoveStarted, onCameraMove and onCameraIdle.
-     */
-    internal fun reportInstantMove(reason: Int) {
-        flushPendingCameraEvents()
-        if (!isCameraMoving) {
-            onCameraMoveStartedListener?.onCameraMoveStarted(reason)
-        }
-        onCameraMoveListener?.onCameraMove()
-        isCameraMoving = false
-        currentMoveReason = null
-        onCameraIdleListener?.onCameraIdle()
-    }
-
-    /**
      * Sets the camera target: the location shown at the center of the area inside the map
      * padding, or at the view center without padding.
      *
@@ -1194,6 +1178,15 @@ class MapController(
         setCenter(targetPosition.target)
 
         // The started and idle events of the previous move were reported by stopAnimation()
+        postInstantMoveEvents()
+    }
+
+    /**
+     * Has [flushPendingCameraEvents] report an instant move later on the main thread,
+     * or after the view gets a size. Several moves before then are reported once.
+     */
+    private fun postInstantMoveEvents() {
+        if (hasPendingMoveEvents) return
         hasPendingMoveEvents = true
         if (viewWidth > 0 && viewHeight > 0) cameraEventHandler.post(pendingMoveEvents)
     }

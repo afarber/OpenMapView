@@ -576,9 +576,13 @@ class MapControllerTest {
 
         controller.setMaxZoomPreference(16.0f)
 
+        // Like a move by moveCamera(), reported later on the main thread
+        assertEquals(emptyList<String>(), events)
+        shadowOf(Looper.getMainLooper()).idle()
+
         // The camera moved, so the listeners must hear about it, e.g. to update their state
         val started = "started:${OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION}"
-        assertEquals(listOf(started, "move", "idle"), events)
+        assertEquals(listOf(started, "idle"), events)
     }
 
     @Test
@@ -588,8 +592,12 @@ class MapControllerTest {
 
         controller.setMinZoomPreference(7.0f)
 
+        // Like a move by moveCamera(), reported later on the main thread
+        assertEquals(emptyList<String>(), events)
+        shadowOf(Looper.getMainLooper()).idle()
+
         val started = "started:${OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION}"
-        assertEquals(listOf(started, "move", "idle"), events)
+        assertEquals(listOf(started, "idle"), events)
     }
 
     @Test
