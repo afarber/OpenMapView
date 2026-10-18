@@ -14,6 +14,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -50,6 +51,17 @@ class MapLifecycleTest {
         container.addView(mapView)
 
         assertEquals(1, lifecycle.observerCount)
+    }
+
+    @Test
+    fun testDetachedView_KeepsTheMarkerIconsOfOtherMaps() {
+        // E.g. drawn by the map of another tab
+        val icon = MarkerIconFactory.getDefaultIcon(120f)
+        container.addView(mapView)
+
+        container.removeView(mapView)
+
+        assertSame(icon, MarkerIconFactory.getDefaultIcon(120f))
     }
 
     @Test
