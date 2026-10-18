@@ -212,7 +212,7 @@ These properties apply to:
 
 | Method              | Return Type  | Notes |
 | ------------------- | ------------ | ----- |
-| `getProjection()`   | `Projection` |       |
+| `getProjection()`   | `Projection` | The world repeats horizontally: locations are projected to the copy nearest the view center, and the visible region may cross the antimeridian |
 | `getMaxZoomLevel()` | `float`      |       |
 | `getMinZoomLevel()` | `float`      |       |
 

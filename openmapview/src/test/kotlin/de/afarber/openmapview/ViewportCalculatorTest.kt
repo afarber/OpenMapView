@@ -222,4 +222,31 @@ class ViewportCalculatorTest {
         assertEquals(dp, large)
         assertTrue(large.size < small.size)
     }
+
+    @Test
+    fun testGetVisibleTiles_RepeatsWorldEastOfAntimeridian() {
+        // At zoom 3 the world is 8 tiles wide, the view reaches past its east edge
+        val tiles = ViewportCalculator.getVisibleTiles(LatLng(0.0, 179.9), 3, 512, 512)
+
+        assertTrue(tiles.any { it.x >= 8 })
+        assertTrue(tiles.map { it.wrapped() }.all { it.x in 0..7 })
+        // The copy east of the world shows its western tiles
+        assertTrue(tiles.map { it.wrapped() }.any { it.x == 0 })
+    }
+
+    @Test
+    fun testGetVisibleTiles_RepeatsWorldWestOfAntimeridian() {
+        val tiles = ViewportCalculator.getVisibleTiles(LatLng(0.0, -179.9), 3, 512, 512)
+
+        assertTrue(tiles.any { it.x < 0 })
+        assertTrue(tiles.map { it.wrapped() }.any { it.x == 7 })
+    }
+
+    @Test
+    fun testWrapped_MapsCopiesToTheMainWorld() {
+        assertEquals(TileCoordinate(7, 2, 3), TileCoordinate(-1, 2, 3).wrapped())
+        assertEquals(TileCoordinate(0, 2, 3), TileCoordinate(8, 2, 3).wrapped())
+        assertEquals(TileCoordinate(1, 2, 3), TileCoordinate(17, 2, 3).wrapped())
+        assertEquals(TileCoordinate(5, 2, 3), TileCoordinate(5, 2, 3).wrapped())
+    }
 }
