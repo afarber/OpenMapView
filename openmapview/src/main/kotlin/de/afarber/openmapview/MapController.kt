@@ -12,6 +12,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.ColorFilter
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Rect
@@ -334,6 +335,9 @@ class MapController(
     // Tiles are scaled to fractional zoom levels, so they are drawn with bitmap filtering
     private val tilePaint = Paint(Paint.FILTER_BITMAP_FLAG)
     private val fallbackTilePaint = Paint(Paint.FILTER_BITMAP_FLAG)
+
+    // Tile overlays are drawn without the tile color filter
+    private val overlayTilePaint = Paint(Paint.FILTER_BITMAP_FLAG)
     private val fallbackSrc = Rect()
     private val fallbackDst = RectF()
     private val tileDst = RectF()
@@ -926,6 +930,24 @@ class MapController(
      * Returns how many screen pixels a pixel of a 256 px tile covers, see [setTileScale].
      */
     fun getTileScale(): Float = (tileSize / ProjectionUtils.TILE_SIZE).toFloat()
+
+    /**
+     * Sets a color filter for the base map tiles and their placeholders, e.g.
+     * [TileColorFilters.invertedDark] for a dark map. Markers, shapes, ground and tile
+     * overlays and info windows keep their colors.
+     *
+     * @param filter The filter, or null to draw the tiles unchanged
+     */
+    fun setTileColorFilter(filter: ColorFilter?) {
+        tilePaint.colorFilter = filter
+        fallbackTilePaint.colorFilter = filter
+        tilePlaceholderPaint.colorFilter = filter
+    }
+
+    /**
+     * Returns the color filter of the base map tiles, see [setTileColorFilter].
+     */
+    fun getTileColorFilter(): ColorFilter? = tilePaint.colorFilter
 
     /**
      * Returns the current camera position.
@@ -2259,7 +2281,7 @@ class MapController(
                     alpha = ((1f - overlay.transparency) * 255).toInt()
                 }
             } else {
-                tilePaint
+                overlayTilePaint
             }
 
         for (tile in visibleTiles) {

@@ -158,6 +158,20 @@ Dark-colored basemap suitable for night mode and low-light conditions.
 mapView.setMapType(MapType.CARTO_DARK)
 ```
 
+**Keyless dark mode:** without an API key, a color filter can darken the STANDARD tiles. It inverts their colors and keeps the hues, so water stays blue. This is an approximation and looks less polished than CARTO_DARK. Only the tiles are filtered: markers, shapes and info windows keep their colors, on every API level.
+
+```kotlin
+mapView.setTileColorFilter(TileColorFilters.invertedDark())
+
+// Compose
+val darkTiles = remember { TileColorFilters.invertedDark().asComposeColorFilter() }
+OpenMap(properties = MapProperties(tileColorFilter = darkTiles))
+```
+
+```java
+mapView.setTileColorFilter(TileColorFilters.invertedDark());
+```
+
 #### 9. CARTO_VOYAGER - Modern Colorful Basemap
 **`MapType.CARTO_VOYAGER`** (constant value: 12) **Requires CARTO API Key**
 
