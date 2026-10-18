@@ -345,6 +345,10 @@ class MapController(
 
     // Tile overlays are drawn without the tile color filter
     private val overlayTilePaint = Paint(Paint.FILTER_BITMAP_FLAG)
+
+    // Shared by all ground overlays, which only differ in alpha; filtered as they are scaled
+    private val groundOverlayPaint = Paint(Paint.FILTER_BITMAP_FLAG)
+
     private val fallbackSrc = Rect()
     private val fallbackDst = RectF()
     private val tileDst = RectF()
@@ -1718,10 +1722,7 @@ class MapController(
         val bitmap = loadBitmap(groundOverlay.image)
         val rect = groundOverlayScreenRect(groundOverlay, bitmap, centerPixelX, centerPixelY) ?: return
 
-        val paint =
-            Paint().apply {
-                alpha = ((1f - groundOverlay.transparency) * 255).toInt()
-            }
+        groundOverlayPaint.alpha = ((1f - groundOverlay.transparency) * 255).toInt()
 
         canvas.withSave {
             if (groundOverlay.bearing != 0f) {
@@ -1729,7 +1730,7 @@ class MapController(
                 val anchorY = rect.top + rect.height() * groundOverlay.anchor.second
                 canvas.rotate(groundOverlay.bearing, anchorX, anchorY)
             }
-            canvas.drawBitmap(bitmap, null, rect, paint)
+            canvas.drawBitmap(bitmap, null, rect, groundOverlayPaint)
         }
     }
 
