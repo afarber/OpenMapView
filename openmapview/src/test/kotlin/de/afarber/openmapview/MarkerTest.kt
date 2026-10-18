@@ -11,6 +11,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MarkerTest {
@@ -75,6 +76,19 @@ class MarkerTest {
         assertNotNull(marker1.id)
         assertNotNull(marker2.id)
         assertNotEquals(marker1.id, marker2.id)
+    }
+
+    @Test
+    fun testMarkerIdIsShortAndStable() {
+        val marker = Marker(position = LatLng(51.4661, 7.2491))
+        val id = marker.id
+
+        marker.position = LatLng(52.0, 8.0)
+        marker.title = "Moved"
+
+        assertTrue(id.matches(Regex("m\\d+")))
+        assertEquals(id, marker.id)
+        assertNotEquals(id, marker.copy().id)
     }
 
     @Test

@@ -56,6 +56,7 @@ The returned `Marker` is a live handle, as in the Maps SDK: setting a property r
 | ------------------ | ----------- | -------------------------------------------------------------------- |
 | `setPosition(LatLng)`, `setTitle(String)`, `setSnippet(String)`, `setIcon(BitmapDescriptor)`, `setAlpha(float)`, `setVisible(boolean)`, `setDraggable(boolean)`, `setZIndex(float)`, `setTag(Object)` and getters | `void` | Kotlin properties `position`, `title`, ... |
 | `setAnchor(float, float)` | `void` | Kotlin: `anchor` as a `Pair` |
+| `getId()` | `String` | Kotlin: `id`, e.g. "m0", unique and stable for the marker's lifetime |
 | `remove()` | `void` | |
 | `showInfoWindow()` | `void`      | Shows this marker's info window (auto-dismiss if configured via UiSettings) |
 | `hideInfoWindow()` | `void`      | Hides this marker's info window                                      |
