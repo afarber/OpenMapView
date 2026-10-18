@@ -228,6 +228,8 @@ These properties apply to:
 | `getTileScale()`               | `float`     | OpenMapView only |
 | `setTileColorFilter(ColorFilter)` | `void`  | OpenMapView only: `android.graphics.ColorFilter` for the base map tiles only, e.g. `TileColorFilters.invertedDark()` for a keyless dark mode, see MAP_TYPES.md |
 | `getTileColorFilter()`         | `ColorFilter` | OpenMapView only |
+| `setMapColorScheme(int)`       | `void`      | `MapColorScheme.LIGHT` (default), `DARK` or `FOLLOW_SYSTEM`, as in the Maps SDK. DARK is drawn by darkening the light tiles, see MAP_TYPES.md |
+| `getMapColorScheme()`          | `int`       |                                                                  |
 | `setMapType(int)`              | `void`      | Supports all 15 `MapType` constants, see MAP_TYPES.md            |
 | `getMapType()`                 | `int`       |                                                                  |
 | `setMapStyle(MapStyleOptions)` | `boolean`   | Not implemented                                                   |
@@ -499,6 +501,7 @@ The optional `openmapview-compose` artifact follows the API of the [maps-compose
 | `MapProperties(mapType, minZoomPreference, maxZoomPreference, latLngBoundsForCameraTarget)` | Same | `mapType` is one of the `MapType` constants. Plus `tileColorFilter`, a Compose `ColorFilter` for the tiles only |
 | `MapUiSettings(zoomControlsEnabled, zoomGesturesEnabled, scrollGesturesEnabled)` | Same, plus `infoWindowAutoDismiss` | |
 | `GoogleMap(contentPadding)` | `OpenMap(contentPadding)` | Calls `setMapPadding()` with the padding in pixels |
+| `GoogleMap(mapColorScheme)`, `ComposeMapColorScheme` | `OpenMap(mapColorScheme)`, same enum | Default `FOLLOW_SYSTEM` as in maps-compose; null keeps the scheme set on the map |
 | `rememberCameraPositionState`, `CameraPositionState.animate`, `CameraPositionState.move` | Same | `move` before the map is laid out is applied once it is, so `newLatLngBounds` can fit the map |
 | `CameraPositionState.isMoving`, `cameraMoveStartedReason`, `CameraMoveStartedReason` | Same | `isMoving` also becomes false when an animation is stopped |
 | `ScaleBar`, `DisappearingScaleBar` (maps-compose-widgets) | Same, in `openmapview-compose` | Metric and imperial bars for the camera's latitude and zoom |

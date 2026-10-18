@@ -78,6 +78,10 @@ import de.afarber.openmapview.Marker as MapMarker
  * @param contentPadding Padding for the UI on top of the map, e.g. a toolbar or a bottom
  *   sheet: the camera centers in the area inside it, and the map's own controls (zoom buttons,
  *   my-location button and attribution) are drawn inside it
+ * @param mapColorScheme The color scheme, by default following the night mode of the device
+ *   as with maps-compose; DARK draws the light tiles darkened, see
+ *   [OpenMapView.setMapColorScheme]. Null leaves the scheme of the map as it is, e.g. when
+ *   it is set in [onMapCreated].
  * @param onMapCreated Called once when the map view is created, e.g. to add shapes or
  *   overlays. Set the initial camera through [cameraPositionState] instead.
  * @param content The markers and shapes of the map, see [Marker] and [Polyline]
@@ -95,6 +99,7 @@ fun OpenMap(
     onMyLocationButtonClick: (() -> Boolean)? = null,
     onMyLocationClick: (Location) -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
+    mapColorScheme: ComposeMapColorScheme? = ComposeMapColorScheme.FOLLOW_SYSTEM,
     onMapCreated: (OpenMapView) -> Unit = {},
     content: @Composable () -> Unit = {},
 ) {
@@ -119,7 +124,7 @@ fun OpenMap(
         factory = { context ->
             OpenMapView(context).apply {
                 // Before the camera, so the zoom limits and bounds apply to it
-                applied.apply(this, locationSource, properties, uiSettings, padding, initial = true)
+                applied.apply(this, locationSource, properties, uiSettings, padding, mapColorScheme, initial = true)
                 moveCamera(CameraUpdateFactory.newCameraPosition(cameraPositionState.position))
                 // Before onMapCreated, which may still replace them
                 setOnMapClickListener { currentOnMapClick(it) }
@@ -158,7 +163,7 @@ fun OpenMap(
         modifier = modifier,
         update = { view ->
             cameraPositionState.applyTo(view)
-            applied.apply(view, locationSource, properties, uiSettings, padding, initial = false)
+            applied.apply(view, locationSource, properties, uiSettings, padding, mapColorScheme, initial = false)
         },
         onRelease = { view ->
             // Pinch zooming alone doesn't report camera moves, so read the final position
@@ -201,13 +206,14 @@ private class ComposeInfoWindowAdapter(
     }
 }
 
-// The location source, properties and UI settings last set on the map, so only changes are
+// The location source, properties, UI settings, padding and color scheme last set on the map, so only changes are
 // set again
 private class AppliedSettings {
     private var locationSource: LocationSource? = null
     private var properties: MapProperties? = null
     private var uiSettings: MapUiSettings? = null
     private var padding: IntArray? = null
+    private var mapColorScheme: ComposeMapColorScheme? = null
 
     fun apply(
         map: OpenMapView,
@@ -215,6 +221,7 @@ private class AppliedSettings {
         properties: MapProperties,
         uiSettings: MapUiSettings,
         padding: IntArray,
+        mapColorScheme: ComposeMapColorScheme?,
         initial: Boolean,
     ) {
         // Before the properties: with a custom source, my location needs no permission
@@ -234,6 +241,11 @@ private class AppliedSettings {
             map.setMapPadding(padding[0], padding[1], padding[2], padding[3])
             this.padding = padding
         }
+        // Null keeps the scheme the map has, e.g. one set in onMapCreated
+        if (mapColorScheme != null && (initial || mapColorScheme != this.mapColorScheme)) {
+            map.setMapColorScheme(mapColorScheme.value)
+        }
+        this.mapColorScheme = mapColorScheme
     }
 }
 
