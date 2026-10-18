@@ -13,7 +13,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import de.afarber.openmapview.CameraPosition
@@ -187,16 +186,11 @@ class CameraPositionState(
 
         private const val DEFAULT_ANIMATION_MS = 250
 
-        /** Saves the position as latitude, longitude and zoom, e.g. for [rememberSaveable]. */
-        val Saver: Saver<CameraPositionState, *> =
-            listSaver(
-                save = {
-                    val position = it.position
-                    listOf(position.target.latitude, position.target.longitude, position.zoom.toDouble())
-                },
-                restore = {
-                    CameraPositionState(CameraPosition(LatLng(it[0], it[1]), it[2].toFloat()))
-                },
+        /** Saves the position, which is Parcelable, e.g. for [rememberSaveable]. */
+        val Saver: Saver<CameraPositionState, CameraPosition> =
+            Saver(
+                save = { it.position },
+                restore = { CameraPositionState(it) },
             )
     }
 }

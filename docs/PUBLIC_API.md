@@ -134,6 +134,7 @@ Java code calls the same API directly:
 - Shapes are built with the `*Options` builders and int colors, as shown above
 - Listeners are functional interfaces, so Java lambdas work: `mapView.setOnMapClickListener(latLng -> ...)`
 - The immutable values are read through public final fields: `latLng.latitude`, `latLng.longitude`, `camera.target`, `camera.zoom`, `bounds.southwest`, `bounds.northeast`, `nearLeft`, `nearRight`, `farLeft`, `farRight` and `latLngBounds` on `VisibleRegion`, and `tile.width`, `tile.height` and `tile.data`
+- `LatLng`, `LatLngBounds` and `CameraPosition` are Parcelable, as with the Maps SDK: `outState.putParcelable("target", latLng)`, `outState.putParcelableArrayList("route", points)`, Intent extras and `SavedStateHandle` work without conversion. In Compose, `rememberSaveable { mutableStateOf(listOf<LatLng>()) }` needs no custom Saver
 - `UiSettings.setInfoWindowAutoDismissMillis(long)` replaces the Kotlin `Duration` property
 - Tile providers are plain Java classes or lambdas: `TileProvider provider = (x, y, zoom) -> ...`
 

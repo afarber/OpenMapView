@@ -7,6 +7,11 @@
 
 package de.afarber.openmapview
 
+import android.os.Parcel
+import android.os.Parcelable
+import kotlinx.parcelize.Parceler
+import kotlinx.parcelize.Parcelize
+
 /**
  * An immutable class representing a pair of latitude and longitude coordinates.
  *
@@ -16,12 +21,15 @@ package de.afarber.openmapview
  *
  * @param latitude The latitude in degrees
  * @param longitude The longitude in degrees
+ * Parcelable, e.g. for a [android.os.Bundle] or `rememberSaveable`.
+ *
  * @throws IllegalArgumentException if [latitude] or [longitude] is NaN or infinite
  */
+@Parcelize
 class LatLng(
     latitude: Double,
     longitude: Double,
-) {
+) : Parcelable {
     init {
         require(latitude.isFinite()) { "Latitude must be a finite number, but was $latitude" }
         require(longitude.isFinite()) { "Longitude must be a finite number, but was $longitude" }
@@ -56,7 +64,17 @@ class LatLng(
 
     override fun toString(): String = "LatLng(latitude=$latitude, longitude=$longitude)"
 
-    private companion object {
+    private companion object : Parceler<LatLng> {
+        override fun LatLng.write(
+            parcel: Parcel,
+            flags: Int,
+        ) {
+            parcel.writeDouble(latitude)
+            parcel.writeDouble(longitude)
+        }
+
+        override fun create(parcel: Parcel): LatLng = LatLng(parcel.readDouble(), parcel.readDouble())
+
         fun normalizeLongitude(longitude: Double): Double =
             if (longitude in -180.0..180.0) {
                 longitude
