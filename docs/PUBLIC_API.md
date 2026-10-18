@@ -56,6 +56,7 @@ The returned `Marker` is a live handle, as in the Maps SDK: setting a property r
 | ------------------ | ----------- | -------------------------------------------------------------------- |
 | `setPosition(LatLng)`, `setTitle(String)`, `setSnippet(String)`, `setIcon(BitmapDescriptor)`, `setAlpha(float)`, `setVisible(boolean)`, `setDraggable(boolean)`, `setZIndex(float)`, `setTag(Object)` and getters | `void` | Kotlin properties `position`, `title`, ... |
 | `setAnchor(float, float)` | `void` | Kotlin: `anchor` as a `Pair` |
+| `getId()` | `String` | Kotlin: `id`, e.g. "m0", unique and stable for the marker's lifetime |
 | `remove()` | `void` | |
 | `showInfoWindow()` | `void`      | Shows this marker's info window (auto-dismiss if configured via UiSettings) |
 | `hideInfoWindow()` | `void`      | Hides this marker's info window                                      |
@@ -350,7 +351,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 | `setInfoWindowAdapter(InfoWindowAdapter)`                             | `void`           | Views are drawn into an image when the window opens |
 | `setOnInfoWindowClickListener(OnInfoWindowClickListener)`             | `void`           |                                                                      |
 | `setOnInfoWindowCloseListener(OnInfoWindowCloseListener)`             | `void`           | Called when info window is closed (manual or auto-dismiss)           |
-| `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | Not implemented                                                      |
+| `setOnInfoWindowLongClickListener(OnInfoWindowLongClickListener)`     | `void`           | The long press is not reported to the map long click listener        |
 | `setOnMyLocationButtonClickListener(OnMyLocationButtonClickListener)` | `void`           | Return true to keep the camera where it is |
 | `setOnMyLocationClickListener(OnMyLocationClickListener)`             | `void`           |  |
 | `setOnIndoorStateChangeListener(OnIndoorStateChangeListener)`         | `void`           | Not implemented - indoor mapping not supported                        |
@@ -506,7 +507,7 @@ The optional `openmapview-compose` artifact follows the API of the [maps-compose
 | `rememberCameraPositionState`, `CameraPositionState.animate`, `CameraPositionState.move` | Same | `move` before the map is laid out is applied once it is, so `newLatLngBounds` can fit the map |
 | `CameraPositionState.isMoving`, `cameraMoveStartedReason`, `CameraMoveStartedReason` | Same | `isMoving` also becomes false when an animation is stopped |
 | `ScaleBar`, `DisappearingScaleBar` (maps-compose-widgets) | Same, in `openmapview-compose` | Metric and imperial bars for the camera's latitude and zoom |
-| `Marker(state, title, snippet, onClick, onInfoWindowClick, onInfoWindowClose)` | Same | |
+| `Marker(state, title, snippet, onClick, onInfoWindowClick, onInfoWindowClose, onInfoWindowLongClick)` | Same | |
 | `MarkerState.showInfoWindow()`, `hideInfoWindow()`, `isInfoWindowShown` | Same | |
 | `MarkerState.isDragging` | Same | |
 | `MarkerInfoWindow(state, ...) { marker -> }`, `MarkerInfoWindowContent(state, ...) { marker -> }` | Same | The content is drawn into an image when the window opens |

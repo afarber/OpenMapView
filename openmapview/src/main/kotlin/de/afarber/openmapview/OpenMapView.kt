@@ -140,6 +140,12 @@ class OpenMapView
                 object : GestureDetector.SimpleOnGestureListener() {
                     override fun onLongPress(e: MotionEvent) {
                         isLongPressed = true
+                        // A long press on an info window is not a long press on the map
+                        val touchedInfoWindow = controller.handleInfoWindowTouch(e.x, e.y)
+                        if (touchedInfoWindow != null) {
+                            controller.onInfoWindowLongClickListener?.onInfoWindowLongClick(touchedInfoWindow)
+                            return
+                        }
                         val latLng = controller.screenToLatLng(e.x, e.y)
                         onMapLongClickListener?.onMapLongClick(latLng)
                     }
@@ -1538,6 +1544,25 @@ class OpenMapView
         }
 
         /**
+         * Sets a listener for info window long clicks.
+         *
+         * Called when the user presses and holds the info window of a marker. The long press
+         * is then not reported to the [OnMapLongClickListener].
+         *
+         * Example:
+         * ```kotlin
+         * mapView.setOnInfoWindowLongClickListener { marker ->
+         *     Log.d("Map", "Info window of ${marker.title} long clicked")
+         * }
+         * ```
+         *
+         * @param listener The listener, or null to remove it
+         */
+        fun setOnInfoWindowLongClickListener(listener: OnInfoWindowLongClickListener?) {
+            controller.onInfoWindowLongClickListener = listener
+        }
+
+        /**
          * Sets a listener to handle marker drag events.
          *
          * Called when a draggable marker is dragged by the user. The marker must have
@@ -2064,16 +2089,18 @@ class OpenMapView
         fun getTileOverlays(): List<TileOverlay> = controller.getTileOverlays()
 
         /**
-         * Removes all markers, polylines, polygons, circles, and tile overlays from the map.
+         * Removes all markers, polylines, polygons, circles, ground overlays and tile overlays
+         * from the map.
          *
          * This is equivalent to calling clearMarkers(), clearPolylines(), clearPolygons(),
-         * clearCircles(), and clearTileOverlays().
+         * clearCircles(), clearGroundOverlays() and clearTileOverlays().
          */
         fun clear() {
             clearMarkers()
             clearPolylines()
             clearPolygons()
             clearCircles()
+            clearGroundOverlays()
             clearTileOverlays()
         }
 

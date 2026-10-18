@@ -150,6 +150,7 @@ fun OpenMap(
                 setOnMarkerDragListener(MarkerDragDispatcher(markerNodes))
                 setOnInfoWindowClickListener { marker -> markerNodes[marker]?.onInfoWindowClick?.invoke(marker) }
                 setOnInfoWindowCloseListener { marker -> markerNodes[marker]?.onInfoWindowClose?.invoke(marker) }
+                setOnInfoWindowLongClickListener { marker -> markerNodes[marker]?.onInfoWindowLongClick?.invoke(marker) }
                 setInfoWindowAdapter(ComposeInfoWindowAdapter(context, markerNodes, compositionContext))
                 setOnPolylineClickListener { shapeClickHandlers[it]?.invoke() }
                 setOnPolygonClickListener { shapeClickHandlers[it]?.invoke() }

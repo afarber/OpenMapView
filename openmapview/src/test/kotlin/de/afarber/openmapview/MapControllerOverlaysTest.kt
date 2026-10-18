@@ -9,6 +9,7 @@ package de.afarber.openmapview
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import io.mockk.mockk
@@ -281,7 +282,8 @@ class MapControllerOverlaysTest {
         verify(atLeast = 1) { canvas.drawPath(any(), any()) }
         verify(atLeast = 1) { canvas.drawCircle(any(), any(), any(), any()) }
         verify(atLeast = 1) { canvas.drawBitmap(any<Bitmap>(), any<Float>(), any<Float>(), any()) }
-        verify(atLeast = 1) { canvas.drawRoundRect(any(), any(), any(), any()) }
+        // The info window frame with its pointer is one path, filled white
+        verify { canvas.drawPath(any(), match { it.style == Paint.Style.FILL && it.color == android.graphics.Color.WHITE }) }
     }
 
     private fun image(): BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(Bitmap.createBitmap(20, 40, Bitmap.Config.ARGB_8888))

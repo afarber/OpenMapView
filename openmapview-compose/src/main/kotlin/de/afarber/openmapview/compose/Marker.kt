@@ -105,6 +105,7 @@ internal class MarkerNode(
     var onClick: (MapMarker) -> Boolean = { false }
     var onInfoWindowClick: (MapMarker) -> Unit = {}
     var onInfoWindowClose: (MapMarker) -> Unit = {}
+    var onInfoWindowLongClick: (MapMarker) -> Unit = {}
 
     // Custom info window content, see MarkerInfoWindow and MarkerInfoWindowContent
     var infoWindow: (@Composable (MapMarker) -> Unit)? = null
@@ -142,6 +143,7 @@ internal val LocalMapContext = staticCompositionLocalOf<MapContext?> { null }
  *   its info window opens and the camera moves to the marker
  * @param onInfoWindowClick Called when the info window of the marker is tapped
  * @param onInfoWindowClose Called when the info window of the marker is closed
+ * @param onInfoWindowLongClick Called when the info window of the marker is long pressed
  */
 @Composable
 fun Marker(
@@ -158,10 +160,11 @@ fun Marker(
     onClick: (MapMarker) -> Boolean = { false },
     onInfoWindowClick: (MapMarker) -> Unit = {},
     onInfoWindowClose: (MapMarker) -> Unit = {},
+    onInfoWindowLongClick: (MapMarker) -> Unit = {},
 ) {
     MarkerImpl(
         state, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag,
-        onClick, onInfoWindowClick, onInfoWindowClose,
+        onClick, onInfoWindowClick, onInfoWindowClose, onInfoWindowLongClick,
         infoWindow = null,
         infoContent = null,
     )
@@ -200,11 +203,12 @@ fun MarkerInfoWindow(
     onClick: (MapMarker) -> Boolean = { false },
     onInfoWindowClick: (MapMarker) -> Unit = {},
     onInfoWindowClose: (MapMarker) -> Unit = {},
+    onInfoWindowLongClick: (MapMarker) -> Unit = {},
     content: @Composable (MapMarker) -> Unit,
 ) {
     MarkerImpl(
         state, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag,
-        onClick, onInfoWindowClick, onInfoWindowClose,
+        onClick, onInfoWindowClick, onInfoWindowClose, onInfoWindowLongClick,
         infoWindow = content,
         infoContent = null,
     )
@@ -245,11 +249,12 @@ fun MarkerInfoWindowContent(
     onClick: (MapMarker) -> Boolean = { false },
     onInfoWindowClick: (MapMarker) -> Unit = {},
     onInfoWindowClose: (MapMarker) -> Unit = {},
+    onInfoWindowLongClick: (MapMarker) -> Unit = {},
     content: @Composable (MapMarker) -> Unit,
 ) {
     MarkerImpl(
         state, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag,
-        onClick, onInfoWindowClick, onInfoWindowClose,
+        onClick, onInfoWindowClick, onInfoWindowClose, onInfoWindowLongClick,
         infoWindow = null,
         infoContent = content,
     )
@@ -270,6 +275,7 @@ private fun MarkerImpl(
     onClick: (MapMarker) -> Boolean,
     onInfoWindowClick: (MapMarker) -> Unit,
     onInfoWindowClose: (MapMarker) -> Unit,
+    onInfoWindowLongClick: (MapMarker) -> Unit,
     infoWindow: (@Composable (MapMarker) -> Unit)?,
     infoContent: (@Composable (MapMarker) -> Unit)?,
 ) {
@@ -310,6 +316,7 @@ private fun MarkerImpl(
         node.onClick = onClick
         node.onInfoWindowClick = onInfoWindowClick
         node.onInfoWindowClose = onInfoWindowClose
+        node.onInfoWindowLongClick = onInfoWindowLongClick
         node.infoWindow = infoWindow
         node.infoContent = infoContent
         // Each setter redraws the map only when the value changed

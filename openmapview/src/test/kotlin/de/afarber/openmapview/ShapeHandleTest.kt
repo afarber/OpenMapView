@@ -152,10 +152,13 @@ class ShapeHandleTest {
     @Test
     fun testClear_UnlinksShapes() {
         val circle = mapView.addCircle(Circle(a, 100f))
+        val overlay = mapView.addGroundOverlay(GroundOverlay(BitmapDescriptorFactory.defaultMarker(), position = a, width = 500f))
 
         mapView.clear()
 
         assertNull(circle.mapView)
+        assertTrue(mapView.getGroundOverlays().isEmpty())
+        assertNull(overlay.mapView)
     }
 
     @Test
