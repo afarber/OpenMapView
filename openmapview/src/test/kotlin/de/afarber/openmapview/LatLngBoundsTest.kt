@@ -142,4 +142,53 @@ class LatLngBoundsTest {
     fun testBuilder_EmptyThrowsException() {
         LatLngBounds.builder().build()
     }
+
+    @Test
+    fun testBuilder_CrossesDateLineWhenNarrower() {
+        // Fiji and Samoa are 10 degrees apart across the 180th meridian, not 350 the other way
+        val bounds =
+            LatLngBounds
+                .builder()
+                .include(LatLng(-18.1, 178.4))
+                .include(LatLng(-13.8, -171.8))
+                .build()
+
+        assertEquals(178.4, bounds.southwest.longitude, epsilon)
+        assertEquals(-171.8, bounds.northeast.longitude, epsilon)
+        assertTrue(bounds.contains(LatLng(-15.0, 180.0)))
+        assertFalse(bounds.contains(LatLng(-15.0, 0.0)))
+        assertEquals(-176.7, bounds.getCenter().longitude, epsilon)
+    }
+
+    @Test
+    fun testBuilder_DateLineWithPointInBetween() {
+        val bounds =
+            LatLngBounds
+                .builder()
+                .include(LatLng(-18.1, 178.4))
+                .include(LatLng(-21.2, -175.2))
+                .include(LatLng(-13.8, -171.8))
+                .include(LatLng(-8.5, 179.2))
+                .build()
+
+        assertEquals(178.4, bounds.southwest.longitude, epsilon)
+        assertEquals(-171.8, bounds.northeast.longitude, epsilon)
+        assertEquals(-21.2, bounds.southwest.latitude, epsilon)
+        assertEquals(-8.5, bounds.northeast.latitude, epsilon)
+    }
+
+    @Test
+    fun testBuilder_WideSpanStaysOnFront() {
+        // Wider than half the globe without points near the date line: no crossing
+        val bounds =
+            LatLngBounds
+                .builder()
+                .include(LatLng(0.0, -120.0))
+                .include(LatLng(0.0, 0.0))
+                .include(LatLng(0.0, 120.0))
+                .build()
+
+        assertEquals(-120.0, bounds.southwest.longitude, epsilon)
+        assertEquals(120.0, bounds.northeast.longitude, epsilon)
+    }
 }

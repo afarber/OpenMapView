@@ -306,48 +306,39 @@ val polygon = PolygonOptions()
 
 In Java code, or to keep the change minimal, the `*Options` builders also take ARGB ints, so `.color(android.graphics.Color.RED)` and `.fillColor(0x80FF0000)` compile unchanged. See [Using OpenMapView from Java](PUBLIC_API.md#using-openmapview-from-java).
 
-#### Pattern/PathEffect Migration
+#### Pattern, Cap and Joint Type Migration
 
-The Maps SDK uses `PatternItem` lists, OpenMapView uses Compose `PathEffect`.
-
-**Before (Maps SDK):**
+`PatternItem` lists, caps and joint types work as before; only the imports change to `de.afarber.openmapview`:
 
 ```kotlin
-import com.google.android.gms.maps.model.Dash
-import com.google.android.gms.maps.model.Gap
-import com.google.android.gms.maps.model.Dot
+import de.afarber.openmapview.Dash
+import de.afarber.openmapview.Dot
+import de.afarber.openmapview.Gap
+import de.afarber.openmapview.JointType
+import de.afarber.openmapview.RoundCap
 
-// Dashed line
-val pattern = listOf(Dash(20f), Gap(10f))
-polylineOptions.pattern(pattern)
-
-// Dotted line
-val dottedPattern = listOf(Dot(), Gap(10f))
-polylineOptions.pattern(dottedPattern)
+polylineOptions
+    .pattern(listOf(Dot(), Gap(10f)))
+    .startCap(RoundCap())
+    .endCap(RoundCap())
+    .jointType(JointType.ROUND)
+polygonOptions.strokePattern(listOf(Dash(20f), Gap(10f)))
 ```
 
-**After (OpenMapView):**
+In Kotlin, a Compose `PathEffect` also works, e.g. for chained effects:
 
 ```kotlin
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 
-// Dashed line (20px dash, 10px gap)
-val pattern = PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f)
-polylineOptions.strokePattern(pattern)
-
-// Dotted line (2px dot, 8px gap) - use Round cap for circular dots
-val dottedPattern = PathEffect.dashPathEffect(floatArrayOf(2f, 8f), 0f)
 polylineOptions
-    .strokePattern(dottedPattern)
-    .strokeCap(StrokeCap.Round)
+    .strokePattern(PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f))
+    .startCap(StrokeCap.Round)
 ```
 
 **Key Differences:**
-- Use `PathEffect.dashPathEffect(intervals, phase)` instead of `PatternItem` lists
-- Intervals array: `[dash1, gap1, dash2, gap2, ...]`
-- For dots: use very short dashes (2px) with `StrokeCap.Round`
-- Phase parameter (usually 0f): offset into the pattern array
+- `CustomCap` (a bitmap at the line end) is not supported
+- A `pattern` is used instead of a `strokePattern` when both are set
 
 #### Stroke Cap/Join Migration
 

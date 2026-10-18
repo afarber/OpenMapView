@@ -27,6 +27,9 @@ class MarkerOptions {
     private var snippet: String? = null
     private var icon: BitmapDescriptor? = null
     private var anchor: Pair<Float, Float> = Pair(0.5f, 1.0f)
+    private var infoWindowAnchor: Pair<Float, Float> = Pair(0.5f, 0.0f)
+    private var rotation: Float = 0f
+    private var flat: Boolean = false
     private var visible: Boolean = true
     private var alpha: Float = 1.0f
     private var draggable: Boolean = false
@@ -79,6 +82,38 @@ class MarkerOptions {
         anchorV: Float,
     ): MarkerOptions {
         this.anchor = Pair(anchorU, anchorV)
+        return this
+    }
+
+    /**
+     * Sets the point of the icon the info window points at.
+     * @param anchorU Horizontal position (0.0 = left edge, 0.5 = center, 1.0 = right edge)
+     * @param anchorV Vertical position (0.0 = top edge, 0.5 = center, 1.0 = bottom edge), default 0.0
+     */
+    fun infoWindowAnchor(
+        anchorU: Float,
+        anchorV: Float,
+    ): MarkerOptions {
+        this.infoWindowAnchor = Pair(anchorU, anchorV)
+        return this
+    }
+
+    /**
+     * Sets the clockwise rotation of the icon around its anchor, e.g. a vehicle's heading.
+     * @param rotation Rotation in degrees (default: 0f)
+     */
+    fun rotation(rotation: Float): MarkerOptions {
+        this.rotation = rotation
+        return this
+    }
+
+    /**
+     * Sets whether the icon lies flat on the map instead of facing the screen.
+     * It has no effect yet, as the map doesn't rotate or tilt.
+     * @param flat true for a flat icon (default: false)
+     */
+    fun flat(flat: Boolean): MarkerOptions {
+        this.flat = flat
         return this
     }
 
@@ -140,6 +175,9 @@ class MarkerOptions {
             snippet = snippet,
             icon = icon,
             anchor = anchor,
+            infoWindowAnchor = infoWindowAnchor,
+            rotation = rotation,
+            isFlat = flat,
             visible = visible,
             alpha = alpha,
             draggable = draggable,

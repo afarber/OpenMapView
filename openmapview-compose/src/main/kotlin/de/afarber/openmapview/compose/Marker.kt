@@ -134,6 +134,9 @@ internal val LocalMapContext = staticCompositionLocalOf<MapContext?> { null }
  * @param snippet Text shown below the title in the info window
  * @param icon Custom icon, or null for the default marker
  * @param anchor Point of the icon placed at the position, as fractions of its size
+ * @param infoWindowAnchor Point of the icon the info window points at, as fractions of its size
+ * @param rotation Clockwise rotation of the icon around the anchor, in degrees
+ * @param flat Whether the icon lies flat on the map; no effect yet, as the map doesn't rotate or tilt
  * @param visible Whether the marker is drawn
  * @param alpha Opacity from 0 (transparent) to 1 (opaque)
  * @param draggable Whether the user can drag the marker
@@ -152,6 +155,9 @@ fun Marker(
     snippet: String? = null,
     icon: BitmapDescriptor? = null,
     anchor: Pair<Float, Float> = Pair(0.5f, 1.0f),
+    infoWindowAnchor: Pair<Float, Float> = Pair(0.5f, 0.0f),
+    rotation: Float = 0f,
+    flat: Boolean = false,
     visible: Boolean = true,
     alpha: Float = 1.0f,
     draggable: Boolean = false,
@@ -163,7 +169,7 @@ fun Marker(
     onInfoWindowLongClick: (MapMarker) -> Unit = {},
 ) {
     MarkerImpl(
-        state, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag,
+        state, title, snippet, icon, anchor, infoWindowAnchor, rotation, flat, visible, alpha, draggable, zIndex, tag,
         onClick, onInfoWindowClick, onInfoWindowClose, onInfoWindowLongClick,
         infoWindow = null,
         infoContent = null,
@@ -195,6 +201,9 @@ fun MarkerInfoWindow(
     snippet: String? = null,
     icon: BitmapDescriptor? = null,
     anchor: Pair<Float, Float> = Pair(0.5f, 1.0f),
+    infoWindowAnchor: Pair<Float, Float> = Pair(0.5f, 0.0f),
+    rotation: Float = 0f,
+    flat: Boolean = false,
     visible: Boolean = true,
     alpha: Float = 1.0f,
     draggable: Boolean = false,
@@ -207,7 +216,7 @@ fun MarkerInfoWindow(
     content: @Composable (MapMarker) -> Unit,
 ) {
     MarkerImpl(
-        state, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag,
+        state, title, snippet, icon, anchor, infoWindowAnchor, rotation, flat, visible, alpha, draggable, zIndex, tag,
         onClick, onInfoWindowClick, onInfoWindowClose, onInfoWindowLongClick,
         infoWindow = content,
         infoContent = null,
@@ -241,6 +250,9 @@ fun MarkerInfoWindowContent(
     snippet: String? = null,
     icon: BitmapDescriptor? = null,
     anchor: Pair<Float, Float> = Pair(0.5f, 1.0f),
+    infoWindowAnchor: Pair<Float, Float> = Pair(0.5f, 0.0f),
+    rotation: Float = 0f,
+    flat: Boolean = false,
     visible: Boolean = true,
     alpha: Float = 1.0f,
     draggable: Boolean = false,
@@ -253,7 +265,7 @@ fun MarkerInfoWindowContent(
     content: @Composable (MapMarker) -> Unit,
 ) {
     MarkerImpl(
-        state, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag,
+        state, title, snippet, icon, anchor, infoWindowAnchor, rotation, flat, visible, alpha, draggable, zIndex, tag,
         onClick, onInfoWindowClick, onInfoWindowClose, onInfoWindowLongClick,
         infoWindow = null,
         infoContent = content,
@@ -267,6 +279,9 @@ private fun MarkerImpl(
     snippet: String?,
     icon: BitmapDescriptor?,
     anchor: Pair<Float, Float>,
+    infoWindowAnchor: Pair<Float, Float>,
+    rotation: Float,
+    flat: Boolean,
     visible: Boolean,
     alpha: Float,
     draggable: Boolean,
@@ -292,6 +307,9 @@ private fun MarkerImpl(
                     snippet = snippet,
                     icon = icon,
                     anchor = anchor,
+                    infoWindowAnchor = infoWindowAnchor,
+                    rotation = rotation,
+                    isFlat = flat,
                     visible = visible,
                     alpha = alpha,
                     draggable = draggable,
@@ -326,6 +344,9 @@ private fun MarkerImpl(
         marker.snippet = snippet
         marker.icon = icon
         marker.anchor = anchor
+        marker.infoWindowAnchor = infoWindowAnchor
+        marker.rotation = rotation
+        marker.isFlat = flat
         marker.visible = visible
         marker.alpha = alpha
         marker.draggable = draggable

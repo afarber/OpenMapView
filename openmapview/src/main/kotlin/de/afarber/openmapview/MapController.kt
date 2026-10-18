@@ -28,9 +28,11 @@ import android.util.Log
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.asAndroidPathEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.withRotation
 import androidx.core.graphics.withSave
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,19 +50,6 @@ import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
-
-/**
- * Converts Compose PathEffect to Android PathEffect.
- * PathEffect is already backed by android.graphics.PathEffect internally.
- * We access it through reflection since it's not directly exposed.
- */
-private fun PathEffect.asAndroidPathEffect(): android.graphics.PathEffect {
-    // PathEffect in Compose is a wrapper around android.graphics.PathEffect
-    // Access the underlying native instance via reflection
-    val nativeField = this::class.java.getDeclaredField("nativePathEffect")
-    nativeField.isAccessible = true
-    return nativeField.get(this) as android.graphics.PathEffect
-}
 
 /**
  * Converts Compose StrokeCap to Android Paint.Cap.
@@ -103,6 +92,9 @@ class MapController(
 
         // Per tile overlay, so a slow overlay server only delays its own tiles
         private const val MAX_CONCURRENT_OVERLAY_DOWNLOADS = 2
+
+        // How many converted stroke patterns strokeEffect() keeps
+        private const val MAX_PATTERN_EFFECTS = 64
 
         // How many zoom levels up drawFallbackTile() looks for a cached tile to scale up
         private const val MAX_FALLBACK_LEVELS = 4
@@ -384,6 +376,9 @@ class MapController(
     // Shared by all ground overlays, which only differ in alpha; filtered as they are scaled
     private val groundOverlayPaint = Paint(Paint.FILTER_BITMAP_FLAG)
 
+    // Path effects of dot, dash and gap patterns by pattern and stroke width, see strokeEffect()
+    private val patternEffects = HashMap<Pair<List<PatternItem>, Float>, android.graphics.PathEffect>()
+
     private val fallbackSrc = Rect()
     private val fallbackDst = RectF()
     private val tileDst = RectF()
@@ -549,15 +544,14 @@ class MapController(
     }
 
     // Keeps the zoom within the preferences. A changed zoom is a camera move the listeners
-    // must hear about, e.g. to update a status or the Compose camera state; a running gesture
-    // or animation reports its own idle event when it ends.
+    // must hear about, e.g. to update a status or the Compose camera state. Like a move by
+    // moveCamera(), it is reported later on the main thread; a running gesture or animation
+    // reports its own idle event when it ends.
     private fun clampZoomToPreferences() {
         val clamped = zoom.coerceIn(minZoomPreference, maxZoomPreference)
         if (clamped == zoom) return
         setZoom(clamped)
-        if (!isCameraMoving) {
-            reportInstantMove(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION)
-        }
+        if (!isCameraMoving) postInstantMoveEvents()
     }
 
     /**
@@ -951,21 +945,6 @@ class MapController(
     }
 
     /**
-     * Reports an instant camera change that is not a gesture, e.g. by the zoom buttons:
-     * fires onCameraMoveStarted, onCameraMove and onCameraIdle.
-     */
-    internal fun reportInstantMove(reason: Int) {
-        flushPendingCameraEvents()
-        if (!isCameraMoving) {
-            onCameraMoveStartedListener?.onCameraMoveStarted(reason)
-        }
-        onCameraMoveListener?.onCameraMove()
-        isCameraMoving = false
-        currentMoveReason = null
-        onCameraIdleListener?.onCameraIdle()
-    }
-
-    /**
      * Sets the camera target: the location shown at the center of the area inside the map
      * padding, or at the view center without padding.
      *
@@ -1194,6 +1173,15 @@ class MapController(
         setCenter(targetPosition.target)
 
         // The started and idle events of the previous move were reported by stopAnimation()
+        postInstantMoveEvents()
+    }
+
+    /**
+     * Has [flushPendingCameraEvents] report an instant move later on the main thread,
+     * or after the view gets a size. Several moves before then are reported once.
+     */
+    private fun postInstantMoveEvents() {
+        if (hasPendingMoveEvents) return
         hasPendingMoveEvents = true
         if (viewWidth > 0 && viewHeight > 0) cameraEventHandler.post(pendingMoveEvents)
     }
@@ -2039,7 +2027,7 @@ class MapController(
             fillPaint.color = polygon.fillColor.toArgb()
             strokePaint.color = polygon.strokeColor.toArgb()
             strokePaint.strokeWidth = polygon.strokeWidth
-            strokePaint.pathEffect = polygon.strokePattern?.asAndroidPathEffect()
+            strokePaint.pathEffect = strokeEffect(polygon.pattern, polygon.strokePattern, polygon.strokeWidth)
             strokePaint.strokeCap = polygon.strokeCap.toAndroidCap()
             strokePaint.strokeJoin = polygon.strokeJoin.toAndroidJoin()
 
@@ -2094,7 +2082,7 @@ class MapController(
             } else {
                 paint.color = polyline.strokeColor.toArgb()
                 paint.strokeWidth = polyline.strokeWidth
-                paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
+                paint.pathEffect = strokeEffect(polyline.pattern, polyline.strokePattern, polyline.strokeWidth)
                 paint.strokeCap = polyline.startCap.toAndroidCap() // Use startCap for full path
                 paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
 
@@ -2121,7 +2109,7 @@ class MapController(
         paint.style = Paint.Style.STROKE
         paint.isAntiAlias = true
         paint.strokeWidth = polyline.strokeWidth
-        paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
+        paint.pathEffect = strokeEffect(polyline.pattern, polyline.strokePattern, polyline.strokeWidth)
         paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
 
         var segmentIndex = 0
@@ -2189,7 +2177,7 @@ class MapController(
             fillPaint.color = circle.fillColor.toArgb()
             strokePaint.color = circle.strokeColor.toArgb()
             strokePaint.strokeWidth = circle.strokeWidth
-            strokePaint.pathEffect = circle.strokePattern?.asAndroidPathEffect()
+            strokePaint.pathEffect = strokeEffect(circle.pattern, circle.strokePattern, circle.strokeWidth)
             strokePaint.strokeCap = circle.strokeCap.toAndroidCap()
             strokePaint.strokeJoin = circle.strokeJoin.toAndroidJoin()
 
@@ -2202,6 +2190,24 @@ class MapController(
             canvas.drawCircle(screenX, screenY, radiusInPixels, fillPaint)
             canvas.drawCircle(screenX, screenY, radiusInPixels, strokePaint)
         }
+    }
+
+    /**
+     * Returns the path effect of a stroke: its [pattern] of dots, dashes and gaps if set,
+     * else its [strokePattern]. Converted patterns are kept, as they depend only on the width.
+     */
+    private fun strokeEffect(
+        pattern: List<PatternItem>?,
+        strokePattern: PathEffect?,
+        strokeWidth: Float,
+    ): android.graphics.PathEffect? {
+        if (pattern == null) return strokePattern?.asAndroidPathEffect()
+        patternEffects[pattern to strokeWidth]?.let { return it }
+        if (patternEffects.size >= MAX_PATTERN_EFFECTS) patternEffects.clear()
+        val effect = pattern.toAndroidPathEffect(strokeWidth) ?: return null
+        // A copy as the key, so changing the caller's list later doesn't break the map
+        patternEffects[pattern.toList() to strokeWidth] = effect
+        return effect
     }
 
     private fun drawMarkersByZIndex(
@@ -2229,7 +2235,13 @@ class MapController(
 
             paint.alpha = (marker.alpha * 255).toInt().coerceIn(0, 255)
 
-            canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
+            if (marker.rotation == 0f) {
+                canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
+            } else {
+                canvas.withRotation(marker.rotation, screenX, screenY) {
+                    drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
+                }
+            }
         }
     }
 
@@ -2303,7 +2315,7 @@ class MapController(
     }
 
     /**
-     * Returns the screen area of the marker's info window, above its icon,
+     * Returns the screen area of the marker's info window, above its info window anchor,
      * or null if the window is not shown. The pointer of the default frame
      * is below this area, between it and the icon.
      */
@@ -2347,13 +2359,22 @@ class MapController(
         val screenX = wrappedScreenX(markerPixelX, centerPixelX)
         val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
+        // The window points at the info window anchor of the icon, which turns with the marker
         val icon = loadBitmap(marker.icon)
-        val markerHeight = icon.height * marker.anchor.second
+        val iconLeft = screenX - icon.width * marker.anchor.first
+        val iconTop = screenY - icon.height * marker.anchor.second
+        var pointX = iconLeft + icon.width * marker.infoWindowAnchor.first
+        var pointY = iconTop + icon.height * marker.infoWindowAnchor.second
+        if (marker.rotation != 0f) {
+            val rotated = rotatePointAround(pointX, pointY, screenX, screenY, marker.rotation)
+            pointX = rotated.first
+            pointY = rotated.second
+        }
 
         // A view from InfoWindowAdapter.getInfoWindow has no pointer
         val pointer = if (image != null && !image.framed) 0f else infoWindowPointerHeight
-        val left = screenX - boxWidth / 2
-        val top = screenY - markerHeight - boxHeight - pointer - infoWindowGap
+        val left = pointX - boxWidth / 2
+        val top = pointY - boxHeight - pointer - infoWindowGap
         return RectF(left, top, left + boxWidth, top + boxHeight)
     }
 
@@ -2881,12 +2902,20 @@ class MapController(
             val anchorX = icon.width * marker.anchor.first
             val anchorY = icon.height * marker.anchor.second
 
+            // A rotated icon is hit where the touch, rotated back around the anchor, hits the upright icon
+            val (touchX, touchY) =
+                if (marker.rotation == 0f) {
+                    x to y
+                } else {
+                    rotatePointAround(x, y, screenX, screenY, -marker.rotation)
+                }
+
             val markerLeft = screenX - anchorX
             val markerTop = screenY - anchorY
             val markerRight = markerLeft + icon.width
             val markerBottom = markerTop + icon.height
 
-            if (x >= markerLeft && x <= markerRight && y >= markerTop && y <= markerBottom) {
+            if (touchX >= markerLeft && touchX <= markerRight && touchY >= markerTop && touchY <= markerBottom) {
                 return marker
             }
         }

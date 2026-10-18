@@ -107,14 +107,14 @@ data class LatLngBounds(
     /**
      * Builder for creating LatLngBounds by including multiple points.
      *
-     * The builder calculates the minimum bounding box that contains all
-     * included points.
+     * The builder calculates the smallest bounding box that contains all
+     * included points. It crosses the 180th meridian when that is narrower,
+     * e.g. for points in Fiji and Samoa.
      */
     class Builder {
-        private var minLat: Double? = null
-        private var maxLat: Double? = null
-        private var minLng: Double? = null
-        private var maxLng: Double? = null
+        private var minLat = Double.NaN
+        private var maxLat = Double.NaN
+        private val longitudes = mutableListOf<Double>()
 
         /**
          * Includes a point in the bounds being built.
@@ -125,34 +125,9 @@ data class LatLngBounds(
          * @return This builder for method chaining
          */
         fun include(point: LatLng): Builder {
-            val lat = point.latitude
-            val lng = point.longitude
-
-            minLat =
-                if (minLat == null) {
-                    lat
-                } else {
-                    min(minLat!!, lat)
-                }
-            maxLat =
-                if (maxLat == null) {
-                    lat
-                } else {
-                    max(maxLat!!, lat)
-                }
-            minLng =
-                if (minLng == null) {
-                    lng
-                } else {
-                    min(minLng!!, lng)
-                }
-            maxLng =
-                if (maxLng == null) {
-                    lng
-                } else {
-                    max(maxLng!!, lng)
-                }
-
+            minLat = if (minLat.isNaN()) point.latitude else min(minLat, point.latitude)
+            maxLat = if (maxLat.isNaN()) point.latitude else max(maxLat, point.latitude)
+            longitudes.add(point.longitude)
             return this
         }
 
@@ -160,16 +135,31 @@ data class LatLngBounds(
          * Creates the LatLngBounds from the included points.
          *
          * @return The constructed LatLngBounds
-         * @throws IllegalStateException if no points have been included
+         * @throws IllegalArgumentException if no points have been included
          */
         fun build(): LatLngBounds {
-            require(minLat != null && maxLat != null && minLng != null && maxLng != null) {
+            require(longitudes.isNotEmpty()) {
                 "Cannot build LatLngBounds: no points have been included"
             }
 
+            // The bounds leave out the widest gap between neighboring longitudes. The gap
+            // around the back of the globe, from the east end to the west end, is the usual one.
+            val sorted = longitudes.sorted()
+            var west = sorted.first()
+            var east = sorted.last()
+            var widestGap = west + 360.0 - east
+            for (i in 0 until sorted.size - 1) {
+                val gap = sorted[i + 1] - sorted[i]
+                if (gap > widestGap) {
+                    widestGap = gap
+                    west = sorted[i + 1]
+                    east = sorted[i]
+                }
+            }
+
             return LatLngBounds(
-                southwest = LatLng(minLat!!, minLng!!),
-                northeast = LatLng(maxLat!!, maxLng!!),
+                southwest = LatLng(minLat, west),
+                northeast = LatLng(maxLat, east),
             )
         }
     }

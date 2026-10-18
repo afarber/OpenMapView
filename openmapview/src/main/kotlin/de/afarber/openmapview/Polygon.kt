@@ -12,6 +12,8 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toComposePathEffect
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * A polygon on the map: a closed shape with optional holes.
@@ -24,6 +26,7 @@ import androidx.compose.ui.graphics.toArgb
  * @param strokeColor the outline color
  * @param strokeWidth the outline width in pixels
  * @param strokePattern the stroke pattern, e.g. dashed; null for a solid line
+ * @param pattern the stroke pattern as dots, dashes and gaps, used instead of [strokePattern] if not null
  * @param strokeCap the shape of line ends
  * @param strokeJoin the shape of the corners
  * @param fillColor the color of the interior
@@ -39,6 +42,7 @@ class Polygon(
     strokeColor: Color = Color.Black,
     strokeWidth: Float = 10f,
     strokePattern: PathEffect? = null,
+    pattern: List<PatternItem>? = null,
     strokeCap: StrokeCap = StrokeCap.Butt,
     strokeJoin: StrokeJoin = StrokeJoin.Round,
     fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128),
@@ -68,6 +72,9 @@ class Polygon(
 
     /** The stroke pattern, e.g. dashed; null for a solid line */
     var strokePattern: PathEffect? by property(strokePattern)
+
+    /** The stroke pattern as dots, dashes and gaps, used instead of [strokePattern] if not null */
+    var pattern: List<PatternItem>? by property(pattern)
 
     /** The shape of line ends */
     var strokeCap: StrokeCap by property(strokeCap)
@@ -101,10 +108,10 @@ class Polygon(
     var tag: Any? by property(tag)
 
     /**
-     * Unique identifier for this polygon instance.
-     * Used internally for management and callbacks.
+     * The unique id of this polygon, e.g. "pg0", which stays the same for its lifetime.
+     * [copy] returns a polygon with a new id.
      */
-    internal val id: String = "polygon_${System.nanoTime()}_${System.identityHashCode(this)}"
+    val id: String = "pg${nextId.getAndIncrement()}"
 
     /** [strokeColor] as an ARGB color int, e.g. for Java code. */
     var strokeColorArgb: Int
@@ -136,6 +143,32 @@ class Polygon(
         fillColorArgb = color
     }
 
+    /** The shape of line ends as a [Cap], e.g. for Java code. */
+    fun getStrokeCap(): Cap = strokeCap.toCap()
+
+    /** Sets the shape of line ends, e.g. `setStrokeCap(new RoundCap())` from Java. */
+    fun setStrokeCap(cap: Cap) {
+        strokeCap = cap.toStrokeCap()
+    }
+
+    /** The shape of the corners as a [JointType] constant, like `getStrokeJointType()` of the Maps SDK. */
+    fun getStrokeJointType(): Int = strokeJoin.toJointType()
+
+    /** Sets the shape of the corners from a [JointType] constant, like `setStrokeJointType(int)` of the Maps SDK. */
+    fun setStrokeJointType(jointType: Int) {
+        strokeJoin = jointTypeToStrokeJoin(jointType)
+    }
+
+    /** Sets [pattern] from dots, dashes and gaps, like `setStrokePattern(List)` of the Maps SDK. */
+    fun setStrokePattern(pattern: List<PatternItem>) {
+        this.pattern = pattern
+    }
+
+    /** Sets [strokePattern] from an android.graphics.PathEffect, e.g. a DashPathEffect from Java. */
+    fun setStrokePattern(pattern: android.graphics.PathEffect) {
+        strokePattern = pattern.toComposePathEffect()
+    }
+
     /** Removes the polygon from the map that shows it. */
     fun remove() {
         mapView?.removePolygon(this)
@@ -147,6 +180,7 @@ class Polygon(
         strokeColor: Color = this.strokeColor,
         strokeWidth: Float = this.strokeWidth,
         strokePattern: PathEffect? = this.strokePattern,
+        pattern: List<PatternItem>? = this.pattern,
         strokeCap: StrokeCap = this.strokeCap,
         strokeJoin: StrokeJoin = this.strokeJoin,
         fillColor: Color = this.fillColor,
@@ -162,6 +196,7 @@ class Polygon(
             strokeColor,
             strokeWidth,
             strokePattern,
+            pattern,
             strokeCap,
             strokeJoin,
             fillColor,
@@ -180,4 +215,9 @@ class Polygon(
     }
 
     override fun hashCode(): Int = id.hashCode()
+
+    private companion object {
+        // Shared by all maps, so ids are unique in the app
+        val nextId = AtomicLong()
+    }
 }

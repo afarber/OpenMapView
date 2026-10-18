@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -228,5 +229,87 @@ public class JavaInteropTest {
         assertTrue(mapView.getPolygons().isEmpty());
         assertTrue(mapView.getCircles().isEmpty());
         assertTrue(mapView.getMarkers().isEmpty());
+    }
+
+    @Test
+    public void strokeStylesUsePortedCode() {
+        List<LatLng> route = Arrays.asList(BOCHUM, UNIVERSITY);
+        List<PatternItem> dotted = Arrays.asList(new Dot(), new Gap(20f));
+        List<PatternItem> dashed = Arrays.asList(new Dash(30f), new Gap(10f));
+
+        Polyline polyline = mapView.addPolyline(
+            new PolylineOptions()
+                .addAll(route)
+                .startCap(new RoundCap())
+                .endCap(new SquareCap())
+                .jointType(JointType.ROUND)
+                .pattern(dotted));
+        Polygon polygon = mapView.addPolygon(
+            new PolygonOptions()
+                .addAll(Arrays.asList(BOCHUM, UNIVERSITY, new LatLng(51.45, 7.20)))
+                .strokeJointType(JointType.BEVEL)
+                .strokeCap(new ButtCap())
+                .strokePattern(dashed));
+        Circle circle = mapView.addCircle(
+            new CircleOptions()
+                .center(BOCHUM)
+                .radius(300f)
+                .strokeJointType(JointType.DEFAULT)
+                .strokePattern(new DashPathEffect(new float[] {20f, 10f}, 0f)));
+
+        assertEquals(new RoundCap(), polyline.getStartCap());
+        assertEquals(new SquareCap(), polyline.getEndCap());
+        assertEquals(JointType.ROUND, polyline.getJointType());
+        assertEquals(dotted, polyline.getPattern());
+        assertEquals(JointType.BEVEL, polygon.getStrokeJointType());
+        assertEquals(dashed, polygon.getPattern());
+        assertNotNull(circle.getStrokePattern());
+        assertEquals(30f, ((Dash) dashed.get(0)).length, 0f);
+
+        polyline.setStartCap(new ButtCap());
+        polyline.setEndCap(new ButtCap());
+        polyline.setJointType(JointType.BEVEL);
+        polyline.setPattern(dashed);
+        polyline.setStrokePattern(new DashPathEffect(new float[] {5f, 5f}, 0f));
+        polyline.setStrokeColor(Color.BLUE);
+        polygon.setStrokePattern(dotted);
+        polygon.setStrokeCap(new RoundCap());
+        polygon.setStrokeJointType(JointType.ROUND);
+        circle.setStrokePattern(dotted);
+        circle.setStrokeCap(new SquareCap());
+        circle.setStrokeJointType(JointType.BEVEL);
+
+        assertEquals(Color.BLUE, polyline.getStrokeColor());
+        assertEquals(Color.BLUE, polyline.getColor());
+        assertEquals(dotted, circle.getPattern());
+        assertEquals(new SquareCap(), circle.getStrokeCap());
+    }
+
+    @Test
+    public void shapesHaveIds() {
+        Polyline polyline = mapView.addPolyline(new PolylineOptions().add(BOCHUM, UNIVERSITY));
+        Circle circle = mapView.addCircle(new CircleOptions().center(BOCHUM).radius(300f));
+
+        assertTrue(polyline.getId().startsWith("pl"));
+        assertTrue(circle.getId().startsWith("c"));
+    }
+
+    @Test
+    public void markersRotateAndAnchorInfoWindows() {
+        Marker marker = mapView.addMarker(
+            new MarkerOptions()
+                .position(BOCHUM)
+                .rotation(90f)
+                .flat(true)
+                .infoWindowAnchor(0.5f, 0.5f));
+
+        assertEquals(90f, marker.getRotation(), 0f);
+        assertTrue(marker.isFlat());
+        assertEquals(0.5f, marker.getInfoWindowAnchor().getSecond(), 0f);
+
+        marker.setRotation(180f);
+        marker.setFlat(false);
+        marker.setInfoWindowAnchor(0.5f, 0f);
+        assertEquals(180f, marker.getRotation(), 0f);
     }
 }

@@ -7,6 +7,8 @@
 
 package de.afarber.openmapview
 
+import java.util.concurrent.atomic.AtomicLong
+
 /**
  * An image placed on the map, e.g. a historic map or a floor plan, that scales with the map.
  *
@@ -93,7 +95,11 @@ class GroundOverlay(
     var bounds: LatLngBounds? = bounds
         private set
 
-    internal val id: String = "ground_overlay_${System.nanoTime()}_${System.identityHashCode(this)}"
+    /**
+     * The unique id of this ground overlay, e.g. "go0", which stays the same for its lifetime.
+     * [copy] returns a ground overlay with a new id.
+     */
+    val id: String = "go${nextId.getAndIncrement()}"
 
     init {
         require(anchor.first in 0f..1f && anchor.second in 0f..1f) {
@@ -179,6 +185,9 @@ class GroundOverlay(
     override fun hashCode(): Int = id.hashCode()
 
     private companion object {
+        // Shared by all maps, so ids are unique in the app
+        val nextId = AtomicLong()
+
         fun checkPlacement(
             position: LatLng?,
             width: Float?,
