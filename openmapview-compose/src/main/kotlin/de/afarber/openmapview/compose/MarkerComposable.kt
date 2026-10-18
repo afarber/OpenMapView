@@ -56,6 +56,7 @@ fun MarkerComposable(
     onClick: (MapMarker) -> Boolean = { false },
     onInfoWindowClick: (MapMarker) -> Unit = {},
     onInfoWindowClose: (MapMarker) -> Unit = {},
+    onInfoWindowLongClick: (MapMarker) -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     val mapContext = LocalMapContext.current ?: return
@@ -80,6 +81,7 @@ fun MarkerComposable(
         onClick = onClick,
         onInfoWindowClick = onInfoWindowClick,
         onInfoWindowClose = onInfoWindowClose,
+        onInfoWindowLongClick = onInfoWindowLongClick,
     )
 }
 

@@ -262,6 +262,7 @@ class MapController(
     var onMarkerClickListener: OnMarkerClickListener? = null
     var onInfoWindowClickListener: OnInfoWindowClickListener? = null
     var onInfoWindowCloseListener: OnInfoWindowCloseListener? = null
+    var onInfoWindowLongClickListener: OnInfoWindowLongClickListener? = null
 
     private val polylines = mutableListOf<Polyline>()
     private val polygons = mutableListOf<Polygon>()

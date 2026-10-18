@@ -140,6 +140,12 @@ class OpenMapView
                 object : GestureDetector.SimpleOnGestureListener() {
                     override fun onLongPress(e: MotionEvent) {
                         isLongPressed = true
+                        // A long press on an info window is not a long press on the map
+                        val touchedInfoWindow = controller.handleInfoWindowTouch(e.x, e.y)
+                        if (touchedInfoWindow != null) {
+                            controller.onInfoWindowLongClickListener?.onInfoWindowLongClick(touchedInfoWindow)
+                            return
+                        }
                         val latLng = controller.screenToLatLng(e.x, e.y)
                         onMapLongClickListener?.onMapLongClick(latLng)
                     }
@@ -1533,6 +1539,25 @@ class OpenMapView
          */
         fun setOnInfoWindowCloseListener(listener: OnInfoWindowCloseListener?) {
             controller.onInfoWindowCloseListener = listener
+        }
+
+        /**
+         * Sets a listener for info window long clicks.
+         *
+         * Called when the user presses and holds the info window of a marker. The long press
+         * is then not reported to the [OnMapLongClickListener].
+         *
+         * Example:
+         * ```kotlin
+         * mapView.setOnInfoWindowLongClickListener { marker ->
+         *     Log.d("Map", "Info window of ${marker.title} long clicked")
+         * }
+         * ```
+         *
+         * @param listener The listener, or null to remove it
+         */
+        fun setOnInfoWindowLongClickListener(listener: OnInfoWindowLongClickListener?) {
+            controller.onInfoWindowLongClickListener = listener
         }
 
         /**
