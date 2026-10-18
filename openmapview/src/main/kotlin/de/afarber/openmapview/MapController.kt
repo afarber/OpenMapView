@@ -275,6 +275,11 @@ class MapController(
 
     private var animationJob: Job? = null
 
+    // A newLatLngBounds() camera update made before the view had a size, applied by
+    // setViewSize(), with the listener of animateCamera(), if it was animated
+    private var pendingBoundsUpdate: CameraUpdate.NewLatLngBounds? = null
+    private var pendingBoundsListener: CancelableCallback? = null
+
     var onCameraMoveStartedListener: OnCameraMoveStartedListener? = null
     var onCameraMoveListener: OnCameraMoveListener? = null
     var onCameraIdleListener: OnCameraIdleListener? = null
@@ -912,6 +917,7 @@ class MapController(
      * [commitPan] fires onCameraIdle when the gesture ends.
      */
     internal fun reportGestureMove() {
+        cancelPendingCameraUpdate()
         if (!isCameraMoving) {
             isCameraMoving = true
             currentMoveReason = OnCameraMoveStartedListener.REASON_GESTURE
@@ -1148,6 +1154,7 @@ class MapController(
      * @param cameraUpdate The camera update to apply
      */
     fun moveCamera(cameraUpdate: CameraUpdate) {
+        if (deferBoundsUpdate(cameraUpdate, null)) return
         stopAnimation()
         commitPan()
 
@@ -1199,6 +1206,7 @@ class MapController(
         listener: CancelableCallback?,
         reason: Int,
     ) {
+        if (deferBoundsUpdate(cameraUpdate, listener)) return
         stopAnimation()
         commitPan()
 
@@ -1263,6 +1271,37 @@ class MapController(
                     }
                 }
             }
+    }
+
+    /**
+     * Keeps a [CameraUpdate.NewLatLngBounds] made before the view has a size, because the
+     * zoom that fits the bounds depends on it. [setViewSize] applies it once the view is laid
+     * out, so it can be used right after creating the map. Any other camera update replaces
+     * it, like a later camera update replaces a running animation.
+     *
+     * @return true if the update was kept for later
+     */
+    private fun deferBoundsUpdate(
+        cameraUpdate: CameraUpdate,
+        listener: CancelableCallback?,
+    ): Boolean {
+        cancelPendingCameraUpdate()
+        if (cameraUpdate !is CameraUpdate.NewLatLngBounds || (viewWidth > 0 && viewHeight > 0)) return false
+        pendingBoundsUpdate = cameraUpdate
+        pendingBoundsListener = listener
+        return true
+    }
+
+    /**
+     * Drops a camera update kept by [deferBoundsUpdate], e.g. when the camera is set
+     * directly, calling onCancel() of its listener.
+     */
+    fun cancelPendingCameraUpdate() {
+        if (pendingBoundsUpdate == null) return
+        val listener = pendingBoundsListener
+        pendingBoundsUpdate = null
+        pendingBoundsListener = null
+        listener?.onCancel()
     }
 
     /**
@@ -1466,6 +1505,16 @@ class MapController(
     ) {
         viewWidth = width
         viewHeight = height
+
+        // The camera jumps to the bounds kept before the layout, also when they were animated
+        val update = pendingBoundsUpdate
+        if (update != null && width > 0 && height > 0) {
+            val listener = pendingBoundsListener
+            pendingBoundsUpdate = null
+            pendingBoundsListener = null
+            moveCamera(update)
+            listener?.onFinish()
+        }
     }
 
     /**

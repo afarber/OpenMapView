@@ -106,6 +106,9 @@ object CameraUpdateFactory {
      * The camera will be positioned at the center of the bounds, and the zoom level
      * will be calculated to fit the entire bounds within the viewport with the specified padding.
      *
+     * Before the map is laid out, the zoom that fits is not known yet: the camera then moves
+     * once the map has its size, unless another camera update replaces this one first.
+     *
      * @param bounds The geographic bounds to display
      * @param padding Padding in pixels to apply uniformly on all sides
      * @return A CameraUpdate to display the bounds
