@@ -27,6 +27,7 @@ package de.afarber.openmapview
  * @property maxZoom Maximum zoom level supported by this tile source
  * @property requiresApiKey Whether this tile source requires an API key
  * @property apiKeyProvider Provider name for API key lookup (e.g., "thunderforest")
+ * @property isDark Whether the tiles are dark already, so [MapColorScheme.DARK] keeps them
  */
 enum class TileSource(
     val urlTemplate: String,
@@ -35,6 +36,7 @@ enum class TileSource(
     val maxZoom: Int,
     val requiresApiKey: Boolean = false,
     val apiKeyProvider: String? = null,
+    internal val isDark: Boolean = false,
 ) {
     /**
      * Standard OpenStreetMap Mapnik rendering.
@@ -106,6 +108,7 @@ enum class TileSource(
         maxZoom = 21,
         requiresApiKey = true,
         apiKeyProvider = "thunderforest",
+        isDark = true,
     ),
 
     /**
@@ -193,6 +196,7 @@ enum class TileSource(
         maxZoom = 20,
         requiresApiKey = true,
         apiKeyProvider = "carto",
+        isDark = true,
     ),
 
     /**

@@ -8,6 +8,7 @@
 package de.afarber.openmapview
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -317,6 +318,12 @@ class MapController(
     private var apiKeyErrorOverlay: ApiKeyErrorOverlay? = null
     private var requestedMapType: Int = MapType.STANDARD
     private var actualTileSource: TileSource? = TileSource.STANDARD
+
+    // See setMapColorScheme() and setTileColorFilter()
+    private var mapColorScheme = MapColorScheme.LIGHT
+    private var customTileColorFilter: ColorFilter? = null
+    private var isNightMode =
+        context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
 
     private val tileBorderPaint =
         Paint().apply {
@@ -768,6 +775,8 @@ class MapController(
         sourceDownloads.cancel()
         sourceDownloads = SupervisorJob(scope.coroutineContext[Job])
         tileDownloadSemaphore = Semaphore(MAX_CONCURRENT_TILE_DOWNLOADS)
+        // A dark source is not darkened by the color scheme
+        applyTileColorFilter()
     }
 
     private fun createTileCache(source: TileSource?): TileCache = TileCache(context, source?.name ?: DiskTileCache.DEFAULT_NAMESPACE)
@@ -939,15 +948,57 @@ class MapController(
      * @param filter The filter, or null to draw the tiles unchanged
      */
     fun setTileColorFilter(filter: ColorFilter?) {
-        tilePaint.colorFilter = filter
-        fallbackTilePaint.colorFilter = filter
-        tilePlaceholderPaint.colorFilter = filter
+        customTileColorFilter = filter
+        applyTileColorFilter()
     }
 
     /**
      * Returns the color filter of the base map tiles, see [setTileColorFilter].
      */
-    fun getTileColorFilter(): ColorFilter? = tilePaint.colorFilter
+    fun getTileColorFilter(): ColorFilter? = customTileColorFilter
+
+    /**
+     * Sets the color scheme of the map, one of the [MapColorScheme] constants.
+     *
+     * The dark scheme draws the tiles with [TileColorFilters.invertedDark], unless they are
+     * dark already or a filter was set with [setTileColorFilter].
+     *
+     * @param scheme [MapColorScheme.LIGHT], [MapColorScheme.DARK] or
+     *   [MapColorScheme.FOLLOW_SYSTEM]
+     */
+    fun setMapColorScheme(scheme: Int) {
+        require(scheme == MapColorScheme.LIGHT || scheme == MapColorScheme.DARK || scheme == MapColorScheme.FOLLOW_SYSTEM) {
+            "Unknown map color scheme $scheme"
+        }
+        mapColorScheme = scheme
+        applyTileColorFilter()
+    }
+
+    /**
+     * Returns the color scheme of the map, see [setMapColorScheme].
+     */
+    fun getMapColorScheme(): Int = mapColorScheme
+
+    /**
+     * Sets whether the device is in night mode, for [MapColorScheme.FOLLOW_SYSTEM].
+     */
+    fun setNightMode(night: Boolean) {
+        isNightMode = night
+        applyTileColorFilter()
+    }
+
+    // The filter set by the app wins; otherwise a dark scheme darkens light tiles
+    private fun applyTileColorFilter() {
+        val dark =
+            mapColorScheme == MapColorScheme.DARK ||
+                (mapColorScheme == MapColorScheme.FOLLOW_SYSTEM && isNightMode)
+        val filter =
+            customTileColorFilter
+                ?: TileColorFilters.invertedDark().takeIf { dark && tileSource?.isDark != true }
+        tilePaint.colorFilter = filter
+        fallbackTilePaint.colorFilter = filter
+        tilePlaceholderPaint.colorFilter = filter
+    }
 
     /**
      * Returns the current camera position.

@@ -8,6 +8,7 @@
 package de.afarber.openmapview
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.ColorFilter
@@ -227,6 +228,16 @@ class OpenMapView
         }
 
         private fun isOnDraggableMarker(event: MotionEvent): Boolean = controller.handleMarkerTouch(event.x, event.y)?.draggable == true
+
+        // Called on a night mode switch when the activity handles uiMode changes itself;
+        // otherwise the activity is recreated and the new map reads the configuration
+        override fun onConfigurationChanged(newConfig: Configuration) {
+            super.onConfigurationChanged(newConfig)
+            controller.setNightMode(
+                newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES,
+            )
+            invalidate()
+        }
 
         override fun onSizeChanged(
             w: Int,
@@ -587,6 +598,28 @@ class OpenMapView
          * Returns the color filter of the base map tiles, see [setTileColorFilter].
          */
         fun getTileColorFilter(): ColorFilter? = controller.getTileColorFilter()
+
+        /**
+         * Sets the color scheme of the map, as with the Maps SDK.
+         *
+         * The dark scheme is an approximation: the light tiles are drawn with
+         * [TileColorFilters.invertedDark], so it needs no API key and works on every API
+         * level. Map types that are dark already, such as [MapType.CARTO_DARK], are drawn
+         * unchanged, and a filter set with [setTileColorFilter] takes precedence. Markers,
+         * shapes and info windows keep their colors.
+         *
+         * @param scheme [MapColorScheme.LIGHT] (the default), [MapColorScheme.DARK] or
+         *   [MapColorScheme.FOLLOW_SYSTEM] for the night mode of the device
+         */
+        fun setMapColorScheme(scheme: Int) {
+            controller.setMapColorScheme(scheme)
+            invalidate()
+        }
+
+        /**
+         * Returns the color scheme of the map, one of the [MapColorScheme] constants.
+         */
+        fun getMapColorScheme(): Int = controller.getMapColorScheme()
 
         /**
          * Sets the minimum zoom level preference.
