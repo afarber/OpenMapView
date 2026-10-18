@@ -7,7 +7,6 @@
 
 package de.afarber.openmapview.compose
 
-import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -109,16 +108,16 @@ class CameraPositionState(
         }
     }
 
-    // A move() made before the map was attached or laid out, applied when it is
+    // A move() made before the map was attached, applied when it is
     private var pendingUpdate: CameraUpdate? = null
 
     /**
      * Moves the camera of the attached map without animation, e.g. to fit bounds with
      * `CameraUpdateFactory.newLatLngBounds()` when the screen is shown.
      *
-     * If no map is attached yet, or it isn't laid out, so that updates depending on its size
-     * can't be calculated, the update is applied as soon as it is. A later [move] replaces a
-     * pending update.
+     * If no map is attached yet, the update is applied as soon as it is. A later [move]
+     * replaces a pending update. The map itself keeps an update that depends on its size
+     * until it is laid out.
      *
      * @param update The camera update to apply
      */
@@ -127,34 +126,13 @@ class CameraPositionState(
         map?.let { applyPendingUpdate(it) }
     }
 
-    // Called when the map is attached and when it was laid out
+    // Called when the map is attached
     internal fun applyPendingUpdate(map: OpenMapView) {
         val update = pendingUpdate ?: return
         if (map !== this.map) return
-        if (map.width == 0 || map.height == 0) {
-            map.addOnLayoutChangeListener(
-                object : View.OnLayoutChangeListener {
-                    override fun onLayoutChange(
-                        view: View,
-                        left: Int,
-                        top: Int,
-                        right: Int,
-                        bottom: Int,
-                        oldLeft: Int,
-                        oldTop: Int,
-                        oldRight: Int,
-                        oldBottom: Int,
-                    ) {
-                        view.removeOnLayoutChangeListener(this)
-                        applyPendingUpdate(map)
-                    }
-                },
-            )
-            return
-        }
         pendingUpdate = null
         map.moveCamera(update)
-        // moveCamera() reports the move, unless the camera already was there
+        // The camera listeners hear about the move later, so the state follows right away
         readFrom(map)
     }
 
