@@ -7,6 +7,8 @@
 
 package de.afarber.openmapview
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlin.math.max
 import kotlin.math.min
 
@@ -18,10 +20,11 @@ import kotlin.math.min
  * @property southwest The southwest corner of the bounds
  * @property northeast The northeast corner of the bounds
  */
+@Parcelize
 data class LatLngBounds(
     @JvmField val southwest: LatLng,
     @JvmField val northeast: LatLng,
-) {
+) : Parcelable {
     /**
      * Returns whether this bounds contains the given point.
      *

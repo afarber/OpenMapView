@@ -15,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -66,11 +65,11 @@ class MarkerState(
     }
 
     companion object {
-        /** Saves the position as latitude and longitude, e.g. for [rememberSaveable]. */
-        val Saver: Saver<MarkerState, *> =
-            listSaver(
-                save = { listOf(it.position.latitude, it.position.longitude) },
-                restore = { MarkerState(LatLng(it[0], it[1])) },
+        /** Saves the position, which is Parcelable, e.g. for [rememberSaveable]. */
+        val Saver: Saver<MarkerState, LatLng> =
+            Saver(
+                save = { it.position },
+                restore = { MarkerState(it) },
             )
     }
 }
