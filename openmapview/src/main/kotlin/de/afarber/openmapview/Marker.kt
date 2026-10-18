@@ -8,6 +8,7 @@
 package de.afarber.openmapview
 
 import android.graphics.Bitmap
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * A marker on the map at a specific geographic location.
@@ -81,10 +82,11 @@ class Marker(
     var tag: Any? by property(tag)
 
     /**
-     * Unique identifier for this marker instance.
-     * Used internally for touch detection and callbacks.
+     * The unique id of this marker, e.g. "m0", which stays the same for its lifetime.
+     * Useful as a key to find the marker again, e.g. in a listener. [copy] returns a
+     * marker with a new id.
      */
-    internal val id: String = "marker_${System.nanoTime()}_${System.identityHashCode(this)}"
+    val id: String = "m${nextId.getAndIncrement()}"
 
     /** Sets the [anchor] from its two fractions, like `setAnchor(float, float)` of the Maps SDK. */
     fun setAnchor(
@@ -173,6 +175,11 @@ class Marker(
     }
 
     override fun hashCode(): Int = id.hashCode()
+
+    private companion object {
+        // Shared by all maps, so ids are unique in the app
+        val nextId = AtomicLong()
+    }
 }
 
 /**
