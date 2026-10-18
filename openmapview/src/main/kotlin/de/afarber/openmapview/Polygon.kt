@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toComposePathEffect
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * A polygon on the map: a closed shape with optional holes.
@@ -107,10 +108,10 @@ class Polygon(
     var tag: Any? by property(tag)
 
     /**
-     * Unique identifier for this polygon instance.
-     * Used internally for management and callbacks.
+     * The unique id of this polygon, e.g. "pg0", which stays the same for its lifetime.
+     * [copy] returns a polygon with a new id.
      */
-    internal val id: String = "polygon_${System.nanoTime()}_${System.identityHashCode(this)}"
+    val id: String = "pg${nextId.getAndIncrement()}"
 
     /** [strokeColor] as an ARGB color int, e.g. for Java code. */
     var strokeColorArgb: Int
@@ -214,4 +215,9 @@ class Polygon(
     }
 
     override fun hashCode(): Int = id.hashCode()
+
+    private companion object {
+        // Shared by all maps, so ids are unique in the app
+        val nextId = AtomicLong()
+    }
 }

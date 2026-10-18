@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toComposePathEffect
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * A circle on the map with a center and a radius in meters.
@@ -98,10 +99,10 @@ class Circle(
     var tag: Any? by property(tag)
 
     /**
-     * Unique identifier for this circle instance.
-     * Used internally for management and callbacks.
+     * The unique id of this circle, e.g. "c0", which stays the same for its lifetime.
+     * [copy] returns a circle with a new id.
      */
-    internal val id: String = "circle_${System.nanoTime()}_${System.identityHashCode(this)}"
+    val id: String = "c${nextId.getAndIncrement()}"
 
     /** [strokeColor] as an ARGB color int, e.g. for Java code. */
     var strokeColorArgb: Int
@@ -203,4 +204,9 @@ class Circle(
     }
 
     override fun hashCode(): Int = id.hashCode()
+
+    private companion object {
+        // Shared by all maps, so ids are unique in the app
+        val nextId = AtomicLong()
+    }
 }

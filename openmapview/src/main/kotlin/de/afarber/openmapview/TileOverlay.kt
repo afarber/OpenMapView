@@ -7,6 +7,8 @@
 
 package de.afarber.openmapview
 
+import java.util.concurrent.atomic.AtomicLong
+
 /**
  * Represents a tile overlay layer on the map.
  *
@@ -91,7 +93,11 @@ class TileOverlay(
     /** User data associated with this overlay */
     var tag: Any? by property(tag)
 
-    internal val id: String = "tileOverlay_${System.nanoTime()}_${System.identityHashCode(this)}"
+    /**
+     * The unique id of this tile overlay, e.g. "to0", which stays the same for its lifetime.
+     * [copy] returns a tile overlay with a new id.
+     */
+    val id: String = "to${nextId.getAndIncrement()}"
 
     /** Removes the overlay from the map that shows it. */
     fun remove() {
@@ -125,4 +131,9 @@ class TileOverlay(
     override fun hashCode(): Int = id.hashCode()
 
     override fun toString(): String = "TileOverlay(id=$id, transparency=$transparency, zIndex=$zIndex, visible=$visible)"
+
+    private companion object {
+        // Shared by all maps, so ids are unique in the app
+        val nextId = AtomicLong()
+    }
 }

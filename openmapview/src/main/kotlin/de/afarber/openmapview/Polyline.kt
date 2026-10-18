@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toComposePathEffect
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * A polyline on the map: connected line segments.
@@ -103,10 +104,10 @@ class Polyline(
     var tag: Any? by property(tag)
 
     /**
-     * Unique identifier for this polyline instance.
-     * Used internally for management and callbacks.
+     * The unique id of this polyline, e.g. "pl0", which stays the same for its lifetime.
+     * [copy] returns a polyline with a new id.
      */
-    internal val id: String = "polyline_${System.nanoTime()}_${System.identityHashCode(this)}"
+    val id: String = "pl${nextId.getAndIncrement()}"
 
     /** [strokeColor] as an ARGB color int, e.g. for Java code. */
     var strokeColorArgb: Int
@@ -214,4 +215,9 @@ class Polyline(
     }
 
     override fun hashCode(): Int = id.hashCode()
+
+    private companion object {
+        // Shared by all maps, so ids are unique in the app
+        val nextId = AtomicLong()
+    }
 }

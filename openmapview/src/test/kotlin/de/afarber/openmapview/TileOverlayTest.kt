@@ -56,7 +56,7 @@ class TileOverlayTest {
     fun testToString() {
         val text = TileOverlay(tileProvider = provider, transparency = 0.25f).toString()
 
-        assertTrue(text.startsWith("TileOverlay(id=tileOverlay_"))
+        assertTrue(text.startsWith("TileOverlay(id=to"))
         assertTrue(text.contains("transparency=0.25"))
     }
 }

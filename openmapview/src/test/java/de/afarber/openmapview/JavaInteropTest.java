@@ -286,6 +286,15 @@ public class JavaInteropTest {
     }
 
     @Test
+    public void shapesHaveIds() {
+        Polyline polyline = mapView.addPolyline(new PolylineOptions().add(BOCHUM, UNIVERSITY));
+        Circle circle = mapView.addCircle(new CircleOptions().center(BOCHUM).radius(300f));
+
+        assertTrue(polyline.getId().startsWith("pl"));
+        assertTrue(circle.getId().startsWith("c"));
+    }
+
+    @Test
     public void markersRotateAndAnchorInfoWindows() {
         Marker marker = mapView.addMarker(
             new MarkerOptions()

@@ -90,6 +90,7 @@ The returned `Polyline`, `Polygon` and `Circle` are live handles, as in the Maps
 | `Polyline.setPattern(List<PatternItem>)`, `Polygon` / `Circle` `setStrokePattern(List<PatternItem>)` and getters | Same | Kotlin: `pattern`, or `strokePattern` with a Compose `PathEffect`, see below |
 | `Polyline.setStartCap(Cap)`, `setEndCap(Cap)`, `setJointType(int)` and getters | Same | `ButtCap`, `RoundCap`, `SquareCap` and `JointType` constants; no `CustomCap`. Kotlin: `startCap`, `endCap`, `strokeJoin` |
 | `Polygon.setStrokeJointType(int)` and getter | Same, also on `Circle` | Kotlin: `strokeJoin`. `setStrokeCap(Cap)` and the Kotlin `strokeCap` are OpenMapView additions |
+| `getId()` | Same, also on `GroundOverlay` and `TileOverlay` | Kotlin: `id`, e.g. "pl0", "pg0", "c0", "go0", "to0" |
 | `remove()` | Same | |
 | `PolylineOptions.add(LatLng...)`, `PolygonOptions.add(LatLng...)` | Same | |
 
