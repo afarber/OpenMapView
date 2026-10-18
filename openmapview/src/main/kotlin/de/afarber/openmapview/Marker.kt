@@ -22,6 +22,11 @@ import java.util.concurrent.atomic.AtomicLong
  * @param icon Custom icon descriptor. If null, a default red marker icon will be used
  * @param anchor Anchor point for the marker icon. Default (0.5f, 1.0f) means
  *               the marker is centered horizontally and anchored at the bottom
+ * @param infoWindowAnchor The point of the icon the info window points at, as fractions of its
+ *               width and height. Default (0.5f, 0.0f) is the top center
+ * @param rotation Clockwise rotation of the icon around the anchor, in degrees. Default is 0
+ * @param isFlat Whether the icon lies flat on the map instead of facing the screen. It has no
+ *               effect yet, as the map doesn't rotate or tilt. Default is false
  * @param visible Whether the marker is visible. Default is true
  * @param alpha Opacity of the marker from 0.0 (transparent) to 1.0 (opaque). Default is 1.0
  * @param draggable Whether the marker can be dragged. Default is false
@@ -34,6 +39,9 @@ class Marker(
     snippet: String? = null,
     icon: BitmapDescriptor? = null,
     anchor: Pair<Float, Float> = Pair(0.5f, 1.0f),
+    infoWindowAnchor: Pair<Float, Float> = Pair(0.5f, 0.0f),
+    rotation: Float = 0f,
+    isFlat: Boolean = false,
     visible: Boolean = true,
     alpha: Float = 1.0f,
     draggable: Boolean = false,
@@ -66,6 +74,15 @@ class Marker(
     /** The point of the icon at [position], as fractions of its width and height */
     var anchor: Pair<Float, Float> by property(anchor)
 
+    /** The point of the icon the info window points at, as fractions of its width and height */
+    var infoWindowAnchor: Pair<Float, Float> by property(infoWindowAnchor)
+
+    /** Clockwise rotation of the icon around the [anchor], in degrees, e.g. a vehicle's heading */
+    var rotation: Float by property(rotation)
+
+    /** Whether the icon lies flat on the map; no effect yet, as the map doesn't rotate or tilt */
+    var isFlat: Boolean by property(isFlat)
+
     /** Whether the marker is visible */
     var visible: Boolean by property(visible)
 
@@ -96,6 +113,14 @@ class Marker(
         anchor = Pair(anchorU, anchorV)
     }
 
+    /** Sets the [infoWindowAnchor] from its two fractions, like `setInfoWindowAnchor(float, float)` of the Maps SDK. */
+    fun setInfoWindowAnchor(
+        anchorU: Float,
+        anchorV: Float,
+    ) {
+        infoWindowAnchor = Pair(anchorU, anchorV)
+    }
+
     /** Removes the marker from the map that shows it, closing its info window. */
     fun remove() {
         mapView?.removeMarker(this)
@@ -108,12 +133,30 @@ class Marker(
         snippet: String? = this.snippet,
         icon: BitmapDescriptor? = this.icon,
         anchor: Pair<Float, Float> = this.anchor,
+        infoWindowAnchor: Pair<Float, Float> = this.infoWindowAnchor,
+        rotation: Float = this.rotation,
+        isFlat: Boolean = this.isFlat,
         visible: Boolean = this.visible,
         alpha: Float = this.alpha,
         draggable: Boolean = this.draggable,
         zIndex: Float = this.zIndex,
         tag: Any? = this.tag,
-    ): Marker = Marker(position, title, snippet, icon, anchor, visible, alpha, draggable, zIndex, tag)
+    ): Marker =
+        Marker(
+            position,
+            title,
+            snippet,
+            icon,
+            anchor,
+            infoWindowAnchor,
+            rotation,
+            isFlat,
+            visible,
+            alpha,
+            draggable,
+            zIndex,
+            tag,
+        )
 
     override fun toString(): String = "Marker(id=$id, position=$position, title=$title)"
 

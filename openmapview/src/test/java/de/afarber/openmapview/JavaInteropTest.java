@@ -284,4 +284,23 @@ public class JavaInteropTest {
         assertEquals(dotted, circle.getPattern());
         assertEquals(new SquareCap(), circle.getStrokeCap());
     }
+
+    @Test
+    public void markersRotateAndAnchorInfoWindows() {
+        Marker marker = mapView.addMarker(
+            new MarkerOptions()
+                .position(BOCHUM)
+                .rotation(90f)
+                .flat(true)
+                .infoWindowAnchor(0.5f, 0.5f));
+
+        assertEquals(90f, marker.getRotation(), 0f);
+        assertTrue(marker.isFlat());
+        assertEquals(0.5f, marker.getInfoWindowAnchor().getSecond(), 0f);
+
+        marker.setRotation(180f);
+        marker.setFlat(false);
+        marker.setInfoWindowAnchor(0.5f, 0f);
+        assertEquals(180f, marker.getRotation(), 0f);
+    }
 }

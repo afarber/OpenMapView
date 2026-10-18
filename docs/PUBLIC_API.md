@@ -56,6 +56,9 @@ The returned `Marker` is a live handle, as in the Maps SDK: setting a property r
 | ------------------ | ----------- | -------------------------------------------------------------------- |
 | `setPosition(LatLng)`, `setTitle(String)`, `setSnippet(String)`, `setIcon(BitmapDescriptor)`, `setAlpha(float)`, `setVisible(boolean)`, `setDraggable(boolean)`, `setZIndex(float)`, `setTag(Object)` and getters | `void` | Kotlin properties `position`, `title`, ... |
 | `setAnchor(float, float)` | `void` | Kotlin: `anchor` as a `Pair` |
+| `setInfoWindowAnchor(float, float)` | `void` | Kotlin: `infoWindowAnchor` as a `Pair`, default (0.5, 0), the top center of the icon. The info window points at it |
+| `setRotation(float)`, `getRotation()` | `void` | Clockwise in degrees around the anchor, e.g. for vehicle icons. The info window anchor turns with the icon, and taps hit the rotated icon |
+| `setFlat(boolean)`, `isFlat()` | `void` | Accepted, but no effect yet, as the map doesn't rotate or tilt |
 | `getId()` | `String` | Kotlin: `id`, e.g. "m0", unique and stable for the marker's lifetime |
 | `remove()` | `void` | |
 | `showInfoWindow()` | `void`      | Shows this marker's info window (auto-dismiss if configured via UiSettings) |

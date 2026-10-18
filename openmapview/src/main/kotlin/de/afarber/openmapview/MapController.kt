@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.asAndroidPathEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.withRotation
 import androidx.core.graphics.withSave
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -2234,7 +2235,13 @@ class MapController(
 
             paint.alpha = (marker.alpha * 255).toInt().coerceIn(0, 255)
 
-            canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
+            if (marker.rotation == 0f) {
+                canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
+            } else {
+                canvas.withRotation(marker.rotation, screenX, screenY) {
+                    drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
+                }
+            }
         }
     }
 
@@ -2308,7 +2315,7 @@ class MapController(
     }
 
     /**
-     * Returns the screen area of the marker's info window, above its icon,
+     * Returns the screen area of the marker's info window, above its info window anchor,
      * or null if the window is not shown. The pointer of the default frame
      * is below this area, between it and the icon.
      */
@@ -2352,13 +2359,22 @@ class MapController(
         val screenX = wrappedScreenX(markerPixelX, centerPixelX)
         val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
+        // The window points at the info window anchor of the icon, which turns with the marker
         val icon = loadBitmap(marker.icon)
-        val markerHeight = icon.height * marker.anchor.second
+        val iconLeft = screenX - icon.width * marker.anchor.first
+        val iconTop = screenY - icon.height * marker.anchor.second
+        var pointX = iconLeft + icon.width * marker.infoWindowAnchor.first
+        var pointY = iconTop + icon.height * marker.infoWindowAnchor.second
+        if (marker.rotation != 0f) {
+            val rotated = rotatePointAround(pointX, pointY, screenX, screenY, marker.rotation)
+            pointX = rotated.first
+            pointY = rotated.second
+        }
 
         // A view from InfoWindowAdapter.getInfoWindow has no pointer
         val pointer = if (image != null && !image.framed) 0f else infoWindowPointerHeight
-        val left = screenX - boxWidth / 2
-        val top = screenY - markerHeight - boxHeight - pointer - infoWindowGap
+        val left = pointX - boxWidth / 2
+        val top = pointY - boxHeight - pointer - infoWindowGap
         return RectF(left, top, left + boxWidth, top + boxHeight)
     }
 
@@ -2886,12 +2902,20 @@ class MapController(
             val anchorX = icon.width * marker.anchor.first
             val anchorY = icon.height * marker.anchor.second
 
+            // A rotated icon is hit where the touch, rotated back around the anchor, hits the upright icon
+            val (touchX, touchY) =
+                if (marker.rotation == 0f) {
+                    x to y
+                } else {
+                    rotatePointAround(x, y, screenX, screenY, -marker.rotation)
+                }
+
             val markerLeft = screenX - anchorX
             val markerTop = screenY - anchorY
             val markerRight = markerLeft + icon.width
             val markerBottom = markerTop + icon.height
 
-            if (x >= markerLeft && x <= markerRight && y >= markerTop && y <= markerBottom) {
+            if (touchX >= markerLeft && touchX <= markerRight && touchY >= markerTop && touchY <= markerBottom) {
                 return marker
             }
         }
