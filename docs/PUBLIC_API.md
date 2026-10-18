@@ -427,7 +427,7 @@ Features use the [simplestyle](https://github.com/mapbox/simplestyle-spec) prope
 | `zoomOut()`                                    | `CameraUpdate` |       |
 | `zoomTo(float)`                                | `CameraUpdate` |       |
 | `zoomBy(float)`                                | `CameraUpdate` |       |
-| `newLatLngBounds(LatLngBounds, int)`           | `CameraUpdate` |       |
+| `newLatLngBounds(LatLngBounds, int)`           | `CameraUpdate` | Before layout, the camera moves once the map has its size |
 | `newLatLngBounds(LatLngBounds, int, int, int)` | `CameraUpdate` |       |
 | `scrollBy(float, float)`                       | `CameraUpdate` |       |
 

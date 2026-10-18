@@ -541,6 +541,7 @@ class OpenMapView
          * @param latLng The target location for the map center
          */
         fun setCenter(latLng: LatLng) {
+            controller.cancelPendingCameraUpdate()
             controller.setCenter(latLng)
             invalidate()
         }
@@ -554,6 +555,7 @@ class OpenMapView
          * @param zoom The target zoom level
          */
         fun setZoom(zoom: Float) {
+            controller.cancelPendingCameraUpdate()
             controller.setZoom(zoom)
             invalidate()
         }
