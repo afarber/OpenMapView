@@ -161,7 +161,6 @@ fun onDestroy() {
     tileDownloader = null
     downloadingTiles = mutableSetOf()        // Request cancelled tiles again on the next draw
     overlayDownloadingTiles.values.forEach { it.clear() }
-    MarkerIconFactory.clearCache()           // Clear marker icon cache
 }
 ```
 
