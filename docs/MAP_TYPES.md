@@ -480,7 +480,7 @@ mapView.setMapType(MapType.CYCLOSM)  // Switch map types dynamically
 - **Source Code**: See `MapType.kt` and `TileSource.kt` for all map type definitions
 - **Example App**: `examples/views/MapTypes` demonstrates all features
 - **Public API**: See `docs/PUBLIC_API.md` for complete API reference
-- **Tile Specifications**: All maps use 256×256 pixel tiles, Web Mercator projection (EPSG:3857)
+- **Tile Specifications**: All maps use 256×256 pixel tiles, Web Mercator projection (EPSG:3857). They are drawn 256 dp wide, see `setTileScale()`
 
 
 ---

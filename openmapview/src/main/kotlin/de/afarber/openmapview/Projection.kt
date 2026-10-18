@@ -33,6 +33,7 @@ class Projection
         private val paddingTop: Int = 0,
         private val paddingRight: Int = 0,
         private val paddingBottom: Int = 0,
+        private val tileSize: Double = ProjectionUtils.TILE_SIZE,
     ) {
         /**
          * Returns the geographic location that corresponds to a screen location.
@@ -58,12 +59,12 @@ class Projection
             screenX: Float,
             screenY: Float,
         ): LatLng {
-            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
+            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
             val pixelX = (centerPixelX + screenX - viewWidth / 2 + panOffsetX).toDouble()
             val pixelY = (centerPixelY + screenY - viewHeight / 2 + panOffsetY).toDouble()
 
-            return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom)
+            return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom, tileSize)
         }
 
         /**
@@ -76,8 +77,8 @@ class Projection
          * @return The screen location in pixels
          */
         fun toScreenLocation(location: LatLng): Point {
-            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom)
-            val (locationPixelX, locationPixelY) = ProjectionUtils.latLngToPixel(location, zoom)
+            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
+            val (locationPixelX, locationPixelY) = ProjectionUtils.latLngToPixel(location, zoom, tileSize)
 
             val screenX = (locationPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toInt()
             val screenY = (locationPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toInt()

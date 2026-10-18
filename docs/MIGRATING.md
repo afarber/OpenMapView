@@ -473,7 +473,7 @@ OpenMapView implements the vast majority of the public MapView API. For a comple
 - Circles with radius and styling
 - Ground overlays with rotation
 - Tile overlays (including predefined OSM services)
-- Projection API (coordinate conversion)
+- Projection API (coordinate conversion). As with the Maps SDK, the world is 256 * 2^zoom dp wide, so a camera position shows the same area on every screen. Call `setTileScale(1f)` to draw one tile pixel per screen pixel instead.
 - UI settings and gesture controls
 - Click and long-click listeners
 - My-location layer (`setMyLocationEnabled`, `LocationSource`, my-location button). Without Play Services the default source is the platform `LocationManager`. As with the Maps SDK, declare `ACCESS_FINE_LOCATION` or `ACCESS_COARSE_LOCATION` in your manifest and request it at runtime first.

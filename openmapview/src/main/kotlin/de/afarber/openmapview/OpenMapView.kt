@@ -548,6 +548,25 @@ class OpenMapView
         fun getZoom(): Float = controller.getZoom()
 
         /**
+         * Sets how many screen pixels a pixel of a 256 px tile covers.
+         *
+         * The default is the screen density, so tiles are 256 dp wide as with the Maps SDK,
+         * and the same camera position shows the same area on every screen. 1 draws one tile
+         * pixel per screen pixel: the map shows more area, with smaller labels.
+         *
+         * @param scale Screen pixels per tile pixel, greater than 0
+         */
+        fun setTileScale(scale: Float) {
+            controller.setTileScale(scale)
+            invalidate()
+        }
+
+        /**
+         * Returns how many screen pixels a pixel of a 256 px tile covers, see [setTileScale].
+         */
+        fun getTileScale(): Float = controller.getTileScale()
+
+        /**
          * Sets the minimum zoom level preference.
          *
          * Constrains the camera zoom level to not go below this value.

@@ -7,6 +7,7 @@
 
 package de.afarber.openmapview
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
@@ -47,5 +48,19 @@ class MarkerIconFactoryTest {
 
         assertNotSame(first, second)
         assertFalse(second.isRecycled)
+    }
+
+    @Test
+    fun getDefaultIcon_IsDrawnInDp() {
+        MarkerIconFactory.clearCache()
+
+        val mdpi = MarkerIconFactory.getDefaultIcon(0f, 1f)
+        val xxhdpi = MarkerIconFactory.getDefaultIcon(0f, 3f)
+
+        assertEquals(28, mdpi.width)
+        assertEquals(42, mdpi.height)
+        assertEquals(84, xxhdpi.width)
+        assertEquals(126, xxhdpi.height)
+        assertSame(xxhdpi, MarkerIconFactory.getDefaultIcon(0f, 3f))
     }
 }
