@@ -2984,10 +2984,10 @@ class MapController(
     /**
      * Releases resources to prevent memory leaks.
      *
-     * Stops camera animations and tile downloads, closes the HTTP client and clears the
-     * marker icon cache. Called when the view is detached from its window or its lifecycle
-     * owner is destroyed. Calling it more than once is safe, and the map keeps working
-     * afterwards: tiles that were still loading are requested again on the next draw.
+     * Stops camera animations and tile downloads and closes the HTTP client. Called when
+     * the view is detached from its window or its lifecycle owner is destroyed. Calling it
+     * more than once is safe, and the map keeps working afterwards: tiles that were still
+     * loading are requested again on the next draw.
      */
     fun onDestroy() {
         stopAnimation()
@@ -2999,6 +2999,7 @@ class MapController(
         // Cancelled downloads never remove their tiles, so start with empty sets
         downloadingTiles = mutableSetOf()
         overlayDownloadingTiles.values.forEach { it.clear() }
-        MarkerIconFactory.clearCache()
+        // The default marker icons are kept: other maps may be drawing them, and the
+        // factory keeps at most 10 small ones
     }
 }
