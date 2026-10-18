@@ -10,6 +10,7 @@ package de.afarber.openmapview
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.ColorFilter
 import android.location.Location
 import android.os.Handler
 import android.os.Looper
@@ -565,6 +566,27 @@ class OpenMapView
          * Returns how many screen pixels a pixel of a 256 px tile covers, see [setTileScale].
          */
         fun getTileScale(): Float = controller.getTileScale()
+
+        /**
+         * Sets a color filter for the base map tiles, e.g. [TileColorFilters.invertedDark]
+         * for a dark map without an API key.
+         *
+         * Works on every API level. Only the tiles and their placeholders are filtered:
+         * markers, shapes, ground and tile overlays and info windows keep their colors.
+         *
+         * @param filter The filter, e.g. a `ColorMatrixColorFilter`, or null to draw the
+         *   tiles unchanged
+         */
+        fun setTileColorFilter(filter: ColorFilter?) {
+            if (filter === controller.getTileColorFilter()) return
+            controller.setTileColorFilter(filter)
+            invalidate()
+        }
+
+        /**
+         * Returns the color filter of the base map tiles, see [setTileColorFilter].
+         */
+        fun getTileColorFilter(): ColorFilter? = controller.getTileColorFilter()
 
         /**
          * Sets the minimum zoom level preference.

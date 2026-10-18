@@ -225,6 +225,8 @@ These properties apply to:
 | `getZoom()`                    | `float`     | Direct method on OpenMapView (not via a separate map object) |
 | `setTileScale(float)`          | `void`      | OpenMapView only: screen pixels per tile pixel, default is the screen density (256 dp tiles as with the Maps SDK), 1 for one tile pixel per screen pixel |
 | `getTileScale()`               | `float`     | OpenMapView only |
+| `setTileColorFilter(ColorFilter)` | `void`  | OpenMapView only: `android.graphics.ColorFilter` for the base map tiles only, e.g. `TileColorFilters.invertedDark()` for a keyless dark mode, see MAP_TYPES.md |
+| `getTileColorFilter()`         | `ColorFilter` | OpenMapView only |
 | `setMapType(int)`              | `void`      | Supports all 15 `MapType` constants, see MAP_TYPES.md            |
 | `getMapType()`                 | `int`       |                                                                  |
 | `setMapStyle(MapStyleOptions)` | `boolean`   | Not implemented                                                   |
@@ -493,7 +495,7 @@ The optional `openmapview-compose` artifact follows the API of the [maps-compose
 | `GoogleMap(cameraPositionState, properties, uiSettings, onMapClick, onMapLongClick, onMapLoaded)` | `OpenMap(...)` with the same parameters | Plus `onMapCreated` for direct access to the `OpenMapView` |
 | `MapEffect(vararg keys) { map -> }` | Same | The block gets the `OpenMapView`, e.g. for `snapshot()` |
 | `GoogleMap(locationSource, onMyLocationButtonClick, onMyLocationClick)`, `MapProperties(isMyLocationEnabled)`, `MapUiSettings(myLocationButtonEnabled)` | Same | |
-| `MapProperties(mapType, minZoomPreference, maxZoomPreference, latLngBoundsForCameraTarget)` | Same | `mapType` is one of the `MapType` constants |
+| `MapProperties(mapType, minZoomPreference, maxZoomPreference, latLngBoundsForCameraTarget)` | Same | `mapType` is one of the `MapType` constants. Plus `tileColorFilter`, a Compose `ColorFilter` for the tiles only |
 | `MapUiSettings(zoomControlsEnabled, zoomGesturesEnabled, scrollGesturesEnabled)` | Same, plus `infoWindowAutoDismiss` | |
 | `GoogleMap(contentPadding)` | `OpenMap(contentPadding)` | Calls `setMapPadding()` with the padding in pixels |
 | `rememberCameraPositionState`, `CameraPositionState.animate`, `CameraPositionState.move` | Same | `move` before the map is laid out is applied once it is, so `newLatLngBounds` can fit the map |

@@ -8,6 +8,8 @@
 package de.afarber.openmapview.compose
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.asAndroidColorFilter
 import de.afarber.openmapview.LatLngBounds
 import de.afarber.openmapview.MapType
 import de.afarber.openmapview.OpenMapView
@@ -29,6 +31,9 @@ import kotlin.time.Duration
  * @param isMyLocationEnabled Whether the device location is shown, see
  *   [OpenMapView.setMyLocationEnabled]. Needs the location permission, unless OpenMap gets a
  *   locationSource.
+ * @param tileColorFilter A color filter for the base map tiles only, or null, see
+ *   [OpenMapView.setTileColorFilter]. For a dark map without an API key, use
+ *   `remember { TileColorFilters.invertedDark().asComposeColorFilter() }`.
  */
 @Immutable
 data class MapProperties(
@@ -37,6 +42,7 @@ data class MapProperties(
     val maxZoomPreference: Float = 19f,
     val latLngBoundsForCameraTarget: LatLngBounds? = null,
     val isMyLocationEnabled: Boolean = false,
+    val tileColorFilter: ColorFilter? = null,
 ) {
     internal fun applyTo(
         map: OpenMapView,
@@ -57,6 +63,9 @@ data class MapProperties(
         }
         if (previous == null || previous.isMyLocationEnabled != isMyLocationEnabled) {
             map.setMyLocationEnabled(isMyLocationEnabled)
+        }
+        if (previous == null || previous.tileColorFilter != tileColorFilter) {
+            map.setTileColorFilter(tileColorFilter?.asAndroidColorFilter())
         }
     }
 }

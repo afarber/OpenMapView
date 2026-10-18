@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.asComposeColorFilter
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
@@ -23,6 +24,7 @@ import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.LatLngBounds
 import de.afarber.openmapview.MapType
 import de.afarber.openmapview.OpenMapView
+import de.afarber.openmapview.TileColorFilters
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -114,6 +116,19 @@ class MapPropertiesTest {
         // The camera was at zoom 14, above the new limit
         assertEquals(12f, map.getCameraPosition().zoom, 0.001f)
         assertNull(map.getLatLngBoundsForCameraTarget())
+    }
+
+    @Test
+    fun testTileColorFilter_IsSetAndCleared() {
+        val dark = TileColorFilters.invertedDark()
+        var properties by mutableStateOf(MapProperties(tileColorFilter = dark.asComposeColorFilter()))
+        showMap(properties = { properties })
+        assertEquals(dark, map.getTileColorFilter())
+
+        properties = MapProperties()
+        composeRule.waitForIdle()
+
+        assertNull(map.getTileColorFilter())
     }
 
     @Test
