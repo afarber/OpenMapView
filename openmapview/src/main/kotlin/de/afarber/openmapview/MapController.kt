@@ -28,6 +28,7 @@ import android.util.Log
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.asAndroidPathEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -48,19 +49,6 @@ import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
-
-/**
- * Converts Compose PathEffect to Android PathEffect.
- * PathEffect is already backed by android.graphics.PathEffect internally.
- * We access it through reflection since it's not directly exposed.
- */
-private fun PathEffect.asAndroidPathEffect(): android.graphics.PathEffect {
-    // PathEffect in Compose is a wrapper around android.graphics.PathEffect
-    // Access the underlying native instance via reflection
-    val nativeField = this::class.java.getDeclaredField("nativePathEffect")
-    nativeField.isAccessible = true
-    return nativeField.get(this) as android.graphics.PathEffect
-}
 
 /**
  * Converts Compose StrokeCap to Android Paint.Cap.
@@ -103,6 +91,9 @@ class MapController(
 
         // Per tile overlay, so a slow overlay server only delays its own tiles
         private const val MAX_CONCURRENT_OVERLAY_DOWNLOADS = 2
+
+        // How many converted stroke patterns strokeEffect() keeps
+        private const val MAX_PATTERN_EFFECTS = 64
 
         // How many zoom levels up drawFallbackTile() looks for a cached tile to scale up
         private const val MAX_FALLBACK_LEVELS = 4
@@ -383,6 +374,9 @@ class MapController(
 
     // Shared by all ground overlays, which only differ in alpha; filtered as they are scaled
     private val groundOverlayPaint = Paint(Paint.FILTER_BITMAP_FLAG)
+
+    // Path effects of dot, dash and gap patterns by pattern and stroke width, see strokeEffect()
+    private val patternEffects = HashMap<Pair<List<PatternItem>, Float>, android.graphics.PathEffect>()
 
     private val fallbackSrc = Rect()
     private val fallbackDst = RectF()
@@ -2032,7 +2026,7 @@ class MapController(
             fillPaint.color = polygon.fillColor.toArgb()
             strokePaint.color = polygon.strokeColor.toArgb()
             strokePaint.strokeWidth = polygon.strokeWidth
-            strokePaint.pathEffect = polygon.strokePattern?.asAndroidPathEffect()
+            strokePaint.pathEffect = strokeEffect(polygon.pattern, polygon.strokePattern, polygon.strokeWidth)
             strokePaint.strokeCap = polygon.strokeCap.toAndroidCap()
             strokePaint.strokeJoin = polygon.strokeJoin.toAndroidJoin()
 
@@ -2087,7 +2081,7 @@ class MapController(
             } else {
                 paint.color = polyline.strokeColor.toArgb()
                 paint.strokeWidth = polyline.strokeWidth
-                paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
+                paint.pathEffect = strokeEffect(polyline.pattern, polyline.strokePattern, polyline.strokeWidth)
                 paint.strokeCap = polyline.startCap.toAndroidCap() // Use startCap for full path
                 paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
 
@@ -2114,7 +2108,7 @@ class MapController(
         paint.style = Paint.Style.STROKE
         paint.isAntiAlias = true
         paint.strokeWidth = polyline.strokeWidth
-        paint.pathEffect = polyline.strokePattern?.asAndroidPathEffect()
+        paint.pathEffect = strokeEffect(polyline.pattern, polyline.strokePattern, polyline.strokeWidth)
         paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
 
         var segmentIndex = 0
@@ -2182,7 +2176,7 @@ class MapController(
             fillPaint.color = circle.fillColor.toArgb()
             strokePaint.color = circle.strokeColor.toArgb()
             strokePaint.strokeWidth = circle.strokeWidth
-            strokePaint.pathEffect = circle.strokePattern?.asAndroidPathEffect()
+            strokePaint.pathEffect = strokeEffect(circle.pattern, circle.strokePattern, circle.strokeWidth)
             strokePaint.strokeCap = circle.strokeCap.toAndroidCap()
             strokePaint.strokeJoin = circle.strokeJoin.toAndroidJoin()
 
@@ -2195,6 +2189,24 @@ class MapController(
             canvas.drawCircle(screenX, screenY, radiusInPixels, fillPaint)
             canvas.drawCircle(screenX, screenY, radiusInPixels, strokePaint)
         }
+    }
+
+    /**
+     * Returns the path effect of a stroke: its [pattern] of dots, dashes and gaps if set,
+     * else its [strokePattern]. Converted patterns are kept, as they depend only on the width.
+     */
+    private fun strokeEffect(
+        pattern: List<PatternItem>?,
+        strokePattern: PathEffect?,
+        strokeWidth: Float,
+    ): android.graphics.PathEffect? {
+        if (pattern == null) return strokePattern?.asAndroidPathEffect()
+        patternEffects[pattern to strokeWidth]?.let { return it }
+        if (patternEffects.size >= MAX_PATTERN_EFFECTS) patternEffects.clear()
+        val effect = pattern.toAndroidPathEffect(strokeWidth) ?: return null
+        // A copy as the key, so changing the caller's list later doesn't break the map
+        patternEffects[pattern.toList() to strokeWidth] = effect
+        return effect
     }
 
     private fun drawMarkersByZIndex(

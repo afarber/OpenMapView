@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toComposePathEffect
 
 /**
  * A circle on the map with a center and a radius in meters.
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.toArgb
  * @param strokeColor the outline color
  * @param strokeWidth the outline width in pixels
  * @param strokePattern the stroke pattern, e.g. dashed; null for a solid line
+ * @param pattern the stroke pattern as dots, dashes and gaps, used instead of [strokePattern] if not null
  * @param strokeCap the shape of line ends
  * @param strokeJoin the shape of the corners
  * @param fillColor the color of the interior
@@ -39,6 +41,7 @@ class Circle(
     strokeColor: Color = Color.Black,
     strokeWidth: Float = 10f,
     strokePattern: PathEffect? = null,
+    pattern: List<PatternItem>? = null,
     strokeCap: StrokeCap = StrokeCap.Round,
     strokeJoin: StrokeJoin = StrokeJoin.Round,
     fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128),
@@ -69,6 +72,9 @@ class Circle(
 
     /** The stroke pattern, e.g. dashed; null for a solid line */
     var strokePattern: PathEffect? by property(strokePattern)
+
+    /** The stroke pattern as dots, dashes and gaps, used instead of [strokePattern] if not null */
+    var pattern: List<PatternItem>? by property(pattern)
 
     /** The shape of line ends */
     var strokeCap: StrokeCap by property(strokeCap)
@@ -127,6 +133,32 @@ class Circle(
         fillColorArgb = color
     }
 
+    /** The shape of line ends as a [Cap], e.g. for Java code. */
+    fun getStrokeCap(): Cap = strokeCap.toCap()
+
+    /** Sets the shape of line ends, e.g. `setStrokeCap(new RoundCap())` from Java. */
+    fun setStrokeCap(cap: Cap) {
+        strokeCap = cap.toStrokeCap()
+    }
+
+    /** The shape of the corners as a [JointType] constant, like `getStrokeJointType()` of the Maps SDK. */
+    fun getStrokeJointType(): Int = strokeJoin.toJointType()
+
+    /** Sets the shape of the corners from a [JointType] constant, like `setStrokeJointType(int)` of the Maps SDK. */
+    fun setStrokeJointType(jointType: Int) {
+        strokeJoin = jointTypeToStrokeJoin(jointType)
+    }
+
+    /** Sets [pattern] from dots, dashes and gaps, like `setStrokePattern(List)` of the Maps SDK. */
+    fun setStrokePattern(pattern: List<PatternItem>) {
+        this.pattern = pattern
+    }
+
+    /** Sets [strokePattern] from an android.graphics.PathEffect, e.g. a DashPathEffect from Java. */
+    fun setStrokePattern(pattern: android.graphics.PathEffect) {
+        strokePattern = pattern.toComposePathEffect()
+    }
+
     /** Removes the circle from the map that shows it. */
     fun remove() {
         mapView?.removeCircle(this)
@@ -139,6 +171,7 @@ class Circle(
         strokeColor: Color = this.strokeColor,
         strokeWidth: Float = this.strokeWidth,
         strokePattern: PathEffect? = this.strokePattern,
+        pattern: List<PatternItem>? = this.pattern,
         strokeCap: StrokeCap = this.strokeCap,
         strokeJoin: StrokeJoin = this.strokeJoin,
         fillColor: Color = this.fillColor,
@@ -147,7 +180,21 @@ class Circle(
         zIndex: Float = this.zIndex,
         tag: Any? = this.tag,
     ): Circle =
-        Circle(center, radius, strokeColor, strokeWidth, strokePattern, strokeCap, strokeJoin, fillColor, visible, clickable, zIndex, tag)
+        Circle(
+            center,
+            radius,
+            strokeColor,
+            strokeWidth,
+            strokePattern,
+            pattern,
+            strokeCap,
+            strokeJoin,
+            fillColor,
+            visible,
+            clickable,
+            zIndex,
+            tag,
+        )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

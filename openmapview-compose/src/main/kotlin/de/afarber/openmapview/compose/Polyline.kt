@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import de.afarber.openmapview.LatLng
+import de.afarber.openmapview.PatternItem
 import de.afarber.openmapview.StyleSpan
 import de.afarber.openmapview.Polyline as MapPolyline
 
@@ -38,6 +39,7 @@ import de.afarber.openmapview.Polyline as MapPolyline
  * @param strokeColor Line color
  * @param strokeWidth Line width in pixels
  * @param strokePattern Dash pattern, or null for a solid line
+ * @param pattern Dots, dashes and gaps, used instead of [strokePattern] if not null
  * @param startCap Cap at the first vertex
  * @param endCap Cap at the last vertex
  * @param strokeJoin Joint type at the vertices
@@ -55,6 +57,7 @@ fun Polyline(
     strokeColor: Color = Color.Black,
     strokeWidth: Float = 10f,
     strokePattern: PathEffect? = null,
+    pattern: List<PatternItem>? = null,
     startCap: StrokeCap = StrokeCap.Butt,
     endCap: StrokeCap = StrokeCap.Butt,
     strokeJoin: StrokeJoin = StrokeJoin.Round,
@@ -73,6 +76,7 @@ fun Polyline(
                 strokeColor = strokeColor,
                 strokeWidth = strokeWidth,
                 strokePattern = strokePattern,
+                pattern = pattern,
                 startCap = startCap,
                 endCap = endCap,
                 strokeJoin = strokeJoin,
@@ -89,6 +93,7 @@ fun Polyline(
             this.strokeColor = strokeColor
             this.strokeWidth = strokeWidth
             this.strokePattern = strokePattern
+            this.pattern = pattern
             this.startCap = startCap
             this.endCap = endCap
             this.strokeJoin = strokeJoin

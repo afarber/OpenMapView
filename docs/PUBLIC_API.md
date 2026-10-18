@@ -84,7 +84,9 @@ The returned `Polyline`, `Polygon` and `Circle` are live handles, as in the Maps
 | `Polyline.setColor(int)`, `getColor()`, `setWidth(float)`, `getWidth()` | Same | Kotlin: `strokeColor` (Compose `Color`), `strokeColorArgb`, `strokeWidth` |
 | `Polygon` / `Circle` `setStrokeColor(int)`, `getStrokeColor()`, `setFillColor(int)`, `getFillColor()`, `setStrokeWidth(float)` | Same | Kotlin: `strokeColor`, `fillColor` (Compose `Color`), `strokeColorArgb`, `fillColorArgb`, `strokeWidth` |
 | `Polygon.setHoles`, `Circle.setCenter`, `setRadius` | Same | |
-| `setPattern(List<PatternItem>)`, `setStartCap`, `setEndCap`, `setJointType` | `strokePattern`, `startCap`, `endCap`, `strokeJoin` | Compose `PathEffect`, `StrokeCap`, `StrokeJoin`, see below |
+| `Polyline.setPattern(List<PatternItem>)`, `Polygon` / `Circle` `setStrokePattern(List<PatternItem>)` and getters | Same | Kotlin: `pattern`, or `strokePattern` with a Compose `PathEffect`, see below |
+| `Polyline.setStartCap(Cap)`, `setEndCap(Cap)`, `setJointType(int)` and getters | Same | `ButtCap`, `RoundCap`, `SquareCap` and `JointType` constants; no `CustomCap`. Kotlin: `startCap`, `endCap`, `strokeJoin` |
+| `Polygon.setStrokeJointType(int)` and getter | Same, also on `Circle` | Kotlin: `strokeJoin`. `setStrokeCap(Cap)` and the Kotlin `strokeCap` are OpenMapView additions |
 | `remove()` | Same | |
 | `PolylineOptions.add(LatLng...)`, `PolygonOptions.add(LatLng...)` | Same | |
 
@@ -139,16 +141,32 @@ Java code calls the same API directly:
 - `UiSettings.setInfoWindowAutoDismissMillis(long)` replaces the Kotlin `Duration` property
 - Tile providers are plain Java classes or lambdas: `TileProvider provider = (x, y, zoom) -> ...`
 
-Compose types without a Java-friendly form remain Kotlin-only: the shape constructors and `copy()` (because of their `Color` parameters), and the stroke caps and joins (`StrokeCap`, `StrokeJoin`). Java changes a shape on the map through its setters, e.g. `polyline.setWidth(16f)` and `polygon.setFillColor(0x400000FF)`. `PathEffect` works from Java through `PathEffect.Companion.dashPathEffect(...)`.
+- Stroke styles take the same values as ported code: `.startCap(new RoundCap())`, `.jointType(JointType.ROUND)`, `.pattern(Arrays.asList(new Dot(), new Gap(20)))`, or an `android.graphics.PathEffect` such as `.strokePattern(new DashPathEffect(...))`
+
+The shape constructors and `copy()` remain Kotlin-only, because of their Compose `Color` parameters. Java changes a shape on the map through its setters, e.g. `polyline.setWidth(16f)`, `polyline.setStartCap(new RoundCap())` and `polygon.setFillColor(0x400000FF)`. A unit test written in Java (`JavaInteropTest`) compiles against these methods, so a public method that only Kotlin can call fails the build.
 
 ### Stroke Styling API
 
 | Maps SDK Property | OpenMapView Equivalent | Notes |
 |-------------------|------------------------|-------|
 | `setWidth(float)` | `strokeWidth: Float` | Same concept, pixels (not dp) |
-| `setPattern(List<PatternItem>)` | `strokePattern: PathEffect?` | Different API: uses Compose PathEffect instead of PatternItem list |
-| `setStartCap(Cap)` / `setEndCap(Cap)` | `strokeCap: StrokeCap` | Single property for both start and end (OpenMapView uses same cap for both) |
-| `setJointType(int)` | `strokeJoin: StrokeJoin` | Uses Compose StrokeJoin enum instead of int constant |
+| `setPattern(List<PatternItem>)` | `pattern: List<PatternItem>?` or `strokePattern: PathEffect?` | Both work; `pattern` is used instead of `strokePattern` when it is not null |
+| `setStartCap(Cap)` / `setEndCap(Cap)` | `startCap` / `endCap: StrokeCap` on `Polyline`, `strokeCap` on `Polygon` and `Circle` | `Cap` overloads take `ButtCap`, `RoundCap`, `SquareCap` |
+| `setJointType(int)` | `strokeJoin: StrokeJoin` | `JointType.DEFAULT` (Miter), `BEVEL` and `ROUND` overloads |
+
+**Pattern Items:**
+
+A pattern repeats along the stroke. It is turned into an `android.graphics.PathEffect` for the current stroke width:
+
+- Only `Dash(length)` and `Gap(length)`: a `DashPathEffect` with these lengths in pixels. Neighbors of the same kind are merged, and a pattern starting with a gap starts with its first dash and a phase instead
+- With a `Dot()`: a `PathDashPathEffect` that stamps one period along the stroke: a circle as wide as the stroke for each dot, a rectangle as long as the dash and as wide as the stroke for each dash, and nothing for each gap
+
+```kotlin
+Polyline(points = points, pattern = listOf(Dot(), Gap(20f)))
+Polygon(points = points, pattern = listOf(Dash(30f), Gap(10f), Dot(), Gap(10f)))
+```
+
+An `android.graphics.PathEffect` works too: `strokePattern(android.graphics.PathEffect)` on the options and `setStrokePattern(android.graphics.PathEffect)` on the shapes.
 
 **PathEffect Examples:**
 

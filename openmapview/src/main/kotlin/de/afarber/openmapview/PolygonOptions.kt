@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.toComposePathEffect
 
 /**
  * Builder class for creating Polygon instances with a fluent API.
@@ -33,6 +34,7 @@ class PolygonOptions {
     private var strokeColor: Color = Color.Black
     private var strokeWidth: Float = 10f
     private var strokePattern: PathEffect? = null
+    private var pattern: List<PatternItem>? = null
     private var strokeCap: StrokeCap = StrokeCap.Butt
     private var strokeJoin: StrokeJoin = StrokeJoin.Round
     private var fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128)
@@ -113,6 +115,28 @@ class PolygonOptions {
     }
 
     /**
+     * Sets the stroke pattern from an android.graphics.PathEffect, e.g. a DashPathEffect from Java.
+     * @param pattern PathEffect defining the pattern
+     */
+    fun strokePattern(pattern: android.graphics.PathEffect): PolygonOptions = strokePattern(pattern.toComposePathEffect())
+
+    /**
+     * Sets the stroke pattern as dots, dashes and gaps, like `strokePattern(List)` of the Maps SDK.
+     * @param pattern The repeating pattern
+     */
+    fun strokePattern(pattern: List<PatternItem>): PolygonOptions = pattern(pattern)
+
+    /**
+     * Sets the stroke pattern as dots, dashes and gaps, e.g. `listOf(Dot(), Gap(20f))`.
+     * It is used instead of a [strokePattern] if not null.
+     * @param pattern The repeating pattern, or null for none
+     */
+    fun pattern(pattern: List<PatternItem>?): PolygonOptions {
+        this.pattern = pattern
+        return this
+    }
+
+    /**
      * Sets the stroke cap style for line endpoints.
      * @param cap StrokeCap style (Butt, Round, or Square)
      */
@@ -129,6 +153,18 @@ class PolygonOptions {
         this.strokeJoin = join
         return this
     }
+
+    /**
+     * Sets the shape of line ends, e.g. `strokeCap(new RoundCap())` from Java.
+     * @param cap ButtCap, RoundCap or SquareCap
+     */
+    fun strokeCap(cap: Cap): PolygonOptions = strokeCap(cap.toStrokeCap())
+
+    /**
+     * Sets the shape of the corners from a [JointType] constant, e.g. `strokeJointType(JointType.ROUND)`.
+     * @param jointType JointType.DEFAULT, BEVEL or ROUND
+     */
+    fun strokeJointType(jointType: Int): PolygonOptions = strokeJoin(jointTypeToStrokeJoin(jointType))
 
     /**
      * Sets the fill color of the polygon interior.
@@ -201,6 +237,7 @@ class PolygonOptions {
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
             strokePattern = strokePattern,
+            pattern = pattern,
             strokeCap = strokeCap,
             strokeJoin = strokeJoin,
             fillColor = fillColor,

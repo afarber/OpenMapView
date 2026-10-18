@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toComposePathEffect
 
 /**
  * A polyline on the map: connected line segments.
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.toArgb
  * @param strokeColor the line color, used where no [spans] apply
  * @param strokeWidth the line width in pixels
  * @param strokePattern the stroke pattern, e.g. dashed; null for a solid line
+ * @param pattern the stroke pattern as dots, dashes and gaps, used instead of [strokePattern] if not null
  * @param startCap the shape of the start
  * @param endCap the shape of the end
  * @param strokeJoin the shape of the corners
@@ -39,6 +41,7 @@ class Polyline(
     strokeColor: Color = Color.Black,
     strokeWidth: Float = 10f,
     strokePattern: PathEffect? = null,
+    pattern: List<PatternItem>? = null,
     startCap: StrokeCap = StrokeCap.Butt,
     endCap: StrokeCap = StrokeCap.Butt,
     strokeJoin: StrokeJoin = StrokeJoin.Round,
@@ -68,6 +71,9 @@ class Polyline(
 
     /** The stroke pattern, e.g. dashed; null for a solid line */
     var strokePattern: PathEffect? by property(strokePattern)
+
+    /** The stroke pattern as dots, dashes and gaps, used instead of [strokePattern] if not null */
+    var pattern: List<PatternItem>? by property(pattern)
 
     /** The shape of the start */
     var startCap: StrokeCap by property(startCap)
@@ -117,6 +123,43 @@ class Polyline(
         strokeColorArgb = color
     }
 
+    /** The stroke color as an ARGB color int, the same as [getColor]. */
+    fun getStrokeColor(): Int = strokeColorArgb
+
+    /** Sets the stroke color from an ARGB color int, the same as [setColor]. */
+    fun setStrokeColor(color: Int) {
+        strokeColorArgb = color
+    }
+
+    /** The shape of the start, like `getStartCap()` of the Maps SDK. */
+    fun getStartCap(): Cap = startCap.toCap()
+
+    /** Sets the shape of the start, like `setStartCap(Cap)` of the Maps SDK. */
+    fun setStartCap(cap: Cap) {
+        startCap = cap.toStrokeCap()
+    }
+
+    /** The shape of the end, like `getEndCap()` of the Maps SDK. */
+    fun getEndCap(): Cap = endCap.toCap()
+
+    /** Sets the shape of the end, like `setEndCap(Cap)` of the Maps SDK. */
+    fun setEndCap(cap: Cap) {
+        endCap = cap.toStrokeCap()
+    }
+
+    /** The shape of the corners as a [JointType] constant, like `getJointType()` of the Maps SDK. */
+    fun getJointType(): Int = strokeJoin.toJointType()
+
+    /** Sets the shape of the corners from a [JointType] constant, like `setJointType(int)` of the Maps SDK. */
+    fun setJointType(jointType: Int) {
+        strokeJoin = jointTypeToStrokeJoin(jointType)
+    }
+
+    /** Sets [strokePattern] from an android.graphics.PathEffect, e.g. a DashPathEffect from Java. */
+    fun setStrokePattern(pattern: android.graphics.PathEffect) {
+        strokePattern = pattern.toComposePathEffect()
+    }
+
     /** The stroke width in pixels, like `getWidth()` of the Maps SDK. */
     fun getWidth(): Float = strokeWidth
 
@@ -136,6 +179,7 @@ class Polyline(
         strokeColor: Color = this.strokeColor,
         strokeWidth: Float = this.strokeWidth,
         strokePattern: PathEffect? = this.strokePattern,
+        pattern: List<PatternItem>? = this.pattern,
         startCap: StrokeCap = this.startCap,
         endCap: StrokeCap = this.endCap,
         strokeJoin: StrokeJoin = this.strokeJoin,
@@ -151,6 +195,7 @@ class Polyline(
             strokeColor,
             strokeWidth,
             strokePattern,
+            pattern,
             startCap,
             endCap,
             strokeJoin,

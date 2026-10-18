@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.toComposePathEffect
 
 /**
  * Builder class for creating Polyline instances with a fluent API.
@@ -32,6 +33,7 @@ class PolylineOptions {
     private var strokeColor: Color = Color.Black
     private var strokeWidth: Float = 10f
     private var strokePattern: PathEffect? = null
+    private var pattern: List<PatternItem>? = null
     private var startCap: StrokeCap = StrokeCap.Butt
     private var endCap: StrokeCap = StrokeCap.Butt
     private var strokeJoin: StrokeJoin = StrokeJoin.Round
@@ -104,6 +106,22 @@ class PolylineOptions {
     }
 
     /**
+     * Sets the stroke pattern from an android.graphics.PathEffect, e.g. a DashPathEffect from Java.
+     * @param pattern PathEffect defining the pattern
+     */
+    fun strokePattern(pattern: android.graphics.PathEffect): PolylineOptions = strokePattern(pattern.toComposePathEffect())
+
+    /**
+     * Sets the stroke pattern as dots, dashes and gaps, e.g. `listOf(Dot(), Gap(20f))`.
+     * It is used instead of a [strokePattern] if not null.
+     * @param pattern The repeating pattern, or null for none
+     */
+    fun pattern(pattern: List<PatternItem>?): PolylineOptions {
+        this.pattern = pattern
+        return this
+    }
+
+    /**
      * Sets the stroke cap style for the start of the polyline.
      * @param cap StrokeCap style (Butt, Round, or Square)
      */
@@ -120,6 +138,24 @@ class PolylineOptions {
         this.endCap = cap
         return this
     }
+
+    /**
+     * Sets the shape of the start, e.g. `startCap(new RoundCap())` from Java.
+     * @param cap ButtCap, RoundCap or SquareCap
+     */
+    fun startCap(cap: Cap): PolylineOptions = startCap(cap.toStrokeCap())
+
+    /**
+     * Sets the shape of the end, e.g. `endCap(new RoundCap())` from Java.
+     * @param cap ButtCap, RoundCap or SquareCap
+     */
+    fun endCap(cap: Cap): PolylineOptions = endCap(cap.toStrokeCap())
+
+    /**
+     * Sets the shape of the corners from a [JointType] constant, e.g. `jointType(JointType.ROUND)`.
+     * @param jointType JointType.DEFAULT, BEVEL or ROUND
+     */
+    fun jointType(jointType: Int): PolylineOptions = strokeJoin(jointTypeToStrokeJoin(jointType))
 
     /**
      * Sets whether segments are drawn as geodesics (great-circle paths).
@@ -194,6 +230,7 @@ class PolylineOptions {
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
             strokePattern = strokePattern,
+            pattern = pattern,
             startCap = startCap,
             endCap = endCap,
             strokeJoin = strokeJoin,

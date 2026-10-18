@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import de.afarber.openmapview.LatLng
+import de.afarber.openmapview.PatternItem
 import de.afarber.openmapview.Polygon as MapPolygon
 
 /**
@@ -38,6 +39,7 @@ import de.afarber.openmapview.Polygon as MapPolygon
  * @param strokeColor Outline color
  * @param strokeWidth Outline width in pixels
  * @param strokePattern Dash pattern, or null for a solid outline
+ * @param pattern Dots, dashes and gaps, used instead of [strokePattern] if not null
  * @param strokeCap Cap of the outline segments
  * @param strokeJoin Joint type at the vertices
  * @param fillColor Fill color
@@ -55,6 +57,7 @@ fun Polygon(
     strokeColor: Color = Color.Black,
     strokeWidth: Float = 10f,
     strokePattern: PathEffect? = null,
+    pattern: List<PatternItem>? = null,
     strokeCap: StrokeCap = StrokeCap.Butt,
     strokeJoin: StrokeJoin = StrokeJoin.Round,
     fillColor: Color = Color(red = 128, green = 128, blue = 128, alpha = 128),
@@ -72,6 +75,7 @@ fun Polygon(
                 strokeColor = strokeColor,
                 strokeWidth = strokeWidth,
                 strokePattern = strokePattern,
+                pattern = pattern,
                 strokeCap = strokeCap,
                 strokeJoin = strokeJoin,
                 fillColor = fillColor,
@@ -88,6 +92,7 @@ fun Polygon(
             this.strokeColor = strokeColor
             this.strokeWidth = strokeWidth
             this.strokePattern = strokePattern
+            this.pattern = pattern
             this.strokeCap = strokeCap
             this.strokeJoin = strokeJoin
             this.fillColor = fillColor
