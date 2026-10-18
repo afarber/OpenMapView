@@ -19,6 +19,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
+import android.graphics.drawable.BitmapDrawable
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.ui.graphics.PathEffect
@@ -113,6 +114,9 @@ class MapController(
 
         // Between the info window and the top of its marker
         private const val INFO_WINDOW_GAP_DP = 4f
+
+        // Longest side of a vector ground overlay image rasterized by loadGroundOverlayBitmap()
+        internal const val MAX_GROUND_OVERLAY_BITMAP_SIZE = 1024
     }
 
     private val density = context.resources.displayMetrics.density
@@ -252,6 +256,9 @@ class MapController(
 
     // Decoded resource and asset icons, keyed by descriptor (failed loads are not cached)
     private val descriptorBitmapCache = HashMap<BitmapDescriptor, Bitmap>()
+
+    // Ground overlay resource images keyed by resource id and rasterized width
+    private val groundOverlayBitmapCache = HashMap<Pair<Int, Int>, Bitmap>()
     var onMarkerClickListener: OnMarkerClickListener? = null
     var onInfoWindowClickListener: OnInfoWindowClickListener? = null
     var onInfoWindowCloseListener: OnInfoWindowCloseListener? = null
@@ -396,6 +403,71 @@ class MapController(
         } catch (e: Exception) {
             null
         }
+
+    /**
+     * Loads the image of a ground overlay, which is stretched to its size in meters.
+     *
+     * A vector or other XML drawable is rasterized at the width the overlay reaches on screen
+     * at the maximum zoom, rounded up to a power of two and capped at
+     * [MAX_GROUND_OVERLAY_BITMAP_SIZE], so it stays sharp when zoomed in.
+     * Other images are the same as [loadBitmap].
+     *
+     * @param groundOverlay The ground overlay to load the image of
+     * @return The image to draw
+     */
+    internal fun loadGroundOverlayBitmap(groundOverlay: GroundOverlay): Bitmap {
+        val image = groundOverlay.image
+        val bitmap = loadBitmap(image)
+        if (image !is BitmapDescriptor.ResourceMarker || bitmap === defaultMarkerIcon) return bitmap
+
+        val maxZoomWidth = groundOverlayWidthAtMaxZoom(groundOverlay) ?: return bitmap
+        val width =
+            Integer
+                .highestOneBit(maxZoomWidth.toInt().coerceAtLeast(1))
+                .let { if (it < maxZoomWidth) it * 2 else it }
+                .coerceAtMost(MAX_GROUND_OVERLAY_BITMAP_SIZE)
+        if (width <= bitmap.width) return bitmap
+
+        val key = image.resourceId to width
+        groundOverlayBitmapCache[key]?.let { return it }
+
+        val rasterized =
+            try {
+                ContextCompat
+                    .getDrawable(context, image.resourceId)
+                    ?.takeUnless { it is BitmapDrawable }
+                    ?.let { drawable ->
+                        var height = width * bitmap.height / bitmap.width
+                        var scaledWidth = width
+                        if (height > MAX_GROUND_OVERLAY_BITMAP_SIZE) {
+                            scaledWidth = MAX_GROUND_OVERLAY_BITMAP_SIZE * bitmap.width / bitmap.height
+                            height = MAX_GROUND_OVERLAY_BITMAP_SIZE
+                        }
+                        drawable.toBitmap(scaledWidth.coerceAtLeast(1), height.coerceAtLeast(1))
+                    }
+            } catch (e: Exception) {
+                null
+            }
+
+        // A bitmap drawable is cached as is, so it is not looked up again
+        return (rasterized ?: bitmap).also { groundOverlayBitmapCache[key] = it }
+    }
+
+    // Width in pixels of a ground overlay at the maximum zoom, or null when it has no placement
+    private fun groundOverlayWidthAtMaxZoom(groundOverlay: GroundOverlay): Float? {
+        val bounds = groundOverlay.bounds
+        val position = groundOverlay.position
+        val width = groundOverlay.width
+        if (bounds != null) {
+            val (westPixelX, _) = ProjectionUtils.latLngToPixel(bounds.southwest, maxZoomPreference, tileSize)
+            val (eastPixelX, _) = ProjectionUtils.latLngToPixel(bounds.northeast, maxZoomPreference, tileSize)
+            return eastPixelX - westPixelX
+        }
+        if (position == null || width == null) return null
+        val metersPerPixel =
+            ProjectionUtils.metersPerPixelAtLatitude(position.latitude, maxZoomPreference, tileSize)
+        return (width / metersPerPixel).toFloat()
+    }
 
     private fun decodeAsset(assetName: String): Bitmap? =
         try {
@@ -1719,7 +1791,7 @@ class MapController(
         centerPixelY: Float,
         groundOverlay: GroundOverlay,
     ) {
-        val bitmap = loadBitmap(groundOverlay.image)
+        val bitmap = loadGroundOverlayBitmap(groundOverlay)
         val rect = groundOverlayScreenRect(groundOverlay, bitmap, centerPixelX, centerPixelY) ?: return
 
         groundOverlayPaint.alpha = ((1f - groundOverlay.transparency) * 255).toInt()
@@ -2856,7 +2928,7 @@ class MapController(
         for (groundOverlay in groundOverlays.reversed()) {
             if (!groundOverlay.clickable) continue
 
-            val bitmap = loadBitmap(groundOverlay.image)
+            val bitmap = loadGroundOverlayBitmap(groundOverlay)
             val rect = groundOverlayScreenRect(groundOverlay, bitmap, centerPixelX, centerPixelY) ?: continue
 
             if (groundOverlay.bearing != 0f) {

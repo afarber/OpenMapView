@@ -87,7 +87,7 @@ The returned `Polyline`, `Polygon` and `Circle` are live handles, as in the Maps
 | `remove()` | Same | |
 | `PolylineOptions.add(LatLng...)`, `PolygonOptions.add(LatLng...)` | Same | |
 
-`GroundOverlay` is a live handle too: `setBearing(float)`, `setTransparency(float)`, `setImage(BitmapDescriptor)`, `setZIndex(float)`, `setVisible(boolean)`, `setClickable(boolean)`, `setTag(Object)`, `setPosition(LatLng)`, `setDimensions(float)`, `setDimensions(float, float)`, `setPositionFromBounds(LatLngBounds)` and `remove()`, as in the Maps SDK.
+`GroundOverlay` is a live handle too: `setBearing(float)`, `setTransparency(float)`, `setImage(BitmapDescriptor)`, `setZIndex(float)`, `setVisible(boolean)`, `setClickable(boolean)`, `setTag(Object)`, `setPosition(LatLng)`, `setDimensions(float)`, `setDimensions(float, float)`, `setPositionFromBounds(LatLngBounds)` and `remove()`, as in the Maps SDK. A vector drawable from `fromResource(int)` is rasterized at the size the overlay reaches at the maximum zoom (up to 1024 px), so it stays sharp when zoomed in.
 
 `TileOverlay` is a live handle too: `setTransparency(float)`, `setZIndex(float)`, `setVisible(boolean)`, `setFadeIn(boolean)`, `setTag(Object)`, `clearTileCache()` and `remove()`, as in the Maps SDK. A changed property keeps the overlay's downloaded tiles.
 
