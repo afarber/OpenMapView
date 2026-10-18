@@ -27,7 +27,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.viewinterop.AndroidView
-import de.afarber.openmapview.CameraUpdateFactory
 import de.afarber.openmapview.InfoWindowAdapter
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.LocationSource
@@ -125,7 +124,9 @@ fun OpenMap(
             OpenMapView(context).apply {
                 // Before the camera, so the zoom limits and bounds apply to it
                 applied.apply(this, locationSource, properties, uiSettings, padding, mapColorScheme, initial = true)
-                moveCamera(CameraUpdateFactory.newCameraPosition(cameraPositionState.position))
+                // The initial position is no camera move, so it is set without reporting one
+                setZoom(cameraPositionState.position.zoom)
+                setCenter(cameraPositionState.position.target)
                 // Before onMapCreated, which may still replace them
                 setOnMapClickListener { currentOnMapClick(it) }
                 setOnMapLongClickListener { currentOnMapLongClick(it) }

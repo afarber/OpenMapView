@@ -21,6 +21,8 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.ui.graphics.PathEffect
@@ -300,6 +302,13 @@ class MapController(
     var onCameraMoveCanceledListener: OnCameraMoveCanceledListener? = null
 
     internal var isCameraMoving = false
+
+    // moveCamera() reports its move later on the main thread, like the camera listeners of
+    // the Maps SDK, so a listener set right after it still hears about it. Before the view
+    // has a size, the report waits for setViewSize(), so the visible region is known by then.
+    private val cameraEventHandler = Handler(Looper.getMainLooper())
+    private var hasPendingMoveEvents = false
+    private val pendingMoveEvents = Runnable { flushPendingCameraEvents() }
     internal var currentMoveReason: Int? = null
 
     // Never cancelled itself, only its children (see onDestroy), so the map keeps working
@@ -932,6 +941,7 @@ class MapController(
      */
     internal fun reportGestureMove() {
         cancelPendingCameraUpdate()
+        flushPendingCameraEvents()
         if (!isCameraMoving) {
             isCameraMoving = true
             currentMoveReason = OnCameraMoveStartedListener.REASON_GESTURE
@@ -945,6 +955,7 @@ class MapController(
      * fires onCameraMoveStarted, onCameraMove and onCameraIdle.
      */
     internal fun reportInstantMove(reason: Int) {
+        flushPendingCameraEvents()
         if (!isCameraMoving) {
             onCameraMoveStartedListener?.onCameraMoveStarted(reason)
         }
@@ -1165,6 +1176,10 @@ class MapController(
      * before applying the camera update. If the camera already is at the target,
      * nothing else happens and no camera listeners are called.
      *
+     * The camera moves right away, but onCameraMoveStarted and onCameraIdle are called
+     * later on the main thread, after the view has a size. Another camera change reports
+     * them first, so the events always arrive in order.
+     *
      * @param cameraUpdate The camera update to apply
      */
     fun moveCamera(cameraUpdate: CameraUpdate) {
@@ -1175,19 +1190,24 @@ class MapController(
         val targetPosition = calculateTargetPosition(cameraUpdate, getCameraPosition())
         if (targetPosition == getCameraPosition()) return
 
-        // Fire camera move started event
-        if (!isCameraMoving) {
-            isCameraMoving = true
-            currentMoveReason = OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION
-            onCameraMoveStartedListener?.onCameraMoveStarted(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION)
-        }
-
         setZoom(targetPosition.zoom)
         setCenter(targetPosition.target)
 
-        // Fire camera idle event immediately since moveCamera is instant
-        isCameraMoving = false
-        currentMoveReason = null
+        // The started and idle events of the previous move were reported by stopAnimation()
+        hasPendingMoveEvents = true
+        if (viewWidth > 0 && viewHeight > 0) cameraEventHandler.post(pendingMoveEvents)
+    }
+
+    /**
+     * Reports a move by [moveCamera] that was not reported yet: onCameraMoveStarted with
+     * REASON_DEVELOPER_ANIMATION, then onCameraIdle. Called on the main thread after the
+     * move, and before any other camera change, so the events keep their order.
+     */
+    internal fun flushPendingCameraEvents() {
+        if (!hasPendingMoveEvents) return
+        hasPendingMoveEvents = false
+        cameraEventHandler.removeCallbacks(pendingMoveEvents)
+        onCameraMoveStartedListener?.onCameraMoveStarted(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION)
         onCameraIdleListener?.onCameraIdle()
     }
 
@@ -1353,6 +1373,7 @@ class MapController(
      * onCancel() callback will be invoked. The camera remains at its current position.
      */
     fun stopAnimation() {
+        flushPendingCameraEvents()
         if (animationJob != null) {
             animationJob?.cancel()
             animationJob = null
@@ -1521,6 +1542,12 @@ class MapController(
     ) {
         viewWidth = width
         viewHeight = height
+
+        // A move made before the layout is reported now that the visible region is known
+        if (hasPendingMoveEvents && width > 0 && height > 0) {
+            cameraEventHandler.removeCallbacks(pendingMoveEvents)
+            cameraEventHandler.post(pendingMoveEvents)
+        }
 
         // The camera jumps to the bounds kept before the layout, also when they were animated
         val update = pendingBoundsUpdate
@@ -3151,6 +3178,9 @@ class MapController(
      * loading are requested again on the next draw.
      */
     fun onDestroy() {
+        // A destroyed map reports no more camera events
+        hasPendingMoveEvents = false
+        cameraEventHandler.removeCallbacks(pendingMoveEvents)
         stopAnimation()
         scope.coroutineContext.cancelChildren()
         // cancelChildren() also canceled the downloads job, which could not start new ones

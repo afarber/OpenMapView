@@ -371,6 +371,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 
 - **Successful animation:** onCameraMoveStarted(reason) → onCameraMove\* → onCameraIdle
 - **Interrupted animation:** onCameraMoveStarted(reason) → onCameraMove\* → onCameraMoveCanceled → onCameraMoveStarted(REASON_GESTURE) → ...
+- **`moveCamera()`:** the camera moves right away; onCameraMoveStarted(REASON_DEVELOPER_ANIMATION) → onCameraIdle follow later on the main thread, after the map is laid out, so listeners set right after `moveCamera()` still hear about it
 
 **Camera Move Reasons:** `REASON_GESTURE` for panning and pinch zooming, `REASON_DEVELOPER_ANIMATION` for `moveCamera()` and `animateCamera()` called by the app, `REASON_API_ANIMATION` for the map's own zoom and my-location buttons.
 
