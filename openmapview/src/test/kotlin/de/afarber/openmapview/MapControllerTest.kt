@@ -121,22 +121,22 @@ class MapControllerTest {
     }
 
     @Test
-    fun testCommitPan_PastEastEdge_StopsAtAntimeridian() {
+    fun testCommitPan_PastEastEdge_WrapsAround() {
         controller.setZoom(2.0f)
         controller.setCenter(LatLng(0.0, 170.0))
-        // Negative dx moves the camera east, far beyond the 1024 px wide world at zoom 2
-        controller.updatePanOffset(-100_000f, 0f)
+        // Negative dx moves the camera east: 20 degrees of the 1024 px wide world at zoom 2
+        controller.updatePanOffset(-20 * 1024 / 360f, 0f)
         controller.commitPan()
-        assertEquals(180.0, controller.getCenter().longitude, 0.5)
+        assertEquals(-170.0, controller.getCenter().longitude, 0.01)
     }
 
     @Test
-    fun testCommitPan_PastWestEdge_StopsAtAntimeridian() {
+    fun testCommitPan_PastWestEdge_WrapsAround() {
         controller.setZoom(2.0f)
         controller.setCenter(LatLng(0.0, -170.0))
-        controller.updatePanOffset(100_000f, 0f)
+        controller.updatePanOffset(20 * 1024 / 360f, 0f)
         controller.commitPan()
-        assertEquals(-180.0, controller.getCenter().longitude, 0.5)
+        assertEquals(170.0, controller.getCenter().longitude, 0.01)
     }
 
     @Test

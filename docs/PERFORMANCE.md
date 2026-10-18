@@ -221,6 +221,15 @@ draws the tiles of the nearest whole zoom level (12 for 12.4, 13 for 12.6), scal
 fractional zoom directly. Tile edges are rounded to whole pixels, so neighboring tiles meet
 without gaps.
 
+### Repeated World
+
+The world repeats horizontally, so the map has no blank area past longitude 180. A tile of a
+copy left or right of the main world is drawn at its own place, but loaded, cached and
+counted as wanted as the tile of the main world it shows. The copies share one download and
+one cache entry. Markers, shapes and ground overlays are drawn once, at the copy nearest the
+view center, and each point of a shape on the copy nearest the previous point, so lines
+across the antimeridian take the short way.
+
 ### Minimal Invalidations
 
 The view only invalidates when necessary:

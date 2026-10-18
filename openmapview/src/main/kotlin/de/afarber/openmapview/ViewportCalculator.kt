@@ -18,6 +18,10 @@ import kotlin.math.roundToInt
  *
  * Determines tile coordinates based on map center, zoom level, and view dimensions.
  * Includes buffering for smooth panning experience.
+ *
+ * The world repeats horizontally, so tile X may be below 0 or above 2^zoom - 1 for the
+ * copies of the world left and right of the main one. Such a tile is placed by its X, and
+ * [TileCoordinate.wrapped] gives the tile to load for it.
  */
 object ViewportCalculator {
     private const val TILE_SIZE = 256
@@ -67,7 +71,8 @@ object ViewportCalculator {
     /**
      * Calculates which tiles are visible in the current viewport.
      *
-     * Includes a 1-tile buffer around the edges for smooth panning.
+     * Includes a 1-tile buffer around the edges for smooth panning. Tile Y stays within the
+     * world, tile X does not, see [ViewportCalculator].
      *
      * @param center The map center location
      * @param zoom The current zoom level
@@ -96,10 +101,10 @@ object ViewportCalculator {
         val right = (centerX + viewWidth / 2 + panOffsetX).toInt()
         val bottom = (centerY + viewHeight / 2 + panOffsetY).toInt()
 
-        // Convert to tile coordinates
-        val minTileX = max(0, left / TILE_SIZE - 1)
+        // Convert to tile coordinates, rounding down also left of the main world
+        val minTileX = Math.floorDiv(left, TILE_SIZE) - 1
         val minTileY = max(0, top / TILE_SIZE - 1)
-        val maxTileX = min((2.0.pow(zoom) - 1).toInt(), right / TILE_SIZE + 1)
+        val maxTileX = Math.floorDiv(right, TILE_SIZE) + 1
         val maxTileY = min((2.0.pow(zoom) - 1).toInt(), bottom / TILE_SIZE + 1)
 
         // Build list of all visible tiles

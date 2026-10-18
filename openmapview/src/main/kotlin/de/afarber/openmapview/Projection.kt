@@ -8,6 +8,7 @@
 package de.afarber.openmapview
 
 import android.graphics.Point
+import kotlin.math.roundToInt
 
 /**
  * A projection is used to translate between on-screen location and geographic coordinates.
@@ -20,6 +21,10 @@ import android.graphics.Point
  *
  * Screen locations are where the map draws a location, also when map padding is set. Only the
  * visible region is limited to the area inside the padding.
+ *
+ * The world repeats horizontally. A location is on the copy of the world nearest to the view
+ * center, as the map draws it, and a screen location on any copy gives a longitude between
+ * -180 and 180.
  */
 class Projection
     internal constructor(
@@ -74,13 +79,15 @@ class Projection
          * relative to the top left of the map.
          *
          * @param location The geographic location (LatLng)
-         * @return The screen location in pixels
+         * @return The screen location in pixels, on the copy of the world nearest to the view center
          */
         fun toScreenLocation(location: LatLng): Point {
             val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
             val (locationPixelX, locationPixelY) = ProjectionUtils.latLngToPixel(location, zoom, tileSize)
 
-            val screenX = (locationPixelX - centerPixelX + viewWidth / 2 - panOffsetX).toInt()
+            val x = locationPixelX - centerPixelX + viewWidth / 2 - panOffsetX
+            val world = ProjectionUtils.worldSize(zoom, tileSize).toFloat()
+            val screenX = (x - world * ((x - viewWidth / 2f) / world).roundToInt()).toInt()
             val screenY = (locationPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toInt()
 
             return Point(screenX, screenY)
@@ -96,6 +103,10 @@ class Projection
          * If map padding is set, the visible region represents the logical (non-padded) viewport,
          * excluding the padded areas where UI elements may be overlaying the map.
          *
+         * The bounding box crosses the antimeridian (southwest longitude greater than northeast
+         * longitude) when the view does, and spans all longitudes when the view is at least as
+         * wide as the world.
+         *
          * @return A VisibleRegion containing the four corners and bounding box
          */
         fun getVisibleRegion(): VisibleRegion {
@@ -110,14 +121,13 @@ class Projection
             val farLeft = fromScreenLocation(left, top)
             val farRight = fromScreenLocation(right, top)
 
+            // From the left to the right edge, which may be on another copy of the world
+            val wholeWorld = right - left >= ProjectionUtils.worldSize(zoom, tileSize)
             val bounds =
-                LatLngBounds
-                    .builder()
-                    .include(nearLeft)
-                    .include(nearRight)
-                    .include(farLeft)
-                    .include(farRight)
-                    .build()
+                LatLngBounds(
+                    southwest = LatLng(nearLeft.latitude, if (wholeWorld) -180.0 else nearLeft.longitude),
+                    northeast = LatLng(farRight.latitude, if (wholeWorld) 180.0 else farRight.longitude),
+                )
 
             return VisibleRegion(
                 nearLeft = nearLeft,

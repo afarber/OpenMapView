@@ -1277,9 +1277,11 @@ class MapController(
         val viewCenter = viewCenterOf(clampToTargetBounds(target.target), target.zoom)
         val previewZoom = (target.zoom - TARGET_PREVIEW_LEVELS).coerceAtLeast(0f)
         val tiles =
-            ViewportCalculator.getVisibleTiles(viewCenter, previewZoom, viewWidth, viewHeight, tileSize = tileSize) +
-                ViewportCalculator.getVisibleTiles(viewCenter, target.zoom, viewWidth, viewHeight, tileSize = tileSize)
-        animationTargetTiles = tiles.toSet()
+            (
+                ViewportCalculator.getVisibleTiles(viewCenter, previewZoom, viewWidth, viewHeight, tileSize = tileSize) +
+                    ViewportCalculator.getVisibleTiles(viewCenter, target.zoom, viewWidth, viewHeight, tileSize = tileSize)
+            ).mapTo(LinkedHashSet()) { it.wrapped() }
+        animationTargetTiles = tiles
         wantedTiles = wantedTiles?.plus(animationTargetTiles)
 
         val now = SystemClock.elapsedRealtime()
@@ -1553,17 +1555,15 @@ class MapController(
     /**
      * Returns the map center shifted by the given pan offset.
      *
-     * The horizontal position is kept inside the world, so panning past the
-     * left or right edge stops at longitude -180 or 180 instead of wrapping
-     * around to the other side of the map.
+     * The world repeats horizontally, so panning past longitude 180 goes on at -180;
+     * the returned longitude is always between -180 and 180.
      */
     private fun pannedCenter(
         offsetX: Float,
         offsetY: Float,
     ): LatLng {
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
-        val worldSize = ProjectionUtils.worldSize(zoom, tileSize)
-        val newCenterPixelX = (centerPixelX + offsetX).toDouble().coerceIn(0.0, worldSize)
+        val newCenterPixelX = (centerPixelX + offsetX).toDouble()
         val newCenterPixelY = (centerPixelY + offsetY).toDouble()
         return ProjectionUtils.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom, tileSize)
     }
@@ -1627,13 +1627,15 @@ class MapController(
             drawTileOverlay(canvas, visibleTiles, centerPixelX, centerPixelY, overlay)
         }
 
-        wantedTiles = visibleTiles.toSet() + prefetchedTiles + animationTargetTiles
+        // Tiles of repeated copies of the world are loaded as the tiles they show
+        wantedTiles = visibleTiles.mapTo(HashSet()) { it.wrapped() } + prefetchedTiles + animationTargetTiles
 
         // Draw base map tiles (z-index 0). Without a tile source (MapType.NONE) there is
         // nothing to wait for, a stale offline fallback tile counts as drawn.
         var allTilesDrawn = true
-        for (tile in visibleTiles) {
-            tileScreenRect(tile, centerPixelX, centerPixelY, tileDst)
+        for (placed in visibleTiles) {
+            tileScreenRect(placed, centerPixelX, centerPixelY, tileDst)
+            val tile = placed.wrapped()
 
             val cachedBitmap = tileCache.getMemory(tile)
             if (cachedBitmap != null) {
@@ -1742,13 +1744,14 @@ class MapController(
                 tileSize = tileSize,
             )
 
-        prefetchedTiles = prefetchTiles.toSet()
+        prefetchedTiles = prefetchTiles.mapTo(HashSet()) { it.wrapped() }
         wantedTiles = wantedTiles?.plus(prefetchedTiles)
 
         // Download tiles that are adjacent but not yet visible
+        val visible = visibleTiles.mapTo(HashSet()) { it.wrapped() }
         val now = SystemClock.elapsedRealtime()
-        for (tile in prefetchTiles) {
-            if (!visibleTiles.contains(tile) && needsDownload(tile, now)) {
+        for (tile in prefetchedTiles) {
+            if (!visible.contains(tile) && needsDownload(tile, now)) {
                 downloadingTiles.add(tile)
                 downloadTile(tile, lowPriority = true)
             }
@@ -1766,6 +1769,56 @@ class MapController(
         (tileCache.getMemory(tile) == null || tileCache.isStale(tile)) &&
             !downloadingTiles.contains(tile) &&
             tileRetries.canRequest(tile, now)
+
+    /**
+     * Returns the screen X of a pixel X at the current zoom, on the copy of the repeated
+     * world nearest to [nearX]: by default the view center, so a location is drawn where
+     * the camera is, or the previous point of a shape, so its segments take the short way,
+     * also across the antimeridian.
+     */
+    private fun wrappedScreenX(
+        pixelX: Float,
+        centerPixelX: Float,
+        nearX: Float = viewWidth / 2f,
+    ): Float {
+        val x = pixelX - centerPixelX + viewWidth / 2 - panOffsetX
+        val world = ProjectionUtils.worldSize(zoom, tileSize).toFloat()
+        return x - world * ((x - nearX) / world).roundToInt()
+    }
+
+    /**
+     * Returns the screen coordinates of the points of a shape, as x and y pairs. Each point
+     * is on the copy of the world nearest to the previous one, see [wrappedScreenX], and the
+     * first one nearest to [nearX].
+     */
+    private fun shapeScreenPoints(
+        points: List<LatLng>,
+        centerPixelX: Float,
+        centerPixelY: Float,
+        nearX: Float = viewWidth / 2f,
+    ): FloatArray {
+        val out = FloatArray(points.size * 2)
+        var previousX = nearX
+        for ((i, point) in points.withIndex()) {
+            val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom, tileSize)
+            previousX = wrappedScreenX(pixelX, centerPixelX, previousX)
+            out[2 * i] = previousX
+            out[2 * i + 1] = pixelY - centerPixelY + viewHeight / 2 - panOffsetY
+        }
+        return out
+    }
+
+    // Adds the points from shapeScreenPoints() to the path as a closed ring
+    private fun addRing(
+        path: android.graphics.Path,
+        screenPoints: FloatArray,
+    ) {
+        path.moveTo(screenPoints[0], screenPoints[1])
+        for (i in 2 until screenPoints.size step 2) {
+            path.lineTo(screenPoints[i], screenPoints[i + 1])
+        }
+        path.close()
+    }
 
     /**
      * Converts a distance in meters to screen pixels at a given latitude and zoom level.
@@ -1826,7 +1879,6 @@ class MapController(
         val position = groundOverlay.position
         val width = groundOverlay.width
         val height = groundOverlay.height
-        val offsetX = viewWidth / 2 - panOffsetX - centerPixelX
         val offsetY = viewHeight / 2 - panOffsetY - centerPixelY
 
         if (bounds != null) {
@@ -1842,12 +1894,18 @@ class MapController(
                     zoom,
                     tileSize,
                 )
-            return RectF(nwPixelX + offsetX, nwPixelY + offsetY, sePixelX + offsetX, sePixelY + offsetY)
+            // Bounds crossing the antimeridian end in the next copy of the world
+            val world = ProjectionUtils.worldSize(zoom, tileSize).toFloat()
+            val widthPixels = if (sePixelX >= nwPixelX) sePixelX - nwPixelX else sePixelX + world - nwPixelX
+            // The copy whose middle is nearest to the view center
+            val left = wrappedScreenX(nwPixelX + widthPixels / 2, centerPixelX) - widthPixels / 2
+            return RectF(left, nwPixelY + offsetY, left + widthPixels, sePixelY + offsetY)
         }
 
         if (position == null || width == null) return null
 
         val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(position, zoom, tileSize)
+        val posScreenX = wrappedScreenX(posPixelX, centerPixelX)
         val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(position.latitude, zoom, tileSize)
         val widthPixels = (width / metersPerPixel).toFloat()
         val heightPixels =
@@ -1857,7 +1915,7 @@ class MapController(
                 widthPixels * bitmap.height / bitmap.width
             }
 
-        val left = posPixelX + offsetX - widthPixels * groundOverlay.anchor.first
+        val left = posScreenX - widthPixels * groundOverlay.anchor.first
         val top = posPixelY + offsetY - heightPixels * groundOverlay.anchor.second
         return RectF(left, top, left + widthPixels, top + heightPixels)
     }
@@ -1896,21 +1954,8 @@ class MapController(
             strokePaint.strokeJoin = polygon.strokeJoin.toAndroidJoin()
 
             val path = android.graphics.Path()
-            var isFirst = true
-
-            for (point in points) {
-                val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom, tileSize)
-                val screenX = pixelX - centerPixelX + viewWidth / 2 - panOffsetX
-                val screenY = pixelY - centerPixelY + viewHeight / 2 - panOffsetY
-
-                if (isFirst) {
-                    path.moveTo(screenX, screenY)
-                    isFirst = false
-                } else {
-                    path.lineTo(screenX, screenY)
-                }
-            }
-            path.close()
+            val outline = shapeScreenPoints(points, centerPixelX, centerPixelY)
+            addRing(path, outline)
 
             for (hole in polygon.holes) {
                 if (hole.size < 3) continue
@@ -1921,20 +1966,8 @@ class MapController(
                     } else {
                         hole
                     }
-                var isFirstHole = true
-                for (point in holePoints) {
-                    val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom, tileSize)
-                    val screenX = pixelX - centerPixelX + viewWidth / 2 - panOffsetX
-                    val screenY = pixelY - centerPixelY + viewHeight / 2 - panOffsetY
-
-                    if (isFirstHole) {
-                        path.moveTo(screenX, screenY)
-                        isFirstHole = false
-                    } else {
-                        path.lineTo(screenX, screenY)
-                    }
-                }
-                path.close()
+                // On the same copy of the world as the outline
+                addRing(path, shapeScreenPoints(holePoints, centerPixelX, centerPixelY, outline[0]))
             }
 
             path.fillType = android.graphics.Path.FillType.EVEN_ODD
@@ -1975,20 +2008,11 @@ class MapController(
                 paint.strokeCap = polyline.startCap.toAndroidCap() // Use startCap for full path
                 paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
 
+                val screenPoints = shapeScreenPoints(points, centerPixelX, centerPixelY)
                 val path = android.graphics.Path()
-                var isFirst = true
-
-                for (point in points) {
-                    val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom, tileSize)
-                    val screenX = pixelX - centerPixelX + viewWidth / 2 - panOffsetX
-                    val screenY = pixelY - centerPixelY + viewHeight / 2 - panOffsetY
-
-                    if (isFirst) {
-                        path.moveTo(screenX, screenY)
-                        isFirst = false
-                    } else {
-                        path.lineTo(screenX, screenY)
-                    }
+                path.moveTo(screenPoints[0], screenPoints[1])
+                for (i in 2 until screenPoints.size step 2) {
+                    path.lineTo(screenPoints[i], screenPoints[i + 1])
                 }
 
                 canvas.drawPath(path, paint)
@@ -2012,6 +2036,7 @@ class MapController(
 
         var segmentIndex = 0
         val totalSegments = points.size - 1
+        val screenPoints = shapeScreenPoints(points, centerPixelX, centerPixelY)
 
         for (span in polyline.spans) {
             if (segmentIndex >= totalSegments) break
@@ -2032,18 +2057,8 @@ class MapController(
                         else -> Paint.Cap.BUTT
                     }
 
-                val from = points[segmentIndex]
-                val to = points[segmentIndex + 1]
-
-                val (fromPixelX, fromPixelY) = ProjectionUtils.latLngToPixel(from, zoom, tileSize)
-                val fromScreenX = fromPixelX - centerPixelX + viewWidth / 2 - panOffsetX
-                val fromScreenY = fromPixelY - centerPixelY + viewHeight / 2 - panOffsetY
-
-                val (toPixelX, toPixelY) = ProjectionUtils.latLngToPixel(to, zoom, tileSize)
-                val toScreenX = toPixelX - centerPixelX + viewWidth / 2 - panOffsetX
-                val toScreenY = toPixelY - centerPixelY + viewHeight / 2 - panOffsetY
-
-                canvas.drawLine(fromScreenX, fromScreenY, toScreenX, toScreenY, paint)
+                val i = segmentIndex * 2
+                canvas.drawLine(screenPoints[i], screenPoints[i + 1], screenPoints[i + 2], screenPoints[i + 3], paint)
                 segmentIndex++
             }
         }
@@ -2056,18 +2071,8 @@ class MapController(
                 val isLastSegment = segmentIndex == totalSegments - 1
                 paint.strokeCap = if (isLastSegment) polyline.endCap.toAndroidCap() else Paint.Cap.BUTT
 
-                val from = points[segmentIndex]
-                val to = points[segmentIndex + 1]
-
-                val (fromPixelX, fromPixelY) = ProjectionUtils.latLngToPixel(from, zoom, tileSize)
-                val fromScreenX = fromPixelX - centerPixelX + viewWidth / 2 - panOffsetX
-                val fromScreenY = fromPixelY - centerPixelY + viewHeight / 2 - panOffsetY
-
-                val (toPixelX, toPixelY) = ProjectionUtils.latLngToPixel(to, zoom, tileSize)
-                val toScreenX = toPixelX - centerPixelX + viewWidth / 2 - panOffsetX
-                val toScreenY = toPixelY - centerPixelY + viewHeight / 2 - panOffsetY
-
-                canvas.drawLine(fromScreenX, fromScreenY, toScreenX, toScreenY, paint)
+                val i = segmentIndex * 2
+                canvas.drawLine(screenPoints[i], screenPoints[i + 1], screenPoints[i + 2], screenPoints[i + 3], paint)
                 segmentIndex++
             }
         }
@@ -2099,7 +2104,7 @@ class MapController(
             strokePaint.strokeJoin = circle.strokeJoin.toAndroidJoin()
 
             val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(circle.center, zoom, tileSize)
-            val screenX = pixelX - centerPixelX + viewWidth / 2 - panOffsetX
+            val screenX = wrappedScreenX(pixelX, centerPixelX)
             val screenY = pixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
             val radiusInPixels = metersToPixels(circle.radius, circle.center.latitude, zoom)
@@ -2124,7 +2129,7 @@ class MapController(
 
             val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom, tileSize)
 
-            val screenX = markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX
+            val screenX = wrappedScreenX(markerPixelX, centerPixelX)
             val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
             val icon = loadBitmap(marker.icon)
@@ -2215,7 +2220,7 @@ class MapController(
 
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
         val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom, tileSize)
-        val screenX = markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX
+        val screenX = wrappedScreenX(markerPixelX, centerPixelX)
         val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
         val icon = loadBitmap(marker.icon)
@@ -2404,8 +2409,9 @@ class MapController(
                 overlayTilePaint
             }
 
-        for (tile in visibleTiles) {
-            tileScreenRect(tile, centerPixelX, centerPixelY, tileDst)
+        for (placed in visibleTiles) {
+            tileScreenRect(placed, centerPixelX, centerPixelY, tileDst)
+            val tile = placed.wrapped()
 
             val cachedBitmap = cache.getMemory(tile)
             if (cachedBitmap != null) {
@@ -2742,7 +2748,7 @@ class MapController(
         for (marker in markers.reversed()) {
             val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom, tileSize)
 
-            val screenX = markerPixelX - centerPixelX + viewWidth / 2 - panOffsetX
+            val screenX = wrappedScreenX(markerPixelX, centerPixelX)
             val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
             val icon = loadBitmap(marker.icon)
@@ -2801,21 +2807,13 @@ class MapController(
         for (polyline in polylines.reversed()) {
             if (!polyline.clickable) continue
 
-            // Convert all points to screen coordinates
-            val screenPoints =
-                polyline.points.map { latLng ->
-                    val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom, tileSize)
-                    val sx = px - centerPixelX + viewWidth / 2 - panOffsetX
-                    val sy = py - centerPixelY + viewHeight / 2 - panOffsetY
-                    Pair(sx, sy)
-                }
+            // Convert all points to screen coordinates, as they are drawn
+            val screenPoints = shapeScreenPoints(polyline.points, centerPixelX, centerPixelY)
 
             // Check each line segment
-            for (i in 0 until screenPoints.size - 1) {
-                val p1 = screenPoints[i]
-                val p2 = screenPoints[i + 1]
-
-                val distance = distanceToLineSegment(x, y, p1.first, p1.second, p2.first, p2.second)
+            for (i in 0 until screenPoints.size - 2 step 2) {
+                val distance =
+                    distanceToLineSegment(x, y, screenPoints[i], screenPoints[i + 1], screenPoints[i + 2], screenPoints[i + 3])
                 if (distance <= touchTolerance + polyline.strokeWidth / 2) {
                     return polyline
                 }
@@ -2843,27 +2841,15 @@ class MapController(
         for (polygon in polygons.reversed()) {
             if (!polygon.clickable) continue
 
-            // Convert all points to screen coordinates
-            val screenPoints =
-                polygon.points.map { latLng ->
-                    val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom, tileSize)
-                    val sx = px - centerPixelX + viewWidth / 2 - panOffsetX
-                    val sy = py - centerPixelY + viewHeight / 2 - panOffsetY
-                    Pair(sx, sy)
-                }
+            // Convert all points to screen coordinates, as they are drawn
+            val screenPoints = shapeScreenPoints(polygon.points, centerPixelX, centerPixelY)
 
             // Check if point is inside the main polygon
             if (isPointInPolygon(x, y, screenPoints)) {
                 // Check if point is inside any holes
                 var inHole = false
                 for (hole in polygon.holes) {
-                    val holeScreenPoints =
-                        hole.map { latLng ->
-                            val (px, py) = ProjectionUtils.latLngToPixel(latLng, zoom, tileSize)
-                            val sx = px - centerPixelX + viewWidth / 2 - panOffsetX
-                            val sy = py - centerPixelY + viewHeight / 2 - panOffsetY
-                            Pair(sx, sy)
-                        }
+                    val holeScreenPoints = shapeScreenPoints(hole, centerPixelX, centerPixelY, screenPoints[0])
                     if (isPointInPolygon(x, y, holeScreenPoints)) {
                         inHole = true
                         break
@@ -2900,7 +2886,7 @@ class MapController(
 
             // Convert circle center to screen coordinates
             val (px, py) = ProjectionUtils.latLngToPixel(circle.center, zoom, tileSize)
-            val sx = px - centerPixelX + viewWidth / 2 - panOffsetX
+            val sx = wrappedScreenX(px, centerPixelX)
             val sy = py - centerPixelY + viewHeight / 2 - panOffsetY
 
             // Convert radius from meters to pixels
@@ -3014,22 +3000,22 @@ class MapController(
      *
      * @param x Point x coordinate
      * @param y Point y coordinate
-     * @param points Polygon vertices in screen coordinates
+     * @param points Polygon vertices in screen coordinates, as x and y pairs, see [shapeScreenPoints]
      * @return True if point is inside polygon
      */
     private fun isPointInPolygon(
         x: Float,
         y: Float,
-        points: List<Pair<Float, Float>>,
+        points: FloatArray,
     ): Boolean {
         var inside = false
-        var j = points.size - 1
+        var j = points.size / 2 - 1
 
-        for (i in points.indices) {
-            val xi = points[i].first
-            val yi = points[i].second
-            val xj = points[j].first
-            val yj = points[j].second
+        for (i in 0 until points.size / 2) {
+            val xi = points[2 * i]
+            val yi = points[2 * i + 1]
+            val xj = points[2 * j]
+            val yj = points[2 * j + 1]
 
             val intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
             if (intersect) inside = !inside
