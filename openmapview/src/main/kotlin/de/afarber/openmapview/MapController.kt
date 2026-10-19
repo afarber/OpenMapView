@@ -1861,7 +1861,8 @@ class MapController(
      *
      * The target is clamped in pixels of the world copy it is on, before its longitude wraps
      * around: bounds that don't contain the antimeridian stop the camera there, instead of
-     * letting it pan around the world and come back in from the other side.
+     * letting it pan around the world and come back in from the other side. Bounds as wide
+     * as the world contain every longitude, so they don't stop the camera horizontally.
      */
     private fun clampPanToTargetBounds(): Set<Edge> {
         val bounds = cameraTargetBounds ?: return emptySet()
@@ -1890,11 +1891,13 @@ class MapController(
         val x = targetX + panOffsetX
         val y = targetY + panOffsetY
         val hitEdges = mutableSetOf<Edge>()
-        if (x < left) hitEdges.add(Edge.LEFT)
-        if (x > left + width) hitEdges.add(Edge.RIGHT)
+        if (width < world) {
+            if (x < left) hitEdges.add(Edge.LEFT)
+            if (x > left + width) hitEdges.add(Edge.RIGHT)
+            panOffsetX = (x.coerceIn(left, left + width) - targetX).toFloat()
+        }
         if (y < northY) hitEdges.add(Edge.TOP)
         if (y > southY) hitEdges.add(Edge.BOTTOM)
-        panOffsetX = (x.coerceIn(left, left + width) - targetX).toFloat()
         panOffsetY = (y.coerceIn(northY, southY) - targetY).toFloat()
         return hitEdges
     }

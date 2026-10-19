@@ -1271,6 +1271,59 @@ class MapControllerTest {
     }
 
     @Test
+    fun testSetLatLngBoundsForCameraTarget_FullWidthBoundsPanFreelyAcrossAntimeridian() {
+        controller.setZoom(2f)
+        controller.setLatLngBoundsForCameraTarget(LatLngBounds(LatLng(-60.0, -180.0), LatLng(60.0, 180.0)))
+        controller.setCenter(LatLng(0.0, 150.0))
+
+        panByLongitude(60.0)
+        panByLongitude(60.0)
+
+        // Every longitude is within the bounds, so the camera goes on past the antimeridian
+        assertEquals(-90.0, controller.getCenter().longitude, 0.01)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_FullWidthBoundsStillLimitLatitude() {
+        controller.setZoom(5f)
+        controller.setLatLngBoundsForCameraTarget(LatLngBounds(LatLng(-60.0, -180.0), LatLng(60.0, 180.0)))
+        controller.setCenter(LatLng(0.0, 0.0))
+
+        // The finger moves down to move the camera north
+        repeat(300) { controller.updatePanOffset(0f, 10f) }
+        controller.commitPan()
+
+        assertEquals(60.0, controller.getCenter().latitude, 0.01)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_PanStopsAtAntimeridianEastEdge() {
+        controller.setZoom(2f)
+        controller.setLatLngBoundsForCameraTarget(LatLngBounds(LatLng(-60.0, -170.0), LatLng(60.0, 180.0)))
+        controller.setCenter(LatLng(0.0, 150.0))
+
+        panByLongitude(60.0)
+        assertEquals(180.0, abs(controller.getCenter().longitude), 0.01)
+
+        // Not back in from the west edge
+        panByLongitude(60.0)
+        assertEquals(180.0, abs(controller.getCenter().longitude), 0.01)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_PanStopsAtAntimeridianWestEdge() {
+        controller.setZoom(2f)
+        controller.setLatLngBoundsForCameraTarget(LatLngBounds(LatLng(-60.0, -180.0), LatLng(60.0, 170.0)))
+        controller.setCenter(LatLng(0.0, -150.0))
+
+        panByLongitude(-60.0)
+        assertEquals(180.0, abs(controller.getCenter().longitude), 0.01)
+
+        panByLongitude(-60.0)
+        assertEquals(180.0, abs(controller.getCenter().longitude), 0.01)
+    }
+
+    @Test
     fun testSetLatLngBoundsForCameraTarget_PanCrossesAntimeridianWithinCrossingBounds() {
         controller.setZoom(2f)
         // From 170 east across the antimeridian to -170
