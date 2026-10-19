@@ -39,6 +39,9 @@ class MarkerClickTest {
         mapView = OpenMapView(activity)
         mapView.setMapType(MapType.NONE)
         activity.setContentView(mapView)
+        // The window's first layout pass, before the map gets its test size: it would
+        // otherwise run while a tap waits for its confirmation and move the marker
+        shadowOf(Looper.getMainLooper()).idle()
         mapView.measure(
             View.MeasureSpec.makeMeasureSpec(SIZE, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(SIZE, View.MeasureSpec.EXACTLY),
@@ -60,6 +63,7 @@ class MarkerClickTest {
             mapView.onTouchEvent(event)
             event.recycle()
         }
+        confirmTap()
     }
 
     // The camera animation runs on wall clock time
@@ -118,6 +122,7 @@ class MarkerClickTest {
             mapView.onTouchEvent(event)
             event.recycle()
         }
+        confirmTap()
 
         assertTrue(marker.isInfoWindowShown)
         assertEquals(emptyList<Marker>(), closed)

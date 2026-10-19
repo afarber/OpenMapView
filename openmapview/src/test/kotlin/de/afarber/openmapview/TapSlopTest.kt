@@ -52,6 +52,7 @@ class TapSlopTest {
         touch(MotionEvent.ACTION_DOWN, 0, 300f)
         touch(MotionEvent.ACTION_MOVE, 30, 315f)
         touch(MotionEvent.ACTION_UP, 60, 315f)
+        confirmTap()
 
         assertEquals(1, clicks)
     }
@@ -62,6 +63,7 @@ class TapSlopTest {
         touch(MotionEvent.ACTION_DOWN, 0, 300f)
         touch(MotionEvent.ACTION_MOVE, 30, 300f + beyond)
         touch(MotionEvent.ACTION_UP, 60, 300f + beyond)
+        confirmTap()
 
         assertEquals(0, clicks)
     }

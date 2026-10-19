@@ -7,6 +7,8 @@
 
 package de.afarber.openmapview
 
+import android.graphics.Point
+
 /**
  * Factory for creating [CameraUpdate] objects to transform the camera on a map.
  *
@@ -82,6 +84,20 @@ object CameraUpdateFactory {
      */
     @JvmStatic
     fun zoomBy(amount: Float): CameraUpdate = CameraUpdate.ZoomBy(amount)
+
+    /**
+     * Returns a CameraUpdate that adjusts the zoom level by the specified amount around a
+     * point on the screen: the location shown at [focus] stays there, as with a pinch.
+     *
+     * @param amount The amount to adjust the zoom level, positive to zoom in
+     * @param focus The screen point in pixels, e.g. where the user double tapped
+     * @return A CameraUpdate for the relative zoom adjustment
+     */
+    @JvmStatic
+    fun zoomBy(
+        amount: Float,
+        focus: Point,
+    ): CameraUpdate = CameraUpdate.ZoomBy(amount, Point(focus))
 
     /**
      * Returns a CameraUpdate that scrolls the map by the specified pixel amounts.

@@ -81,6 +81,7 @@ class MapPropertiesTest {
         val event = MotionEvent.obtain(0, time, action, point.x.toFloat(), (point.y + yOffset).toFloat(), 0)
         map.onTouchEvent(event)
         event.recycle()
+        if (action == MotionEvent.ACTION_UP) confirmTap()
     }
 
     @Test

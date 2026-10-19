@@ -113,6 +113,7 @@ class MyLocationTest {
             mapView.onTouchEvent(event)
             event.recycle()
         }
+        confirmTap()
     }
 
     @Test(expected = SecurityException::class)

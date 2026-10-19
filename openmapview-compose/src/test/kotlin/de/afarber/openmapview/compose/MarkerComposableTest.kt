@@ -234,5 +234,6 @@ class MarkerComposableTest {
         val event = MotionEvent.obtain(0, time, action, x, y, 0)
         map.onTouchEvent(event)
         event.recycle()
+        if (action == MotionEvent.ACTION_UP) confirmTap()
     }
 }

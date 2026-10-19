@@ -68,6 +68,7 @@ class MyLocationComposeTest {
             map.onTouchEvent(event)
             event.recycle()
         }
+        confirmTap()
     }
 
     @Test

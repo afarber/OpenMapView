@@ -12,6 +12,7 @@ import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.ColorFilter
+import android.graphics.Point
 import android.location.Location
 import android.os.Handler
 import android.os.Looper
@@ -29,7 +30,9 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
+import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.pow
 import kotlin.time.Duration
 
@@ -41,6 +44,12 @@ private const val ZOOM_BUTTON_ANIMATION_MS = 250
 
 // Duration of the camera animation to a clicked marker
 private const val MARKER_CLICK_ANIMATION_MS = 250
+
+// Duration of the zoom animation for a double tap and a two-finger tap
+private const val TAP_ZOOM_ANIMATION_MS = 250
+
+// How far a finger slides in a one-finger zoom (double tap, hold and slide) per zoom level
+private const val QUICK_ZOOM_DP_PER_LEVEL = 100f
 
 /**
  * A MapView powered by OpenStreetMap tiles.
@@ -136,6 +145,28 @@ class OpenMapView
         // the system touch slop, about 8 dp, which the GestureDetector also uses
         private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
 
+        // Where the last tap ended. With zoom gestures, it is reported as a click only once the
+        // GestureDetector has ruled out a double tap.
+        private var tapUpX = 0f
+        private var tapUpY = 0f
+
+        // Set while the current touch is the second tap of a double tap, which zooms instead of
+        // panning or clicking; isQuickZooming is set once its finger slides (one-finger zoom)
+        private var isDoubleTapTouch = false
+        private var isQuickZooming = false
+        private var doubleTapX = 0f
+        private var doubleTapY = 0f
+        private var lastQuickZoomY = 0f
+        private val quickZoomPixelsPerLevel = QUICK_ZOOM_DP_PER_LEVEL * resources.displayMetrics.density
+
+        // A two-finger tap zooms out: two fingers touch and one is lifted soon, without moving.
+        // After any second finger, lifting the last one is no tap.
+        private var hadMultipleFingers = false
+        private var isTwoFingerTap = false
+        private var twoFingerDownTime = 0L
+        private val twoFingerStartX = FloatArray(2)
+        private val twoFingerStartY = FloatArray(2)
+
         private val gestureDetector =
             GestureDetector(
                 context,
@@ -150,6 +181,38 @@ class OpenMapView
                         }
                         val latLng = controller.screenToLatLng(e.x, e.y)
                         onMapLongClickListener?.onMapLongClick(latLng)
+                    }
+
+                    // Called once no second tap followed. Without zoom gestures there is no
+                    // double tap to wait for, so the tap was already reported on ACTION_UP.
+                    override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                        if (!uiSettings.isZoomGesturesEnabled || isOnControl(e.x, e.y)) return false
+                        handleTap(tapUpX, tapUpY)
+                        return true
+                    }
+
+                    // The events of the second tap of a double tap
+                    override fun onDoubleTapEvent(e: MotionEvent): Boolean {
+                        if (!uiSettings.isZoomGesturesEnabled) return false
+                        when (e.actionMasked) {
+                            MotionEvent.ACTION_DOWN -> {
+                                // A double tap on the map's own buttons is two button taps
+                                if (isOnControl(e.x, e.y)) return false
+                                isDoubleTapTouch = true
+                                isQuickZooming = false
+                                doubleTapX = e.x
+                                doubleTapY = e.y
+                            }
+
+                            MotionEvent.ACTION_MOVE -> {
+                                if (isDoubleTapTouch) quickZoom(e.y)
+                            }
+
+                            MotionEvent.ACTION_UP -> {
+                                if (isDoubleTapTouch) endDoubleTap()
+                            }
+                        }
+                        return isDoubleTapTouch
                     }
                 },
             )
@@ -180,6 +243,8 @@ class OpenMapView
 
         init {
             setWillNotDraw(false)
+            // Double tap and slide zooms with quickZoom(), around the double tap point
+            scaleGestureDetector.isQuickScaleEnabled = false
             controller.setUiSettings(uiSettings)
             // E.g. the zoom buttons appear right away when they are enabled
             uiSettings.onDrawnSettingChanged = { invalidate() }
@@ -265,6 +330,11 @@ class OpenMapView
             // over drags the map handles itself. The parent resets this when the gesture ends.
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
+                    // A new touch, which the GestureDetector may mark as a double tap below
+                    isDoubleTapTouch = false
+                    isQuickZooming = false
+                    hadMultipleFingers = false
+                    isTwoFingerTap = false
                     // Touching the map stops a camera animation, which reports onCancel()
                     // and onCameraMoveCanceled
                     controller.stopAnimation()
@@ -288,6 +358,18 @@ class OpenMapView
             // Let scale detector handle pinch gestures only if zoom gestures are enabled
             if (uiSettings.isZoomGesturesEnabled) {
                 scaleGestureDetector.onTouchEvent(event)
+            }
+            trackTwoFingerTap(event)
+
+            // The second tap of a double tap zooms in onDoubleTapEvent(), it doesn't pan or click
+            if (isDoubleTapTouch) {
+                if (event.actionMasked == MotionEvent.ACTION_CANCEL) {
+                    isQuickZooming = false
+                    controller.releaseEdgeEffects()
+                    controller.commitPan()
+                    invalidate()
+                }
+                return true
             }
 
             // Pan by the average of all fingers, so a pinch, whose fingers move apart around
@@ -411,121 +493,29 @@ class OpenMapView
                         val dy = event.y - initialTouchY
                         val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
 
-                        // A tap ends with ACTION_UP; a canceled gesture or a long press is no click
-                        if (event.action == MotionEvent.ACTION_UP && !isLongPressed && movementDistance < touchSlop) {
-                            // Report the tap as a click, so accessibility services and any
-                            // OnClickListener are notified like for other clickable views
-                            performClick()
-
-                            // Check zoom controls first (if enabled)
-                            if (uiSettings.isZoomControlsEnabled) {
-                                val zoomAction = zoomControlsOverlay.handleTouch(event.x - mapPaddingLeft, event.y - mapPaddingTop)
-                                if (zoomAction != 0) {
-                                    val update = if (zoomAction > 0) CameraUpdateFactory.zoomIn() else CameraUpdateFactory.zoomOut()
-                                    // The map's own buttons animate and report an API animation
-                                    controller.animateCamera(
-                                        update,
-                                        ZOOM_BUTTON_ANIMATION_MS,
-                                        null,
-                                        OnCameraMoveStartedListener.REASON_API_ANIMATION,
-                                    )
-                                    invalidate()
-                                    return true
-                                }
-                            }
-
-                            if (handleMyLocationTap(event.x, event.y)) {
-                                controller.commitPan()
+                        // A tap ends with ACTION_UP; a canceled gesture, a long press or a gesture
+                        // with several fingers is no click
+                        val isTap =
+                            event.action == MotionEvent.ACTION_UP &&
+                                !isLongPressed &&
+                                !hadMultipleFingers &&
+                                movementDistance < touchSlop
+                        if (isTap) {
+                            tapUpX = event.x
+                            tapUpY = event.y
+                            if (isOnControl(event.x, event.y)) {
+                                // The map's own buttons respond at once, also to quick repeated taps
+                                performClick()
+                                handleControlTap(event.x, event.y)
                                 invalidate()
                                 return true
                             }
-
-                            // Check attribution overlay
-                            if (attributionOverlay.handleTouch(
-                                    event.x - mapPaddingLeft,
-                                    event.y - mapPaddingTop,
-                                    controlsWidth(),
-                                    controlsHeight(),
-                                )
-                            ) {
-                                controller.commitPan()
-                                invalidate()
+                            // With zoom gestures, onSingleTapConfirmed() reports the tap once it is
+                            // no double tap
+                            if (!uiSettings.isZoomGesturesEnabled) {
+                                handleTap(event.x, event.y)
                                 return true
                             }
-
-                            // Check for info window touch (before marker touch)
-                            val touchedInfoWindow = controller.handleInfoWindowTouch(event.x, event.y)
-                            if (touchedInfoWindow != null) {
-                                controller.onInfoWindowClickListener?.onInfoWindowClick(touchedInfoWindow)
-                                controller.commitPan()
-                                invalidate()
-                                return true
-                            }
-
-                            // Check for marker touch
-                            val touchedMarker = controller.handleMarkerTouch(event.x, event.y)
-                            if (touchedMarker != null) {
-                                controller.commitPan()
-                                // The listener runs first. Unless it consumes the click, the marker's
-                                // info window opens and the camera moves to the marker.
-                                val consumed = controller.onMarkerClickListener?.onMarkerClick(touchedMarker) == true
-                                if (!consumed) {
-                                    if (!touchedMarker.isInfoWindowShown) {
-                                        closeOtherInfoWindows(touchedMarker)
-                                        openInfoWindow(touchedMarker)
-                                    }
-                                    controller.animateCamera(
-                                        CameraUpdateFactory.newLatLng(touchedMarker.position),
-                                        MARKER_CLICK_ANIMATION_MS,
-                                        null,
-                                        OnCameraMoveStartedListener.REASON_API_ANIMATION,
-                                    )
-                                }
-                                invalidate()
-                                return true
-                            }
-
-                            // Check for polyline touch
-                            val touchedPolyline = controller.handlePolylineTouch(event.x, event.y)
-                            if (touchedPolyline != null) {
-                                controller.onPolylineClickListener?.onPolylineClick(touchedPolyline)
-                                controller.commitPan()
-                                invalidate()
-                                return true
-                            }
-
-                            // Check for polygon touch
-                            val touchedPolygon = controller.handlePolygonTouch(event.x, event.y)
-                            if (touchedPolygon != null) {
-                                controller.onPolygonClickListener?.onPolygonClick(touchedPolygon)
-                                controller.commitPan()
-                                invalidate()
-                                return true
-                            }
-
-                            // Check for circle touch
-                            val touchedCircle = controller.handleCircleTouch(event.x, event.y)
-                            if (touchedCircle != null) {
-                                controller.onCircleClickListener?.onCircleClick(touchedCircle)
-                                controller.commitPan()
-                                invalidate()
-                                return true
-                            }
-
-                            // Check for ground overlay touch
-                            val touchedGroundOverlay = controller.handleGroundOverlayTouch(event.x, event.y)
-                            if (touchedGroundOverlay != null) {
-                                controller.onGroundOverlayClickListener?.onGroundOverlayClick(touchedGroundOverlay)
-                                controller.commitPan()
-                                invalidate()
-                                return true
-                            }
-
-                            // Fire map click event if nothing else was clicked
-                            // Hide all info windows when clicking on empty map area
-                            controller.getMarkers().forEach { it.hideInfoWindow() }
-                            val latLng = controller.screenToLatLng(event.x, event.y)
-                            onMapClickListener?.onMapClick(latLng)
                         }
 
                         controller.commitPan()
@@ -912,6 +902,234 @@ class OpenMapView
         private fun controlsHeight(): Int = (height - mapPaddingTop - mapPaddingBottom).coerceAtLeast(0)
 
         // Handles a tap on the my-location button or dot; returns whether it hit one of them
+        // Whether a screen point is on the map's own buttons: zoom, my location or attribution
+        private fun isOnControl(
+            x: Float,
+            y: Float,
+        ): Boolean {
+            val controlX = x - mapPaddingLeft
+            val controlY = y - mapPaddingTop
+            return (uiSettings.isZoomControlsEnabled && zoomControlsOverlay.handleTouch(controlX, controlY) != 0) ||
+                (isMyLocationLayerEnabled && uiSettings.isMyLocationButtonEnabled && myLocationOverlay.isOnButton(controlX, controlY)) ||
+                attributionOverlay.contains(controlX, controlY, controlsWidth(), controlsHeight())
+        }
+
+        // Handles a tap on the map's own buttons, see isOnControl()
+        private fun handleControlTap(
+            x: Float,
+            y: Float,
+        ) {
+            // Check zoom controls first (if enabled)
+            if (uiSettings.isZoomControlsEnabled) {
+                val zoomAction = zoomControlsOverlay.handleTouch(x - mapPaddingLeft, y - mapPaddingTop)
+                if (zoomAction != 0) {
+                    val update = if (zoomAction > 0) CameraUpdateFactory.zoomIn() else CameraUpdateFactory.zoomOut()
+                    // The map's own buttons animate and report an API animation
+                    controller.animateCamera(
+                        update,
+                        ZOOM_BUTTON_ANIMATION_MS,
+                        null,
+                        OnCameraMoveStartedListener.REASON_API_ANIMATION,
+                    )
+                    invalidate()
+                    return
+                }
+            }
+
+            if (handleMyLocationTap(x, y)) {
+                controller.commitPan()
+                invalidate()
+                return
+            }
+
+            // Check attribution overlay
+            if (attributionOverlay.handleTouch(
+                    x - mapPaddingLeft,
+                    y - mapPaddingTop,
+                    controlsWidth(),
+                    controlsHeight(),
+                )
+            ) {
+                controller.commitPan()
+                invalidate()
+                return
+            }
+        }
+
+        // Handles a tap on the map content: info windows, markers, shapes and the map itself
+        private fun handleTap(
+            x: Float,
+            y: Float,
+        ) {
+            // Report the tap as a click, so accessibility services and any
+            // OnClickListener are notified like for other clickable views
+            performClick()
+
+            // A tap on the my-location dot, or the button when isOnControl() didn't see it
+            if (handleMyLocationTap(x, y)) {
+                controller.commitPan()
+                invalidate()
+                return
+            }
+
+            // Check for info window touch (before marker touch)
+            val touchedInfoWindow = controller.handleInfoWindowTouch(x, y)
+            if (touchedInfoWindow != null) {
+                controller.onInfoWindowClickListener?.onInfoWindowClick(touchedInfoWindow)
+                controller.commitPan()
+                invalidate()
+                return
+            }
+
+            // Check for marker touch
+            val touchedMarker = controller.handleMarkerTouch(x, y)
+            if (touchedMarker != null) {
+                controller.commitPan()
+                // The listener runs first. Unless it consumes the click, the marker's
+                // info window opens and the camera moves to the marker.
+                val consumed = controller.onMarkerClickListener?.onMarkerClick(touchedMarker) == true
+                if (!consumed) {
+                    if (!touchedMarker.isInfoWindowShown) {
+                        closeOtherInfoWindows(touchedMarker)
+                        openInfoWindow(touchedMarker)
+                    }
+                    controller.animateCamera(
+                        CameraUpdateFactory.newLatLng(touchedMarker.position),
+                        MARKER_CLICK_ANIMATION_MS,
+                        null,
+                        OnCameraMoveStartedListener.REASON_API_ANIMATION,
+                    )
+                }
+                invalidate()
+                return
+            }
+
+            // Check for polyline touch
+            val touchedPolyline = controller.handlePolylineTouch(x, y)
+            if (touchedPolyline != null) {
+                controller.onPolylineClickListener?.onPolylineClick(touchedPolyline)
+                controller.commitPan()
+                invalidate()
+                return
+            }
+
+            // Check for polygon touch
+            val touchedPolygon = controller.handlePolygonTouch(x, y)
+            if (touchedPolygon != null) {
+                controller.onPolygonClickListener?.onPolygonClick(touchedPolygon)
+                controller.commitPan()
+                invalidate()
+                return
+            }
+
+            // Check for circle touch
+            val touchedCircle = controller.handleCircleTouch(x, y)
+            if (touchedCircle != null) {
+                controller.onCircleClickListener?.onCircleClick(touchedCircle)
+                controller.commitPan()
+                invalidate()
+                return
+            }
+
+            // Check for ground overlay touch
+            val touchedGroundOverlay = controller.handleGroundOverlayTouch(x, y)
+            if (touchedGroundOverlay != null) {
+                controller.onGroundOverlayClickListener?.onGroundOverlayClick(touchedGroundOverlay)
+                controller.commitPan()
+                invalidate()
+                return
+            }
+
+            // Fire map click event if nothing else was clicked
+            // Hide all info windows when clicking on empty map area
+            controller.getMarkers().forEach { it.hideInfoWindow() }
+            val latLng = controller.screenToLatLng(x, y)
+            onMapClickListener?.onMapClick(latLng)
+            controller.commitPan()
+            invalidate()
+        }
+
+        // One-finger zoom: sliding the second tap of a double tap down zooms in, up zooms out,
+        // around the double tap point, like a pinch
+        private fun quickZoom(y: Float) {
+            if (!isQuickZooming) {
+                if (abs(y - doubleTapY) <= touchSlop) return
+                isQuickZooming = true
+                lastQuickZoomY = y
+                return
+            }
+            val oldZoom = controller.getZoom()
+            controller.zoom(2f.pow((y - lastQuickZoomY) / quickZoomPixelsPerLevel), doubleTapX, doubleTapY)
+            if (controller.getZoom() != oldZoom) {
+                controller.reportGestureMove()
+            }
+            lastQuickZoomY = y
+            invalidate()
+        }
+
+        // The second tap of a double tap was lifted: a double tap zooms in by one level around
+        // the tap, a one-finger zoom ends like a pinch
+        private fun endDoubleTap() {
+            controller.releaseEdgeEffects()
+            if (isQuickZooming) {
+                isQuickZooming = false
+                controller.commitPan()
+            } else {
+                controller.animateCamera(
+                    CameraUpdateFactory.zoomBy(1f, Point(doubleTapX.toInt(), doubleTapY.toInt())),
+                    TAP_ZOOM_ANIMATION_MS,
+                    null,
+                    OnCameraMoveStartedListener.REASON_GESTURE,
+                )
+            }
+            invalidate()
+        }
+
+        // Two fingers touching and one lifted soon, without moving, zoom out by one level
+        // around their midpoint
+        private fun trackTwoFingerTap(event: MotionEvent) {
+            when (event.actionMasked) {
+                MotionEvent.ACTION_POINTER_DOWN -> {
+                    hadMultipleFingers = true
+                    isTwoFingerTap = event.pointerCount == 2 && !isLongPressed && !isDragging
+                    if (isTwoFingerTap) {
+                        twoFingerDownTime = event.eventTime
+                        for (i in 0..1) {
+                            twoFingerStartX[i] = event.getX(i)
+                            twoFingerStartY[i] = event.getY(i)
+                        }
+                    }
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    if (isTwoFingerTap) {
+                        val moved =
+                            event.pointerCount != 2 ||
+                                (0..1).any { hypot(event.getX(it) - twoFingerStartX[it], event.getY(it) - twoFingerStartY[it]) > touchSlop }
+                        if (moved || scaleGestureDetector.isInProgress) isTwoFingerTap = false
+                    }
+                }
+
+                MotionEvent.ACTION_POINTER_UP -> {
+                    if (isTwoFingerTap) {
+                        isTwoFingerTap = false
+                        val quick = event.eventTime - twoFingerDownTime < ViewConfiguration.getDoubleTapTimeout()
+                        if (uiSettings.isZoomGesturesEnabled && quick) {
+                            val midX = (event.getX(0) + event.getX(1)) / 2
+                            val midY = (event.getY(0) + event.getY(1)) / 2
+                            controller.animateCamera(
+                                CameraUpdateFactory.zoomBy(-1f, Point(midX.toInt(), midY.toInt())),
+                                TAP_ZOOM_ANIMATION_MS,
+                                null,
+                                OnCameraMoveStartedListener.REASON_GESTURE,
+                            )
+                            invalidate()
+                        }
+                    }
+                }
+            }
+        }
+
         private fun handleMyLocationTap(
             x: Float,
             y: Float,
