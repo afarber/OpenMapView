@@ -184,8 +184,11 @@ class OpenMapView
                         onMapLongClickListener?.onMapLongClick(latLng)
                     }
 
-                    // Called once no second tap followed. Without zoom gestures there is no
-                    // double tap to wait for, so the tap was already reported on ACTION_UP.
+                    // Called once no second tap followed, after the double-tap timeout of 300 ms
+                    // by default (ViewConfiguration.getDoubleTapTimeout()). So with zoom gestures,
+                    // map, marker and shape clicks come about 300 ms after the finger is lifted;
+                    // that is what lets a double tap zoom without clicking. Without zoom gestures
+                    // there is no double tap to wait for, so the tap was already reported on ACTION_UP.
                     override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
                         if (!uiSettings.isZoomGesturesEnabled || isOnControl(e.x, e.y)) return false
                         handleTap(tapUpX, tapUpY)
