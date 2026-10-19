@@ -1,3 +1,7 @@
+# Publishes a release to Maven Central and creates the GitHub Release.
+# Started by a v*.*.* tag, which ./scripts/publish-release.sh signs and pushes.
+# The publish job runs in the "release" environment, which holds the Central Portal
+# token and the signing key and accepts only release tags. See docs/PUBLISHING.md.
 name: Release to Maven Central
 
 on:

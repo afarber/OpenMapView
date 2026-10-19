@@ -167,7 +167,7 @@ lint ──────┘           │                 ├──→ publish
 
 **Total Duration**: ~5-7 minutes (including publish)
 
-**Secrets Required**: See "Required GitHub Secrets" section below
+**Secrets Required**: The four secrets of the `release` environment, see "Required GitHub Secrets" below
 
 #### `daily.yml` - Daily Instrumentation Tests
 **Trigger**: Scheduled daily at 09:45 UTC, or manual trigger via workflow_dispatch
@@ -264,35 +264,7 @@ The instrumentation tests run as a matrix (phone and automotive), whose jobs rep
 
 ## Required GitHub Secrets
 
-For the release workflow to function, the project owner must configure these secrets in the GitHub repository:
-
-**Location**: Settings -> Secrets and variables -> Actions -> Repository secrets
-
-### 1. OSSRH_USERNAME
-- **Description**: Username part of a Central Portal user token (the secret keeps its old name)
-- **Used for**: Authenticating to the Maven Central Portal
-- **How to get**: Generate a user token at https://central.sonatype.com/account
-
-### 2. OSSRH_PASSWORD
-- **Description**: Password part of the same Central Portal user token
-- **Used for**: Authenticating to the Maven Central Portal
-- **How to get**: Shown together with the username when the token is generated
-
-### 3. SIGNING_KEY
-- **Description**: Base64-encoded GPG private key
-- **Used for**: Signing artifacts (required by Maven Central)
-- **How to get**:
-  ```bash
-  gpg --export-secret-keys YOUR_KEY_ID | base64
-  ```
-- **Format**: Very long base64 string (this is normal)
-- **Security**: Never commit this or share it publicly
-
-### 4. SIGNING_PASSWORD
-- **Description**: Passphrase for the GPG key
-- **Used for**: Unlocking the GPG private key for signing
-- **How to get**: The passphrase set when creating the GPG key
-- **Note**: If no passphrase was set, use an empty string
+The release needs four secrets: `OSSRH_USERNAME`, `OSSRH_PASSWORD` (a Central Portal user token), `SIGNING_KEY` and `SIGNING_PASSWORD` (the PGP signing key and its passphrase). They are stored in the `release` environment, not as repository secrets, and only the publish job of `release.yml` can read them. See [PUBLISHING.md](PUBLISHING.md#release-environment-and-secrets) for what they contain, how to check them and how to replace them.
 
 ### Automatic Secrets
 
