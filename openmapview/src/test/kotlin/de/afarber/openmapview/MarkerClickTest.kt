@@ -21,6 +21,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadows.ShadowChoreographer
 import java.time.Duration
 
 /**
@@ -51,6 +52,9 @@ class MarkerClickTest {
         marker = mapView.addMarker(Marker(position = position, title = "Bochum"))
         mapView.setOnCameraMoveStartedListener { events.add("started:$it") }
         mapView.setOnCameraIdleListener { events.add("idle") }
+        // Display frames come only as the clock advances, as on a device, instead of
+        // Robolectric running the frames of an animation all at once
+        ShadowChoreographer.setPaused(true)
     }
 
     // Taps the marker icon, which is anchored at the bottom above its position
@@ -62,11 +66,10 @@ class MarkerClickTest {
         }
     }
 
-    // The camera animation runs on wall clock time
+    // The camera animation steps once per display frame, as the clock advances
     private fun waitForIdle() {
-        val deadline = System.nanoTime() + 2_000_000_000L
-        while (events.lastOrNull() != "idle" && System.nanoTime() < deadline) {
-            Thread.sleep(20)
+        repeat(100) {
+            if (events.lastOrNull() == "idle") return
             shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20))
         }
     }
