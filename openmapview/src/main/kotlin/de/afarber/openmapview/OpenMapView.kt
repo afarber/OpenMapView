@@ -745,6 +745,9 @@ class OpenMapView
          *
          * The map viewport may show areas outside the bounds (since the camera target is just the
          * center point), but the center itself cannot move outside the specified region.
+         * A pan stops at the edges of the bounds. Bounds that don't contain the antimeridian
+         * (west <= east) also stop it there, so with e.g. -170 to 170 the camera can't pan
+         * around the world. Bounds with west > east, e.g. 170 to -170, cross the antimeridian.
          *
          * If the camera is currently positioned outside the bounds when this method is called,
          * it will be immediately adjusted to the nearest point within the bounds.

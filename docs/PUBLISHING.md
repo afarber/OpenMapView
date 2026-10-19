@@ -26,32 +26,75 @@ Both repositories are automatically updated when pushing a version tag.
 - **Publishing Plugin**: `com.gradleup.nmcp.aggregation` (version in `gradle/libs.versions.toml`)
 - **GPG Signing Key**: `8334881A009EB69E5B5BDBF189999F05686CE169` (Ed25519, expires 2028-10-24)
 
-### GitHub Secrets
+### Release Environment and Secrets
 
-Required secrets configured in GitHub Actions:
+The four secrets of the release live only in the GitHub environment `release` (Settings -> Environments), not as repository secrets. The environment accepts only tags matching `v*.*.*`, and only the publish job of `release.yml` uses it, so no other workflow or branch can read them.
 
-- **OSSRH_USERNAME** - Central Portal user token (generated at central.sonatype.com/account)
-- **OSSRH_PASSWORD** - Central Portal user token
-- **SIGNING_KEY** - Base64-encoded GPG private key
-- **SIGNING_PASSWORD** - GPG key passphrase
+- **OSSRH_USERNAME** and **OSSRH_PASSWORD** - the two parts of a Central Portal user token (central.sonatype.com, account menu, View User Tokens, Generate User Token). They are not the login of the website, and the names are kept from the former OSSRH service
+- **SIGNING_KEY** - the ASCII-armored PGP private key above, the text starting with `-----BEGIN PGP PRIVATE KEY BLOCK-----`
+- **SIGNING_PASSWORD** - the passphrase of that key
+
+The Portal shows a token only once, and GitHub never shows a secret again, so keep a backup of the private key and its passphrase offline.
+
+Set or replace a secret (each command prompts for the value, or reads it from a file):
+
+```bash
+gh secret set OSSRH_USERNAME --env release
+gh secret set OSSRH_PASSWORD --env release
+gh secret set SIGNING_KEY --env release < private_key.asc
+gh secret set SIGNING_PASSWORD --env release
+```
+
+**Check a Portal token** without publishing anything. The call answers 200 with valid credentials and 401 otherwise:
+
+```bash
+# zsh syntax; in bash use: read -rp "Token username: " u; read -rsp "Token password: " p; echo
+read -r "u?Token username: "; read -rs "p?Token password: "; echo
+curl -s -o /dev/null -w "%{http_code}\n" \
+  -H "Authorization: Bearer $(printf '%s:%s' "$u" "$p" | base64)" \
+  "https://central.sonatype.com/api/v1/publisher/published?namespace=de.afarber&name=openmapview&version=0.28.1"
+unset u p
+```
+
+**Rotate the token:** generate a new one, set both secrets, then revoke the old token on the Portal.
+
+**Check the signing key and passphrase** in a throwaway keyring, which leaves the normal GnuPG setup untouched:
+
+```bash
+export GNUPGHOME=$(mktemp -d)
+gpg --import private_key.asc
+echo test | gpg --pinentry-mode loopback --clearsign > /dev/null && echo "Passphrase OK"
+rm -rf "$GNUPGHOME"; unset GNUPGHOME
+```
+
+**Replace the signing key** (e.g. before it expires): create a new key, publish its public key with `gpg --keyserver keyserver.ubuntu.com --send-keys KEY_ID` and to keys.openpgp.org (which confirms by email), set `SIGNING_KEY` and `SIGNING_PASSWORD`, and update the fingerprint above.
+
+### Repository Protection
+
+- **Release tags**: a ruleset on `refs/tags/v*` lets only admins create release tags and blocks moving and deleting them. Pushing a tag is what publishes a release.
+- **CODEOWNERS**: `.github/CODEOWNERS` names the maintainer as owner of every file.
+
+### Publishing Limits
+
+The Central Portal limits publishing per organization and calendar month, currently 7 releases, 1000 files and 80 MB. One release of both artifacts is about 40 files and 1.6 MB, so the release count is the limit that matters. Release merged changes in batches, e.g. weekly, rather than after every pull request. The Usage Center on the Portal shows the current numbers.
 
 ### Publishing Process
 
-1. Create and push a version tag:
+1. Run the release script on an up-to-date `main`:
 
    ```bash
-   git tag v0.3.0
-   git push origin v0.3.0
+   ./scripts/publish-release.sh          # next patch version
+   ./scripts/publish-release.sh v0.29.0  # or a given version
    ```
 
-2. GitHub Actions automatically:
+   It bumps the version in `README.md` and `docs/MIGRATING.md`, commits it, creates a signed tag and pushes `main` and the tag together.
 
-   - Validates formatting with Spotless
-   - Runs unit tests
-   - Builds library AAR and example APKs
-   - Signs artifacts with GPG
-   - Publishes to Maven Central via Central Portal API
-   - Creates GitHub Release
+2. The tag starts `release.yml`, which:
+
+   - Checks formatting and runs Lint and the unit tests
+   - Builds the library AAR and the example APKs
+   - Signs the artifacts and uploads them to the Central Portal, which publishes them
+   - Creates the GitHub Release
 
 3. Artifacts appear on Maven Central within 10-30 minutes
 
@@ -113,12 +156,7 @@ Publishing configuration is defined in:
 
 JitPack builds automatically from GitHub releases on first request:
 
-1. Create and push a version tag:
-
-   ```bash
-   git tag v0.3.0
-   git push origin v0.3.0
-   ```
+1. The release tag is pushed by `./scripts/publish-release.sh`, see Maven Central above
 
 2. JitPack automatically:
 
@@ -169,6 +207,7 @@ Examples:
 When creating a new release:
 
 - [ ] Make sure CI on main is green and your local main is up to date
+- [ ] Check the Usage Center on the Central Portal: at most 7 releases per month
 - [ ] Run `./scripts/publish-release.sh` (next patch version) or `./scripts/publish-release.sh vX.Y.Z`. It bumps the version in the docs, commits, creates a signed tag and pushes main and the tag
 - [ ] Monitor GitHub Actions release workflow
 - [ ] Verify Maven Central publication (10-30 minutes)
@@ -180,29 +219,19 @@ When creating a new release:
 
 **Issue: Workflow fails with "401 Unauthorized"**
 
-Solution: Verify GitHub Secrets are correctly configured:
-
-- Generate new tokens at https://central.sonatype.com/account
-- Update `OSSRH_USERNAME` and `OSSRH_PASSWORD` secrets
+Solution: Check the token with the `curl` call under "Release Environment and Secrets". If it answers 401, generate a new token and update `OSSRH_USERNAME` and `OSSRH_PASSWORD` in the `release` environment.
 
 **Issue: "Failed to verify signature"**
 
 Solution: Verify GPG key configuration:
 
 - Confirm public key `8334881A009EB69E5B5BDBF189999F05686CE169` is published to keyservers
-- Check `SIGNING_KEY` secret contains the full base64 private key
-- Verify `SIGNING_PASSWORD` matches the GPG key passphrase
+- Check that `SIGNING_KEY` in the `release` environment contains the whole ASCII-armored private key, including the BEGIN and END lines
+- Check the passphrase with a throwaway keyring, see "Release Environment and Secrets"
 
 **Issue: Version conflict**
 
-Solution: Maven Central does not allow republishing the same version:
-
-```bash
-git tag -d v0.1.0
-git push origin :refs/tags/v0.1.0
-git tag v0.1.1
-git push origin v0.1.1
-```
+Solution: Maven Central does not allow republishing the same version, and the tag ruleset keeps release tags from being moved or deleted. Fix the problem on `main` and release the next patch version with `./scripts/publish-release.sh`.
 
 ### JitPack Issues
 
@@ -274,7 +303,8 @@ ls openmapview/build/outputs/aar/
 
 The release process is orchestrated by reusable GitHub Actions workflows:
 
-- `.github/workflows/release.yml` - Main release workflow
+- `.github/workflows/release.yml` - Main release workflow, its publish job runs in the `release` environment
+- `.github/workflows/_lint.yml` - Android Lint
 - `.github/workflows/_format.yml` - Code formatting check
 - `.github/workflows/_test.yml` - Unit tests
 - `.github/workflows/_build-library.yml` - Build AAR
@@ -339,9 +369,8 @@ GitHub Actions workflow uses: `./gradlew publishAggregationToCentralPortal`
 ## Quick Reference
 
 ```bash
-# Create a release
-git tag v0.3.0
-git push origin v0.3.0
+# Create a release (bumps the docs, commits, pushes a signed tag)
+./scripts/publish-release.sh
 
 # Check workflow status
 # Visit: https://github.com/afarber/OpenMapView/actions

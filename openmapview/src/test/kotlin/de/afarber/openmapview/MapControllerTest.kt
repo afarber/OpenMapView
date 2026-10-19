@@ -1231,6 +1231,71 @@ class MapControllerTest {
         assertEquals(targetLocation.longitude, controller.getCenter().longitude, 0.0001)
     }
 
+    // Pans the camera by the given degrees of longitude in 10 px steps of the finger, and
+    // returns the camera target longitudes seen during the gesture
+    private fun panByLongitude(degrees: Double): List<Double> {
+        val pixels = degrees / 360.0 * 256.0 * 2.0.pow(controller.getZoom().toDouble())
+        val steps = kotlin.math.ceil(abs(pixels) / 10).toInt()
+        val seen = mutableListOf<Double>()
+        repeat(steps) {
+            // The finger moves west to move the camera east
+            controller.updatePanOffset((-pixels / steps).toFloat(), 0f)
+            seen.add(controller.getCenter().longitude)
+        }
+        controller.commitPan()
+        return seen
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_PanStopsAtEastEdgeBeforeAntimeridian() {
+        controller.setZoom(2f)
+        controller.setLatLngBoundsForCameraTarget(LatLngBounds(LatLng(-60.0, -170.0), LatLng(60.0, 170.0)))
+        controller.setCenter(LatLng(0.0, 150.0))
+
+        val seen = panByLongitude(200.0)
+
+        // Not around the world to -154, which is inside the bounds too
+        assertTrue("longitudes during the pan: $seen", seen.all { it in 150.0..170.0001 })
+        assertEquals(170.0, controller.getCenter().longitude, 0.01)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_PanStopsAtWestEdgeBeforeAntimeridian() {
+        controller.setZoom(2f)
+        controller.setLatLngBoundsForCameraTarget(LatLngBounds(LatLng(-60.0, -170.0), LatLng(60.0, 170.0)))
+        controller.setCenter(LatLng(0.0, -150.0))
+
+        panByLongitude(-200.0)
+
+        assertEquals(-170.0, controller.getCenter().longitude, 0.01)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_PanCrossesAntimeridianWithinCrossingBounds() {
+        controller.setZoom(2f)
+        // From 170 east across the antimeridian to -170
+        controller.setLatLngBoundsForCameraTarget(LatLngBounds(LatLng(-60.0, 170.0), LatLng(60.0, -170.0)))
+        controller.setCenter(LatLng(0.0, 175.0))
+
+        panByLongitude(30.0)
+
+        assertEquals(-170.0, controller.getCenter().longitude, 0.01)
+    }
+
+    @Test
+    fun testSetLatLngBoundsForCameraTarget_CrossingBoundsKeepInsideAndClampToNearerEdge() {
+        controller.setLatLngBoundsForCameraTarget(LatLngBounds(LatLng(-10.0, 170.0), LatLng(10.0, -170.0)))
+
+        controller.setCenter(LatLng(0.0, 175.0))
+        assertEquals(175.0, controller.getCenter().longitude, 0.0001)
+        controller.setCenter(LatLng(0.0, -175.0))
+        assertEquals(-175.0, controller.getCenter().longitude, 0.0001)
+        controller.setCenter(LatLng(0.0, 160.0))
+        assertEquals(170.0, controller.getCenter().longitude, 0.0001)
+        controller.setCenter(LatLng(0.0, -160.0))
+        assertEquals(-170.0, controller.getCenter().longitude, 0.0001)
+    }
+
     @Test
     fun testSetLatLngBoundsForCameraTarget_WorksAtEquator() {
         val bounds = LatLngBounds(LatLng(-1.0, -1.0), LatLng(1.0, 1.0))

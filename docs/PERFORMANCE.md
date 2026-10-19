@@ -226,9 +226,12 @@ without gaps.
 The world repeats horizontally, so the map has no blank area past longitude 180. A tile of a
 copy left or right of the main world is drawn at its own place, but loaded, cached and
 counted as wanted as the tile of the main world it shows. The copies share one download and
-one cache entry. Markers, shapes and ground overlays are drawn once, at the copy nearest the
-view center, and each point of a shape on the copy nearest the previous point, so lines
-across the antimeridian take the short way.
+one cache entry. Markers, shapes and ground overlays are laid out once, at the copy nearest
+the view center, and each point of a shape on the copy nearest the previous point, so lines
+across the antimeridian take the short way. They are then drawn, shifted by whole worlds, on
+every copy where they are visible, and taps hit them on every copy. That is one copy unless
+the world is narrower than the view (zoom 2 on a wide screen) or a shape reaches past the
+view edge, so normal zoom levels draw nothing extra.
 
 ### Minimal Invalidations
 

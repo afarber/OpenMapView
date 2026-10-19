@@ -39,6 +39,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withRotation
 import androidx.core.graphics.withSave
+import androidx.core.graphics.withTranslation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -56,6 +57,7 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.ceil
 import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.hypot
 import kotlin.math.log2
 import kotlin.math.pow
@@ -232,8 +234,25 @@ class MapController(
                 }
             }
 
+        val west = bounds.southwest.longitude
+        val east = bounds.northeast.longitude
         val clampedLng =
             when {
+                // Bounds crossing the antimeridian contain both ends of the longitude range,
+                // so a longitude outside them lies between east and west: go to the nearer
+                west > east -> {
+                    val lng = latLng.longitude
+                    if (lng >= west || lng <= east) {
+                        lng
+                    } else if (lng - east <= west - lng) {
+                        hitEdges.add(Edge.RIGHT)
+                        east
+                    } else {
+                        hitEdges.add(Edge.LEFT)
+                        west
+                    }
+                }
+
                 latLng.longitude < bounds.southwest.longitude -> {
                     hitEdges.add(Edge.LEFT)
                     bounds.southwest.longitude
@@ -1046,6 +1065,7 @@ class MapController(
         panOffsetX = panOffsetX * ratio + focusOffsetX * (ratio - 1)
         panOffsetY = panOffsetY * ratio + focusOffsetY * (ratio - 1)
         keepWorldFillingView(previousY)
+        clampPanToTargetBounds()
     }
 
     /**
@@ -1801,20 +1821,16 @@ class MapController(
         val newPanOffsetX = panOffsetX - mapDx
         val newPanOffsetY = panOffsetY - mapDy
 
-        // Check if bounds are set and detect edge hits during panning
-        if (cameraTargetBounds != null) {
-            val newCenter = pannedCenter(newPanOffsetX, newPanOffsetY)
-
-            val (_, hitEdges) = clampToTargetBoundsWithEdges(targetOf(newCenter, zoom))
-            if (hitEdges.isNotEmpty()) {
-                triggerEdgeEffect(hitEdges, 0.6f)
-            }
-        }
-
         val previousY = viewCenterPixelY()
         panOffsetX = newPanOffsetX
         panOffsetY = newPanOffsetY
         keepWorldFillingView(previousY)
+
+        // The camera stops at the edges of the target bounds, which glow when hit
+        val hitEdges = clampPanToTargetBounds()
+        if (hitEdges.isNotEmpty()) {
+            triggerEdgeEffect(hitEdges, 0.6f)
+        }
     }
 
     // The y of the view center in world pixels at the current zoom, including the pan offset
@@ -1837,6 +1853,50 @@ class MapController(
         val y = viewCenterPixelY()
         val clamped = y.coerceIn(minOf(top, previousY), maxOf(bottom, previousY))
         if (clamped != y) panOffsetY += (clamped - y).toFloat()
+    }
+
+    /**
+     * Limits the pan offset so the camera target stays within the target bounds, and returns
+     * the edges it was stopped at.
+     *
+     * The target is clamped in pixels of the world copy it is on, before its longitude wraps
+     * around: bounds that don't contain the antimeridian stop the camera there, instead of
+     * letting it pan around the world and come back in from the other side.
+     */
+    private fun clampPanToTargetBounds(): Set<Edge> {
+        val bounds = cameraTargetBounds ?: return emptySet()
+        val world = ProjectionUtils.worldSize(zoom, tileSize)
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
+        // The target is at the center of the area inside the map padding
+        val targetX = centerPixelX + (paddingLeft - paddingRight) / 2.0
+        val targetY = centerPixelY + (paddingTop - paddingBottom) / 2.0
+        val (westX, northY) =
+            ProjectionUtils.latLngToPixelExact(
+                bounds.northeast.copy(longitude = bounds.southwest.longitude),
+                zoom,
+                tileSize,
+            )
+        val (eastX, southY) =
+            ProjectionUtils.latLngToPixelExact(
+                bounds.southwest.copy(longitude = bounds.northeast.longitude),
+                zoom,
+                tileSize,
+            )
+        // Bounds crossing the antimeridian end on the next copy of the world
+        val width = if (eastX >= westX) eastX - westX else eastX + world - westX
+        // The copy of the bounds that the target, which is within them, is on
+        val left = westX + world * floor((targetX - westX) / world)
+
+        val x = targetX + panOffsetX
+        val y = targetY + panOffsetY
+        val hitEdges = mutableSetOf<Edge>()
+        if (x < left) hitEdges.add(Edge.LEFT)
+        if (x > left + width) hitEdges.add(Edge.RIGHT)
+        if (y < northY) hitEdges.add(Edge.TOP)
+        if (y > southY) hitEdges.add(Edge.BOTTOM)
+        panOffsetX = (x.coerceIn(left, left + width) - targetX).toFloat()
+        panOffsetY = (y.coerceIn(northY, southY) - targetY).toFloat()
+        return hitEdges
     }
 
     /**
@@ -2108,6 +2168,69 @@ class MapController(
         return out
     }
 
+    /**
+     * Returns the shifts by whole worlds at which something spanning [minX] to [maxX] in map
+     * space is on the screen. Markers and shapes are laid out once, near the view center;
+     * when the world is narrower than the view, its other visible copies show them too.
+     * Usually that is only 0.
+     */
+    private fun worldShifts(
+        minX: Float,
+        maxX: Float,
+    ): IntRange {
+        val world = ProjectionUtils.worldSize(zoom, tileSize).toFloat()
+        // The screen in map space: the view, or the bounding box of a turned view
+        val halfWidth = mapSpaceCoverSize().first / 2f
+        val left = viewWidth / 2f - halfWidth
+        val right = viewWidth / 2f + halfWidth
+        return ceil((left - maxX) / world).toInt()..floor((right - minX) / world).toInt()
+    }
+
+    // Draws with draw() on every copy of the world where [minX] to [maxX] is visible
+    private inline fun drawOnWorldCopies(
+        canvas: Canvas,
+        minX: Float,
+        maxX: Float,
+        draw: () -> Unit,
+    ) {
+        val world = ProjectionUtils.worldSize(zoom, tileSize).toFloat()
+        for (shift in worldShifts(minX, maxX)) {
+            if (shift == 0) {
+                draw()
+            } else {
+                canvas.withTranslation(shift * world, 0f) { draw() }
+            }
+        }
+    }
+
+    /**
+     * Returns whether [hit] is true for the map-space touch x moved back from any copy of the
+     * world onto the one where something spanning [minX] to [maxX] is laid out.
+     */
+    private inline fun isHitOnWorldCopies(
+        x: Float,
+        minX: Float,
+        maxX: Float,
+        hit: (Float) -> Boolean,
+    ): Boolean {
+        val world = ProjectionUtils.worldSize(zoom, tileSize).toFloat()
+        for (shift in ceil((x - maxX) / world).toInt()..floor((x - minX) / world).toInt()) {
+            if (hit(x - shift * world)) return true
+        }
+        return false
+    }
+
+    // The smallest and largest x of the x, y pairs from shapeScreenPoints()
+    private fun xRange(screenPoints: FloatArray): Pair<Float, Float> {
+        var minX = Float.MAX_VALUE
+        var maxX = -Float.MAX_VALUE
+        for (i in screenPoints.indices step 2) {
+            minX = minOf(minX, screenPoints[i])
+            maxX = maxOf(maxX, screenPoints[i])
+        }
+        return minX to maxX
+    }
+
     // Adds the points from shapeScreenPoints() to the path as a closed ring
     private fun addRing(
         path: android.graphics.Path,
@@ -2149,14 +2272,27 @@ class MapController(
 
         groundOverlayPaint.alpha = ((1f - groundOverlay.transparency) * 255).toInt()
 
-        canvas.withSave {
-            if (groundOverlay.bearing != 0f) {
-                val anchorX = rect.left + rect.width() * groundOverlay.anchor.first
-                val anchorY = rect.top + rect.height() * groundOverlay.anchor.second
-                canvas.rotate(groundOverlay.bearing, anchorX, anchorY)
+        val (minX, maxX) = groundOverlayXRange(groundOverlay, rect)
+        drawOnWorldCopies(canvas, minX, maxX) {
+            canvas.withSave {
+                if (groundOverlay.bearing != 0f) {
+                    val anchorX = rect.left + rect.width() * groundOverlay.anchor.first
+                    val anchorY = rect.top + rect.height() * groundOverlay.anchor.second
+                    canvas.rotate(groundOverlay.bearing, anchorX, anchorY)
+                }
+                canvas.drawBitmap(bitmap, null, rect, groundOverlayPaint)
             }
-            canvas.drawBitmap(bitmap, null, rect, groundOverlayPaint)
         }
+    }
+
+    // Where a ground overlay can be in x: its rectangle, or, turned around its anchor, at
+    // most its diagonal beyond it
+    private fun groundOverlayXRange(
+        groundOverlay: GroundOverlay,
+        rect: RectF,
+    ): Pair<Float, Float> {
+        val reach = if (groundOverlay.bearing != 0f) hypot(rect.width(), rect.height()) else 0f
+        return rect.left - reach to rect.right + reach
     }
 
     /**
@@ -2271,8 +2407,13 @@ class MapController(
             }
 
             path.fillType = android.graphics.Path.FillType.EVEN_ODD
-            canvas.drawPath(path, fillPaint)
-            canvas.drawPath(path, strokePaint)
+            // The holes are inside the outline
+            val (minX, maxX) = xRange(outline)
+            val halfStroke = polygon.strokeWidth / 2
+            drawOnWorldCopies(canvas, minX - halfStroke, maxX + halfStroke) {
+                canvas.drawPath(path, fillPaint)
+                canvas.drawPath(path, strokePaint)
+            }
         }
     }
 
@@ -2298,27 +2439,35 @@ class MapController(
                     polyline.points
                 }
 
+            val screenPoints = shapeScreenPoints(points, centerPixelX, centerPixelY)
+            // Caps reach half the width beyond the end points
+            val (minX, maxX) = xRange(screenPoints)
+            val halfStroke = polyline.strokeWidth / 2
+
             // Handle spans (multi-color segments) or single color
             if (polyline.spans.isNotEmpty()) {
-                drawPolylineWithSpansZIndex(canvas, polyline, points, centerPixelX, centerPixelY)
+                drawOnWorldCopies(canvas, minX - halfStroke, maxX + halfStroke) {
+                    drawPolylineWithSpansZIndex(canvas, polyline, screenPoints)
+                }
             } else {
                 paint.color = polyline.strokeColor.toArgb()
                 paint.strokeWidth = polyline.strokeWidth
                 paint.pathEffect = strokeEffect(polyline.pattern, polyline.strokePattern, polyline.strokeWidth)
                 paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
 
-                val screenPoints = shapeScreenPoints(points, centerPixelX, centerPixelY)
                 val path = android.graphics.Path()
                 path.moveTo(screenPoints[0], screenPoints[1])
                 for (i in 2 until screenPoints.size step 2) {
                     path.lineTo(screenPoints[i], screenPoints[i + 1])
                 }
 
-                if (polyline.startCap == polyline.endCap) {
-                    paint.strokeCap = polyline.startCap.toAndroidCap()
-                    canvas.drawPath(path, paint)
-                } else {
-                    drawPathWithCaps(canvas, path, screenPoints, polyline.startCap, polyline.endCap, paint)
+                drawOnWorldCopies(canvas, minX - halfStroke, maxX + halfStroke) {
+                    if (polyline.startCap == polyline.endCap) {
+                        paint.strokeCap = polyline.startCap.toAndroidCap()
+                        canvas.drawPath(path, paint)
+                    } else {
+                        drawPathWithCaps(canvas, path, screenPoints, polyline.startCap, polyline.endCap, paint)
+                    }
                 }
             }
         }
@@ -2402,12 +2551,11 @@ class MapController(
         capOutline.op(capPath, android.graphics.Path.Op.UNION)
     }
 
+    // Draws the segments between the x, y pairs of screenPoints in the colors of the spans
     private fun drawPolylineWithSpansZIndex(
         canvas: Canvas,
         polyline: Polyline,
-        points: List<LatLng>,
-        centerPixelX: Float,
-        centerPixelY: Float,
+        screenPoints: FloatArray,
     ) {
         val paint = Paint()
         paint.style = Paint.Style.STROKE
@@ -2417,8 +2565,7 @@ class MapController(
         paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
 
         var segmentIndex = 0
-        val totalSegments = points.size - 1
-        val screenPoints = shapeScreenPoints(points, centerPixelX, centerPixelY)
+        val totalSegments = screenPoints.size / 2 - 1
 
         // A single segment is both first and last, so it needs both caps
         if (totalSegments == 1 && polyline.startCap != polyline.endCap) {
@@ -2505,8 +2652,11 @@ class MapController(
 
             val radiusInPixels = metersToPixels(circle.radius, circle.center.latitude, zoom)
 
-            canvas.drawCircle(screenX, screenY, radiusInPixels, fillPaint)
-            canvas.drawCircle(screenX, screenY, radiusInPixels, strokePaint)
+            val reach = radiusInPixels + circle.strokeWidth / 2
+            drawOnWorldCopies(canvas, screenX - reach, screenX + reach) {
+                canvas.drawCircle(screenX, screenY, radiusInPixels, fillPaint)
+                canvas.drawCircle(screenX, screenY, radiusInPixels, strokePaint)
+            }
         }
     }
 
@@ -2554,11 +2704,21 @@ class MapController(
             paint.alpha = (marker.alpha * 255).toInt().coerceIn(0, 255)
 
             val rotation = iconRotation(marker)
-            if (rotation == 0f) {
-                canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
-            } else {
-                canvas.withRotation(rotation, screenX, screenY) {
-                    drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
+            // A turned icon stays within its diagonal around the anchor
+            val (minX, maxX) =
+                if (rotation == 0f) {
+                    screenX - anchorX to screenX - anchorX + icon.width
+                } else {
+                    val diagonal = hypot(icon.width.toFloat(), icon.height.toFloat())
+                    screenX - diagonal to screenX + diagonal
+                }
+            drawOnWorldCopies(canvas, minX, maxX) {
+                if (rotation == 0f) {
+                    canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
+                } else {
+                    canvas.withRotation(rotation, screenX, screenY) {
+                        drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
+                    }
                 }
             }
         }
@@ -3219,7 +3379,8 @@ class MapController(
         for (marker in markers.reversed()) {
             val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom, tileSize)
 
-            val screenX = wrappedScreenX(markerPixelX, centerPixelX)
+            // On the copy of the world nearest to the touch, as every visible copy is drawn
+            val screenX = wrappedScreenX(markerPixelX, centerPixelX, x)
             val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
 
             val icon = loadBitmap(marker.icon)
@@ -3290,15 +3451,24 @@ class MapController(
 
             // Convert all points to screen coordinates, as they are drawn
             val screenPoints = shapeScreenPoints(polyline.points, centerPixelX, centerPixelY)
+            val reach = touchTolerance + polyline.strokeWidth / 2
+            val (minX, maxX) = xRange(screenPoints)
 
-            // Check each line segment
-            for (i in 0 until screenPoints.size - 2 step 2) {
-                val distance =
-                    distanceToLineSegment(x, y, screenPoints[i], screenPoints[i + 1], screenPoints[i + 2], screenPoints[i + 3])
-                if (distance <= touchTolerance + polyline.strokeWidth / 2) {
-                    return polyline
+            // Check each line segment, on every copy of the world
+            val hit =
+                isHitOnWorldCopies(x, minX - reach, maxX + reach) { touchX ->
+                    (0 until screenPoints.size - 2 step 2).any { i ->
+                        distanceToLineSegment(
+                            touchX,
+                            y,
+                            screenPoints[i],
+                            screenPoints[i + 1],
+                            screenPoints[i + 2],
+                            screenPoints[i + 3],
+                        ) <= reach
+                    }
                 }
-            }
+            if (hit) return polyline
         }
         return null
     }
@@ -3327,22 +3497,15 @@ class MapController(
             // Convert all points to screen coordinates, as they are drawn
             val screenPoints = shapeScreenPoints(polygon.points, centerPixelX, centerPixelY)
 
-            // Check if point is inside the main polygon
-            if (isPointInPolygon(x, y, screenPoints)) {
-                // Check if point is inside any holes
-                var inHole = false
-                for (hole in polygon.holes) {
-                    val holeScreenPoints = shapeScreenPoints(hole, centerPixelX, centerPixelY, screenPoints[0])
-                    if (isPointInPolygon(x, y, holeScreenPoints)) {
-                        inHole = true
-                        break
-                    }
-                }
+            val holeScreenPoints = polygon.holes.map { shapeScreenPoints(it, centerPixelX, centerPixelY, screenPoints[0]) }
+            val (minX, maxX) = xRange(screenPoints)
 
-                if (!inHole) {
-                    return polygon
+            // Inside the outline but not in a hole, on any copy of the world
+            val hit =
+                isHitOnWorldCopies(x, minX, maxX) { touchX ->
+                    isPointInPolygon(touchX, y, screenPoints) && holeScreenPoints.none { isPointInPolygon(touchX, y, it) }
                 }
-            }
+            if (hit) return polygon
         }
         return null
     }
@@ -3371,7 +3534,8 @@ class MapController(
 
             // Convert circle center to screen coordinates
             val (px, py) = ProjectionUtils.latLngToPixel(circle.center, zoom, tileSize)
-            val sx = wrappedScreenX(px, centerPixelX)
+            // On the copy of the world nearest to the touch, as every visible copy is drawn
+            val sx = wrappedScreenX(px, centerPixelX, x)
             val sy = py - centerPixelY + viewHeight / 2 - panOffsetY
 
             // Convert radius from meters to pixels
@@ -3403,17 +3567,20 @@ class MapController(
 
             val bitmap = loadGroundOverlayBitmap(groundOverlay)
             val rect = groundOverlayScreenRect(groundOverlay, bitmap, centerPixelX, centerPixelY) ?: continue
+            val (minX, maxX) = groundOverlayXRange(groundOverlay, rect)
 
-            if (groundOverlay.bearing != 0f) {
-                val anchorX = rect.left + rect.width() * groundOverlay.anchor.first
-                val anchorY = rect.top + rect.height() * groundOverlay.anchor.second
-                val rotatedPoint = rotatePointAround(x, y, anchorX, anchorY, -groundOverlay.bearing)
-                if (rect.contains(rotatedPoint.first, rotatedPoint.second)) {
-                    return groundOverlay
+            val hit =
+                isHitOnWorldCopies(x, minX, maxX) { touchX ->
+                    if (groundOverlay.bearing != 0f) {
+                        val anchorX = rect.left + rect.width() * groundOverlay.anchor.first
+                        val anchorY = rect.top + rect.height() * groundOverlay.anchor.second
+                        val rotatedPoint = rotatePointAround(touchX, y, anchorX, anchorY, -groundOverlay.bearing)
+                        rect.contains(rotatedPoint.first, rotatedPoint.second)
+                    } else {
+                        rect.contains(touchX, y)
+                    }
                 }
-            } else if (rect.contains(x, y)) {
-                return groundOverlay
-            }
+            if (hit) return groundOverlay
         }
         return null
     }
