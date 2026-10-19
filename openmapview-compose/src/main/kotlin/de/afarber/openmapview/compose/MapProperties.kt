@@ -79,6 +79,9 @@ data class MapProperties(
  * @param infoWindowAutoDismiss How long an info window stays open, or [Duration.ZERO] to keep it
  * @param myLocationButtonEnabled Whether the my-location button is shown while
  *   [MapProperties.isMyLocationEnabled] is set
+ * @param rotationGesturesEnabled Whether turning two fingers turns the map
+ * @param compassEnabled Whether the compass is shown while the map is turned; a tap on it
+ *   turns the map back to north up
  */
 @Immutable
 data class MapUiSettings(
@@ -87,6 +90,8 @@ data class MapUiSettings(
     val scrollGesturesEnabled: Boolean = true,
     val infoWindowAutoDismiss: Duration = Duration.ZERO,
     val myLocationButtonEnabled: Boolean = true,
+    val rotationGesturesEnabled: Boolean = true,
+    val compassEnabled: Boolean = true,
 ) {
     internal fun applyTo(map: OpenMapView) {
         val uiSettings = map.getUiSettings()
@@ -95,7 +100,9 @@ data class MapUiSettings(
         uiSettings.isScrollGesturesEnabled = scrollGesturesEnabled
         uiSettings.infoWindowAutoDismiss = infoWindowAutoDismiss
         uiSettings.isMyLocationButtonEnabled = myLocationButtonEnabled
-        // The zoom buttons are drawn by the map
+        uiSettings.isRotateGesturesEnabled = rotationGesturesEnabled
+        uiSettings.isCompassEnabled = compassEnabled
+        // The zoom buttons and the compass are drawn by the map
         map.invalidate()
     }
 }

@@ -32,6 +32,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import kotlin.math.abs
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.pow
@@ -48,6 +49,12 @@ private const val MARKER_CLICK_ANIMATION_MS = 250
 
 // Duration of the zoom animation for a double tap and a two-finger tap
 private const val TAP_ZOOM_ANIMATION_MS = 250
+
+// Duration of the camera animation back to north up for the compass
+private const val COMPASS_ANIMATION_MS = 300
+
+// How far two fingers turn before a rotate gesture turns the map
+private const val ROTATE_THRESHOLD_DEGREES = 10f
 
 // How far a finger slides in a one-finger zoom (double tap, hold and slide) per zoom level
 private const val QUICK_ZOOM_DP_PER_LEVEL = 100f
@@ -94,6 +101,7 @@ class OpenMapView
         private val controller = MapController(context)
         private val attributionOverlay = AttributionOverlay(context)
         private val zoomControlsOverlay = ZoomControlsOverlay(context)
+        private val compassOverlay = CompassOverlay(context)
         private val myLocationOverlay = MyLocationOverlay(context)
         private val uiSettings = UiSettings()
         private var currentMapType: Int = MapType.STANDARD
@@ -163,6 +171,14 @@ class OpenMapView
         // A two-finger tap zooms out: two fingers touch and one is lifted soon, without moving.
         // After any second finger, lifting the last one is no tap.
         private var hadMultipleFingers = false
+
+        // Rotate gesture: whether two fingers are tracked, whether they turn the map, and the
+        // angles between them at the start and at the last move
+        private var isRotationTracked = false
+        private var isRotating = false
+        private var rotationNeedsBase = false
+        private var rotationStartAngle = 0f
+        private var lastRotationAngle = 0f
         private var isTwoFingerTap = false
         private var twoFingerDownTime = 0L
         private val twoFingerStartX = FloatArray(2)
@@ -273,6 +289,8 @@ class OpenMapView
                     if (uiSettings.isZoomControlsEnabled) {
                         zoomControlsOverlay.draw(this, controlsWidth(), controlsHeight())
                     }
+                    // Shown only while the map is turned
+                    compassOverlay.draw(this, if (uiSettings.isCompassEnabled) controller.getBearing() else 0f)
                     attributionOverlay.draw(this, controlsWidth(), controlsHeight())
                 }
 
@@ -348,7 +366,7 @@ class OpenMapView
                 }
 
                 MotionEvent.ACTION_POINTER_DOWN -> {
-                    if (uiSettings.isZoomGesturesEnabled) {
+                    if (uiSettings.isZoomGesturesEnabled || uiSettings.isRotateGesturesEnabled) {
                         parent?.requestDisallowInterceptTouchEvent(true)
                     }
                 }
@@ -364,6 +382,7 @@ class OpenMapView
                 scaleGestureDetector.onTouchEvent(event)
             }
             trackTwoFingerTap(event)
+            trackRotation(event)
 
             // The second tap of a double tap zooms in onDoubleTapEvent(), it doesn't pan or click
             if (isDoubleTapTouch) {
@@ -923,7 +942,7 @@ class OpenMapView
         private fun controlsHeight(): Int = (height - mapPaddingTop - mapPaddingBottom).coerceAtLeast(0)
 
         // Handles a tap on the my-location button or dot; returns whether it hit one of them
-        // Whether a screen point is on the map's own buttons: zoom, my location or attribution
+        // Whether a screen point is on the map's own buttons: zoom, compass, my location or attribution
         private fun isOnControl(
             x: Float,
             y: Float,
@@ -931,6 +950,7 @@ class OpenMapView
             val controlX = x - mapPaddingLeft
             val controlY = y - mapPaddingTop
             return (uiSettings.isZoomControlsEnabled && zoomControlsOverlay.handleTouch(controlX, controlY) != 0) ||
+                compassOverlay.contains(controlX, controlY) ||
                 (isMyLocationLayerEnabled && uiSettings.isMyLocationButtonEnabled && myLocationOverlay.isOnButton(controlX, controlY)) ||
                 attributionOverlay.contains(controlX, controlY, controlsWidth(), controlsHeight())
         }
@@ -940,6 +960,19 @@ class OpenMapView
             x: Float,
             y: Float,
         ) {
+            // The compass turns the map back to north up, like the map's other buttons with
+            // an API animation
+            if (compassOverlay.contains(x - mapPaddingLeft, y - mapPaddingTop)) {
+                controller.animateCamera(
+                    CameraUpdateFactory.newCameraPosition(controller.getCameraPosition().copy(bearing = 0f)),
+                    COMPASS_ANIMATION_MS,
+                    null,
+                    OnCameraMoveStartedListener.REASON_API_ANIMATION,
+                )
+                invalidate()
+                return
+            }
+
             // Check zoom controls first (if enabled)
             if (uiSettings.isZoomControlsEnabled) {
                 val zoomAction = zoomControlsOverlay.handleTouch(x - mapPaddingLeft, y - mapPaddingTop)
@@ -1105,6 +1138,74 @@ class OpenMapView
             }
             invalidate()
         }
+
+        // Turning two fingers turns the map around their midpoint. The turn starts once the
+        // angle between the fingers changed by ROTATE_THRESHOLD_DEGREES, so a pinch whose
+        // fingers turn a little doesn't turn the map.
+        private fun trackRotation(event: MotionEvent) {
+            if (!uiSettings.isRotateGesturesEnabled) {
+                isRotating = false
+                isRotationTracked = false
+                return
+            }
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    isRotating = false
+                    isRotationTracked = false
+                }
+
+                // Another finger joined or left: measure from the new first two fingers
+                MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_POINTER_UP -> {
+                    val remaining = if (event.actionMasked == MotionEvent.ACTION_POINTER_UP) event.pointerCount - 1 else event.pointerCount
+                    isRotationTracked = remaining >= 2
+                    // With one finger left, the gesture goes on as a pan and ends on ACTION_UP
+                    if (!isRotationTracked) isRotating = false
+                    if (event.actionMasked == MotionEvent.ACTION_POINTER_DOWN && event.pointerCount == 2) {
+                        // The second finger: both are in this event
+                        rotationStartAngle = fingerAngle(event)
+                        lastRotationAngle = rotationStartAngle
+                        rotationNeedsBase = false
+                    } else {
+                        // The finger indices change, so measure again from the next move
+                        rotationNeedsBase = true
+                    }
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    if (!isRotationTracked || event.pointerCount < 2) return
+                    val angle = fingerAngle(event)
+                    if (rotationNeedsBase) {
+                        rotationNeedsBase = false
+                        if (!isRotating) rotationStartAngle = angle
+                        lastRotationAngle = angle
+                        return
+                    }
+                    if (!isRotating) {
+                        if (abs(angleDifference(angle, rotationStartAngle)) < ROTATE_THRESHOLD_DEGREES) return
+                        isRotating = true
+                        lastRotationAngle = angle
+                        return
+                    }
+                    val degrees = angleDifference(angle, lastRotationAngle)
+                    lastRotationAngle = angle
+                    if (degrees != 0f) {
+                        controller.rotateBy(degrees, (event.getX(0) + event.getX(1)) / 2, (event.getY(0) + event.getY(1)) / 2)
+                        controller.reportGestureMove()
+                        invalidate()
+                    }
+                }
+            }
+        }
+
+        // The direction from the first to the second finger, clockwise in degrees on the screen
+        private fun fingerAngle(event: MotionEvent): Float =
+            Math.toDegrees(atan2((event.getY(1) - event.getY(0)).toDouble(), (event.getX(1) - event.getX(0)).toDouble())).toFloat()
+
+        // The turn from one angle to another, between -180 and 180 degrees
+        private fun angleDifference(
+            to: Float,
+            from: Float,
+        ): Float = ((to - from) % 360f + 540f) % 360f - 180f
 
         // Two fingers touching and one lifted soon, without moving, zoom out by one level
         // around their midpoint

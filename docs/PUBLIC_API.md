@@ -37,7 +37,7 @@ This document lists all public non-deprecated methods of the `MapView` and `Goog
 | `getCameraPosition()`                                  | `CameraPosition` | With target, zoom and bearing |
 
 
-**Camera bearing:** `CameraPosition` has a `bearing`, the direction at the top of the screen in degrees clockwise from north, normalized to 0 to 360. Build one with `CameraPosition.builder().target(latLng).zoom(15f).bearing(90f).build()` (also `builder(position)` and `fromLatLngZoom`) and apply it with `newCameraPosition()`. The map turns around the camera target; info windows and the map's own buttons stay upright. Other camera updates keep the bearing, `newLatLngBounds()` faces north again, and animations turn the shorter way. `setBearing(float)` sets it without a camera move, like `setZoom()`. Raster tiles turn with their labels, so street names may be sideways or upside down. Tilt is not supported.
+**Camera bearing:** `CameraPosition` has a `bearing`, the direction at the top of the screen in degrees clockwise from north, normalized to 0 to 360. Build one with `CameraPosition.builder().target(latLng).zoom(15f).bearing(90f).build()` (also `builder(position)` and `fromLatLngZoom`) and apply it with `newCameraPosition()`. The map turns around the camera target; info windows and the map's own buttons stay upright. Other camera updates keep the bearing, `newLatLngBounds()` faces north again, and animations turn the shorter way. `setBearing(float)` sets it without a camera move, like `setZoom()`. Users turn the map with two fingers and turn it back north with the compass, see `UiSettings`. Raster tiles turn with their labels, so street names may be sideways or upside down. Tilt is not supported.
 
 ---
 
@@ -299,12 +299,12 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 | `isZoomControlsEnabled()`                             | `boolean`   |                                                                                          |
 | `setScrollGesturesEnabledDuringRotateOrZoom(boolean)` | `void`      |                                                                                          |
 | `isScrollGesturesEnabledDuringRotateOrZoom()`         | `boolean`   |                                                                                          |
-| `setRotateGesturesEnabled(boolean)`                   | `void`      | Not implemented                                                                           |
-| `isRotateGesturesEnabled()`                           | `boolean`   | Always returns false                                                                     |
+| `setRotateGesturesEnabled(boolean)`                   | `void`      | Default true: turning two fingers turns the map around them, once they turned by 10 degrees, also together with a pinch |
+| `isRotateGesturesEnabled()`                           | `boolean`   |                                                                                          |
 | `setTiltGesturesEnabled(boolean)`                     | `void`      | Not implemented                                                                           |
 | `isTiltGesturesEnabled()`                             | `boolean`   | Always returns false                                                                     |
-| `setCompassEnabled(boolean)`                          | `void`      | Not implemented                                                                           |
-| `isCompassEnabled()`                                  | `boolean`   | Always returns false                                                                     |
+| `setCompassEnabled(boolean)`                          | `void`      | Default true: shown in the top-left corner of the map padding while the bearing is not 0; a tap turns the map back to north up with `REASON_API_ANIMATION` |
+| `isCompassEnabled()`                                  | `boolean`   |                                                                                          |
 | `setMyLocationButtonEnabled(boolean)`                 | `void`      | Shown while the my-location layer is enabled; default true |
 | `isMyLocationButtonEnabled()`                         | `boolean`   |  |
 | `setIndoorLevelPickerEnabled(boolean)`                | `void`      | Not implemented                                                                           |
@@ -483,8 +483,8 @@ Features use the [simplestyle](https://github.com/mapbox/simplestyle-spec) prope
 
 **Implementation Summary:**
 
-- 84 methods fully implemented (81.6%)
-- 19 methods not planned (18.4%) - mostly features requiring proprietary data (traffic, indoor maps, POI) or unsupported map capabilities (rotate gestures and the compass so far, tilt)
+- 88 methods fully implemented (85.4%)
+- 15 methods not planned (14.6%) - mostly features requiring proprietary data (traffic, indoor maps, POI) or unsupported map capabilities (tilt)
 
 **OpenMapView-Specific Features:**
 
@@ -542,7 +542,7 @@ The optional `openmapview-compose` artifact follows the API of the [maps-compose
 | `MapEffect(vararg keys) { map -> }` | Same | The block gets the `OpenMapView`, e.g. for `snapshot()` |
 | `GoogleMap(locationSource, onMyLocationButtonClick, onMyLocationClick)`, `MapProperties(isMyLocationEnabled)`, `MapUiSettings(myLocationButtonEnabled)` | Same | |
 | `MapProperties(mapType, minZoomPreference, maxZoomPreference, latLngBoundsForCameraTarget)` | Same | `mapType` is one of the `MapType` constants. Plus `tileColorFilter`, a Compose `ColorFilter` for the tiles only |
-| `MapUiSettings(zoomControlsEnabled, zoomGesturesEnabled, scrollGesturesEnabled)` | Same, plus `infoWindowAutoDismiss` | |
+| `MapUiSettings(zoomControlsEnabled, zoomGesturesEnabled, scrollGesturesEnabled, rotationGesturesEnabled, compassEnabled)` | Same, plus `infoWindowAutoDismiss` | |
 | `GoogleMap(contentPadding)` | `OpenMap(contentPadding)` | Calls `setMapPadding()` with the padding in pixels |
 | `GoogleMap(mapColorScheme)`, `ComposeMapColorScheme` | `OpenMap(mapColorScheme)`, same enum | Default `FOLLOW_SYSTEM` as in maps-compose; null keeps the scheme set on the map |
 | `rememberCameraPositionState`, `CameraPositionState.animate`, `CameraPositionState.move` | Same | `move` before the map is laid out is applied once it is, so `newLatLngBounds` can fit the map |

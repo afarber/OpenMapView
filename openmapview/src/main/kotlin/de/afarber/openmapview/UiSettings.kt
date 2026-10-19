@@ -65,10 +65,10 @@ class UiSettings {
     var isScrollGesturesEnabledDuringRotateOrZoom: Boolean = true
 
     /**
-     * Whether rotate gestures are enabled.
-     * Currently not implemented, always returns false.
+     * Whether rotate gestures are enabled: turning two fingers turns the map, changing the
+     * camera bearing. Default is true.
      */
-    val isRotateGesturesEnabled: Boolean = false
+    var isRotateGesturesEnabled: Boolean = true
 
     /**
      * Whether tilt gestures are enabled.
@@ -77,11 +77,15 @@ class UiSettings {
     val isTiltGesturesEnabled: Boolean = false
 
     /**
-     * Whether the compass is enabled.
-     * Compass requires rotation support which is not implemented.
-     * Always returns false.
+     * Whether the compass is shown while the map is turned, i.e. the camera bearing is not 0.
+     * It points north, and tapping it turns the map back to north up. Default is true.
      */
-    val isCompassEnabled: Boolean = false
+    var isCompassEnabled: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            onDrawnSettingChanged?.invoke()
+        }
 
     /**
      * Whether the my-location button is shown while the my-location layer is enabled,
@@ -143,7 +147,7 @@ class UiSettings {
     /**
      * Enables or disables all gestures.
      *
-     * This affects zoom gestures, scroll gestures, and scroll-during-zoom,
+     * This affects zoom, scroll and rotate gestures, and scroll-during-zoom,
      * but does not affect UI control visibility (zoom controls, etc.).
      *
      * @param enabled true to enable all gestures, false to disable all
@@ -152,5 +156,6 @@ class UiSettings {
         isZoomGesturesEnabled = enabled
         isScrollGesturesEnabled = enabled
         isScrollGesturesEnabledDuringRotateOrZoom = enabled
+        isRotateGesturesEnabled = enabled
     }
 }
