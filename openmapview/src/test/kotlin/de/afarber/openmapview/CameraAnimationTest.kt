@@ -17,6 +17,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadows.ShadowChoreographer
 
 @RunWith(RobolectricTestRunner::class)
 class CameraAnimationTest {
@@ -43,6 +44,9 @@ class CameraAnimationTest {
         controller.onCameraMoveStartedListener = OnCameraMoveStartedListener { events.add("started") }
         controller.onCameraMoveListener = OnCameraMoveListener { events.add("move") }
         controller.onCameraIdleListener = OnCameraIdleListener { events.add("idle") }
+        // Display frames come only as the clock advances, as on a device, instead of
+        // Robolectric running the frames of an animation all at once
+        ShadowChoreographer.setPaused(true)
     }
 
     @After

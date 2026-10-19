@@ -7,6 +7,7 @@
 
 package de.afarber.openmapview
 
+import android.animation.TimeInterpolator
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
@@ -26,6 +27,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
+import android.view.Choreographer
+import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -42,9 +45,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.IOException
+import kotlin.coroutines.resume
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -97,6 +102,9 @@ class MapController(
 
         // Per tile overlay, so a slow overlay server only delays its own tiles
         private const val MAX_CONCURRENT_OVERLAY_DOWNLOADS = 2
+
+        // The easing of camera animations: slow at the start and the end
+        private val defaultCameraInterpolator = AccelerateDecelerateInterpolator()
 
         // How many converted stroke patterns strokeEffect() keeps
         private const val MAX_PATTERN_EFFECTS = 64
@@ -1288,7 +1296,8 @@ class MapController(
      * Animates the camera to a new position.
      *
      * Stops any ongoing animation and commits any pending pan offsets before starting.
-     * The animation runs on the main thread and triggers redraws at ~60fps.
+     * The animation runs on the main thread, one step per display frame, and eases in and
+     * out like an [AccelerateDecelerateInterpolator].
      * If the camera already is at the target, the listener's onFinish() is called right
      * away and no camera listeners are called.
      *
@@ -1305,6 +1314,22 @@ class MapController(
         listener: CancelableCallback? = null,
     ) = animateCamera(cameraUpdate, durationMs, listener, OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION)
 
+    /**
+     * Animates the camera to a new position with the given timing, e.g. a
+     * [android.view.animation.LinearInterpolator] for constant speed.
+     *
+     * @param cameraUpdate The camera update to animate to
+     * @param durationMs Duration of the animation in milliseconds
+     * @param interpolator Maps the elapsed share of the duration to the share of the way
+     * @param listener Optional listener for animation completion callbacks
+     */
+    fun animateCamera(
+        cameraUpdate: CameraUpdate,
+        durationMs: Int,
+        interpolator: TimeInterpolator,
+        listener: CancelableCallback? = null,
+    ) = animateCamera(cameraUpdate, durationMs, listener, OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION, interpolator)
+
     // Animates the camera, reporting the given reason, e.g. REASON_API_ANIMATION for the
     // map's own buttons
     internal fun animateCamera(
@@ -1312,6 +1337,7 @@ class MapController(
         durationMs: Int,
         listener: CancelableCallback?,
         reason: Int,
+        interpolator: TimeInterpolator = defaultCameraInterpolator,
     ) {
         if (deferBoundsUpdate(cameraUpdate, listener)) return
         stopAnimation()
@@ -1340,14 +1366,15 @@ class MapController(
         animationJob =
             scope.launch {
                 try {
-                    val startTime = System.currentTimeMillis()
-                    val endTime = startTime + durationMs
-
-                    while (System.currentTimeMillis() < endTime) {
-                        val currentTime = System.currentTimeMillis()
-                        val progress = ((currentTime - startTime).toFloat() / durationMs).coerceIn(0f, 1f)
-
-                        val camera = interpolateCamera(startPosition, targetPosition, progress)
+                    // One step per display frame, timed by the frames, so the animation
+                    // keeps in step with the screen and other animations, and a jump of the
+                    // wall clock doesn't move it
+                    val durationNanos = durationMs.coerceAtLeast(1) * 1_000_000L
+                    val startFrame = awaitFrameNanos()
+                    var fraction = 0f
+                    while (fraction < 1f) {
+                        fraction = ((awaitFrameNanos() - startFrame).toFloat() / durationNanos).coerceIn(0f, 1f)
+                        val camera = interpolateCamera(startPosition, targetPosition, interpolator.getInterpolation(fraction))
                         setZoom(camera.zoom)
                         setBearing(camera.bearing)
                         setCenter(camera.target)
@@ -1355,8 +1382,6 @@ class MapController(
                         // Fire camera move event during animation
                         onCameraMoveListener?.onCameraMove()
                         onTileLoadedCallback?.invoke()
-
-                        kotlinx.coroutines.delay(16)
                     }
 
                     setZoom(targetPosition.zoom)
@@ -1381,6 +1406,16 @@ class MapController(
                 }
             }
     }
+
+    // Suspends until the next display frame and returns its time in nanoseconds
+    private suspend fun awaitFrameNanos(): Long =
+        suspendCancellableCoroutine { continuation ->
+            val callback = Choreographer.FrameCallback { frameTimeNanos -> continuation.resume(frameTimeNanos) }
+            val choreographer = Choreographer.getInstance()
+            choreographer.postFrameCallback(callback)
+            // Cancelled on the main thread by stopAnimation(), like the coroutine runs
+            continuation.invokeOnCancellation { choreographer.removeFrameCallback(callback) }
+        }
 
     /**
      * Keeps a [CameraUpdate.NewLatLngBounds] made before the view has a size, because the
