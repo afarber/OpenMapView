@@ -24,9 +24,10 @@ import java.util.concurrent.atomic.AtomicLong
  *               the marker is centered horizontally and anchored at the bottom
  * @param infoWindowAnchor The point of the icon the info window points at, as fractions of its
  *               width and height. Default (0.5f, 0.0f) is the top center
- * @param rotation Clockwise rotation of the icon around the anchor, in degrees. Default is 0
- * @param isFlat Whether the icon lies flat on the map instead of facing the screen. It has no
- *               effect yet, as the map doesn't rotate or tilt. Default is false
+ * @param rotation Clockwise rotation of the icon around the anchor, in degrees: relative to
+ *               the screen, or to north for a flat icon. Default is 0
+ * @param isFlat Whether the icon lies flat on the map and turns with it when the camera has a
+ *               bearing, instead of facing the screen. Default is false
  * @param visible Whether the marker is visible. Default is true
  * @param alpha Opacity of the marker from 0.0 (transparent) to 1.0 (opaque). Default is 1.0
  * @param draggable Whether the marker can be dragged. Default is false
@@ -77,10 +78,10 @@ class Marker(
     /** The point of the icon the info window points at, as fractions of its width and height */
     var infoWindowAnchor: Pair<Float, Float> by property(infoWindowAnchor)
 
-    /** Clockwise rotation of the icon around the [anchor], in degrees, e.g. a vehicle's heading */
+    /** Clockwise rotation of the icon around the [anchor] in degrees, relative to the screen, or to north if [isFlat] */
     var rotation: Float by property(rotation)
 
-    /** Whether the icon lies flat on the map; no effect yet, as the map doesn't rotate or tilt */
+    /** Whether the icon lies flat on the map and turns with it, instead of facing the screen */
     var isFlat: Boolean by property(isFlat)
 
     /** Whether the marker is visible */

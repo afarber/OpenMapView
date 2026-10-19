@@ -452,6 +452,8 @@ mapView.animateCamera(
 )
 ```
 
+A `CameraPosition` with a `bearing`, e.g. from `CameraPosition.Builder().target(latLng).zoom(16f).bearing(heading).build()`, turns the map as before. Unlike vector maps, the raster tiles turn with their labels. Tilt is not supported.
+
 ---
 
 ## API Compatibility

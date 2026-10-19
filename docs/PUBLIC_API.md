@@ -33,7 +33,10 @@ This document lists all public non-deprecated methods of the `MapView` and `Goog
 | `animateCamera(CameraUpdate, int, CancelableCallback)` | `void`           |       |
 | `moveCamera(CameraUpdate)`                             | `void`           |       |
 | `stopAnimation()`                                      | `void`           |       |
-| `getCameraPosition()`                                  | `CameraPosition` |       |
+| `getCameraPosition()`                                  | `CameraPosition` | With target, zoom and bearing |
+
+
+**Camera bearing:** `CameraPosition` has a `bearing`, the direction at the top of the screen in degrees clockwise from north, normalized to 0 to 360. Build one with `CameraPosition.builder().target(latLng).zoom(15f).bearing(90f).build()` (also `builder(position)` and `fromLatLngZoom`) and apply it with `newCameraPosition()`. The map turns around the camera target; info windows and the map's own buttons stay upright. Other camera updates keep the bearing, `newLatLngBounds()` faces north again, and animations turn the shorter way. `setBearing(float)` sets it without a camera move, like `setZoom()`. Raster tiles turn with their labels, so street names may be sideways or upside down. Tilt is not supported.
 
 ---
 
@@ -58,7 +61,7 @@ The returned `Marker` is a live handle, as in the Maps SDK: setting a property r
 | `setAnchor(float, float)` | `void` | Kotlin: `anchor` as a `Pair` |
 | `setInfoWindowAnchor(float, float)` | `void` | Kotlin: `infoWindowAnchor` as a `Pair`, default (0.5, 0), the top center of the icon. The info window points at it |
 | `setRotation(float)`, `getRotation()` | `void` | Clockwise in degrees around the anchor, e.g. for vehicle icons. The info window anchor turns with the icon, and taps hit the rotated icon |
-| `setFlat(boolean)`, `isFlat()` | `void` | Accepted, but no effect yet, as the map doesn't rotate or tilt |
+| `setFlat(boolean)`, `isFlat()` | `void` | A flat icon lies on the map and turns with it when the camera has a bearing; other icons face the screen. `rotation` is relative to north for a flat icon and to the screen otherwise |
 | `getId()` | `String` | Kotlin: `id`, e.g. "m0", unique and stable for the marker's lifetime |
 | `remove()` | `void` | |
 | `showInfoWindow()` | `void`      | Shows this marker's info window (auto-dismiss if configured via UiSettings) |
@@ -236,7 +239,7 @@ These properties apply to:
 
 | Method              | Return Type  | Notes |
 | ------------------- | ------------ | ----- |
-| `getProjection()`   | `Projection` | The world repeats horizontally: locations are projected to the copy nearest the view center, and the visible region may cross the antimeridian |
+| `getProjection()`   | `Projection` | The world repeats horizontally: locations are projected to the copy nearest the view center, and the visible region may cross the antimeridian. With a bearing, the four corners of the visible region are turned and `latLngBounds` contains them all |
 | `getMaxZoomLevel()` | `float`      |       |
 | `getMinZoomLevel()` | `float`      |       |
 
@@ -479,7 +482,7 @@ Features use the [simplestyle](https://github.com/mapbox/simplestyle-spec) prope
 **Implementation Summary:**
 
 - 83 methods fully implemented (81.4%)
-- 19 methods not planned (18.6%) - mostly features requiring proprietary data (traffic, indoor maps, POI) or unsupported map capabilities (rotation, tilt)
+- 19 methods not planned (18.6%) - mostly features requiring proprietary data (traffic, indoor maps, POI) or unsupported map capabilities (rotate gestures and the compass so far, tilt)
 
 **OpenMapView-Specific Features:**
 

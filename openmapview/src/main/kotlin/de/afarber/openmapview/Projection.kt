@@ -8,7 +8,9 @@
 package de.afarber.openmapview
 
 import android.graphics.Point
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 /**
  * A projection is used to translate between on-screen location and geographic coordinates.
@@ -39,7 +41,28 @@ class Projection
         private val paddingRight: Int = 0,
         private val paddingBottom: Int = 0,
         private val tileSize: Double = ProjectionUtils.TILE_SIZE,
+        private val bearing: Float = 0f,
     ) {
+        // The map turns by -bearing around the camera target at the center of the padded area
+        private val pivotX = viewWidth / 2f + (paddingLeft - paddingRight) / 2f
+        private val pivotY = viewHeight / 2f + (paddingTop - paddingBottom) / 2f
+        private val radians = Math.toRadians(bearing.toDouble())
+        private val cos = cos(radians).toFloat()
+        private val sin = sin(radians).toFloat()
+
+        // Turns a point around the pivot by the bearing (to map space) or back (to the screen)
+        private fun turned(
+            x: Float,
+            y: Float,
+            toMapSpace: Boolean,
+        ): Pair<Float, Float> {
+            if (bearing == 0f) return x to y
+            val s = if (toMapSpace) sin else -sin
+            val dx = x - pivotX
+            val dy = y - pivotY
+            return (dx * cos - dy * s + pivotX) to (dx * s + dy * cos + pivotY)
+        }
+
         /**
          * Returns the geographic location that corresponds to a screen location.
          *
@@ -64,11 +87,18 @@ class Projection
             screenX: Float,
             screenY: Float,
         ): LatLng {
+            val (mapX, mapY) = turned(screenX, screenY, toMapSpace = true)
+            return mapSpaceToLatLng(mapX, mapY)
+        }
+
+        // The location at a point of the map laid out with north up
+        private fun mapSpaceToLatLng(
+            mapX: Float,
+            mapY: Float,
+        ): LatLng {
             val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
-
-            val pixelX = (centerPixelX + screenX - viewWidth / 2 + panOffsetX).toDouble()
-            val pixelY = (centerPixelY + screenY - viewHeight / 2 + panOffsetY).toDouble()
-
+            val pixelX = (centerPixelX + mapX - viewWidth / 2 + panOffsetX).toDouble()
+            val pixelY = (centerPixelY + mapY - viewHeight / 2 + panOffsetY).toDouble()
             return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom, tileSize)
         }
 
@@ -87,10 +117,11 @@ class Projection
 
             val x = locationPixelX - centerPixelX + viewWidth / 2 - panOffsetX
             val world = ProjectionUtils.worldSize(zoom, tileSize).toFloat()
-            val screenX = (x - world * ((x - viewWidth / 2f) / world).roundToInt()).toInt()
-            val screenY = (locationPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toInt()
+            val mapX = x - world * ((x - viewWidth / 2f) / world).roundToInt()
+            val mapY = locationPixelY - centerPixelY + viewHeight / 2 - panOffsetY
+            val (screenX, screenY) = turned(mapX, mapY, toMapSpace = false)
 
-            return Point(screenX, screenY)
+            return Point(screenX.toInt(), screenY.toInt())
         }
 
         /**
@@ -121,12 +152,24 @@ class Projection
             val farLeft = fromScreenLocation(left, top)
             val farRight = fromScreenLocation(right, top)
 
-            // From the left to the right edge, which may be on another copy of the world
-            val wholeWorld = right - left >= ProjectionUtils.worldSize(zoom, tileSize)
+            // The bounding box of the corners on the map laid out with north up: for a
+            // turned map the corners are not the box's corners. From the west to the east
+            // edge, which may be on another copy of the world.
+            val corners =
+                listOf(left to bottom, right to bottom, left to top, right to top).map { (x, y) ->
+                    turned(x, y, toMapSpace = true)
+                }
+            val west = corners.minOf { it.first }
+            val east = corners.maxOf { it.first }
+            val north = corners.minOf { it.second }
+            val south = corners.maxOf { it.second }
+            val wholeWorld = east - west >= ProjectionUtils.worldSize(zoom, tileSize)
+            val southwest = mapSpaceToLatLng(west, south)
+            val northeast = mapSpaceToLatLng(east, north)
             val bounds =
                 LatLngBounds(
-                    southwest = LatLng(nearLeft.latitude, if (wholeWorld) -180.0 else nearLeft.longitude),
-                    northeast = LatLng(farRight.latitude, if (wholeWorld) 180.0 else farRight.longitude),
+                    southwest = LatLng(southwest.latitude, if (wholeWorld) -180.0 else southwest.longitude),
+                    northeast = LatLng(northeast.latitude, if (wholeWorld) 180.0 else northeast.longitude),
                 )
 
             return VisibleRegion(

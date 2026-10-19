@@ -16,7 +16,8 @@ import kotlin.math.pow
  * moves smoothly: when zooming in, the end target slides toward the view center at constant
  * screen speed, instead of first leaving the screen at the higher zoom levels and jumping
  * back at the end. When zooming out, the start target slides away from the center the
- * same way. Without a zoom change, the target moves at constant speed.
+ * same way. Without a zoom change, the target moves at constant speed. The bearing turns
+ * the shorter way, e.g. from 350 through 0 to 10 degrees.
  */
 internal fun interpolateCamera(
     start: CameraPosition,
@@ -34,5 +35,7 @@ internal fun interpolateCamera(
     val (startX, startY) = ProjectionUtils.latLngToPixelExact(start.target, 0f)
     val (endX, endY) = ProjectionUtils.latLngToPixelExact(end.target, 0f)
     val target = ProjectionUtils.pixelToLatLng(startX + (endX - startX) * share, startY + (endY - startY) * share, 0f)
-    return CameraPosition(target, zoom)
+    // The difference between -180 and 180 degrees, so the map turns the shorter way
+    val turn = ((end.bearing - start.bearing) % 360f + 540f) % 360f - 180f
+    return CameraPosition(target, zoom, start.bearing + turn * progress)
 }

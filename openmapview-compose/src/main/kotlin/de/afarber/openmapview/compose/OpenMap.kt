@@ -126,6 +126,7 @@ fun OpenMap(
                 applied.apply(this, locationSource, properties, uiSettings, padding, mapColorScheme, initial = true)
                 // The initial position is no camera move, so it is set without reporting one
                 setZoom(cameraPositionState.position.zoom)
+                setBearing(cameraPositionState.position.bearing)
                 setCenter(cameraPositionState.position.target)
                 // Before onMapCreated, which may still replace them
                 setOnMapClickListener { currentOnMapClick(it) }
