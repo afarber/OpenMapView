@@ -312,4 +312,15 @@ public class JavaInteropTest {
         marker.setInfoWindowAnchor(0.5f, 0f);
         assertEquals(180f, marker.getRotation(), 0f);
     }
+
+    @Test
+    public void sphericalUtilIsStatic() {
+        double heading = SphericalUtil.computeHeading(BOCHUM, UNIVERSITY);
+        LatLng ahead = SphericalUtil.computeOffset(BOCHUM, 1000, heading);
+
+        assertEquals(1000, SphericalUtil.computeDistanceBetween(BOCHUM, ahead), 0.01);
+        assertNotNull(SphericalUtil.interpolate(BOCHUM, UNIVERSITY, 0.5));
+        assertTrue(SphericalUtil.computeLength(Arrays.asList(BOCHUM, UNIVERSITY)) > 0);
+        assertEquals(6371009.0, SphericalUtil.EARTH_RADIUS, 0);
+    }
 }

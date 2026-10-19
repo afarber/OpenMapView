@@ -123,6 +123,8 @@ import de.afarber.openmapview.MarkerOptions
 // Note: No separate GoogleMap import needed
 ```
 
+`SphericalUtil` from android-maps-utils (heading, distance, offset, interpolation, length and area) is built in with the same methods: replace its import with `de.afarber.openmapview.SphericalUtil`.
+
 ### Step 3: Update XML Layouts
 
 **Before (Maps SDK):**
