@@ -28,9 +28,10 @@ This document lists all public non-deprecated methods of the `MapView` and `Goog
 
 | Method                                                 | Return Type      | Notes |
 | ------------------------------------------------------ | ---------------- | ----- |
-| `animateCamera(CameraUpdate)`                          | `void`           |       |
+| `animateCamera(CameraUpdate)`                          | `void`           | Steps once per display frame and eases in and out |
 | `animateCamera(CameraUpdate, CancelableCallback)`      | `void`           |       |
 | `animateCamera(CameraUpdate, int, CancelableCallback)` | `void`           |       |
+| `animateCamera(CameraUpdate, int, TimeInterpolator, CancelableCallback)` | `void` | OpenMapView-specific: a custom timing, e.g. `LinearInterpolator` for constant speed; the default is `AccelerateDecelerateInterpolator` |
 | `moveCamera(CameraUpdate)`                             | `void`           |       |
 | `stopAnimation()`                                      | `void`           |       |
 | `getCameraPosition()`                                  | `CameraPosition` |       |

@@ -7,6 +7,7 @@
 
 package de.afarber.openmapview
 
+import android.animation.TimeInterpolator
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
@@ -1168,6 +1169,28 @@ class OpenMapView
             callback: CancelableCallback?,
         ) {
             controller.animateCamera(cameraUpdate, durationMs, callback)
+        }
+
+        /**
+         * Animates the camera to a new position with a custom timing.
+         *
+         * Animations follow the display frames. By default they ease in and out like an
+         * [android.view.animation.AccelerateDecelerateInterpolator]; pass e.g. a
+         * [android.view.animation.LinearInterpolator] for constant speed. This overload is
+         * an OpenMapView addition.
+         *
+         * @param cameraUpdate The camera update to animate to
+         * @param durationMs Duration of the animation in milliseconds
+         * @param interpolator Maps the elapsed share of the duration to the share of the way
+         * @param callback Optional callback for animation completion events
+         */
+        fun animateCamera(
+            cameraUpdate: CameraUpdate,
+            durationMs: Int,
+            interpolator: TimeInterpolator,
+            callback: CancelableCallback?,
+        ) {
+            controller.animateCamera(cameraUpdate, durationMs, interpolator, callback)
         }
 
         /**

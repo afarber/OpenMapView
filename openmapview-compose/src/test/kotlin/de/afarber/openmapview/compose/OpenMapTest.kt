@@ -33,6 +33,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadows.ShadowChoreographer
 import kotlin.coroutines.cancellation.CancellationException
 
 @RunWith(RobolectricTestRunner::class)
@@ -141,9 +142,17 @@ class OpenMapTest {
                     }
             }
         }
-        composeRule.waitForIdle()
-        composeRule.runOnIdle { map.stopAnimation() }
-        shadowOf(Looper.getMainLooper()).idle()
+        // Display frames come only as the clock advances, as on a device, so idling doesn't
+        // run the frames of the whole animation. Compose waits for its own frames, so the
+        // main looper is run directly until the choreographer is unpaused again.
+        ShadowChoreographer.setPaused(true)
+        try {
+            shadowOf(Looper.getMainLooper()).idle()
+            map.stopAnimation()
+            shadowOf(Looper.getMainLooper()).idle()
+        } finally {
+            ShadowChoreographer.setPaused(false)
+        }
 
         assertEquals("cancelled", result)
     }
@@ -233,13 +242,19 @@ class OpenMapTest {
                 }
             }
         }
-        composeRule.waitForIdle()
-        assertTrue(state.isMoving)
-        assertEquals(CameraMoveStartedReason.DEVELOPER_ANIMATION, state.cameraMoveStartedReason)
+        // As in testInterruptedAnimation_ThrowsCancellationException
+        ShadowChoreographer.setPaused(true)
+        try {
+            shadowOf(Looper.getMainLooper()).idle()
+            assertTrue(state.isMoving)
+            assertEquals(CameraMoveStartedReason.DEVELOPER_ANIMATION, state.cameraMoveStartedReason)
 
-        // A stopped animation reports no idle event, but the camera doesn't move anymore
-        composeRule.runOnIdle { map.stopAnimation() }
-        composeRule.waitForIdle()
+            // A stopped animation reports no idle event, but the camera doesn't move anymore
+            map.stopAnimation()
+            shadowOf(Looper.getMainLooper()).idle()
+        } finally {
+            ShadowChoreographer.setPaused(false)
+        }
         assertFalse(state.isMoving)
         assertEquals(CameraMoveStartedReason.DEVELOPER_ANIMATION, state.cameraMoveStartedReason)
     }
