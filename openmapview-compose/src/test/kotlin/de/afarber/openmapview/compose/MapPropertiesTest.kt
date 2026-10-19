@@ -201,6 +201,20 @@ class MapPropertiesTest {
     }
 
     @Test
+    fun testUiSettings_RotationAndCompass() {
+        var uiSettings by mutableStateOf(MapUiSettings())
+        showMap(uiSettings = { uiSettings })
+        assertTrue(map.getUiSettings().isRotateGesturesEnabled)
+        assertTrue(map.getUiSettings().isCompassEnabled)
+
+        uiSettings = MapUiSettings(rotationGesturesEnabled = false, compassEnabled = false)
+        composeRule.waitForIdle()
+
+        assertFalse(map.getUiSettings().isRotateGesturesEnabled)
+        assertFalse(map.getUiSettings().isCompassEnabled)
+    }
+
+    @Test
     fun testTap_CallsOnMapClick() {
         var clicked: LatLng? = null
         showMap(onMapClick = { clicked = it })

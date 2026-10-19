@@ -29,8 +29,11 @@ class UiSettingsTest {
     }
 
     @Test
-    fun testRotateGesturesNotImplemented() {
+    fun testRotateGestures_DefaultToTrueAndCanBeChanged() {
         val uiSettings = UiSettings()
+        assertTrue(uiSettings.isRotateGesturesEnabled)
+
+        uiSettings.isRotateGesturesEnabled = false
         assertFalse(uiSettings.isRotateGesturesEnabled)
     }
 
@@ -82,6 +85,7 @@ class UiSettingsTest {
 
         assertFalse(uiSettings.isZoomGesturesEnabled)
         assertFalse(uiSettings.isScrollGesturesEnabled)
+        assertFalse(uiSettings.isRotateGesturesEnabled)
     }
 
     @Test
@@ -151,9 +155,15 @@ class UiSettingsTest {
     }
 
     @Test
-    fun testIsCompassEnabled_ReturnsFalse() {
+    fun testIsCompassEnabled_DefaultsToTrueAndRedraws() {
         val uiSettings = UiSettings()
+        var redraws = 0
+        uiSettings.onDrawnSettingChanged = { redraws++ }
+        assertTrue(uiSettings.isCompassEnabled)
+
+        uiSettings.isCompassEnabled = false
         assertFalse(uiSettings.isCompassEnabled)
+        assertEquals(1, redraws)
     }
 
     @Test

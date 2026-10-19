@@ -559,6 +559,33 @@ class MapController(
     /** Returns the bearing in degrees clockwise from north, 0 to 360. */
     fun getBearing(): Float = bearing
 
+    /**
+     * Turns the map by [degrees] around a screen point, e.g. the fingers of a rotate gesture,
+     * so the location at that point stays there. Positive degrees turn the map clockwise on
+     * the screen, which lowers the bearing.
+     *
+     * @param degrees The turn of the map content on the screen, clockwise in degrees
+     * @param focusX The x coordinate of the point in screen pixels
+     * @param focusY The y coordinate of the point in screen pixels
+     */
+    fun rotateBy(
+        degrees: Float,
+        focusX: Float,
+        focusY: Float,
+    ) {
+        if (degrees == 0f) return
+        // Where the location at the focus is in map space, which doesn't change with the bearing
+        val (before, beforeY) = screenToMapSpace(focusX, focusY)
+        val target = takePanOffset()
+        bearing = CameraPosition.normalizeBearing(bearing - degrees)
+        center = viewCenterOf(target, zoom)
+        // The focus now shows another point of the map space: move the map so it shows the
+        // location again
+        val (after, afterY) = screenToMapSpace(focusX, focusY)
+        panOffsetX += before - after
+        panOffsetY += beforeY - afterY
+    }
+
     // The screen point the map turns around: the camera target, at the center of the area
     // inside the map padding
     private fun pivotX(): Float = viewWidth / 2f + (paddingLeft - paddingRight) / 2f
