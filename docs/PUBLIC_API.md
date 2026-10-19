@@ -513,6 +513,18 @@ The `de.afarber.openmapview.clustering` package follows the clustering of [andro
 | `NonHierarchicalDistanceBasedAlgorithm` | Default algorithm | 100 dp, items join the closest cluster |
 | `DefaultClusterRenderer` | Colored circles with bucketed counts (10+, 20+, 50+, ...) | `minClusterSize` (default 4); custom icons via `clusterIconProvider` and `clusterItemIconProvider` |
 
+`SphericalUtil` follows `SphericalUtil` of android-maps-utils: the same static methods, parameters and units, so only the import changes. Distances are in meters, headings in degrees clockwise from north between -180 and 180, on a sphere with `EARTH_RADIUS` 6371009 m.
+
+| android-maps-utils | OpenMapView | Notes |
+|---|---|---|
+| `computeHeading(LatLng, LatLng)` | Same | South is -180 |
+| `computeOffset(LatLng, double, double)` | Same | |
+| `computeOffsetOrigin(LatLng, double, double)` | Same | null without a solution |
+| `interpolate(LatLng, LatLng, double)` | Same | Along the great circle; crosses the 180th meridian the short way, also for very close points |
+| `computeDistanceBetween(LatLng, LatLng)` | Same | |
+| `computeLength(List<LatLng>)` | Same | |
+| `computeArea(List<LatLng>)`, `computeSignedArea(List<LatLng>)` | Same | Signed area positive counter-clockwise |
+
 ---
 
 ## Jetpack Compose
