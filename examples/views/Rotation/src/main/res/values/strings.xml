@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="heading_up">Heading up</string>
+    <string name="north_up">North up</string>
+    <string name="flat">Flat bus icon</string>
+    <string name="bearing_label">Bearing</string>
+    <string name="bearing">Bearing of the map</string>
+    <string name="status_heading_up">Heading up: the map turns with the bus, heading %1$d°</string>
+    <string name="status_north_up">North up: the map follows the bus</string>
+    <string name="status_free">Bearing %1$d°: turn with two fingers, the slider or the compass</string>
+</resources>
