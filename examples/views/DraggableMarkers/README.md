@@ -7,7 +7,7 @@ The map is declared in an XML layout and driven from a Java `AppCompatActivity`.
 
 ## Features
 
-- Draggable markers with `MarkerOptions.draggable(true)`: a drag starts when a finger moves on the marker
+- Draggable markers with `MarkerOptions.draggable(true)`: a drag starts when a finger moves on the marker or long presses it
 - `setOnMarkerDragListener` reports drag start, drag and end, shown in the status card
 - The route is a live `Polyline`, updated with `setPoints()` on every drag event
 - Add stop inserts a marker before the destination; Reset removes the markers with `removeMarker()`

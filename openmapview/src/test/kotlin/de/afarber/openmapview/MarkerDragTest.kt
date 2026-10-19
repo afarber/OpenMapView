@@ -8,14 +8,20 @@
 package de.afarber.openmapview
 
 import android.content.Context
+import android.os.Looper
 import android.view.MotionEvent
+import android.view.ViewConfiguration
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
+import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
 class MarkerDragTest {
@@ -23,7 +29,10 @@ class MarkerDragTest {
     private lateinit var marker: Marker
     private val center = LatLng(51.5074, -0.1278)
     private var dragStarts = 0
+    private var dragEnds = 0
     private var cameraMoveStarts = 0
+    private var longClick: LatLng? = null
+    private var clicks = 0
 
     @Before
     fun setUp() {
@@ -41,10 +50,30 @@ class MarkerDragTest {
 
                 override fun onMarkerDrag(marker: Marker) {}
 
-                override fun onMarkerDragEnd(marker: Marker) {}
+                override fun onMarkerDragEnd(marker: Marker) {
+                    dragEnds++
+                }
             },
         )
         mapView.setOnCameraMoveStartedListener { cameraMoveStarts++ }
+        mapView.setOnMapLongClickListener { longClick = it }
+        mapView.setOnMapClickListener { clicks++ }
+    }
+
+    private fun touch(
+        action: Int,
+        time: Long,
+        x: Float,
+        y: Float,
+    ) {
+        val event = MotionEvent.obtain(0, time, action, x, y, 0)
+        mapView.onTouchEvent(event)
+        event.recycle()
+    }
+
+    // Lets the gesture detector report a long press after its timeout
+    private fun waitPastLongPressTimeout() {
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(1))
     }
 
     // Sends DOWN at (x, startY), MOVE events of stepY pixels each, then UP
@@ -110,5 +139,70 @@ class MarkerDragTest {
         assertEquals(0, dragStarts)
         assertEquals(1, cameraMoveStarts)
         assertEquals(center, marker.position)
+    }
+
+    @Test
+    fun testSlowDrag_OnDraggableMarker_IsNoMapLongClick() {
+        val slop = ViewConfiguration.get(mapView.context).scaledTouchSlop
+        touch(MotionEvent.ACTION_DOWN, 0L, 200f, 190f)
+        // Just past the slop, but not past it once truncated to int
+        touch(MotionEvent.ACTION_MOVE, 100L, 200f, 190f + slop + 0.5f)
+        assertEquals(1, dragStarts)
+
+        // The finger rests longer than the long press timeout while dragging
+        waitPastLongPressTimeout()
+        touch(MotionEvent.ACTION_MOVE, 1100L, 200f, 250f)
+        touch(MotionEvent.ACTION_UP, 1200L, 200f, 250f)
+
+        assertNull(longClick)
+        assertEquals(1, dragStarts)
+        assertEquals(1, dragEnds)
+        assertNotEquals(center, marker.position)
+    }
+
+    @Test
+    fun testLongPress_OnDraggableMarker_StartsDrag() {
+        val start = mapView.getProjection().toScreenLocation(marker.position)
+        val x = start.x.toFloat()
+        val y = start.y - 10f
+
+        touch(MotionEvent.ACTION_DOWN, 0L, x, y)
+        waitPastLongPressTimeout()
+        assertEquals(1, dragStarts)
+
+        touch(MotionEvent.ACTION_MOVE, 1000L, x, y + 50f)
+        touch(MotionEvent.ACTION_UP, 1100L, x, y + 50f)
+        waitPastLongPressTimeout()
+
+        val end = mapView.getProjection().toScreenLocation(marker.position)
+        assertEquals(start.y + 50, end.y)
+        assertEquals(1, dragStarts)
+        assertEquals(1, dragEnds)
+        assertNull(longClick)
+        assertEquals(0, clicks)
+        assertEquals(0, cameraMoveStarts)
+    }
+
+    @Test
+    fun testLongPress_OnNonDraggableMarker_IsNoMapLongClick() {
+        marker.draggable = false
+
+        touch(MotionEvent.ACTION_DOWN, 0L, 200f, 190f)
+        waitPastLongPressTimeout()
+        touch(MotionEvent.ACTION_UP, 1000L, 200f, 190f)
+
+        assertNull(longClick)
+        assertEquals(0, dragStarts)
+        assertEquals(center, marker.position)
+    }
+
+    @Test
+    fun testLongPress_OnEmptyMap_IsMapLongClick() {
+        touch(MotionEvent.ACTION_DOWN, 0L, 50f, 50f)
+        waitPastLongPressTimeout()
+        touch(MotionEvent.ACTION_UP, 1000L, 50f, 50f)
+
+        assertNotNull(longClick)
+        assertEquals(0, dragStarts)
     }
 }

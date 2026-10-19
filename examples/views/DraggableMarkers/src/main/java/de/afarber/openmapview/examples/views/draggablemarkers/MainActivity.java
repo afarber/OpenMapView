@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button_add).setOnClickListener(v -> addStop());
         findViewById(R.id.button_reset).setOnClickListener(v -> reset());
 
-        // Dragging starts when a finger moves on a draggable marker
+        // Dragging starts when a finger moves on a draggable marker or long presses it
         mapView.setOnMarkerDragListener(new OnMarkerDragListener() {
             @Override
             public void onMarkerDragStart(Marker marker) {
