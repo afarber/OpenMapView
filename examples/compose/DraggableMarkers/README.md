@@ -7,7 +7,7 @@ The map is the `OpenMap` composable from `de.afarber:openmapview-compose`.
 
 ## Features
 
-- `Marker(draggable = true)`: a drag starts when a finger moves on the marker
+- `Marker(draggable = true)`: a drag starts when a finger moves on the marker or long presses it
 - `MarkerState.position` follows the drag, and `MarkerState.isDragging` tells when a drag starts and ends
 - The `Polyline` reads the marker positions, so the route follows the dragged marker
 - Add stop and Reset change a `mutableStateListOf` of stops

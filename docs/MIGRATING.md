@@ -262,6 +262,8 @@ val marker = mapView.addMarker(
 )
 ```
 
+A draggable marker starts dragging after a long press, as in the Maps SDK, and also as soon as the finger moves past the touch slop. Moving right away feels more direct and works inside scroll containers. A long press on any marker is never reported to `OnMapLongClickListener`.
+
 ### Step 7: Migrate Color and Stroke Styling
 
 OpenMapView uses Jetpack Compose graphics primitives instead of Android graphics APIs. This provides better color space support and is the modern Android standard.

@@ -189,6 +189,8 @@ class OpenMapView
                 context,
                 object : GestureDetector.SimpleOnGestureListener() {
                     override fun onLongPress(e: MotionEvent) {
+                        // A marker drag in progress is no long press
+                        if (isDragging) return
                         isLongPressed = true
                         // A long press on an info window is not a long press on the map
                         val touchedInfoWindow = controller.handleInfoWindowTouch(e.x, e.y)
@@ -196,6 +198,14 @@ class OpenMapView
                             controller.onInfoWindowLongClickListener?.onInfoWindowLongClick(touchedInfoWindow)
                             return
                         }
+                        // A long press on a draggable marker starts dragging it, like moving past the slop
+                        draggedMarker?.let {
+                            startMarkerDrag(it)
+                            invalidate()
+                            return
+                        }
+                        // Neither is a long press on any other marker
+                        if (controller.handleMarkerTouch(e.x, e.y) != null) return
                         val latLng = controller.screenToLatLng(e.x, e.y)
                         onMapLongClickListener?.onMapLongClick(latLng)
                     }
@@ -323,6 +333,27 @@ class OpenMapView
         }
 
         private fun isOnDraggableMarker(event: MotionEvent): Boolean = controller.handleMarkerTouch(event.x, event.y)?.draggable == true
+
+        // Starts dragging the marker grabbed at the down point
+        private fun startMarkerDrag(marker: Marker) {
+            isDragging = true
+            controller.commitPan()
+            // The marker keeps its place under the finger instead of
+            // jumping with its anchor point to the finger
+            val anchor = controller.createProjection().toScreenLocation(marker.position)
+            grabOffsetX = initialTouchX - anchor.x
+            grabOffsetY = initialTouchY - anchor.y
+            onMarkerDragListener?.onMarkerDragStart(marker)
+        }
+
+        // The GestureDetector gets no events during a drag. It truncates distances to int, so a
+        // drag starting just past the slop would otherwise leave its long press pending.
+        private fun cancelGestureDetector(event: MotionEvent) {
+            val cancel = MotionEvent.obtain(event)
+            cancel.action = MotionEvent.ACTION_CANCEL
+            gestureDetector.onTouchEvent(cancel)
+            cancel.recycle()
+        }
 
         // Called on a night mode switch when the activity handles uiMode changes itself;
         // otherwise the activity is recreated and the new map reads the configuration
@@ -454,14 +485,8 @@ class OpenMapView
                                 if (fromDownX * fromDownX + fromDownY * fromDownY <= touchSlop * touchSlop) {
                                     return true
                                 }
-                                isDragging = true
-                                controller.commitPan()
-                                // The marker keeps its place under the finger instead of
-                                // jumping with its anchor point to the finger
-                                val anchor = controller.createProjection().toScreenLocation(draggedMarker!!.position)
-                                grabOffsetX = initialTouchX - anchor.x
-                                grabOffsetY = initialTouchY - anchor.y
-                                onMarkerDragListener?.onMarkerDragStart(draggedMarker!!)
+                                cancelGestureDetector(event)
+                                startMarkerDrag(draggedMarker!!)
                             }
 
                             // Continue dragging
