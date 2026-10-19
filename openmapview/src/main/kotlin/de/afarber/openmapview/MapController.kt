@@ -15,6 +15,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorFilter
 import android.graphics.LinearGradient
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Rect
@@ -45,7 +46,9 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.IOException
 import kotlin.math.PI
+import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -375,6 +378,13 @@ class MapController(
 
     // Shared by all ground overlays, which only differ in alpha; filtered as they are scaled
     private val groundOverlayPaint = Paint(Paint.FILTER_BITMAP_FLAG)
+
+    // Reused by drawPathWithCaps() for lines with different start and end caps
+    private val capOutline = Path()
+    private val capPath = Path()
+    private val capRect = RectF()
+    private val capMatrix = Matrix()
+    private val capFillPaint = Paint()
 
     // Path effects of dot, dash and gap patterns by pattern and stroke width, see strokeEffect()
     private val patternEffects = HashMap<Pair<List<PatternItem>, Float>, android.graphics.PathEffect>()
@@ -2083,7 +2093,6 @@ class MapController(
                 paint.color = polyline.strokeColor.toArgb()
                 paint.strokeWidth = polyline.strokeWidth
                 paint.pathEffect = strokeEffect(polyline.pattern, polyline.strokePattern, polyline.strokeWidth)
-                paint.strokeCap = polyline.startCap.toAndroidCap() // Use startCap for full path
                 paint.strokeJoin = polyline.strokeJoin.toAndroidJoin()
 
                 val screenPoints = shapeScreenPoints(points, centerPixelX, centerPixelY)
@@ -2093,9 +2102,92 @@ class MapController(
                     path.lineTo(screenPoints[i], screenPoints[i + 1])
                 }
 
-                canvas.drawPath(path, paint)
+                if (polyline.startCap == polyline.endCap) {
+                    paint.strokeCap = polyline.startCap.toAndroidCap()
+                    canvas.drawPath(path, paint)
+                } else {
+                    drawPathWithCaps(canvas, path, screenPoints, polyline.startCap, polyline.endCap, paint)
+                }
             }
         }
+    }
+
+    /**
+     * Draws a stroked [path] with a different cap at its start and its end.
+     *
+     * A Paint has one cap for both ends of a path. So the path is turned into the outline of
+     * its stroke with butt ends, the cap shapes are added to the ends of that outline as a
+     * union, and the result is filled once. Nothing is drawn before that single fill: drawing
+     * the caps separately would make a translucent line darker where they overlap the line,
+     * or leave a lighter seam where their anti-aliased edges touch it.
+     *
+     * @param screenPoints The x, y pairs of the path, to find the direction at each end
+     * @param paint The stroke paint of the line, with its color, width, join and path effect
+     */
+    private fun drawPathWithCaps(
+        canvas: Canvas,
+        path: android.graphics.Path,
+        screenPoints: FloatArray,
+        startCap: StrokeCap,
+        endCap: StrokeCap,
+        paint: Paint,
+    ) {
+        paint.strokeCap = Paint.Cap.BUTT
+        capOutline.rewind()
+        paint.getFillPath(path, capOutline)
+
+        val last = screenPoints.size - 2
+        addCap(startCap, screenPoints, 0, 2, paint.strokeWidth)
+        addCap(endCap, screenPoints, last, -2, paint.strokeWidth)
+
+        capFillPaint.set(paint)
+        capFillPaint.style = Paint.Style.FILL
+        // The outline already has the dashes of a pattern
+        capFillPaint.pathEffect = null
+        canvas.drawPath(capOutline, capFillPaint)
+    }
+
+    /**
+     * Adds a cap to [capOutline] at the end point at [endIndex] of [screenPoints], pointing away
+     * from the nearest other point found by stepping [step] through the x, y pairs.
+     */
+    private fun addCap(
+        cap: StrokeCap,
+        screenPoints: FloatArray,
+        endIndex: Int,
+        step: Int,
+        strokeWidth: Float,
+    ) {
+        if (cap != StrokeCap.Round && cap != StrokeCap.Square) return
+        val x = screenPoints[endIndex]
+        val y = screenPoints[endIndex + 1]
+
+        // The end segment gives the direction; skip points at the same place as the end
+        var i = endIndex + step
+        while (i in 0..screenPoints.size - 2 && screenPoints[i] == x && screenPoints[i + 1] == y) i += step
+        if (i !in 0..screenPoints.size - 2) return
+        val dx = x - screenPoints[i]
+        val dy = y - screenPoints[i + 1]
+
+        // Built pointing along +x from the end point, then turned and moved into place. The
+        // shape also covers up to half a width of the line inside the end, so the union
+        // leaves no seam, but not more than the end segment, so it can't stick out at a corner.
+        val half = strokeWidth / 2
+        val inside = minOf(half, hypot(dx, dy))
+        capPath.rewind()
+        if (cap == StrokeCap.Round) {
+            capRect.set(-half, -half, half, half)
+            capPath.moveTo(-inside, -half)
+            capPath.arcTo(capRect, -90f, 180f)
+            capPath.lineTo(-inside, half)
+            capPath.close()
+        } else {
+            capPath.addRect(-inside, -half, half, half, android.graphics.Path.Direction.CW)
+        }
+        capMatrix.setRotate(Math.toDegrees(atan2(dy, dx).toDouble()).toFloat())
+        capMatrix.postTranslate(x, y)
+        capPath.transform(capMatrix)
+        capOutline.op(capPath, android.graphics.Path.Op.UNION)
     }
 
     private fun drawPolylineWithSpansZIndex(
@@ -2115,6 +2207,20 @@ class MapController(
         var segmentIndex = 0
         val totalSegments = points.size - 1
         val screenPoints = shapeScreenPoints(points, centerPixelX, centerPixelY)
+
+        // A single segment is both first and last, so it needs both caps
+        if (totalSegments == 1 && polyline.startCap != polyline.endCap) {
+            paint.color =
+                polyline.spans
+                    .first()
+                    .color
+                    .toArgb()
+            val path = android.graphics.Path()
+            path.moveTo(screenPoints[0], screenPoints[1])
+            path.lineTo(screenPoints[2], screenPoints[3])
+            drawPathWithCaps(canvas, path, screenPoints, polyline.startCap, polyline.endCap, paint)
+            return
+        }
 
         for (span in polyline.spans) {
             if (segmentIndex >= totalSegments) break

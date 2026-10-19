@@ -172,6 +172,8 @@ Polygon(points = points, pattern = listOf(Dash(30f), Gap(10f), Dot(), Gap(10f)))
 
 An `android.graphics.PathEffect` works too: `strokePattern(android.graphics.PathEffect)` on the options and `setStrokePattern(android.graphics.PathEffect)` on the shapes.
 
+A polyline's `startCap` and `endCap` are drawn independently, also on translucent lines without overlap. With equal caps, the dashes of a pattern get that cap too; with different caps, only the two line ends do.
+
 **PathEffect Examples:**
 
 ```kotlin
