@@ -7,12 +7,6 @@
 
 package de.afarber.openmapview
 
-import kotlin.math.asin
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
-
 /**
  * Utility object for geodesic (great-circle) calculations.
  *
@@ -20,9 +14,6 @@ import kotlin.math.sqrt
  * along the shortest path on Earth's surface between two coordinates.
  */
 internal object GeodesicUtils {
-    /** Earth's mean radius in meters. */
-    private const val EARTH_RADIUS_METERS = 6371000.0
-
     /** Minimum distance in meters to consider for interpolation. */
     private const val MIN_INTERPOLATION_DISTANCE = 1000.0
 
@@ -39,19 +30,7 @@ internal object GeodesicUtils {
     fun haversineDistance(
         from: LatLng,
         to: LatLng,
-    ): Double {
-        val lat1 = Math.toRadians(from.latitude)
-        val lat2 = Math.toRadians(to.latitude)
-        val deltaLat = Math.toRadians(to.latitude - from.latitude)
-        val deltaLon = Math.toRadians(to.longitude - from.longitude)
-
-        val a =
-            sin(deltaLat / 2) * sin(deltaLat / 2) +
-                cos(lat1) * cos(lat2) * sin(deltaLon / 2) * sin(deltaLon / 2)
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
-        return EARTH_RADIUS_METERS * c
-    }
+    ): Double = SphericalUtil.computeDistanceBetween(from, to)
 
     /**
      * Interpolates points along the great-circle path between two coordinates.
@@ -69,44 +48,9 @@ internal object GeodesicUtils {
         to: LatLng,
         numPoints: Int,
     ): List<LatLng> {
-        if (numPoints <= 0) return emptyList()
-
-        val lat1 = Math.toRadians(from.latitude)
-        val lon1 = Math.toRadians(from.longitude)
-        val lat2 = Math.toRadians(to.latitude)
-        val lon2 = Math.toRadians(to.longitude)
-
-        // Calculate angular distance
-        val deltaLat = lat2 - lat1
-        val deltaLon = lon2 - lon1
-        val a =
-            sin(deltaLat / 2) * sin(deltaLat / 2) +
-                cos(lat1) * cos(lat2) * sin(deltaLon / 2) * sin(deltaLon / 2)
-        val angularDistance = 2 * asin(sqrt(a))
-
         // If points are very close, no interpolation needed
-        if (angularDistance < 1e-10) return emptyList()
-
-        val points = mutableListOf<LatLng>()
-
-        for (i in 1..numPoints) {
-            val fraction = i.toDouble() / (numPoints + 1)
-
-            // Spherical linear interpolation
-            val factorA = sin((1 - fraction) * angularDistance) / sin(angularDistance)
-            val factorB = sin(fraction * angularDistance) / sin(angularDistance)
-
-            val x = factorA * cos(lat1) * cos(lon1) + factorB * cos(lat2) * cos(lon2)
-            val y = factorA * cos(lat1) * sin(lon1) + factorB * cos(lat2) * sin(lon2)
-            val z = factorA * sin(lat1) + factorB * sin(lat2)
-
-            val lat = atan2(z, sqrt(x * x + y * y))
-            val lon = atan2(y, x)
-
-            points.add(LatLng(Math.toDegrees(lat), Math.toDegrees(lon)))
-        }
-
-        return points
+        if (numPoints <= 0 || SphericalUtil.computeAngleBetween(from, to) < 1e-10) return emptyList()
+        return (1..numPoints).map { SphericalUtil.interpolate(from, to, it.toDouble() / (numPoints + 1)) }
     }
 
     /**

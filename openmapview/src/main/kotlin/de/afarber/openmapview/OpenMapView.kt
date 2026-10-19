@@ -21,6 +21,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import android.view.ViewConfiguration
 import android.widget.FrameLayout
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withClip
@@ -32,9 +33,6 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.time.Duration
-
-// Finger movement in pixels below which a touch counts as a tap and a marker drag does not start
-private const val TAP_SLOP_PX = 10f
 
 // Duration of the camera animation to the device location for the my-location button
 private const val MY_LOCATION_ANIMATION_MS = 250
@@ -134,6 +132,10 @@ class OpenMapView
 
         // Set when the current gesture became a long press, so lifting the finger is no click
         private var isLongPressed = false
+
+        // Finger movement below which a touch counts as a tap and a marker drag does not start:
+        // the system touch slop, about 8 dp, which the GestureDetector also uses
+        private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
 
         private val gestureDetector =
             GestureDetector(
@@ -345,7 +347,7 @@ class OpenMapView
                             if (!isDragging) {
                                 val fromDownX = event.x - initialTouchX
                                 val fromDownY = event.y - initialTouchY
-                                if (fromDownX * fromDownX + fromDownY * fromDownY <= TAP_SLOP_PX * TAP_SLOP_PX) {
+                                if (fromDownX * fromDownX + fromDownY * fromDownY <= touchSlop * touchSlop) {
                                     return true
                                 }
                                 isDragging = true
@@ -411,7 +413,7 @@ class OpenMapView
                         val movementDistance = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
 
                         // A tap ends with ACTION_UP; a canceled gesture or a long press is no click
-                        if (event.action == MotionEvent.ACTION_UP && !isLongPressed && movementDistance < TAP_SLOP_PX) {
+                        if (event.action == MotionEvent.ACTION_UP && !isLongPressed && movementDistance < touchSlop) {
                             // Report the tap as a click, so accessibility services and any
                             // OnClickListener are notified like for other clickable views
                             performClick()
