@@ -358,7 +358,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 
 | Method                                                                | Return Type      | Notes                                                                |
 | --------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------- |
-| `setOnMapClickListener(OnMapClickListener)`                           | `void`           |                                                                      |
+| `setOnMapClickListener(OnMapClickListener)`                           | `void`           | A tap may move as far as the system touch slop (about 8 dp) |
 | `setOnMapLongClickListener(OnMapLongClickListener)`                   | `void`           |                                                                      |
 | `setOnMarkerClickListener(OnMarkerClickListener)`                     | `void`           | Runs first; unless it returns true, the info window opens and the camera moves to the marker |
 | `setOnMarkerDragListener(OnMarkerDragListener)`                       | `void`           |                                                                      |
