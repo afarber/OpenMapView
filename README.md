@@ -56,6 +56,7 @@ The documentation is generated from KDoc comments and redeployed whenever the li
 | [Markers](examples/compose/Markers) | [Markers](examples/views/Markers) | Colored markers with info windows, stepping through them and keeping them clear of a side panel with map padding |
 | [Polylines](examples/compose/Polylines) | [Polylines](examples/views/Polylines) | Lines, areas, a polygon with a hole and a geodesic flight, highlighted on tap through live shapes |
 | [Camera](examples/compose/Camera) | [Camera](examples/views/Camera) | Camera flights with durations, finish and cancel callbacks, stopping and interrupting them |
+| [Rotation](examples/compose/Rotation) | [Rotation](examples/views/Rotation) | A bus driving heading up like a navigation app, north up, turned by two fingers, a slider and the compass, with a flat marker |
 | [Clicks](examples/compose/Clicks) | [Clicks](examples/views/Clicks) | Tap and long-press coordinates, a circle following taps and markers dropped by long press |
 | [DraggableMarkers](examples/compose/DraggableMarkers) | [DraggableMarkers](examples/views/DraggableMarkers) | A route of draggable markers that the line follows while dragging, with drag events |
 | [Circles](examples/compose/Circles) | [Circles](examples/views/Circles) | Circles with radii in meters, selected by tap and resized live with a slider |
