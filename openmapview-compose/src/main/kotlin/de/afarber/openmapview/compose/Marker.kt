@@ -136,7 +136,7 @@ internal val LocalMapContext = staticCompositionLocalOf<MapContext?> { null }
  * @param anchor Point of the icon placed at the position, as fractions of its size
  * @param infoWindowAnchor Point of the icon the info window points at, as fractions of its size
  * @param rotation Clockwise rotation of the icon around the anchor, in degrees
- * @param flat Whether the icon lies flat on the map; no effect yet, as the map doesn't rotate or tilt
+ * @param flat Whether the icon lies flat on the map and turns with it, instead of facing the screen
  * @param visible Whether the marker is drawn
  * @param alpha Opacity from 0 (transparent) to 1 (opaque)
  * @param draggable Whether the user can drag the marker

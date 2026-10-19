@@ -323,4 +323,14 @@ public class JavaInteropTest {
         assertTrue(SphericalUtil.computeLength(Arrays.asList(BOCHUM, UNIVERSITY)) > 0);
         assertEquals(6371009.0, SphericalUtil.EARTH_RADIUS, 0);
     }
+
+    @Test
+    public void cameraPositionHasBuilderAndBearing() {
+        CameraPosition position = CameraPosition.builder().target(BOCHUM).zoom(14f).bearing(90f).build();
+        mapView.moveCamera(CameraUpdateFactory.newCameraPosition(position));
+
+        assertEquals(90f, mapView.getCameraPosition().bearing, 0f);
+        assertEquals(position, CameraPosition.builder(position).build());
+        assertEquals(0f, CameraPosition.fromLatLngZoom(BOCHUM, 12f).bearing, 0f);
+    }
 }

@@ -571,6 +571,23 @@ class OpenMapView
         fun getZoom(): Float = controller.getZoom()
 
         /**
+         * Sets the bearing: the direction at the top of the screen, in degrees clockwise from
+         * north, e.g. 90 for east up. The map turns around the camera target. Like [setZoom],
+         * this is an OpenMapView addition that reports no camera move; the Maps SDK way is
+         * `moveCamera(CameraUpdateFactory.newCameraPosition(...))` with a bearing.
+         *
+         * @param bearing The bearing in degrees, normalized to 0 (inclusive) to 360 (exclusive)
+         */
+        fun setBearing(bearing: Float) {
+            controller.cancelPendingCameraUpdate()
+            controller.setBearing(bearing)
+            invalidate()
+        }
+
+        /** Returns the bearing in degrees clockwise from north, 0 to 360. */
+        fun getBearing(): Float = controller.getBearing()
+
+        /**
          * Sets how many screen pixels a pixel of a 256 px tile covers.
          *
          * The default is the screen density, so tiles are 256 dp wide as with the Maps SDK,
