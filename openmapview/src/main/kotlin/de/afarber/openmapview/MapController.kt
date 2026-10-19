@@ -1032,6 +1032,8 @@ class MapController(
             return
         }
 
+        // Where the view center was, on the world at the new zoom
+        val previousY = viewCenterPixelY() * 2.0.pow((newZoom - oldZoom).toDouble())
         zoom = newZoom
 
         // The map grows by this ratio around its center. Scale the pan offset with it and
@@ -1043,6 +1045,7 @@ class MapController(
         val focusOffsetY = mapFocusY - viewHeight / 2f
         panOffsetX = panOffsetX * ratio + focusOffsetX * (ratio - 1)
         panOffsetY = panOffsetY * ratio + focusOffsetY * (ratio - 1)
+        keepWorldFillingView(previousY)
     }
 
     /**
@@ -1808,8 +1811,32 @@ class MapController(
             }
         }
 
+        val previousY = viewCenterPixelY()
         panOffsetX = newPanOffsetX
         panOffsetY = newPanOffsetY
+        keepWorldFillingView(previousY)
+    }
+
+    // The y of the view center in world pixels at the current zoom, including the pan offset
+    private fun viewCenterPixelY(): Double = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize).second + panOffsetY
+
+    /**
+     * Limits the vertical pan offset so the map fills the view from top to bottom, without an
+     * empty band above the north or below the south edge of the world. A world lower than the
+     * view stays centered. The limit only holds the map back: a map that is already beyond
+     * it, e.g. after a camera move far north, may move back toward it but not further away,
+     * so it doesn't jump when touched.
+     *
+     * @param previousY The [viewCenterPixelY] before the gesture moved the map, at the current zoom
+     */
+    private fun keepWorldFillingView(previousY: Double) {
+        val world = ProjectionUtils.worldSize(zoom, tileSize)
+        // The screen in map space: the view, or the bounding box of a turned view
+        val halfHeight = mapSpaceCoverSize().second / 2.0
+        val (top, bottom) = if (world >= 2 * halfHeight) halfHeight to world - halfHeight else world / 2 to world / 2
+        val y = viewCenterPixelY()
+        val clamped = y.coerceIn(minOf(top, previousY), maxOf(bottom, previousY))
+        if (clamped != y) panOffsetY += (clamped - y).toFloat()
     }
 
     /**
