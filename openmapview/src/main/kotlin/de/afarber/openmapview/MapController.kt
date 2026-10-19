@@ -56,6 +56,7 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.ceil
 import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.hypot
 import kotlin.math.log2
 import kotlin.math.pow
@@ -232,8 +233,25 @@ class MapController(
                 }
             }
 
+        val west = bounds.southwest.longitude
+        val east = bounds.northeast.longitude
         val clampedLng =
             when {
+                // Bounds crossing the antimeridian contain both ends of the longitude range,
+                // so a longitude outside them lies between east and west: go to the nearer
+                west > east -> {
+                    val lng = latLng.longitude
+                    if (lng >= west || lng <= east) {
+                        lng
+                    } else if (lng - east <= west - lng) {
+                        hitEdges.add(Edge.RIGHT)
+                        east
+                    } else {
+                        hitEdges.add(Edge.LEFT)
+                        west
+                    }
+                }
+
                 latLng.longitude < bounds.southwest.longitude -> {
                     hitEdges.add(Edge.LEFT)
                     bounds.southwest.longitude
@@ -1043,6 +1061,7 @@ class MapController(
         val focusOffsetY = mapFocusY - viewHeight / 2f
         panOffsetX = panOffsetX * ratio + focusOffsetX * (ratio - 1)
         panOffsetY = panOffsetY * ratio + focusOffsetY * (ratio - 1)
+        clampPanToTargetBounds()
     }
 
     /**
@@ -1798,18 +1817,58 @@ class MapController(
         val newPanOffsetX = panOffsetX - mapDx
         val newPanOffsetY = panOffsetY - mapDy
 
-        // Check if bounds are set and detect edge hits during panning
-        if (cameraTargetBounds != null) {
-            val newCenter = pannedCenter(newPanOffsetX, newPanOffsetY)
-
-            val (_, hitEdges) = clampToTargetBoundsWithEdges(targetOf(newCenter, zoom))
-            if (hitEdges.isNotEmpty()) {
-                triggerEdgeEffect(hitEdges, 0.6f)
-            }
-        }
-
         panOffsetX = newPanOffsetX
         panOffsetY = newPanOffsetY
+
+        // The camera stops at the edges of the target bounds, which glow when hit
+        val hitEdges = clampPanToTargetBounds()
+        if (hitEdges.isNotEmpty()) {
+            triggerEdgeEffect(hitEdges, 0.6f)
+        }
+    }
+
+    /**
+     * Limits the pan offset so the camera target stays within the target bounds, and returns
+     * the edges it was stopped at.
+     *
+     * The target is clamped in pixels of the world copy it is on, before its longitude wraps
+     * around: bounds that don't contain the antimeridian stop the camera there, instead of
+     * letting it pan around the world and come back in from the other side.
+     */
+    private fun clampPanToTargetBounds(): Set<Edge> {
+        val bounds = cameraTargetBounds ?: return emptySet()
+        val world = ProjectionUtils.worldSize(zoom, tileSize)
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
+        // The target is at the center of the area inside the map padding
+        val targetX = centerPixelX + (paddingLeft - paddingRight) / 2.0
+        val targetY = centerPixelY + (paddingTop - paddingBottom) / 2.0
+        val (westX, northY) =
+            ProjectionUtils.latLngToPixelExact(
+                bounds.northeast.copy(longitude = bounds.southwest.longitude),
+                zoom,
+                tileSize,
+            )
+        val (eastX, southY) =
+            ProjectionUtils.latLngToPixelExact(
+                bounds.southwest.copy(longitude = bounds.northeast.longitude),
+                zoom,
+                tileSize,
+            )
+        // Bounds crossing the antimeridian end on the next copy of the world
+        val width = if (eastX >= westX) eastX - westX else eastX + world - westX
+        // The copy of the bounds that the target, which is within them, is on
+        val left = westX + world * floor((targetX - westX) / world)
+
+        val x = targetX + panOffsetX
+        val y = targetY + panOffsetY
+        val hitEdges = mutableSetOf<Edge>()
+        if (x < left) hitEdges.add(Edge.LEFT)
+        if (x > left + width) hitEdges.add(Edge.RIGHT)
+        if (y < northY) hitEdges.add(Edge.TOP)
+        if (y > southY) hitEdges.add(Edge.BOTTOM)
+        panOffsetX = (x.coerceIn(left, left + width) - targetX).toFloat()
+        panOffsetY = (y.coerceIn(northY, southY) - targetY).toFloat()
+        return hitEdges
     }
 
     /**
