@@ -17,6 +17,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
 class CameraAnimationTest {
@@ -207,6 +208,37 @@ class CameraAnimationTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertEquals(emptyList<String>(), events)
+    }
+
+    @Test
+    fun testPaddingChangeDuringAnimation_EndsAtTargetInNewPaddedCenter() {
+        val target = LatLng(51.4661, 7.2491)
+        controller.setCenter(LatLng(51.0, 7.0))
+        controller.setZoom(10f)
+        controller.animateCamera(CameraUpdateFactory.newLatLngZoom(target, 12f), 300)
+
+        // Half way, e.g. a bottom sheet opens and covers the lower half of the 400 x 400 map
+        var changed = false
+        repeat(100) {
+            if (events.lastOrNull() == "idle") return@repeat
+            if (!changed && controller.getZoom() > 11f) {
+                controller.setMapPadding(0, 0, 0, 200)
+                changed = true
+            }
+            Thread.sleep(20)
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20))
+        }
+
+        assertTrue("padding changed during the animation", changed)
+        assertEquals("idle", events.last())
+        val position = controller.getCameraPosition()
+        assertEquals(target.latitude, position.target.latitude, 1e-6)
+        assertEquals(target.longitude, position.target.longitude, 1e-6)
+        // Each frame applies the current padding, so the target ends in the center of the
+        // area above the sheet
+        val point = controller.createProjection().toScreenLocation(target)
+        assertEquals(200, point.x)
+        assertEquals(100, point.y)
     }
 
     private companion object {
