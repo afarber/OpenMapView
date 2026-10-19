@@ -291,7 +291,7 @@ Methods available on the UiSettings object returned by `getUiSettings()`:
 
 | Method                                                | Return Type | Notes                                                                                    |
 | ----------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------- |
-| `setZoomGesturesEnabled(boolean)`                     | `void`      |                                                                                          |
+| `setZoomGesturesEnabled(boolean)`                     | `void`      | Pinch, double tap (zoom in), two-finger tap (zoom out) and one-finger zoom (double tap, hold and slide down to zoom in or up to zoom out), reported with `REASON_GESTURE` |
 | `isZoomGesturesEnabled()`                             | `boolean`   |                                                                                          |
 | `setScrollGesturesEnabled(boolean)`                   | `void`      |                                                                                          |
 | `isScrollGesturesEnabled()`                           | `boolean`   |                                                                                          |
@@ -362,7 +362,7 @@ OpenMapView provides comprehensive event listener support using Kotlin `fun inte
 
 | Method                                                                | Return Type      | Notes                                                                |
 | --------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------- |
-| `setOnMapClickListener(OnMapClickListener)`                           | `void`           | A tap may move as far as the system touch slop (about 8 dp) |
+| `setOnMapClickListener(OnMapClickListener)`                           | `void`           | With zoom gestures, map, marker and shape clicks are reported once no second tap followed, after the double-tap timeout of about 300 ms, so a double tap only zooms. A tap may move as far as the system touch slop (about 8 dp) |
 | `setOnMapLongClickListener(OnMapLongClickListener)`                   | `void`           |                                                                      |
 | `setOnMarkerClickListener(OnMarkerClickListener)`                     | `void`           | Runs first; unless it returns true, the info window opens and the camera moves to the marker |
 | `setOnMarkerDragListener(OnMarkerDragListener)`                       | `void`           |                                                                      |
@@ -456,6 +456,7 @@ Features use the [simplestyle](https://github.com/mapbox/simplestyle-spec) prope
 | `zoomOut()`                                    | `CameraUpdate` |       |
 | `zoomTo(float)`                                | `CameraUpdate` |       |
 | `zoomBy(float)`                                | `CameraUpdate` |       |
+| `zoomBy(float, Point)`                         | `CameraUpdate` | The location at the screen point stays in place |
 | `newLatLngBounds(LatLngBounds, int)`           | `CameraUpdate` | Before layout, the camera moves once the map has its size |
 | `newLatLngBounds(LatLngBounds, int, int, int)` | `CameraUpdate` |       |
 | `scrollBy(float, float)`                       | `CameraUpdate` |       |
@@ -478,12 +479,12 @@ Features use the [simplestyle](https://github.com/mapbox/simplestyle-spec) prope
 
 ## Summary
 
-**Total Methods Reviewed:** 102 (includes UiSettings class methods)
+**Total Methods Reviewed:** 103 (includes UiSettings class methods)
 
 **Implementation Summary:**
 
-- 83 methods fully implemented (81.4%)
-- 19 methods not planned (18.6%) - mostly features requiring proprietary data (traffic, indoor maps, POI) or unsupported map capabilities (rotate gestures and the compass so far, tilt)
+- 84 methods fully implemented (81.6%)
+- 19 methods not planned (18.4%) - mostly features requiring proprietary data (traffic, indoor maps, POI) or unsupported map capabilities (rotate gestures and the compass so far, tilt)
 
 **OpenMapView-Specific Features:**
 

@@ -58,6 +58,7 @@ class MapFeaturesTest {
         val up = MotionEvent.obtain(0, 50, MotionEvent.ACTION_UP, 200f, 200f, 0)
         mapView.onTouchEvent(down)
         mapView.onTouchEvent(up)
+        confirmTap()
         down.recycle()
         up.recycle()
 

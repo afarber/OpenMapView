@@ -19,6 +19,7 @@ import android.graphics.LinearGradient
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
@@ -1083,6 +1084,26 @@ class MapController(
         atZoom: Float,
     ): LatLng = shiftedByPixels(viewCenter, (paddingLeft - paddingRight) / 2.0, (paddingTop - paddingBottom) / 2.0, atZoom)
 
+    // The camera target at newZoom that keeps the location under the screen point focus in place
+    private fun targetZoomedAround(
+        focus: Point,
+        newZoom: Float,
+    ): LatLng {
+        val focusLatLng = screenToLatLng(focus.x.toFloat(), focus.y.toFloat())
+        val (focusPixelX, focusPixelY) = ProjectionUtils.latLngToPixelExact(focusLatLng, newZoom, tileSize)
+        // The focus on the map laid out with north up, where the zoom scales around the target
+        val (mapFocusX, mapFocusY) = screenToMapSpace(focus.x.toFloat(), focus.y.toFloat())
+        // Where the camera target is on screen: the center of the area inside the padding
+        val targetScreenX = viewWidth / 2.0 + (paddingLeft - paddingRight) / 2.0
+        val targetScreenY = viewHeight / 2.0 + (paddingTop - paddingBottom) / 2.0
+        return ProjectionUtils.pixelToLatLng(
+            focusPixelX - (mapFocusX - targetScreenX),
+            focusPixelY - (mapFocusY - targetScreenY),
+            newZoom,
+            tileSize,
+        )
+    }
+
     private fun shiftedByPixels(
         latLng: LatLng,
         dx: Double,
@@ -1598,9 +1619,11 @@ class MapController(
             }
 
             is CameraUpdate.ZoomBy -> {
+                val newZoom = (currentPosition.zoom + cameraUpdate.amount).coerceIn(minZoomPreference, maxZoomPreference)
+                val focus = cameraUpdate.focus
                 CameraPosition(
-                    target = currentPosition.target,
-                    zoom = (currentPosition.zoom + cameraUpdate.amount).coerceIn(minZoomPreference, maxZoomPreference),
+                    target = if (focus == null) currentPosition.target else targetZoomedAround(focus, newZoom),
+                    zoom = newZoom,
                     bearing = currentPosition.bearing,
                 )
             }
@@ -1795,8 +1818,10 @@ class MapController(
         }
 
         // Fire camera idle event after a gesture completes, also after a pinch around
-        // the view center, which leaves no pan offset
-        if (isCameraMoving && currentMoveReason == OnCameraMoveStartedListener.REASON_GESTURE) {
+        // the view center, which leaves no pan offset. A zoom animation started by a
+        // gesture, e.g. a double tap, reports idle itself when it ends.
+        val isAnimating = animationJob?.isActive == true
+        if (isCameraMoving && currentMoveReason == OnCameraMoveStartedListener.REASON_GESTURE && !isAnimating) {
             isCameraMoving = false
             currentMoveReason = null
             onCameraIdleListener?.onCameraIdle()

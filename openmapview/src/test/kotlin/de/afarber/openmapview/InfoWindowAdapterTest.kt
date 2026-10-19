@@ -159,6 +159,7 @@ class InfoWindowAdapterTest {
             mapView.onTouchEvent(event)
             event.recycle()
         }
+        confirmTap()
 
         assertSame(marker, clicked)
     }

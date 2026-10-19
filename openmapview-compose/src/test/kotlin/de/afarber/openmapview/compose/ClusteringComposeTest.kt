@@ -84,6 +84,7 @@ class ClusteringComposeTest {
             map.onTouchEvent(event)
             event.recycle()
         }
+        confirmTap()
     }
 
     @Test

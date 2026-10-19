@@ -7,6 +7,8 @@
 
 package de.afarber.openmapview
 
+import android.graphics.Point
+
 /**
  * Defines a camera update to be applied to the map.
  *
@@ -56,10 +58,12 @@ sealed class CameraUpdate {
     ) : CameraUpdate()
 
     /**
-     * Adjusts zoom by a relative amount (positive to zoom in, negative to zoom out).
+     * Adjusts zoom by a relative amount (positive to zoom in, negative to zoom out),
+     * around the view center or, if given, around a screen point that stays in place.
      */
     internal data class ZoomBy(
         val amount: Float,
+        val focus: Point? = null,
     ) : CameraUpdate()
 
     /**

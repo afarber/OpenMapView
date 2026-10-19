@@ -57,6 +57,7 @@ class MapLongPressTest {
         val event = MotionEvent.obtain(0, time, action, x, y, 0)
         mapView.onTouchEvent(event)
         event.recycle()
+        if (action == MotionEvent.ACTION_UP) confirmTap()
     }
 
     @Test

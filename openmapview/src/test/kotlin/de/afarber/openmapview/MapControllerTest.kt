@@ -54,6 +54,49 @@ class MapControllerTest {
     }
 
     @Test
+    fun testZoomByFocus_KeepsFocusLocationInPlace() {
+        controller.setCenter(LatLng(51.4661, 7.2491))
+        controller.setZoom(10.0f)
+        val before = controller.screenToLatLng(200f, 300f)
+
+        controller.moveCamera(CameraUpdateFactory.zoomBy(2f, Point(200, 300)))
+
+        assertEquals(12.0f, controller.getZoom(), DELTA)
+        val after = controller.screenToLatLng(200f, 300f)
+        assertEquals(before.latitude, after.latitude, 1e-6)
+        assertEquals(before.longitude, after.longitude, 1e-6)
+    }
+
+    @Test
+    fun testZoomByFocus_WithPaddingAndZoomLimit() {
+        controller.setCenter(LatLng(51.4661, 7.2491))
+        controller.setZoom(10.0f)
+        controller.setMapPadding(0, 400, 300, 0)
+        controller.setMaxZoomPreference(10.5f)
+        val before = controller.screenToLatLng(900f, 1500f)
+
+        // Clamped to half a level, which still keeps the focus location in place
+        controller.moveCamera(CameraUpdateFactory.zoomBy(3f, Point(900, 1500)))
+
+        assertEquals(10.5f, controller.getZoom(), DELTA)
+        // Within float rounding of a hundredth of a pixel
+        val after = controller.screenToLatLng(900f, 1500f)
+        assertEquals(before.latitude, after.latitude, 1e-5)
+        assertEquals(before.longitude, after.longitude, 1e-5)
+    }
+
+    @Test
+    fun testZoomBy_WithoutFocusKeepsTarget() {
+        controller.setCenter(LatLng(51.4661, 7.2491))
+        controller.setZoom(10.0f)
+        val target = controller.getCameraPosition().target
+
+        controller.moveCamera(CameraUpdateFactory.zoomBy(1f))
+
+        assertEquals(target, controller.getCameraPosition().target)
+    }
+
+    @Test
     fun testSetZoom_WithinBounds() {
         controller.setZoom(10.0f)
         assertEquals(10.0f, controller.getZoom(), DELTA)

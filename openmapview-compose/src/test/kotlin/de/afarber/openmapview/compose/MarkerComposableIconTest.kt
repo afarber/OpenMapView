@@ -120,6 +120,7 @@ class MarkerComposableIconTest {
                 map.onTouchEvent(event)
                 event.recycle()
             }
+            confirmTap()
         }
 
         assertEquals(1, clicks)

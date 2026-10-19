@@ -143,12 +143,21 @@ class AttributionOverlay(
         viewWidth: Int,
         viewHeight: Int,
     ): Boolean {
-        val box = bounds(viewWidth, viewHeight)
-
-        if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) {
+        if (contains(x, y, viewWidth, viewHeight)) {
             onAttributionClickListener?.invoke()
             return true
         }
         return false
+    }
+
+    /** Returns whether the point is on the attribution, without handling a touch. */
+    fun contains(
+        x: Float,
+        y: Float,
+        viewWidth: Int,
+        viewHeight: Int,
+    ): Boolean {
+        val box = bounds(viewWidth, viewHeight)
+        return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom
     }
 }

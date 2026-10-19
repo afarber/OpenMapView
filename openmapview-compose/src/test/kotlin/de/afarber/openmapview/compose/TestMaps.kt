@@ -7,12 +7,16 @@
 
 package de.afarber.openmapview.compose
 
+import android.os.Looper
 import android.view.MotionEvent
+import android.view.ViewConfiguration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.Constraints
 import de.afarber.openmapview.LatLng
 import de.afarber.openmapview.OpenMapView
+import org.robolectric.Shadows.shadowOf
+import java.time.Duration
 
 // Fills the test window; without a size, AndroidView measures the map as 0x0
 internal val FillTestWindow: Modifier =
@@ -29,4 +33,11 @@ internal fun OpenMapView.tapAt(location: LatLng) {
         onTouchEvent(event)
         event.recycle()
     }
+    confirmTap()
+}
+
+// With zoom gestures, the map reports a tap once no second tap followed within the
+// double-tap timeout: runs the main looper past it
+internal fun confirmTap() {
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(ViewConfiguration.getDoubleTapTimeout().toLong()))
 }
