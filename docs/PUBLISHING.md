@@ -30,7 +30,7 @@ Both repositories are automatically updated when pushing a version tag.
 
 The four secrets of the release live only in the GitHub environment `release` (Settings -> Environments), not as repository secrets. The environment accepts only tags matching `v*.*.*`, and only the publish job of `release.yml` uses it, so no other workflow or branch can read them.
 
-- **OSSRH_USERNAME** and **OSSRH_PASSWORD** - the two parts of a Central Portal user token (central.sonatype.com, account menu, View User Tokens, Generate User Token). They are not the login of the website, and the names are kept from the former OSSRH service
+- **OSSRH_USERNAME** and **OSSRH_PASSWORD** - the two parts of a Central Portal user token (central.sonatype.com, account menu, View User Tokens, Generate User Token). They are not the login of the website, and the names are kept from the former OSSRH service. The token must come from the Portal account that owns the `de.afarber` namespace, see below
 - **SIGNING_KEY** - the ASCII-armored PGP private key above, the text starting with `-----BEGIN PGP PRIVATE KEY BLOCK-----`
 - **SIGNING_PASSWORD** - the passphrase of that key
 
@@ -45,7 +45,9 @@ gh secret set SIGNING_KEY --env release < private_key.asc
 gh secret set SIGNING_PASSWORD --env release
 ```
 
-**Check a Portal token** without publishing anything. The call answers 200 with valid credentials and 401 otherwise:
+**The right Portal account:** namespaces belong to a sign-in account, and each sign-in method (username and password, GitHub, Google) is a separate account, even with the same email. `de.afarber` belongs to the account that signs in with username and password as farber72@outlook.de; there, Publish -> Namespace lists `de.afarber` and Deployments lists the past releases. A token from another account is accepted for the upload, but its deployment fails with "Namespace 'de.afarber' is not allowed".
+
+**Check a Portal token** without publishing anything. The call answers 200 with valid credentials and 401 otherwise. It doesn't check the namespace, so a token from the wrong account answers 200 too:
 
 ```bash
 # zsh syntax; in bash use: read -rp "Token username: " u; read -rsp "Token password: " p; echo
@@ -56,7 +58,7 @@ curl -s -o /dev/null -w "%{http_code}\n" \
 unset u p
 ```
 
-**Rotate the token:** generate a new one, set both secrets, then revoke the old token on the Portal.
+**Rotate the token:** in the account above, generate a new one, set both secrets, then revoke the old token. Run `gh secret set` in a terminal: without one (e.g. through a script or tool) it can't prompt and stores an empty value.
 
 **Check the signing key and passphrase** in a throwaway keyring, which leaves the normal GnuPG setup untouched:
 
