@@ -72,7 +72,6 @@ rm -rf "$GNUPGHOME"; unset GNUPGHOME
 ### Repository Protection
 
 - **Release tags**: a ruleset on `refs/tags/v*` lets only admins create release tags and blocks moving and deleting them. Pushing a tag is what publishes a release.
-- **Pinned actions**: every action in `.github/workflows` is pinned to a commit SHA, with its version in a comment. Dependabot updates the SHA and the comment together, so a moved tag upstream cannot change what runs next to the release secrets.
 - **CODEOWNERS**: `.github/CODEOWNERS` names the maintainer as owner of every file.
 
 ### Publishing Limits
