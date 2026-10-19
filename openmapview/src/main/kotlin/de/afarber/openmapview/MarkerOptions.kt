@@ -108,8 +108,8 @@ class MarkerOptions {
     }
 
     /**
-     * Sets whether the icon lies flat on the map instead of facing the screen.
-     * It has no effect yet, as the map doesn't rotate or tilt.
+     * Sets whether the icon lies flat on the map and turns with it when the camera has a
+     * bearing, instead of facing the screen.
      * @param flat true for a flat icon (default: false)
      */
     fun flat(flat: Boolean): MarkerOptions {

@@ -142,6 +142,23 @@ class TapGesturesTest {
     }
 
     @Test
+    fun testDoubleTap_KeepsLocationOnTurnedMap() {
+        mapView.setBearing(217f)
+        val before = locationAt(200, 200)
+
+        doubleTap()
+        confirmTap()
+        waitForIdle()
+
+        assertEquals(ZOOM + 1f, mapView.getCameraPosition().zoom, 0.001f)
+        assertEquals(217f, mapView.getCameraPosition().bearing, 0.001f)
+        // The location under the double tap stays there, also with a bearing
+        val after = locationAt(200, 200)
+        assertEquals(before.latitude, after.latitude, 1e-4)
+        assertEquals(before.longitude, after.longitude, 1e-4)
+    }
+
+    @Test
     fun testDoubleTap_WithoutZoomGesturesIsTwoClicks() {
         mapView.getUiSettings().isZoomGesturesEnabled = false
 

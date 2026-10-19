@@ -158,6 +158,19 @@ class OpenMapTest {
     }
 
     @Test
+    fun testBearing_GoesToTheMapAndBack() {
+        val state = CameraPositionState(bochum.copy(bearing = 90f))
+        val map = showMap(state)
+        assertEquals(90f, map.getCameraPosition().bearing)
+
+        composeRule.runOnIdle { state.position = london.copy(bearing = 217f) }
+        composeRule.waitForIdle()
+
+        assertEquals(217f, map.getCameraPosition().bearing)
+        assertEquals(217f, state.position.bearing)
+    }
+
+    @Test
     fun testMove_MovesAttachedMapAndState() {
         val state = CameraPositionState(bochum)
         val map = showMap(state)

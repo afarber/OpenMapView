@@ -52,7 +52,9 @@ import kotlinx.coroutines.sync.withPermit
 import java.io.IOException
 import kotlin.coroutines.resume
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.log2
@@ -183,6 +185,11 @@ class MapController(
 
     private var zoom = 10.0f
     private var center = LatLng(0.0, 0.0)
+
+    // The direction at the top of the screen, in degrees clockwise from north. The map is
+    // laid out as if north were up ("map space") and turned by -bearing around the camera
+    // target's screen point when drawn; touches are turned back the same way.
+    private var bearing = 0f
 
     /**
      * Clamps a LatLng coordinate to remain within the camera target bounds.
@@ -535,6 +542,69 @@ class MapController(
      * @return The current zoom level
      */
     fun getZoom(): Float = zoom
+
+    /**
+     * Sets the bearing: the direction at the top of the screen, in degrees clockwise from
+     * north, e.g. 90 for east up. The map turns around the camera target, which stays in place.
+     *
+     * @param bearing The bearing in degrees, normalized to 0 (inclusive) to 360 (exclusive)
+     */
+    fun setBearing(bearing: Float) {
+        require(bearing.isFinite()) { "Bearing must be a finite number, but was $bearing" }
+        val target = takePanOffset()
+        this.bearing = CameraPosition.normalizeBearing(bearing)
+        center = viewCenterOf(target, zoom)
+    }
+
+    /** Returns the bearing in degrees clockwise from north, 0 to 360. */
+    fun getBearing(): Float = bearing
+
+    // The screen point the map turns around: the camera target, at the center of the area
+    // inside the map padding
+    private fun pivotX(): Float = viewWidth / 2f + (paddingLeft - paddingRight) / 2f
+
+    private fun pivotY(): Float = viewHeight / 2f + (paddingTop - paddingBottom) / 2f
+
+    /** Returns where a screen point is in map space, the layout with north up. */
+    internal fun screenToMapSpace(
+        x: Float,
+        y: Float,
+    ): Pair<Float, Float> = if (bearing == 0f) x to y else rotatePointAround(x, y, pivotX(), pivotY(), bearing)
+
+    /** Returns where a point in map space is on the screen. */
+    internal fun mapSpaceToScreen(
+        x: Float,
+        y: Float,
+    ): Pair<Float, Float> = if (bearing == 0f) x to y else rotatePointAround(x, y, pivotX(), pivotY(), -bearing)
+
+    // The turn of a marker icon in map space: a flat icon lies on the map and turns with it,
+    // any other icon faces the screen, so it is turned back by the bearing
+    private fun iconRotation(marker: Marker): Float = if (marker.isFlat) marker.rotation else marker.rotation + bearing
+
+    // The width and height of the bounding box of the screen in map space, centered on the
+    // view center like the screen itself, so the visible tiles of a turned map cover it
+    private fun mapSpaceCoverSize(): Pair<Int, Int> {
+        if (bearing == 0f) return viewWidth to viewHeight
+        var halfWidth = 0f
+        var halfHeight = 0f
+        for ((x, y) in listOf(
+            0f to 0f,
+            viewWidth.toFloat() to 0f,
+            0f to viewHeight.toFloat(),
+            viewWidth.toFloat() to viewHeight.toFloat(),
+        )) {
+            val (mapX, mapY) = screenToMapSpace(x, y)
+            halfWidth = maxOf(halfWidth, abs(mapX - viewWidth / 2f))
+            halfHeight = maxOf(halfHeight, abs(mapY - viewHeight / 2f))
+        }
+        return ceil(2 * halfWidth).toInt() to ceil(2 * halfHeight).toInt()
+    }
+
+    // A movement on the screen, e.g. of a dragging finger, as a movement in map space
+    private fun screenVectorToMapSpace(
+        dx: Float,
+        dy: Float,
+    ): Pair<Float, Float> = if (bearing == 0f) dx to dy else rotatePointAround(dx, dy, 0f, 0f, bearing)
 
     /**
      * Sets the minimum zoom level preference.
@@ -941,8 +1011,9 @@ class MapController(
         // shift by the focus point's distance from the view center, so the content under
         // the fingers stays put.
         val ratio = 2.0.pow((newZoom - oldZoom).toDouble()).toFloat()
-        val focusOffsetX = focusX - viewWidth / 2f
-        val focusOffsetY = focusY - viewHeight / 2f
+        val (mapFocusX, mapFocusY) = screenToMapSpace(focusX, focusY)
+        val focusOffsetX = mapFocusX - viewWidth / 2f
+        val focusOffsetY = mapFocusY - viewHeight / 2f
         panOffsetX = panOffsetX * ratio + focusOffsetX * (ratio - 1)
         panOffsetY = panOffsetY * ratio + focusOffsetY * (ratio - 1)
     }
@@ -1020,12 +1091,14 @@ class MapController(
     ): LatLng {
         val focusLatLng = screenToLatLng(focus.x.toFloat(), focus.y.toFloat())
         val (focusPixelX, focusPixelY) = ProjectionUtils.latLngToPixelExact(focusLatLng, newZoom, tileSize)
+        // The focus on the map laid out with north up, where the zoom scales around the target
+        val (mapFocusX, mapFocusY) = screenToMapSpace(focus.x.toFloat(), focus.y.toFloat())
         // Where the camera target is on screen: the center of the area inside the padding
         val targetScreenX = viewWidth / 2.0 + (paddingLeft - paddingRight) / 2.0
         val targetScreenY = viewHeight / 2.0 + (paddingTop - paddingBottom) / 2.0
         return ProjectionUtils.pixelToLatLng(
-            focusPixelX - (focus.x - targetScreenX),
-            focusPixelY - (focus.y - targetScreenY),
+            focusPixelX - (mapFocusX - targetScreenX),
+            focusPixelY - (mapFocusY - targetScreenY),
             newZoom,
             tileSize,
         )
@@ -1126,12 +1199,13 @@ class MapController(
     /**
      * Returns the current camera position.
      *
-     * @return A CameraPosition containing current target and zoom
+     * @return A CameraPosition containing the current target, zoom and bearing
      */
     fun getCameraPosition(): CameraPosition =
         CameraPosition(
             target = getCenter(),
             zoom = zoom,
+            bearing = bearing,
         )
 
     /**
@@ -1158,6 +1232,7 @@ class MapController(
             paddingRight = paddingRight,
             paddingBottom = paddingBottom,
             tileSize = tileSize,
+            bearing = bearing,
         )
 
     /**
@@ -1176,10 +1251,11 @@ class MapController(
         // Get center pixel coordinates at current zoom
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
-        // Convert screen coordinates to pixel coordinates
+        // Convert screen coordinates to pixel coordinates, turned back to north up
         // Account for view center offset and pan offset
-        val pixelX = centerPixelX + (screenX - viewWidth / 2 + panOffsetX).toDouble()
-        val pixelY = centerPixelY + (screenY - viewHeight / 2 + panOffsetY).toDouble()
+        val (mapX, mapY) = screenToMapSpace(screenX, screenY)
+        val pixelX = centerPixelX + (mapX - viewWidth / 2 + panOffsetX).toDouble()
+        val pixelY = centerPixelY + (mapY - viewHeight / 2 + panOffsetY).toDouble()
 
         // Convert pixel coordinates to LatLng
         return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom, tileSize)
@@ -1207,6 +1283,7 @@ class MapController(
         if (targetPosition == getCameraPosition()) return
 
         setZoom(targetPosition.zoom)
+        setBearing(targetPosition.bearing)
         setCenter(targetPosition.target)
 
         // The started and idle events of the previous move were reported by stopAnimation()
@@ -1320,6 +1397,7 @@ class MapController(
                         fraction = ((awaitFrameNanos() - startFrame).toFloat() / durationNanos).coerceIn(0f, 1f)
                         val camera = interpolateCamera(startPosition, targetPosition, interpolator.getInterpolation(fraction))
                         setZoom(camera.zoom)
+                        setBearing(camera.bearing)
                         setCenter(camera.target)
 
                         // Fire camera move event during animation
@@ -1328,6 +1406,7 @@ class MapController(
                     }
 
                     setZoom(targetPosition.zoom)
+                    setBearing(targetPosition.bearing)
                     setCenter(targetPosition.target)
                     onTileLoadedCallback?.invoke()
 
@@ -1497,6 +1576,7 @@ class MapController(
                 CameraPosition(
                     target = cameraUpdate.target,
                     zoom = currentPosition.zoom,
+                    bearing = currentPosition.bearing,
                 )
             }
 
@@ -1504,6 +1584,7 @@ class MapController(
                 CameraPosition(
                     target = cameraUpdate.target,
                     zoom = cameraUpdate.zoom.coerceIn(minZoomPreference, maxZoomPreference),
+                    bearing = currentPosition.bearing,
                 )
             }
 
@@ -1517,6 +1598,7 @@ class MapController(
                 CameraPosition(
                     target = currentPosition.target,
                     zoom = (currentPosition.zoom + 1.0f).coerceIn(minZoomPreference, maxZoomPreference),
+                    bearing = currentPosition.bearing,
                 )
             }
 
@@ -1524,6 +1606,7 @@ class MapController(
                 CameraPosition(
                     target = currentPosition.target,
                     zoom = (currentPosition.zoom - 1.0f).coerceIn(minZoomPreference, maxZoomPreference),
+                    bearing = currentPosition.bearing,
                 )
             }
 
@@ -1531,6 +1614,7 @@ class MapController(
                 CameraPosition(
                     target = currentPosition.target,
                     zoom = cameraUpdate.zoom.coerceIn(minZoomPreference, maxZoomPreference),
+                    bearing = currentPosition.bearing,
                 )
             }
 
@@ -1540,6 +1624,7 @@ class MapController(
                 CameraPosition(
                     target = if (focus == null) currentPosition.target else targetZoomedAround(focus, newZoom),
                     zoom = newZoom,
+                    bearing = currentPosition.bearing,
                 )
             }
 
@@ -1552,9 +1637,10 @@ class MapController(
                         tileSize,
                     )
 
-                // Apply pixel scroll offset
-                val newPixelX = (centerPixelX + cameraUpdate.xPixels).toDouble()
-                val newPixelY = (centerPixelY + cameraUpdate.yPixels).toDouble()
+                // Apply the pixel scroll offset, given in screen directions
+                val (scrollX, scrollY) = screenVectorToMapSpace(cameraUpdate.xPixels, cameraUpdate.yPixels)
+                val newPixelX = (centerPixelX + scrollX).toDouble()
+                val newPixelY = (centerPixelY + scrollY).toDouble()
 
                 // Convert back to LatLng
                 val newTarget = ProjectionUtils.pixelToLatLng(newPixelX, newPixelY, currentPosition.zoom, tileSize)
@@ -1562,6 +1648,7 @@ class MapController(
                 CameraPosition(
                     target = newTarget,
                     zoom = currentPosition.zoom,
+                    bearing = currentPosition.bearing,
                 )
             }
 
@@ -1679,8 +1766,10 @@ class MapController(
         dx: Float,
         dy: Float,
     ) {
-        val newPanOffsetX = panOffsetX - dx
-        val newPanOffsetY = panOffsetY - dy
+        // The finger moves on the screen, the pan offset is in map space
+        val (mapDx, mapDy) = screenVectorToMapSpace(dx, dy)
+        val newPanOffsetX = panOffsetX - mapDx
+        val newPanOffsetY = panOffsetY - mapDy
 
         // Check if bounds are set and detect edge hits during panning
         if (cameraTargetBounds != null) {
@@ -1752,18 +1841,27 @@ class MapController(
             return
         }
 
+        // A turned map shows more of the map space: the tiles cover the bounding box of the
+        // screen in map space, around the view center
+        val (coverWidth, coverHeight) = mapSpaceCoverSize()
         val visibleTiles =
             ViewportCalculator.getVisibleTiles(
                 center,
                 zoom,
-                viewWidth,
-                viewHeight,
+                coverWidth,
+                coverHeight,
                 panOffsetX,
                 panOffsetY,
                 tileSize = tileSize,
             )
 
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
+
+        // The map layers are laid out in map space and turned by the bearing around the
+        // camera target; the info windows and the map's controls stay upright
+        val turned = bearing != 0f
+        val mapLayers = if (turned) canvas.save() else 0
+        if (turned) canvas.rotate(-bearing, pivotX(), pivotY())
 
         // Sort tile overlays by z-index
         val sortedTileOverlays = tileOverlays.filter { it.visible }.sortedBy { it.zIndex }
@@ -1843,6 +1941,8 @@ class MapController(
             // Draw markers at this zIndex
             drawMarkersByZIndex(canvas, centerPixelX, centerPixelY, z, sortedMarkers)
         }
+
+        if (turned) canvas.restoreToCount(mapLayers)
 
         // Draw info windows after all markers (so they appear on top)
         drawInfoWindows(canvas)
@@ -2399,10 +2499,11 @@ class MapController(
 
             paint.alpha = (marker.alpha * 255).toInt().coerceIn(0, 255)
 
-            if (marker.rotation == 0f) {
+            val rotation = iconRotation(marker)
+            if (rotation == 0f) {
                 canvas.drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
             } else {
-                canvas.withRotation(marker.rotation, screenX, screenY) {
+                canvas.withRotation(rotation, screenX, screenY) {
                     drawBitmap(icon, screenX - anchorX, screenY - anchorY, paint)
                 }
             }
@@ -2529,16 +2630,19 @@ class MapController(
         val iconTop = screenY - icon.height * marker.anchor.second
         var pointX = iconLeft + icon.width * marker.infoWindowAnchor.first
         var pointY = iconTop + icon.height * marker.infoWindowAnchor.second
-        if (marker.rotation != 0f) {
-            val rotated = rotatePointAround(pointX, pointY, screenX, screenY, marker.rotation)
+        val rotation = iconRotation(marker)
+        if (rotation != 0f) {
+            val rotated = rotatePointAround(pointX, pointY, screenX, screenY, rotation)
             pointX = rotated.first
             pointY = rotated.second
         }
+        // The window itself stays upright on the screen, above where the point is drawn
+        val (pointScreenX, pointScreenY) = mapSpaceToScreen(pointX, pointY)
 
         // A view from InfoWindowAdapter.getInfoWindow has no pointer
         val pointer = if (image != null && !image.framed) 0f else infoWindowPointerHeight
-        val left = pointX - boxWidth / 2
-        val top = pointY - boxHeight - pointer - infoWindowGap
+        val left = pointScreenX - boxWidth / 2
+        val top = pointScreenY - boxHeight - pointer - infoWindowGap
         return RectF(left, top, left + boxWidth, top + boxHeight)
     }
 
@@ -3045,14 +3149,16 @@ class MapController(
      *
      * Checks markers in reverse order (top to bottom) for correct z-ordering.
      *
-     * @param x The screen X coordinate
-     * @param y The screen Y coordinate
+     * @param screenX The screen X coordinate
+     * @param screenY The screen Y coordinate
      * @return The touched marker, or null if no marker was found
      */
     fun handleMarkerTouch(
-        x: Float,
-        y: Float,
+        screenX: Float,
+        screenY: Float,
     ): Marker? {
+        // Shapes are hit-tested in map space, where north is up
+        val (x, y) = screenToMapSpace(screenX, screenY)
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
         // Check markers in reverse order (top to bottom) for correct z-ordering
@@ -3068,10 +3174,10 @@ class MapController(
 
             // A rotated icon is hit where the touch, rotated back around the anchor, hits the upright icon
             val (touchX, touchY) =
-                if (marker.rotation == 0f) {
+                if (iconRotation(marker) == 0f) {
                     x to y
                 } else {
-                    rotatePointAround(x, y, screenX, screenY, -marker.rotation)
+                    rotatePointAround(x, y, screenX, screenY, -iconRotation(marker))
                 }
 
             val markerLeft = screenX - anchorX
@@ -3111,14 +3217,16 @@ class MapController(
      *
      * Uses point-to-line-segment distance calculation with a touch tolerance.
      *
-     * @param x The x coordinate in screen pixels
-     * @param y The y coordinate in screen pixels
+     * @param screenX The x coordinate in screen pixels
+     * @param screenY The y coordinate in screen pixels
      * @return The clicked polyline or null if none was hit
      */
     fun handlePolylineTouch(
-        x: Float,
-        y: Float,
+        screenX: Float,
+        screenY: Float,
     ): Polyline? {
+        // Shapes are hit-tested in map space, where north is up
+        val (x, y) = screenToMapSpace(screenX, screenY)
         val touchTolerance = 20f
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
@@ -3146,14 +3254,16 @@ class MapController(
      *
      * Uses point-in-polygon ray casting algorithm.
      *
-     * @param x The x coordinate in screen pixels
-     * @param y The y coordinate in screen pixels
+     * @param screenX The x coordinate in screen pixels
+     * @param screenY The y coordinate in screen pixels
      * @return The clicked polygon or null if none was hit
      */
     fun handlePolygonTouch(
-        x: Float,
-        y: Float,
+        screenX: Float,
+        screenY: Float,
     ): Polygon? {
+        // Shapes are hit-tested in map space, where north is up
+        val (x, y) = screenToMapSpace(screenX, screenY)
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
         // Check polygons in reverse order (top to bottom) for correct z-ordering
@@ -3189,14 +3299,16 @@ class MapController(
      * Detects circle hits by calculating the distance from the touch point to the circle center.
      * Returns the topmost (highest zIndex) circle that was touched.
      *
-     * @param x Screen X coordinate in pixels
-     * @param y Screen Y coordinate in pixels
+     * @param screenX Screen X coordinate in pixels
+     * @param screenY Screen Y coordinate in pixels
      * @return The touched circle, or null if none was hit
      */
     fun handleCircleTouch(
-        x: Float,
-        y: Float,
+        screenX: Float,
+        screenY: Float,
     ): Circle? {
+        // Shapes are hit-tested in map space, where north is up
+        val (x, y) = screenToMapSpace(screenX, screenY)
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
         // Check circles in reverse order (top to bottom) for correct z-ordering
@@ -3225,9 +3337,11 @@ class MapController(
     }
 
     fun handleGroundOverlayTouch(
-        x: Float,
-        y: Float,
+        screenX: Float,
+        screenY: Float,
     ): GroundOverlay? {
+        // Shapes are hit-tested in map space, where north is up
+        val (x, y) = screenToMapSpace(screenX, screenY)
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
         for (groundOverlay in groundOverlays.reversed()) {
