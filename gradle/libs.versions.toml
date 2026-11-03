@@ -1,8 +1,8 @@
 [versions]
 # Plugins
-agp = "9.4.1"
+agp = "9.5.0"
 kotlin = "2.4.21"
-spotless = "8.10.4"
+spotless = "8.11.0"
 dokka = "2.2.0"
 nmcp = "1.6.2"
 
@@ -25,7 +25,7 @@ compose-material3 = "1.4.0"
 compose-material-icons = "1.7.8"
 
 # Networking
-ktor = "3.6.0"
+ktor = "3.6.1"
 
 # Utilities
 
@@ -37,7 +37,7 @@ kotlinx-coroutines = "1.11.0"
 
 # Code Quality
 ktlint = "1.8.0"
-license-report = "3.1.4"
+license-report = "3.1.5"
 
 [libraries]
 # AndroidX Core
