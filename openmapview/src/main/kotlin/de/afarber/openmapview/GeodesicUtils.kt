@@ -81,4 +81,16 @@ internal object GeodesicUtils {
         expanded.add(points.last())
         return expanded
     }
+
+    /**
+     * Like [expandWithGeodesicPoints] for a closed ring, e.g. the outline of a polygon: the
+     * edge from the last point back to the first is interpolated too.
+     *
+     * @param points The corners of the ring, without repeating the first one at the end.
+     * @return Expanded list, ending with the points between the last and the first corner.
+     */
+    fun expandRingWithGeodesicPoints(points: List<LatLng>): List<LatLng> {
+        if (points.size < 2) return points
+        return expandWithGeodesicPoints(points + points.first()).dropLast(1)
+    }
 }

@@ -33,7 +33,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import kotlin.math.abs
 import kotlin.math.atan2
-import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.pow
 import kotlin.time.Duration
@@ -958,8 +957,7 @@ class OpenMapView
                 val position = LatLng(location.latitude, location.longitude)
                 val point = getProjection().toScreenLocation(position)
                 // The accuracy in meters, converted with the Mercator scale at that latitude
-                val metersPerPixel = 156543.03392 * cos(Math.toRadians(location.latitude)) / 2.0.pow(getZoom().toDouble())
-                val accuracy = if (location.hasAccuracy()) (location.accuracy / metersPerPixel).toFloat() else 0f
+                val accuracy = if (location.hasAccuracy()) controller.metersToPixels(location.accuracy, location.latitude) else 0f
                 myLocationOverlay.drawLocation(canvas, point.x.toFloat(), point.y.toFloat(), accuracy)
             }
         }
@@ -2507,6 +2505,8 @@ class OpenMapView
          */
         fun addGeoJson(geoJsonString: String): GeoJsonResult {
             val result = controller.addGeoJson(geoJsonString)
+            // Live handles: their setters redraw this map
+            result.markers.forEach { it.mapView = this }
             result.polylines.forEach { it.mapView = this }
             result.polygons.forEach { it.mapView = this }
             invalidate()
