@@ -40,6 +40,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withRotation
 import androidx.core.graphics.withSave
 import androidx.core.graphics.withTranslation
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -1014,6 +1015,10 @@ class MapController(
 
     private fun createTileCache(source: TileSource?): TileCache = TileCache(context, source?.name ?: DiskTileCache.DEFAULT_NAMESPACE)
 
+    // The highest zoom level the base map source has tiles for. Zoomed in further, the map
+    // draws the tiles of that level scaled up, instead of asking for tiles that don't exist.
+    private fun maxTileZoom(): Int = tileSource?.maxZoom ?: Int.MAX_VALUE
+
     /**
      * Gets the current tile source.
      *
@@ -1473,7 +1478,7 @@ class MapController(
                         currentMoveReason = null
                         onCameraIdleListener?.onCameraIdle()
                     }
-                } catch (e: kotlinx.coroutines.CancellationException) {
+                } catch (e: CancellationException) {
                     listener?.onCancel()
                     throw e
                 } finally {
@@ -1539,8 +1544,22 @@ class MapController(
         val previewZoom = (target.zoom - TARGET_PREVIEW_LEVELS).coerceAtLeast(0f)
         val tiles =
             (
-                ViewportCalculator.getVisibleTiles(viewCenter, previewZoom, viewWidth, viewHeight, tileSize = tileSize) +
-                    ViewportCalculator.getVisibleTiles(viewCenter, target.zoom, viewWidth, viewHeight, tileSize = tileSize)
+                ViewportCalculator.getVisibleTiles(
+                    viewCenter,
+                    previewZoom,
+                    viewWidth,
+                    viewHeight,
+                    tileSize = tileSize,
+                    maxTileZoom = maxTileZoom(),
+                ) +
+                    ViewportCalculator.getVisibleTiles(
+                        viewCenter,
+                        target.zoom,
+                        viewWidth,
+                        viewHeight,
+                        tileSize = tileSize,
+                        maxTileZoom = maxTileZoom(),
+                    )
             ).mapTo(LinkedHashSet()) { it.wrapped() }
         animationTargetTiles = tiles
         wantedTiles = wantedTiles?.plus(animationTargetTiles)
@@ -1977,6 +1996,7 @@ class MapController(
                 panOffsetX,
                 panOffsetY,
                 tileSize = tileSize,
+                maxTileZoom = maxTileZoom(),
             )
 
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
@@ -1990,9 +2010,17 @@ class MapController(
         // Sort tile overlays by z-index
         val sortedTileOverlays = tileOverlays.filter { it.visible }.sortedBy { it.zIndex }
 
+        // Tile overlays are not limited to the zoom levels of the base map source
+        val overlayTiles =
+            if (sortedTileOverlays.isEmpty() || visibleTiles.firstOrNull()?.zoom == ViewportCalculator.tileZoom(zoom)) {
+                visibleTiles
+            } else {
+                ViewportCalculator.getVisibleTiles(center, zoom, coverWidth, coverHeight, panOffsetX, panOffsetY, tileSize = tileSize)
+            }
+
         // Draw tile overlays with negative z-index (below base tiles)
         for (overlay in sortedTileOverlays.filter { it.zIndex < 0 }) {
-            drawTileOverlay(canvas, visibleTiles, centerPixelX, centerPixelY, overlay)
+            drawTileOverlay(canvas, overlayTiles, centerPixelX, centerPixelY, overlay)
         }
 
         // Tiles of repeated copies of the world are loaded as the tiles they show
@@ -2025,7 +2053,7 @@ class MapController(
 
         // Draw tile overlays with positive z-index (above base tiles)
         for (overlay in sortedTileOverlays.filter { it.zIndex >= 0 }) {
-            drawTileOverlay(canvas, visibleTiles, centerPixelX, centerPixelY, overlay)
+            drawTileOverlay(canvas, overlayTiles, centerPixelX, centerPixelY, overlay)
         }
 
         // Prefetch adjacent tiles only when viewport changes to avoid excessive downloads
@@ -2112,6 +2140,7 @@ class MapController(
                 panOffsetX,
                 panOffsetY,
                 tileSize = tileSize,
+                maxTileZoom = maxTileZoom(),
             )
 
         prefetchedTiles = prefetchTiles.mapTo(HashSet()) { it.wrapped() }
@@ -3083,8 +3112,17 @@ class MapController(
                         if (cachedBitmap != null) {
                             cachedBitmap
                         } else {
-                            // The provider may block: this runs on an IO thread
-                            val tileData = overlay.tileProvider.getTile(tile.x, tile.y, tile.zoom)
+                            // The provider may block: this runs on an IO thread. It is code of
+                            // the app: if it throws, the tile failed and is asked for again later.
+                            val tileData =
+                                try {
+                                    overlay.tileProvider.getTile(tile.x, tile.y, tile.zoom)
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    Log.w("OpenMapView", "Tile provider failed for tile (${tile.x}, ${tile.y}, ${tile.zoom})", e)
+                                    null
+                                }
                             if (tileData === TileProvider.NO_TILE) {
                                 noTile = true
                                 null

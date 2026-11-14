@@ -192,6 +192,23 @@ class ViewportCalculatorTest {
     }
 
     @Test
+    fun testMaxTileZoom_UsesFewerTilesOfTheHighestLevel() {
+        val center = LatLng(51.4661, 7.2491)
+
+        val tiles = ViewportCalculator.getVisibleTiles(center, 19f, 1408, 620, maxTileZoom = 17)
+
+        assertTrue(tiles.all { it.zoom == 17 })
+        // Scaled up 4 times, and still the tile of the center is among them
+        assertTrue(tiles.size < ViewportCalculator.getVisibleTiles(center, 19f, 1408, 620).size)
+        assertTrue(ProjectionUtils.latLngToTile(center, 17) in tiles)
+        // Below the limit nothing changes
+        assertEquals(
+            ViewportCalculator.getVisibleTiles(center, 12.4f, 1408, 620),
+            ViewportCalculator.getVisibleTiles(center, 12.4f, 1408, 620, maxTileZoom = 17),
+        )
+    }
+
+    @Test
     fun testFractionalZoomTilesCoverViewport() {
         val center = LatLng(51.4661, 7.2491)
         // Zoom 12.6 draws zoom 13 tiles scaled by 2^-0.4, so more of them are visible

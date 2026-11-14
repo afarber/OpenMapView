@@ -26,10 +26,33 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.shadows.ShadowLog
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 class TileDownloaderTest {
+    // The query of a tile URL holds the API key of the app
+    @Test
+    fun testFailedDownload_LogsTheUrlWithoutItsApiKey() =
+        runTest {
+            val url = "https://example.com/1/2/3.png?apikey=secret"
+            val downloader = TileDownloader()
+            val field = TileDownloader::class.java.getDeclaredField("client")
+            field.isAccessible = true
+
+            field.set(downloader, HttpClient(MockEngine { respond(ByteReadChannel(ByteArray(0)), HttpStatusCode.Forbidden) }))
+            assertNull(downloader.downloadTileBytes(url))
+            // Timeouts name the whole URL in their message
+            field.set(downloader, HttpClient(MockEngine { throw IOException("Socket timeout has expired [url=${'$'}url]") }))
+            assertNull(downloader.downloadTileBytes(url))
+
+            val logs = ShadowLog.getLogs().map { it.msg + it.throwable?.stackTraceToString().orEmpty() }
+            assertEquals(2, logs.count { "https://example.com/1/2/3.png" in it })
+            assertTrue(logs.none { "secret" in it })
+            downloader.close()
+        }
+
     @Test
     fun testDownloadTile_Success() =
         runTest {

@@ -8,6 +8,7 @@
 package de.afarber.openmapview
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Looper
 import android.os.SystemClock
 import io.ktor.client.HttpClient
@@ -15,7 +16,9 @@ import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.isActive
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -267,6 +270,49 @@ class MapControllerTileLoadingTest {
         controller.stopAnimation()
 
         assertTrue((getField(controller, "animationTargetTiles") as Set<*>).isEmpty())
+    }
+
+    // OpenTopoMap has tiles up to zoom 17, the camera zooms in to 19
+    @Test
+    fun testZoomAboveTheSource_RequestsItsHighestTiles() {
+        controller.setViewSize(800, 600)
+        controller.setCenter(LatLng(51.4661, 7.2491))
+        controller.setMapType(MapType.OPENTOPOMAP)
+        setField(controller, "tileDownloader", mockDownloader())
+        controller.setZoom(19f)
+
+        controller.draw(Canvas(Bitmap.createBitmap(800, 600, Bitmap.Config.ARGB_8888)))
+
+        val requested = downloadingTiles().toList()
+        assertTrue(requested.isNotEmpty())
+        assertEquals(setOf(17), requested.map { it.zoom }.toSet())
+    }
+
+    // The tile provider of an overlay is code of the app
+    @Test
+    fun testThrowingTileProvider_CountsAsFailedTile() {
+        controller.setViewSize(800, 600)
+        controller.setMapType(MapType.NONE)
+        val overlay = controller.addTileOverlay(TileOverlay(tileProvider = { _, _, _ -> error("Broken provider") }))
+
+        controller.draw(Canvas(Bitmap.createBitmap(800, 600, Bitmap.Config.ARGB_8888)))
+
+        @Suppress("UNCHECKED_CAST")
+        val downloading = (getField(controller, "overlayDownloadingTiles") as Map<String, Set<TileCoordinate>>).getValue(overlay.id)
+        val requested = downloading.toList()
+        assertTrue(requested.isNotEmpty())
+        val deadline = System.currentTimeMillis() + 5_000
+        while (downloading.isNotEmpty()) {
+            check(System.currentTimeMillis() < deadline) { "The failed tiles were not reported" }
+            shadowOf(Looper.getMainLooper()).idle()
+            Thread.sleep(10)
+        }
+
+        // Asked again later, like a tile that failed to download, and the map still loads tiles
+        @Suppress("UNCHECKED_CAST")
+        val retries = (getField(controller, "overlayTileRetries") as Map<String, TileRetryTracker>).getValue(overlay.id)
+        assertFalse(retries.canRequest(requested.first(), SystemClock.elapsedRealtime()))
+        assertTrue((getField(controller, "scope") as CoroutineScope).isActive)
     }
 
     @Test
