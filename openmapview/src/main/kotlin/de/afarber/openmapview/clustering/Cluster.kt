@@ -14,15 +14,15 @@ import de.afarber.openmapview.LatLng
  *
  * @param T The type of the items
  */
-interface Cluster<T : ClusterItem> {
+public interface Cluster<T : ClusterItem> {
     /** Where the cluster marker is drawn: the position of its first item. */
-    val position: LatLng
+    public val position: LatLng
 
     /** The items in the cluster. */
-    val items: Collection<T>
+    public val items: Collection<T>
 
     /** The number of items in the cluster. */
-    val size: Int
+    public val size: Int
 }
 
 internal class StaticCluster<T : ClusterItem>(

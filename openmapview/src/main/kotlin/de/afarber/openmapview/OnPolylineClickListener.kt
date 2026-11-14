@@ -13,11 +13,11 @@ package de.afarber.openmapview
  * Implement this interface and set it using [OpenMapView.setOnPolylineClickListener]
  * to receive callbacks when a polyline is clicked on the map.
  */
-fun interface OnPolylineClickListener {
+public fun interface OnPolylineClickListener {
     /**
      * Called when a polyline has been clicked.
      *
      * @param polyline The polyline that was clicked
      */
-    fun onPolylineClick(polyline: Polyline)
+    public fun onPolylineClick(polyline: Polyline)
 }

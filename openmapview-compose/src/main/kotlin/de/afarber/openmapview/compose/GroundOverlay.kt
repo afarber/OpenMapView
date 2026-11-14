@@ -47,7 +47,7 @@ import de.afarber.openmapview.GroundOverlay as MapGroundOverlay
  * @param onClick Called when a clickable overlay is tapped
  */
 @Composable
-fun GroundOverlay(
+public fun GroundOverlay(
     image: BitmapDescriptor,
     position: LatLng? = null,
     width: Float? = null,

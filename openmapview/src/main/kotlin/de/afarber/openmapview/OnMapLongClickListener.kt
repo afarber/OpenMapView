@@ -12,11 +12,11 @@ package de.afarber.openmapview
  *
  * Called when the user long-presses on the map (not on a marker or other overlay).
  */
-fun interface OnMapLongClickListener {
+public fun interface OnMapLongClickListener {
     /**
      * Called when the map is long-clicked.
      *
      * @param latLng The geographic location that was long-clicked
      */
-    fun onMapLongClick(latLng: LatLng)
+    public fun onMapLongClick(latLng: LatLng)
 }

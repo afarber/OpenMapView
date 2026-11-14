@@ -7,7 +7,7 @@
 
 package de.afarber.openmapview
 
-class GroundOverlayOptions {
+public class GroundOverlayOptions {
     private var image: BitmapDescriptor? = null
     private var position: LatLng? = null
     private var width: Float? = null
@@ -21,12 +21,12 @@ class GroundOverlayOptions {
     private var clickable: Boolean = false
     private var tag: Any? = null
 
-    fun image(image: BitmapDescriptor): GroundOverlayOptions {
+    public fun image(image: BitmapDescriptor): GroundOverlayOptions {
         this.image = image
         return this
     }
 
-    fun position(
+    public fun position(
         position: LatLng,
         width: Float,
     ): GroundOverlayOptions {
@@ -36,7 +36,7 @@ class GroundOverlayOptions {
         return this
     }
 
-    fun position(
+    public fun position(
         position: LatLng,
         width: Float,
         height: Float,
@@ -48,7 +48,7 @@ class GroundOverlayOptions {
         return this
     }
 
-    fun positionFromBounds(bounds: LatLngBounds): GroundOverlayOptions {
+    public fun positionFromBounds(bounds: LatLngBounds): GroundOverlayOptions {
         this.bounds = bounds
         this.position = null
         this.width = null
@@ -56,7 +56,7 @@ class GroundOverlayOptions {
         return this
     }
 
-    fun anchor(
+    public fun anchor(
         u: Float,
         v: Float,
     ): GroundOverlayOptions {
@@ -64,32 +64,32 @@ class GroundOverlayOptions {
         return this
     }
 
-    fun bearing(bearing: Float): GroundOverlayOptions {
+    public fun bearing(bearing: Float): GroundOverlayOptions {
         this.bearing = bearing
         return this
     }
 
-    fun transparency(transparency: Float): GroundOverlayOptions {
+    public fun transparency(transparency: Float): GroundOverlayOptions {
         this.transparency = transparency
         return this
     }
 
-    fun visible(visible: Boolean): GroundOverlayOptions {
+    public fun visible(visible: Boolean): GroundOverlayOptions {
         this.visible = visible
         return this
     }
 
-    fun zIndex(zIndex: Float): GroundOverlayOptions {
+    public fun zIndex(zIndex: Float): GroundOverlayOptions {
         this.zIndex = zIndex
         return this
     }
 
-    fun clickable(clickable: Boolean): GroundOverlayOptions {
+    public fun clickable(clickable: Boolean): GroundOverlayOptions {
         this.clickable = clickable
         return this
     }
 
-    fun tag(tag: Any?): GroundOverlayOptions {
+    public fun tag(tag: Any?): GroundOverlayOptions {
         this.tag = tag
         return this
     }

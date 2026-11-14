@@ -12,11 +12,11 @@ package de.afarber.openmapview
  *
  * Called when the user taps on the map (not on a marker or other overlay).
  */
-fun interface OnMapClickListener {
+public fun interface OnMapClickListener {
     /**
      * Called when the map is clicked.
      *
      * @param latLng The geographic location that was clicked
      */
-    fun onMapClick(latLng: LatLng)
+    public fun onMapClick(latLng: LatLng)
 }

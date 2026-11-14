@@ -10,11 +10,11 @@ package de.afarber.openmapview
 /**
  * Called when the my-location button is tapped.
  */
-fun interface OnMyLocationButtonClickListener {
+public fun interface OnMyLocationButtonClickListener {
     /**
      * Called when the my-location button is tapped.
      *
      * @return true to consume the tap, false to also move the camera to the location
      */
-    fun onMyLocationButtonClick(): Boolean
+    public fun onMyLocationButtonClick(): Boolean
 }

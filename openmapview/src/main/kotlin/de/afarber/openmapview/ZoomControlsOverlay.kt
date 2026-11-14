@@ -20,7 +20,7 @@ import android.text.TextPaint
  * Renders two circular buttons in the bottom-right corner (above attribution):
  * zoom in (+) on top and zoom out (-) below it.
  */
-class ZoomControlsOverlay(
+internal class ZoomControlsOverlay(
     context: Context,
 ) {
     private val buttonRadius = 20f * context.resources.displayMetrics.density

@@ -16,21 +16,21 @@ import android.graphics.Bitmap
  * from various sources (default colors, resources, assets, bitmaps).
  * Colors are specified using HSV hue values (0-360 degrees on the color wheel).
  */
-object BitmapDescriptorFactory {
+public object BitmapDescriptorFactory {
     /**
      * Predefined HUE constants for common marker colors.
      * Values represent degrees on the HSV color wheel.
      */
-    const val HUE_RED = 0f
-    const val HUE_ORANGE = 30f
-    const val HUE_YELLOW = 60f
-    const val HUE_GREEN = 120f
-    const val HUE_CYAN = 180f
-    const val HUE_AZURE = 210f
-    const val HUE_BLUE = 240f
-    const val HUE_VIOLET = 270f
-    const val HUE_MAGENTA = 300f
-    const val HUE_ROSE = 330f
+    public const val HUE_RED: Float = 0f
+    public const val HUE_ORANGE: Float = 30f
+    public const val HUE_YELLOW: Float = 60f
+    public const val HUE_GREEN: Float = 120f
+    public const val HUE_CYAN: Float = 180f
+    public const val HUE_AZURE: Float = 210f
+    public const val HUE_BLUE: Float = 240f
+    public const val HUE_VIOLET: Float = 270f
+    public const val HUE_MAGENTA: Float = 300f
+    public const val HUE_ROSE: Float = 330f
 
     /**
      * Creates a marker icon descriptor with the specified hue.
@@ -41,7 +41,7 @@ object BitmapDescriptorFactory {
      */
     @JvmOverloads
     @JvmStatic
-    fun defaultMarker(hue: Float = HUE_RED): BitmapDescriptor = BitmapDescriptor.DefaultMarker(hue)
+    public fun defaultMarker(hue: Float = HUE_RED): BitmapDescriptor = BitmapDescriptor.DefaultMarker(hue)
 
     /**
      * Creates a marker icon descriptor from a drawable resource.
@@ -53,7 +53,7 @@ object BitmapDescriptorFactory {
      * @return A BitmapDescriptor for the resource marker
      */
     @JvmStatic
-    fun fromResource(resourceId: Int): BitmapDescriptor = BitmapDescriptor.ResourceMarker(resourceId)
+    public fun fromResource(resourceId: Int): BitmapDescriptor = BitmapDescriptor.ResourceMarker(resourceId)
 
     /**
      * Creates a marker icon descriptor from an asset file.
@@ -62,7 +62,7 @@ object BitmapDescriptorFactory {
      * @return A BitmapDescriptor for the asset marker
      */
     @JvmStatic
-    fun fromAsset(assetName: String): BitmapDescriptor = BitmapDescriptor.AssetMarker(assetName)
+    public fun fromAsset(assetName: String): BitmapDescriptor = BitmapDescriptor.AssetMarker(assetName)
 
     /**
      * Creates a marker icon descriptor from a bitmap object.
@@ -71,5 +71,5 @@ object BitmapDescriptorFactory {
      * @return A BitmapDescriptor for the bitmap marker
      */
     @JvmStatic
-    fun fromBitmap(bitmap: Bitmap): BitmapDescriptor = BitmapDescriptor.BitmapMarker(bitmap)
+    public fun fromBitmap(bitmap: Bitmap): BitmapDescriptor = BitmapDescriptor.BitmapMarker(bitmap)
 }

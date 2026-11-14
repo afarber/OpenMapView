@@ -13,25 +13,25 @@ package de.afarber.openmapview
  * Implement this interface to receive callbacks when a draggable marker
  * is dragged across the map.
  */
-interface OnMarkerDragListener {
+public interface OnMarkerDragListener {
     /**
      * Called when a marker starts being dragged.
      *
      * @param marker The marker being dragged
      */
-    fun onMarkerDragStart(marker: Marker)
+    public fun onMarkerDragStart(marker: Marker)
 
     /**
      * Called repeatedly while a marker is being dragged.
      *
      * @param marker The marker being dragged
      */
-    fun onMarkerDrag(marker: Marker)
+    public fun onMarkerDrag(marker: Marker)
 
     /**
      * Called when a marker has finished being dragged.
      *
      * @param marker The marker that was dragged
      */
-    fun onMarkerDragEnd(marker: Marker)
+    public fun onMarkerDragEnd(marker: Marker)
 }

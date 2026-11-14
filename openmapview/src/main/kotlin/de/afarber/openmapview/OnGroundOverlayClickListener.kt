@@ -7,6 +7,6 @@
 
 package de.afarber.openmapview
 
-fun interface OnGroundOverlayClickListener {
-    fun onGroundOverlayClick(groundOverlay: GroundOverlay)
+public fun interface OnGroundOverlayClickListener {
+    public fun onGroundOverlayClick(groundOverlay: GroundOverlay)
 }

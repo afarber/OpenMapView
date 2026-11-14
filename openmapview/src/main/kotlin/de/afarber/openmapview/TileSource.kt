@@ -29,13 +29,13 @@ package de.afarber.openmapview
  * @property apiKeyProvider Provider name for API key lookup (e.g., "thunderforest")
  * @property isDark Whether the tiles are dark already, so [MapColorScheme.DARK] keeps them
  */
-enum class TileSource(
-    val urlTemplate: String,
-    val attributionText: String,
-    val attributionUrl: String,
-    val maxZoom: Int,
-    val requiresApiKey: Boolean = false,
-    val apiKeyProvider: String? = null,
+public enum class TileSource(
+    public val urlTemplate: String,
+    public val attributionText: String,
+    public val attributionUrl: String,
+    public val maxZoom: Int,
+    public val requiresApiKey: Boolean = false,
+    public val apiKeyProvider: String? = null,
     internal val isDark: Boolean = false,
 ) {
     /**
@@ -260,7 +260,7 @@ enum class TileSource(
      * @param tile The tile coordinate
      * @return The complete URL for downloading the tile
      */
-    fun getTileUrl(tile: TileCoordinate): String {
+    public fun getTileUrl(tile: TileCoordinate): String {
         var url = urlTemplate
 
         // Replace tile coordinates
@@ -293,7 +293,7 @@ enum class TileSource(
      *
      * @return true if no API key is required, or if a key is configured
      */
-    fun hasApiKey(): Boolean {
+    public fun hasApiKey(): Boolean {
         if (!requiresApiKey) return true
         return apiKeyProvider?.let { ApiKeyManager.hasApiKey(it) } ?: false
     }
@@ -303,7 +303,7 @@ enum class TileSource(
      *
      * Used for error messages and overlay display.
      */
-    fun getProviderName(): String =
+    public fun getProviderName(): String =
         when (this) {
             CYCLEMAP, TRANSPORT, TRANSPORT_DARK -> "Thunderforest"
             TRACESTRACK_TOPO -> "Tracestrack"
@@ -312,7 +312,7 @@ enum class TileSource(
             else -> "OpenStreetMap"
         }
 
-    companion object {
+    public companion object {
         /**
          * Gets the tile source for a given map type.
          *
@@ -320,7 +320,7 @@ enum class TileSource(
          * @return The corresponding TileSource, or STANDARD for unknown types
          */
         @JvmStatic
-        fun fromMapType(mapType: Int): TileSource =
+        public fun fromMapType(mapType: Int): TileSource =
             when (mapType) {
                 // NONE uses STANDARD but doesn't render
                 MapType.NONE -> STANDARD
@@ -363,7 +363,7 @@ enum class TileSource(
          * @return The display name
          */
         @JvmStatic
-        fun getMapTypeName(mapType: Int): String =
+        public fun getMapTypeName(mapType: Int): String =
             when (mapType) {
                 MapType.NONE -> "None"
                 MapType.STANDARD -> "Standard"

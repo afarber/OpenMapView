@@ -36,7 +36,7 @@ import kotlin.time.Duration
  *   `remember { TileColorFilters.invertedDark().asComposeColorFilter() }`.
  */
 @Immutable
-data class MapProperties(
+public data class MapProperties(
     val mapType: Int = MapType.STANDARD,
     val minZoomPreference: Float = 2f,
     val maxZoomPreference: Float = 19f,
@@ -84,7 +84,7 @@ data class MapProperties(
  *   turns the map back to north up
  */
 @Immutable
-data class MapUiSettings(
+public data class MapUiSettings(
     val zoomControlsEnabled: Boolean = false,
     val zoomGesturesEnabled: Boolean = true,
     val scrollGesturesEnabled: Boolean = true,

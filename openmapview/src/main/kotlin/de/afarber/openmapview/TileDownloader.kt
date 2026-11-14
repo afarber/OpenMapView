@@ -18,7 +18,7 @@ import io.ktor.client.statement.readRawBytes
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
 
-class TileDownloader {
+internal class TileDownloader {
     companion object {
         private val TAG = TileDownloader::class.java.simpleName
     }

@@ -52,7 +52,7 @@ import de.afarber.openmapview.Polyline as MapPolyline
  * @param onClick Called when a clickable polyline is tapped
  */
 @Composable
-fun Polyline(
+public fun Polyline(
     points: List<LatLng>,
     strokeColor: Color = Color.Black,
     strokeWidth: Float = 10f,

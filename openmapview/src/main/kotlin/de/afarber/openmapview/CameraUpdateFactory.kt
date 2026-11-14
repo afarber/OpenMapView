@@ -15,7 +15,7 @@ import android.graphics.Point
  * Use these methods to create camera updates for [OpenMapView.moveCamera]
  * and [OpenMapView.animateCamera].
  */
-object CameraUpdateFactory {
+public object CameraUpdateFactory {
     /**
      * Returns a CameraUpdate that moves the camera to the specified location,
      * preserving the current zoom level.
@@ -24,7 +24,7 @@ object CameraUpdateFactory {
      * @return A CameraUpdate for the new location
      */
     @JvmStatic
-    fun newLatLng(target: LatLng): CameraUpdate = CameraUpdate.NewLatLng(target)
+    public fun newLatLng(target: LatLng): CameraUpdate = CameraUpdate.NewLatLng(target)
 
     /**
      * Returns a CameraUpdate that moves the camera to the specified location
@@ -35,7 +35,7 @@ object CameraUpdateFactory {
      * @return A CameraUpdate for the new location and zoom
      */
     @JvmStatic
-    fun newLatLngZoom(
+    public fun newLatLngZoom(
         target: LatLng,
         zoom: Float,
     ): CameraUpdate = CameraUpdate.NewLatLngZoom(target, zoom)
@@ -47,7 +47,7 @@ object CameraUpdateFactory {
      * @return A CameraUpdate for the new position
      */
     @JvmStatic
-    fun newCameraPosition(position: CameraPosition): CameraUpdate = CameraUpdate.NewCameraPosition(position)
+    public fun newCameraPosition(position: CameraPosition): CameraUpdate = CameraUpdate.NewCameraPosition(position)
 
     /**
      * Returns a CameraUpdate that increases the zoom level by 1.
@@ -55,7 +55,7 @@ object CameraUpdateFactory {
      * @return A CameraUpdate that zooms in
      */
     @JvmStatic
-    fun zoomIn(): CameraUpdate = CameraUpdate.ZoomIn
+    public fun zoomIn(): CameraUpdate = CameraUpdate.ZoomIn
 
     /**
      * Returns a CameraUpdate that decreases the zoom level by 1.
@@ -63,7 +63,7 @@ object CameraUpdateFactory {
      * @return A CameraUpdate that zooms out
      */
     @JvmStatic
-    fun zoomOut(): CameraUpdate = CameraUpdate.ZoomOut
+    public fun zoomOut(): CameraUpdate = CameraUpdate.ZoomOut
 
     /**
      * Returns a CameraUpdate that sets the zoom level to the specified value.
@@ -72,7 +72,7 @@ object CameraUpdateFactory {
      * @return A CameraUpdate for the specified zoom level
      */
     @JvmStatic
-    fun zoomTo(zoom: Float): CameraUpdate = CameraUpdate.ZoomTo(zoom)
+    public fun zoomTo(zoom: Float): CameraUpdate = CameraUpdate.ZoomTo(zoom)
 
     /**
      * Returns a CameraUpdate that adjusts the zoom level by the specified amount.
@@ -83,7 +83,7 @@ object CameraUpdateFactory {
      * @return A CameraUpdate for the relative zoom adjustment
      */
     @JvmStatic
-    fun zoomBy(amount: Float): CameraUpdate = CameraUpdate.ZoomBy(amount)
+    public fun zoomBy(amount: Float): CameraUpdate = CameraUpdate.ZoomBy(amount)
 
     /**
      * Returns a CameraUpdate that adjusts the zoom level by the specified amount around a
@@ -94,7 +94,7 @@ object CameraUpdateFactory {
      * @return A CameraUpdate for the relative zoom adjustment
      */
     @JvmStatic
-    fun zoomBy(
+    public fun zoomBy(
         amount: Float,
         focus: Point,
     ): CameraUpdate = CameraUpdate.ZoomBy(amount, Point(focus))
@@ -111,7 +111,7 @@ object CameraUpdateFactory {
      * @return A CameraUpdate for the pixel scroll
      */
     @JvmStatic
-    fun scrollBy(
+    public fun scrollBy(
         xPixels: Float,
         yPixels: Float,
     ): CameraUpdate = CameraUpdate.ScrollBy(xPixels, yPixels)
@@ -130,7 +130,7 @@ object CameraUpdateFactory {
      * @return A CameraUpdate to display the bounds
      */
     @JvmStatic
-    fun newLatLngBounds(
+    public fun newLatLngBounds(
         bounds: LatLngBounds,
         padding: Int,
     ): CameraUpdate = CameraUpdate.NewLatLngBounds(bounds, padding)
@@ -149,7 +149,7 @@ object CameraUpdateFactory {
      * @return A CameraUpdate to display the bounds
      */
     @JvmStatic
-    fun newLatLngBounds(
+    public fun newLatLngBounds(
         bounds: LatLngBounds,
         width: Int,
         height: Int,

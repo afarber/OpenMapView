@@ -21,7 +21,7 @@ import kotlin.math.min
  * @property northeast The northeast corner of the bounds
  */
 @Parcelize
-data class LatLngBounds(
+public data class LatLngBounds(
     @JvmField val southwest: LatLng,
     @JvmField val northeast: LatLng,
 ) : Parcelable {
@@ -31,7 +31,7 @@ data class LatLngBounds(
      * @param point The point to test
      * @return true if the point is contained within the bounds, false otherwise
      */
-    fun contains(point: LatLng): Boolean {
+    public fun contains(point: LatLng): Boolean {
         val lat = point.latitude
         val lng = point.longitude
 
@@ -52,7 +52,7 @@ data class LatLngBounds(
      *
      * @return The geographic center point
      */
-    fun getCenter(): LatLng {
+    public fun getCenter(): LatLng {
         val lat = (southwest.latitude + northeast.latitude) / 2.0
 
         val lng =
@@ -73,7 +73,7 @@ data class LatLngBounds(
      * @param point The point to include
      * @return A new LatLngBounds that includes both the original bounds and the point
      */
-    fun including(point: LatLng): LatLngBounds {
+    public fun including(point: LatLng): LatLngBounds {
         val minLat = min(southwest.latitude, point.latitude)
         val maxLat = max(northeast.latitude, point.latitude)
 
@@ -94,14 +94,14 @@ data class LatLngBounds(
         )
     }
 
-    companion object {
+    public companion object {
         /**
          * Creates a new builder for constructing bounds.
          *
          * @return A new Builder instance
          */
         @JvmStatic
-        fun builder(): Builder = Builder()
+        public fun builder(): Builder = Builder()
     }
 
     /**
@@ -111,7 +111,7 @@ data class LatLngBounds(
      * included points. It crosses the 180th meridian when that is narrower,
      * e.g. for points in Fiji and Samoa.
      */
-    class Builder {
+    public class Builder {
         private var minLat = Double.NaN
         private var maxLat = Double.NaN
         private val longitudes = mutableListOf<Double>()
@@ -124,7 +124,7 @@ data class LatLngBounds(
          * @param point The point to include
          * @return This builder for method chaining
          */
-        fun include(point: LatLng): Builder {
+        public fun include(point: LatLng): Builder {
             minLat = if (minLat.isNaN()) point.latitude else min(minLat, point.latitude)
             maxLat = if (maxLat.isNaN()) point.latitude else max(maxLat, point.latitude)
             longitudes.add(point.longitude)
@@ -137,7 +137,7 @@ data class LatLngBounds(
          * @return The constructed LatLngBounds
          * @throws IllegalArgumentException if no points have been included
          */
-        fun build(): LatLngBounds {
+        public fun build(): LatLngBounds {
             require(longitudes.isNotEmpty()) {
                 "Cannot build LatLngBounds: no points have been included"
             }

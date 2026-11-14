@@ -42,7 +42,7 @@ import de.afarber.openmapview.Marker as MapMarker
  * @param content The marker icon
  */
 @Composable
-fun MarkerComposable(
+public fun MarkerComposable(
     vararg keys: Any?,
     state: MarkerState,
     title: String? = null,

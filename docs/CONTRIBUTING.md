@@ -59,6 +59,8 @@ All code must pass Android Lint. Lint checks the library for:
 - Common Android, AndroidX and Kotlin pitfalls
 
 Kotlin compiler warnings are treated as errors in the library, so new warnings fail the build as well.
+
+Both library modules use Kotlin's explicit API mode: every declaration of the public API needs the `public` modifier and an explicit type, and everything else is `internal` or `private`. So nothing becomes part of the API by accident.
 - Code smells
 
 **Run static analysis:**

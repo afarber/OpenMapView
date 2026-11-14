@@ -14,9 +14,9 @@ package de.afarber.openmapview
  * base map tiles have been drawn and the camera is not moving. It is not called if the
  * tiles can't be loaded (e.g. offline) or while the camera keeps moving.
  */
-fun interface OnMapLoadedCallback {
+public fun interface OnMapLoadedCallback {
     /**
      * Called when the map has finished rendering.
      */
-    fun onMapLoaded()
+    public fun onMapLoaded()
 }

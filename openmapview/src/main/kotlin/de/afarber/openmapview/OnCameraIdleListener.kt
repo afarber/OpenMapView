@@ -15,11 +15,11 @@ package de.afarber.openmapview
  *
  * This is called after all camera movements (gestures, animations) have completed.
  */
-fun interface OnCameraIdleListener {
+public fun interface OnCameraIdleListener {
     /**
      * Called when the camera stops moving.
      *
      * This is invoked after animations complete or gestures end.
      */
-    fun onCameraIdle()
+    public fun onCameraIdle()
 }

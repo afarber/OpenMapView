@@ -12,7 +12,7 @@ package de.afarber.openmapview
  *
  * Called when the user taps on a marker.
  */
-fun interface OnMarkerClickListener {
+public fun interface OnMarkerClickListener {
     /**
      * Called when a marker is clicked.
      *
@@ -20,5 +20,5 @@ fun interface OnMarkerClickListener {
      * @return true to consume the event, false for the default behavior: the marker's info
      *         window opens and the camera moves to the marker
      */
-    fun onMarkerClick(marker: Marker): Boolean
+    public fun onMarkerClick(marker: Marker): Boolean
 }

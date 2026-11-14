@@ -26,7 +26,7 @@ import kotlinx.parcelize.Parcelize
  * @throws IllegalArgumentException if [latitude] or [longitude] is NaN or infinite
  */
 @Parcelize
-class LatLng(
+public class LatLng(
     latitude: Double,
     longitude: Double,
 ) : Parcelable {
@@ -37,17 +37,17 @@ class LatLng(
 
     /** The latitude in degrees, between -90 and 90. */
     @JvmField
-    val latitude: Double = latitude.coerceIn(-90.0, 90.0)
+    public val latitude: Double = latitude.coerceIn(-90.0, 90.0)
 
     /** The longitude in degrees, between -180 and 180. */
     @JvmField
-    val longitude: Double = normalizeLongitude(longitude)
+    public val longitude: Double = normalizeLongitude(longitude)
 
-    operator fun component1(): Double = latitude
+    public operator fun component1(): Double = latitude
 
-    operator fun component2(): Double = longitude
+    public operator fun component2(): Double = longitude
 
-    fun copy(
+    public fun copy(
         latitude: Double = this.latitude,
         longitude: Double = this.longitude,
     ): LatLng = LatLng(latitude, longitude)

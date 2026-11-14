@@ -13,24 +13,24 @@ package de.afarber.openmapview
  * Implement this interface and set it using [OpenMapView.setOnCameraMoveStartedListener]
  * to receive callbacks when the camera starts moving.
  */
-fun interface OnCameraMoveStartedListener {
-    companion object {
+public fun interface OnCameraMoveStartedListener {
+    public companion object {
         /**
          * Camera movement initiated by a user gesture (pan or pinch zoom)
          */
-        const val REASON_GESTURE = 1
+        public const val REASON_GESTURE: Int = 1
 
         /**
          * Camera movement initiated by the map itself: a tap on the zoom buttons (see
          * [UiSettings.isZoomControlsEnabled]), the my-location button or a marker.
          */
-        const val REASON_API_ANIMATION = 2
+        public const val REASON_API_ANIMATION: Int = 2
 
         /**
          * Camera movement initiated by the app, with [OpenMapView.moveCamera] or
          * [OpenMapView.animateCamera].
          */
-        const val REASON_DEVELOPER_ANIMATION = 3
+        public const val REASON_DEVELOPER_ANIMATION: Int = 3
     }
 
     /**
@@ -39,5 +39,5 @@ fun interface OnCameraMoveStartedListener {
      * @param reason The reason for the camera movement. One of:
      *               [REASON_GESTURE], [REASON_API_ANIMATION], [REASON_DEVELOPER_ANIMATION]
      */
-    fun onCameraMoveStarted(reason: Int)
+    public fun onCameraMoveStarted(reason: Int)
 }

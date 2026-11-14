@@ -48,10 +48,10 @@ import kotlinx.coroutines.runBlocking
  * @see TileProvider
  * @see Tile
  */
-abstract class UrlTileProvider(
+public abstract class UrlTileProvider(
     private val urlTemplate: String,
 ) : TileProvider {
-    companion object {
+    public companion object {
         private val TAG = UrlTileProvider::class.java.simpleName
 
         // Shared by all providers and never closed, it lives as long as the process
@@ -161,7 +161,7 @@ abstract class UrlTileProvider(
      * for the other providers.
      */
     @Deprecated("UrlTileProvider instances share one HTTP client now, there is nothing to close")
-    fun close() {
+    public fun close() {
         // Nothing to release per instance
     }
 }

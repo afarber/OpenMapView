@@ -14,8 +14,8 @@ import de.afarber.openmapview.MapColorScheme
  *
  * @property value The [MapColorScheme] constant
  */
-enum class ComposeMapColorScheme(
-    val value: Int,
+public enum class ComposeMapColorScheme(
+    public val value: Int,
 ) {
     /** Light map, whatever the device settings. */
     LIGHT(MapColorScheme.LIGHT),

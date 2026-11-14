@@ -37,7 +37,7 @@ package de.afarber.openmapview
  * @see Tile
  * @see TileOverlay
  */
-fun interface TileProvider {
+public fun interface TileProvider {
     /**
      * Returns the [Tile] for the specified coordinates.
      *
@@ -50,19 +50,19 @@ fun interface TileProvider {
      * @return The tile, [NO_TILE] if there is no tile at these coordinates (it is not
      * requested again), or null if it cannot be loaded right now (it is retried later)
      */
-    fun getTile(
+    public fun getTile(
         x: Int,
         y: Int,
         zoom: Int,
     ): Tile?
 
-    companion object {
+    public companion object {
         /**
          * Returned by [getTile] where there is no tile, e.g. outside the area a provider
          * covers. The map then draws nothing there and does not request the tile again.
          * Compared by reference: only this instance has that meaning.
          */
         @JvmField
-        val NO_TILE: Tile = Tile(1, 1, byteArrayOf(0))
+        public val NO_TILE: Tile = Tile(1, 1, byteArrayOf(0))
     }
 }

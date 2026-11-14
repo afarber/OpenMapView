@@ -18,13 +18,13 @@ import android.graphics.Bitmap
  * - [ResourceMarker]: Bitmap or vector drawable resource
  * - [AssetMarker]: Bitmap from assets folder
  */
-sealed class BitmapDescriptor {
+public sealed class BitmapDescriptor {
     /**
      * Default teardrop marker with specified hue color.
      *
      * @property hue The hue value (0-360) on the HSV color wheel
      */
-    data class DefaultMarker(
+    public data class DefaultMarker(
         val hue: Float,
     ) : BitmapDescriptor()
 
@@ -33,7 +33,7 @@ sealed class BitmapDescriptor {
      *
      * @property bitmap The bitmap to use as marker icon
      */
-    data class BitmapMarker(
+    public data class BitmapMarker(
         val bitmap: Bitmap,
     ) : BitmapDescriptor()
 
@@ -42,7 +42,7 @@ sealed class BitmapDescriptor {
      *
      * @property resourceId The drawable resource ID (e.g., R.drawable.marker_icon)
      */
-    data class ResourceMarker(
+    public data class ResourceMarker(
         val resourceId: Int,
     ) : BitmapDescriptor()
 
@@ -51,7 +51,7 @@ sealed class BitmapDescriptor {
      *
      * @property assetName The name of the asset file (e.g., "markers/custom_marker.png")
      */
-    data class AssetMarker(
+    public data class AssetMarker(
         val assetName: String,
     ) : BitmapDescriptor()
 }

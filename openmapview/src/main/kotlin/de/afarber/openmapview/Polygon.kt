@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicLong
  * @param zIndex draw order: polygons with a higher zIndex are drawn on top
  * @param tag optional user data
  */
-class Polygon(
+public class Polygon(
     points: List<LatLng>,
     strokeColor: Color = Color.Black,
     strokeWidth: Float = 10f,
@@ -62,120 +62,120 @@ class Polygon(
     ) = ShapeProperty(initial, check) { mapView?.invalidate() }
 
     /** The geographic coordinates of the outline, at least 3; the last point connects to the first */
-    var points: List<LatLng> by property(points) { require(it.size >= 3) { "Polygon must have at least 3 points" } }
+    public var points: List<LatLng> by property(points) { require(it.size >= 3) { "Polygon must have at least 3 points" } }
 
     /** The outline color */
-    var strokeColor: Color by property(strokeColor)
+    public var strokeColor: Color by property(strokeColor)
 
     /** The outline width in pixels */
-    var strokeWidth: Float by property(strokeWidth)
+    public var strokeWidth: Float by property(strokeWidth)
 
     /** The stroke pattern, e.g. dashed; null for a solid line */
-    var strokePattern: PathEffect? by property(strokePattern)
+    public var strokePattern: PathEffect? by property(strokePattern)
 
     /** The stroke pattern as dots, dashes and gaps, used instead of [strokePattern] if not null */
-    var pattern: List<PatternItem>? by property(pattern)
+    public var pattern: List<PatternItem>? by property(pattern)
 
     /** The shape of line ends */
-    var strokeCap: StrokeCap by property(strokeCap)
+    public var strokeCap: StrokeCap by property(strokeCap)
 
     /** The shape of the corners */
-    var strokeJoin: StrokeJoin by property(strokeJoin)
+    public var strokeJoin: StrokeJoin by property(strokeJoin)
 
     /** The color of the interior */
-    var fillColor: Color by property(fillColor)
+    public var fillColor: Color by property(fillColor)
 
     /** Holes cut out of the interior, each with at least 3 points */
-    var holes: List<List<LatLng>> by property(holes) { holes ->
+    public var holes: List<List<LatLng>> by property(holes) { holes ->
         holes.forEach {
             require(it.size >= 3) { "Polygon hole must have at least 3 points" }
         }
     }
 
     /** Whether segments are drawn as great-circle paths instead of straight lines on the Mercator map */
-    var geodesic: Boolean by property(geodesic)
+    public var geodesic: Boolean by property(geodesic)
 
     /** Whether the polygon is visible */
-    var visible: Boolean by property(visible)
+    public var visible: Boolean by property(visible)
 
     /** Whether a tap on the polygon is reported to its click listener */
-    var clickable: Boolean by property(clickable)
+    public var clickable: Boolean by property(clickable)
 
     /** Draw order: polygons with a higher zIndex are drawn on top */
-    var zIndex: Float by property(zIndex)
+    public var zIndex: Float by property(zIndex)
 
     /** Optional user data */
-    var tag: Any? by property(tag)
+    public var tag: Any? by property(tag)
 
     /**
      * The unique id of this polygon, e.g. "pg0", which stays the same for its lifetime.
      * [copy] returns a polygon with a new id.
      */
-    val id: String = "pg${nextId.getAndIncrement()}"
+    public val id: String = "pg${nextId.getAndIncrement()}"
 
     /** [strokeColor] as an ARGB color int, e.g. for Java code. */
-    var strokeColorArgb: Int
+    public var strokeColorArgb: Int
         get() = strokeColor.toArgb()
         set(value) {
             strokeColor = Color(value)
         }
 
     /** [fillColor] as an ARGB color int, e.g. for Java code. */
-    var fillColorArgb: Int
+    public var fillColorArgb: Int
         get() = fillColor.toArgb()
         set(value) {
             fillColor = Color(value)
         }
 
     /** The stroke color as an ARGB color int, like `getStrokeColor()` of the Maps SDK. */
-    fun getStrokeColor(): Int = strokeColorArgb
+    public fun getStrokeColor(): Int = strokeColorArgb
 
     /** Sets the stroke color from an ARGB color int, like `setStrokeColor(int)` of the Maps SDK. */
-    fun setStrokeColor(color: Int) {
+    public fun setStrokeColor(color: Int) {
         strokeColorArgb = color
     }
 
     /** The fill color as an ARGB color int, like `getFillColor()` of the Maps SDK. */
-    fun getFillColor(): Int = fillColorArgb
+    public fun getFillColor(): Int = fillColorArgb
 
     /** Sets the fill color from an ARGB color int, like `setFillColor(int)` of the Maps SDK. */
-    fun setFillColor(color: Int) {
+    public fun setFillColor(color: Int) {
         fillColorArgb = color
     }
 
     /** The shape of line ends as a [Cap], e.g. for Java code. */
-    fun getStrokeCap(): Cap = strokeCap.toCap()
+    public fun getStrokeCap(): Cap = strokeCap.toCap()
 
     /** Sets the shape of line ends, e.g. `setStrokeCap(new RoundCap())` from Java. */
-    fun setStrokeCap(cap: Cap) {
+    public fun setStrokeCap(cap: Cap) {
         strokeCap = cap.toStrokeCap()
     }
 
     /** The shape of the corners as a [JointType] constant, like `getStrokeJointType()` of the Maps SDK. */
-    fun getStrokeJointType(): Int = strokeJoin.toJointType()
+    public fun getStrokeJointType(): Int = strokeJoin.toJointType()
 
     /** Sets the shape of the corners from a [JointType] constant, like `setStrokeJointType(int)` of the Maps SDK. */
-    fun setStrokeJointType(jointType: Int) {
+    public fun setStrokeJointType(jointType: Int) {
         strokeJoin = jointTypeToStrokeJoin(jointType)
     }
 
     /** Sets [pattern] from dots, dashes and gaps, like `setStrokePattern(List)` of the Maps SDK. */
-    fun setStrokePattern(pattern: List<PatternItem>) {
+    public fun setStrokePattern(pattern: List<PatternItem>) {
         this.pattern = pattern
     }
 
     /** Sets [strokePattern] from an android.graphics.PathEffect, e.g. a DashPathEffect from Java. */
-    fun setStrokePattern(pattern: android.graphics.PathEffect) {
+    public fun setStrokePattern(pattern: android.graphics.PathEffect) {
         strokePattern = pattern.toComposePathEffect()
     }
 
     /** Removes the polygon from the map that shows it. */
-    fun remove() {
+    public fun remove() {
         mapView?.removePolygon(this)
     }
 
     /** Returns a new polygon with the given properties changed, not added to any map. */
-    fun copy(
+    public fun copy(
         points: List<LatLng> = this.points,
         strokeColor: Color = this.strokeColor,
         strokeWidth: Float = this.strokeWidth,

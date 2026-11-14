@@ -28,7 +28,7 @@ import androidx.compose.ui.graphics.toComposePathEffect
  *     .clickable(true)
  * ```
  */
-class PolylineOptions {
+public class PolylineOptions {
     private val points = mutableListOf<LatLng>()
     private var strokeColor: Color = Color.Black
     private var strokeWidth: Float = 10f
@@ -48,7 +48,7 @@ class PolylineOptions {
      * Adds a vertex to the end of the polyline.
      * @param point Geographic coordinate to add
      */
-    fun add(point: LatLng): PolylineOptions {
+    public fun add(point: LatLng): PolylineOptions {
         points.add(point)
         return this
     }
@@ -57,7 +57,7 @@ class PolylineOptions {
      * Adds several vertices in order, e.g. `add(a, b, c)` from Java.
      * @param points Geographic coordinates to add
      */
-    fun add(vararg points: LatLng): PolylineOptions {
+    public fun add(vararg points: LatLng): PolylineOptions {
         this.points.addAll(points)
         return this
     }
@@ -66,7 +66,7 @@ class PolylineOptions {
      * Adds vertices to the end of the polyline.
      * @param points Geographic coordinates to add
      */
-    fun addAll(points: Iterable<LatLng>): PolylineOptions {
+    public fun addAll(points: Iterable<LatLng>): PolylineOptions {
         this.points.addAll(points)
         return this
     }
@@ -75,7 +75,7 @@ class PolylineOptions {
      * Sets the stroke color of the polyline.
      * @param color Color value (e.g., Color.Red)
      */
-    fun color(color: Color): PolylineOptions {
+    public fun color(color: Color): PolylineOptions {
         this.strokeColor = color
         return this
     }
@@ -85,13 +85,13 @@ class PolylineOptions {
      * Use this overload from Java, e.g. with android.graphics.Color.RED or 0x800000FF.
      * @param color ARGB color int
      */
-    fun color(color: Int): PolylineOptions = color(Color(color))
+    public fun color(color: Int): PolylineOptions = color(Color(color))
 
     /**
      * Sets the stroke width of the polyline in pixels.
      * @param width Width in pixels (default: 10f)
      */
-    fun width(width: Float): PolylineOptions {
+    public fun width(width: Float): PolylineOptions {
         this.strokeWidth = width
         return this
     }
@@ -100,7 +100,7 @@ class PolylineOptions {
      * Sets the stroke pattern of the polyline (dashed, dotted, etc.).
      * @param pattern PathEffect defining the pattern, or null for solid line
      */
-    fun strokePattern(pattern: PathEffect?): PolylineOptions {
+    public fun strokePattern(pattern: PathEffect?): PolylineOptions {
         this.strokePattern = pattern
         return this
     }
@@ -109,14 +109,14 @@ class PolylineOptions {
      * Sets the stroke pattern from an android.graphics.PathEffect, e.g. a DashPathEffect from Java.
      * @param pattern PathEffect defining the pattern
      */
-    fun strokePattern(pattern: android.graphics.PathEffect): PolylineOptions = strokePattern(pattern.toComposePathEffect())
+    public fun strokePattern(pattern: android.graphics.PathEffect): PolylineOptions = strokePattern(pattern.toComposePathEffect())
 
     /**
      * Sets the stroke pattern as dots, dashes and gaps, e.g. `listOf(Dot(), Gap(20f))`.
      * It is used instead of a [strokePattern] if not null.
      * @param pattern The repeating pattern, or null for none
      */
-    fun pattern(pattern: List<PatternItem>?): PolylineOptions {
+    public fun pattern(pattern: List<PatternItem>?): PolylineOptions {
         this.pattern = pattern
         return this
     }
@@ -125,7 +125,7 @@ class PolylineOptions {
      * Sets the stroke cap style for the start of the polyline.
      * @param cap StrokeCap style (Butt, Round, or Square)
      */
-    fun startCap(cap: StrokeCap): PolylineOptions {
+    public fun startCap(cap: StrokeCap): PolylineOptions {
         this.startCap = cap
         return this
     }
@@ -134,7 +134,7 @@ class PolylineOptions {
      * Sets the stroke cap style for the end of the polyline.
      * @param cap StrokeCap style (Butt, Round, or Square)
      */
-    fun endCap(cap: StrokeCap): PolylineOptions {
+    public fun endCap(cap: StrokeCap): PolylineOptions {
         this.endCap = cap
         return this
     }
@@ -143,25 +143,25 @@ class PolylineOptions {
      * Sets the shape of the start, e.g. `startCap(new RoundCap())` from Java.
      * @param cap ButtCap, RoundCap or SquareCap
      */
-    fun startCap(cap: Cap): PolylineOptions = startCap(cap.toStrokeCap())
+    public fun startCap(cap: Cap): PolylineOptions = startCap(cap.toStrokeCap())
 
     /**
      * Sets the shape of the end, e.g. `endCap(new RoundCap())` from Java.
      * @param cap ButtCap, RoundCap or SquareCap
      */
-    fun endCap(cap: Cap): PolylineOptions = endCap(cap.toStrokeCap())
+    public fun endCap(cap: Cap): PolylineOptions = endCap(cap.toStrokeCap())
 
     /**
      * Sets the shape of the corners from a [JointType] constant, e.g. `jointType(JointType.ROUND)`.
      * @param jointType JointType.DEFAULT, BEVEL or ROUND
      */
-    fun jointType(jointType: Int): PolylineOptions = strokeJoin(jointTypeToStrokeJoin(jointType))
+    public fun jointType(jointType: Int): PolylineOptions = strokeJoin(jointTypeToStrokeJoin(jointType))
 
     /**
      * Sets whether segments are drawn as geodesics (great-circle paths).
      * @param geodesic true for geodesic paths, false for straight Mercator lines
      */
-    fun geodesic(geodesic: Boolean): PolylineOptions {
+    public fun geodesic(geodesic: Boolean): PolylineOptions {
         this.geodesic = geodesic
         return this
     }
@@ -170,7 +170,7 @@ class PolylineOptions {
      * Sets style spans for multi-colored polylines.
      * @param spans List of StyleSpan defining colors and segment counts
      */
-    fun spans(spans: List<StyleSpan>): PolylineOptions {
+    public fun spans(spans: List<StyleSpan>): PolylineOptions {
         this.spans = spans
         return this
     }
@@ -179,7 +179,7 @@ class PolylineOptions {
      * Sets the stroke join style for line corners.
      * @param join StrokeJoin style (Miter, Round, or Bevel)
      */
-    fun strokeJoin(join: StrokeJoin): PolylineOptions {
+    public fun strokeJoin(join: StrokeJoin): PolylineOptions {
         this.strokeJoin = join
         return this
     }
@@ -188,7 +188,7 @@ class PolylineOptions {
      * Sets whether the polyline is visible.
      * @param visible true to show the polyline, false to hide it
      */
-    fun visible(visible: Boolean): PolylineOptions {
+    public fun visible(visible: Boolean): PolylineOptions {
         this.visible = visible
         return this
     }
@@ -197,7 +197,7 @@ class PolylineOptions {
      * Sets whether the polyline is clickable.
      * @param clickable true to enable click detection, false otherwise
      */
-    fun clickable(clickable: Boolean): PolylineOptions {
+    public fun clickable(clickable: Boolean): PolylineOptions {
         this.clickable = clickable
         return this
     }
@@ -206,7 +206,7 @@ class PolylineOptions {
      * Sets the z-index for draw order.
      * @param zIndex Higher values are drawn on top (default: 0f)
      */
-    fun zIndex(zIndex: Float): PolylineOptions {
+    public fun zIndex(zIndex: Float): PolylineOptions {
         this.zIndex = zIndex
         return this
     }
@@ -215,7 +215,7 @@ class PolylineOptions {
      * Sets optional user data associated with the polyline.
      * @param tag Any object to attach to the polyline
      */
-    fun tag(tag: Any?): PolylineOptions {
+    public fun tag(tag: Any?): PolylineOptions {
         this.tag = tag
         return this
     }

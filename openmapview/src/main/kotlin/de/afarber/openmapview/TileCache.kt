@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @param namespace Disk cache namespace, e.g. the tile source, so tiles of different
  *   sources are stored separately
  */
-class TileCache private constructor(
+internal class TileCache private constructor(
     private var diskCache: DiskTileCache?,
     private val memory: MemoryTiles,
     private val namespace: String,

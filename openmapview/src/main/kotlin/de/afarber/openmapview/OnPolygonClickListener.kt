@@ -13,11 +13,11 @@ package de.afarber.openmapview
  * Implement this interface and set it using [OpenMapView.setOnPolygonClickListener]
  * to receive callbacks when a polygon is clicked on the map.
  */
-fun interface OnPolygonClickListener {
+public fun interface OnPolygonClickListener {
     /**
      * Called when a polygon has been clicked.
      *
      * @param polygon The polygon that was clicked
      */
-    fun onPolygonClick(polygon: Polygon)
+    public fun onPolygonClick(polygon: Polygon)
 }

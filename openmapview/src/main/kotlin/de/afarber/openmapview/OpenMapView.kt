@@ -89,7 +89,7 @@ private const val QUICK_ZOOM_DP_PER_LEVEL = 100f
  * mapView.setContentDescription("Map showing current location")
  * ```
  */
-class OpenMapView
+public class OpenMapView
     @JvmOverloads
     constructor(
         context: Context,
@@ -579,7 +579,7 @@ class OpenMapView
          *
          * @param latLng The target location for the map center
          */
-        fun setCenter(latLng: LatLng) {
+        public fun setCenter(latLng: LatLng) {
             controller.cancelPendingCameraUpdate()
             controller.setCenter(latLng)
             invalidate()
@@ -593,7 +593,7 @@ class OpenMapView
          *
          * @param zoom The target zoom level
          */
-        fun setZoom(zoom: Float) {
+        public fun setZoom(zoom: Float) {
             controller.cancelPendingCameraUpdate()
             controller.setZoom(zoom)
             invalidate()
@@ -604,7 +604,7 @@ class OpenMapView
          *
          * @return The current zoom level (2.0 to 19.0)
          */
-        fun getZoom(): Float = controller.getZoom()
+        public fun getZoom(): Float = controller.getZoom()
 
         /**
          * Sets the bearing: the direction at the top of the screen, in degrees clockwise from
@@ -614,14 +614,14 @@ class OpenMapView
          *
          * @param bearing The bearing in degrees, normalized to 0 (inclusive) to 360 (exclusive)
          */
-        fun setBearing(bearing: Float) {
+        public fun setBearing(bearing: Float) {
             controller.cancelPendingCameraUpdate()
             controller.setBearing(bearing)
             invalidate()
         }
 
         /** Returns the bearing in degrees clockwise from north, 0 to 360. */
-        fun getBearing(): Float = controller.getBearing()
+        public fun getBearing(): Float = controller.getBearing()
 
         /**
          * Sets how many screen pixels a pixel of a 256 px tile covers.
@@ -632,7 +632,7 @@ class OpenMapView
          *
          * @param scale Screen pixels per tile pixel, greater than 0
          */
-        fun setTileScale(scale: Float) {
+        public fun setTileScale(scale: Float) {
             controller.setTileScale(scale)
             invalidate()
         }
@@ -640,7 +640,7 @@ class OpenMapView
         /**
          * Returns how many screen pixels a pixel of a 256 px tile covers, see [setTileScale].
          */
-        fun getTileScale(): Float = controller.getTileScale()
+        public fun getTileScale(): Float = controller.getTileScale()
 
         /**
          * Sets a color filter for the base map tiles, e.g. [TileColorFilters.invertedDark]
@@ -652,7 +652,7 @@ class OpenMapView
          * @param filter The filter, e.g. a `ColorMatrixColorFilter`, or null to draw the
          *   tiles unchanged
          */
-        fun setTileColorFilter(filter: ColorFilter?) {
+        public fun setTileColorFilter(filter: ColorFilter?) {
             if (filter === controller.getTileColorFilter()) return
             controller.setTileColorFilter(filter)
             invalidate()
@@ -661,7 +661,7 @@ class OpenMapView
         /**
          * Returns the color filter of the base map tiles, see [setTileColorFilter].
          */
-        fun getTileColorFilter(): ColorFilter? = controller.getTileColorFilter()
+        public fun getTileColorFilter(): ColorFilter? = controller.getTileColorFilter()
 
         /**
          * Sets the color scheme of the map, as with the Maps SDK.
@@ -675,7 +675,7 @@ class OpenMapView
          * @param scheme [MapColorScheme.LIGHT] (the default), [MapColorScheme.DARK] or
          *   [MapColorScheme.FOLLOW_SYSTEM] for the night mode of the device
          */
-        fun setMapColorScheme(scheme: Int) {
+        public fun setMapColorScheme(scheme: Int) {
             controller.setMapColorScheme(scheme)
             invalidate()
         }
@@ -683,7 +683,7 @@ class OpenMapView
         /**
          * Returns the color scheme of the map, one of the [MapColorScheme] constants.
          */
-        fun getMapColorScheme(): Int = controller.getMapColorScheme()
+        public fun getMapColorScheme(): Int = controller.getMapColorScheme()
 
         /**
          * Sets the minimum zoom level preference.
@@ -693,7 +693,7 @@ class OpenMapView
          *
          * @param minZoom The minimum zoom level (will be clamped to 2.0-19.0)
          */
-        fun setMinZoomPreference(minZoom: Float) {
+        public fun setMinZoomPreference(minZoom: Float) {
             controller.setMinZoomPreference(minZoom)
             invalidate()
         }
@@ -706,7 +706,7 @@ class OpenMapView
          *
          * @param maxZoom The maximum zoom level (will be clamped to 2.0-19.0)
          */
-        fun setMaxZoomPreference(maxZoom: Float) {
+        public fun setMaxZoomPreference(maxZoom: Float) {
             controller.setMaxZoomPreference(maxZoom)
             invalidate()
         }
@@ -716,21 +716,21 @@ class OpenMapView
          *
          * @return The minimum zoom level
          */
-        fun getMinZoomLevel(): Float = controller.getMinZoomLevel()
+        public fun getMinZoomLevel(): Float = controller.getMinZoomLevel()
 
         /**
          * Returns the current maximum zoom level preference.
          *
          * @return The maximum zoom level
          */
-        fun getMaxZoomLevel(): Float = controller.getMaxZoomLevel()
+        public fun getMaxZoomLevel(): Float = controller.getMaxZoomLevel()
 
         /**
          * Resets the minimum and maximum zoom preferences to their defaults (2.0 - 19.0).
          *
          * If the current zoom is outside the default range, it will be adjusted.
          */
-        fun resetMinMaxZoomPreference() {
+        public fun resetMinMaxZoomPreference() {
             controller.resetMinMaxZoomPreference()
             invalidate()
         }
@@ -753,7 +753,7 @@ class OpenMapView
          *
          * @param bounds The bounds to constrain the camera target, or null to remove constraints
          */
-        fun setLatLngBoundsForCameraTarget(bounds: LatLngBounds?) {
+        public fun setLatLngBoundsForCameraTarget(bounds: LatLngBounds?) {
             controller.setLatLngBoundsForCameraTarget(bounds)
             invalidate()
         }
@@ -763,7 +763,7 @@ class OpenMapView
          *
          * @return The bounds constraining the camera target, or null if no constraint is set
          */
-        fun getLatLngBoundsForCameraTarget(): LatLngBounds? = controller.getLatLngBoundsForCameraTarget()
+        public fun getLatLngBoundsForCameraTarget(): LatLngBounds? = controller.getLatLngBoundsForCameraTarget()
 
         /**
          * Sets the type of map tiles that should be displayed.
@@ -794,7 +794,7 @@ class OpenMapView
          * @see MapType
          * @see getMapType
          */
-        fun setMapType(type: Int) {
+        public fun setMapType(type: Int) {
             require(type in 0..14) { "Unknown map type: $type. Must be a valid MapType constant (0-14)." }
 
             currentMapType = type
@@ -817,7 +817,7 @@ class OpenMapView
          * @see MapType
          * @see setMapType
          */
-        fun getMapType(): Int = currentMapType
+        public fun getMapType(): Int = currentMapType
 
         /**
          * Returns whether indoor maps are enabled.
@@ -825,7 +825,7 @@ class OpenMapView
          * @return false - indoor maps are not supported by OpenMapView.
          *         Standard OSM tiles do not include indoor map rendering.
          */
-        fun isIndoorEnabled(): Boolean = false
+        public fun isIndoorEnabled(): Boolean = false
 
         /**
          * Returns whether the traffic layer is enabled.
@@ -834,7 +834,7 @@ class OpenMapView
          *         OSM tiles do not include real-time traffic data.
          *         Consider using custom tile overlays for third-party traffic data.
          */
-        fun isTrafficEnabled(): Boolean = false
+        public fun isTrafficEnabled(): Boolean = false
 
         /**
          * Returns whether buildings are enabled on the map.
@@ -842,14 +842,14 @@ class OpenMapView
          * @return true - buildings are always rendered in OSM tiles and cannot be disabled.
          *         Building visibility is controlled by the tile server, not the client.
          */
-        fun isBuildingsEnabled(): Boolean = true
+        public fun isBuildingsEnabled(): Boolean = true
 
         /**
          * Returns whether the my-location layer is enabled.
          *
          * @see setMyLocationEnabled
          */
-        fun isMyLocationEnabled(): Boolean = isMyLocationLayerEnabled
+        public fun isMyLocationEnabled(): Boolean = isMyLocationLayerEnabled
 
         /**
          * Enables or disables the my-location layer: a blue dot at the
@@ -866,7 +866,7 @@ class OpenMapView
          * @param enabled true to show the device location
          * @throws SecurityException if enabled with the default source and no location permission
          */
-        fun setMyLocationEnabled(enabled: Boolean) {
+        public fun setMyLocationEnabled(enabled: Boolean) {
             if (enabled && customLocationSource == null && !PlatformLocationSource.hasLocationPermission(context)) {
                 throw SecurityException("The my-location layer needs ACCESS_FINE_LOCATION or ACCESS_COARSE_LOCATION")
             }
@@ -898,7 +898,7 @@ class OpenMapView
          *
          * @param source The location source, or null for the default one
          */
-        fun setLocationSource(source: LocationSource?) {
+        public fun setLocationSource(source: LocationSource?) {
             stopLocationUpdates()
             customLocationSource = source
             updateLocationUpdates()
@@ -909,7 +909,7 @@ class OpenMapView
          *
          * @param listener The listener, returning true to keep the camera where it is
          */
-        fun setOnMyLocationButtonClickListener(listener: OnMyLocationButtonClickListener?) {
+        public fun setOnMyLocationButtonClickListener(listener: OnMyLocationButtonClickListener?) {
             onMyLocationButtonClickListener = listener
         }
 
@@ -918,7 +918,7 @@ class OpenMapView
          *
          * @param listener The listener
          */
-        fun setOnMyLocationClickListener(listener: OnMyLocationClickListener?) {
+        public fun setOnMyLocationClickListener(listener: OnMyLocationClickListener?) {
             onMyLocationClickListener = listener
         }
 
@@ -1313,7 +1313,7 @@ class OpenMapView
          *
          * @return A CameraPosition containing the current target location and zoom level
          */
-        fun getCameraPosition(): CameraPosition = controller.getCameraPosition()
+        public fun getCameraPosition(): CameraPosition = controller.getCameraPosition()
 
         /**
          * Returns a Projection object for coordinate transformations.
@@ -1331,7 +1331,7 @@ class OpenMapView
          *
          * @return A Projection instance for the current map state
          */
-        fun getProjection(): Projection = controller.createProjection()
+        public fun getProjection(): Projection = controller.createProjection()
 
         /**
          * Opens the current map center in an external map application.
@@ -1367,7 +1367,7 @@ class OpenMapView
          * @see openLocationInExternalApp
          */
         @JvmOverloads
-        fun openInExternalApp(label: String? = null): Boolean {
+        public fun openInExternalApp(label: String? = null): Boolean {
             val center = controller.getCenter()
             val zoom = controller.getZoom()
             return openLocationInExternalApp(center, zoom, context, label)
@@ -1389,7 +1389,7 @@ class OpenMapView
          *
          * @return The UiSettings object for configuring user interactions
          */
-        fun getUiSettings(): UiSettings = uiSettings
+        public fun getUiSettings(): UiSettings = uiSettings
 
         /**
          * Triggers the edge glow effect on specified edges.
@@ -1412,7 +1412,7 @@ class OpenMapView
          * @param intensity The glow intensity from 0.0 (none) to 1.0 (full), default 0.8
          */
         @JvmOverloads
-        fun triggerEdgeEffect(
+        public fun triggerEdgeEffect(
             edges: Set<Edge>,
             intensity: Float = 0.8f,
         ) {
@@ -1446,7 +1446,7 @@ class OpenMapView
          * @param right Right padding in pixels
          * @param bottom Bottom padding in pixels
          */
-        fun setMapPadding(
+        public fun setMapPadding(
             left: Int,
             top: Int,
             right: Int,
@@ -1473,7 +1473,7 @@ class OpenMapView
          *
          * @param cameraUpdate The camera update to apply
          */
-        fun moveCamera(cameraUpdate: CameraUpdate) {
+        public fun moveCamera(cameraUpdate: CameraUpdate) {
             controller.moveCamera(cameraUpdate)
             invalidate()
         }
@@ -1483,7 +1483,7 @@ class OpenMapView
          *
          * @param cameraUpdate The camera update to animate to
          */
-        fun animateCamera(cameraUpdate: CameraUpdate) {
+        public fun animateCamera(cameraUpdate: CameraUpdate) {
             controller.animateCamera(cameraUpdate)
         }
 
@@ -1493,7 +1493,7 @@ class OpenMapView
          * @param cameraUpdate The camera update to animate to
          * @param durationMs Duration of the animation in milliseconds
          */
-        fun animateCamera(
+        public fun animateCamera(
             cameraUpdate: CameraUpdate,
             durationMs: Int,
         ) {
@@ -1511,7 +1511,7 @@ class OpenMapView
          * @param cameraUpdate The camera update to animate to
          * @param callback Optional callback for animation completion events
          */
-        fun animateCamera(
+        public fun animateCamera(
             cameraUpdate: CameraUpdate,
             callback: CancelableCallback?,
         ) {
@@ -1530,7 +1530,7 @@ class OpenMapView
          * @param durationMs Duration of the animation in milliseconds
          * @param callback Optional callback for animation completion events
          */
-        fun animateCamera(
+        public fun animateCamera(
             cameraUpdate: CameraUpdate,
             durationMs: Int,
             callback: CancelableCallback?,
@@ -1551,7 +1551,7 @@ class OpenMapView
          * @param interpolator Maps the elapsed share of the duration to the share of the way
          * @param callback Optional callback for animation completion events
          */
-        fun animateCamera(
+        public fun animateCamera(
             cameraUpdate: CameraUpdate,
             durationMs: Int,
             interpolator: TimeInterpolator,
@@ -1566,7 +1566,7 @@ class OpenMapView
          * The camera will remain at its current position when the animation is stopped.
          * If a callback was provided, its [CancelableCallback.onCancel] method will be invoked.
          */
-        fun stopAnimation() {
+        public fun stopAnimation() {
             controller.stopAnimation()
             invalidate()
         }
@@ -1600,7 +1600,7 @@ class OpenMapView
          * @param callback A [SnapshotReadyCallback] that will be invoked with the
          *                 snapshot bitmap or null if the snapshot failed.
          */
-        fun snapshot(callback: SnapshotReadyCallback) {
+        public fun snapshot(callback: SnapshotReadyCallback) {
             post {
                 // Check if view is laid out
                 if (width <= 0 || height <= 0) {
@@ -1650,7 +1650,7 @@ class OpenMapView
          *               dimensions do not match the view's dimensions, a new bitmap
          *               will be allocated.
          */
-        fun snapshot(
+        public fun snapshot(
             callback: SnapshotReadyCallback,
             bitmap: Bitmap,
         ) {
@@ -1700,7 +1700,7 @@ class OpenMapView
          * @param marker The marker to add
          * @return The added marker instance
          */
-        fun addMarker(marker: Marker): Marker {
+        public fun addMarker(marker: Marker): Marker {
             marker.mapView = this
             val result = controller.addMarker(marker)
             invalidate()
@@ -1723,7 +1723,7 @@ class OpenMapView
          * @param markerOptions Configuration for the marker
          * @return The created Marker instance
          */
-        fun addMarker(markerOptions: MarkerOptions): Marker {
+        public fun addMarker(markerOptions: MarkerOptions): Marker {
             val marker = markerOptions.build()
             return addMarker(marker)
         }
@@ -1734,7 +1734,7 @@ class OpenMapView
          * @param marker The marker to remove
          * @return true if the marker was found and removed, false otherwise
          */
-        fun removeMarker(marker: Marker): Boolean {
+        public fun removeMarker(marker: Marker): Boolean {
             val result = controller.removeMarker(marker)
             if (result) {
                 // A marker added again later starts with its info window closed
@@ -1748,7 +1748,7 @@ class OpenMapView
         /**
          * Removes all markers from the map and closes the open info window.
          */
-        fun clearMarkers() {
+        public fun clearMarkers() {
             val markers = controller.getMarkers()
             controller.clearMarkers()
             markers.forEach {
@@ -1763,7 +1763,7 @@ class OpenMapView
          *
          * @return A list copy of all markers
          */
-        fun getMarkers(): List<Marker> = controller.getMarkers()
+        public fun getMarkers(): List<Marker> = controller.getMarkers()
 
         /**
          * Shows the info window for a marker and schedules auto-dismiss if configured.
@@ -1783,7 +1783,7 @@ class OpenMapView
          * @see hideInfoWindow
          * @see UiSettings.infoWindowAutoDismiss
          */
-        fun showInfoWindow(marker: Marker) {
+        public fun showInfoWindow(marker: Marker) {
             closeOtherInfoWindows(marker)
             // Draws the window again, e.g. after the title changed
             marker.setInfoWindowShownInternal(false)
@@ -1818,7 +1818,7 @@ class OpenMapView
          * @param adapter The adapter, or null for the default info windows
          * @see InfoWindowAdapter
          */
-        fun setInfoWindowAdapter(adapter: InfoWindowAdapter?) {
+        public fun setInfoWindowAdapter(adapter: InfoWindowAdapter?) {
             infoWindowAdapter = adapter
         }
 
@@ -1864,7 +1864,7 @@ class OpenMapView
          * @param marker The marker whose info window should be hidden
          * @see showInfoWindow
          */
-        fun hideInfoWindow(marker: Marker) {
+        public fun hideInfoWindow(marker: Marker) {
             val wasShown = marker.isInfoWindowShown
             marker.setInfoWindowShownInternal(false)
             cancelInfoWindowAutoDismiss()
@@ -1889,7 +1889,7 @@ class OpenMapView
          *   unless it returns true, the marker's info window opens and the camera moves to the
          *   marker. Null clears the listener.
          */
-        fun setOnMarkerClickListener(listener: OnMarkerClickListener?) {
+        public fun setOnMarkerClickListener(listener: OnMarkerClickListener?) {
             controller.onMarkerClickListener = listener
         }
 
@@ -1908,7 +1908,7 @@ class OpenMapView
          *
          * @param listener The listener to receive info window click events, or null to clear the listener
          */
-        fun setOnInfoWindowClickListener(listener: OnInfoWindowClickListener?) {
+        public fun setOnInfoWindowClickListener(listener: OnInfoWindowClickListener?) {
             controller.onInfoWindowClickListener = listener
         }
 
@@ -1929,7 +1929,7 @@ class OpenMapView
          * @see hideInfoWindow
          * @see UiSettings.infoWindowAutoDismiss
          */
-        fun setOnInfoWindowCloseListener(listener: OnInfoWindowCloseListener?) {
+        public fun setOnInfoWindowCloseListener(listener: OnInfoWindowCloseListener?) {
             controller.onInfoWindowCloseListener = listener
         }
 
@@ -1948,7 +1948,7 @@ class OpenMapView
          *
          * @param listener The listener, or null to remove it
          */
-        fun setOnInfoWindowLongClickListener(listener: OnInfoWindowLongClickListener?) {
+        public fun setOnInfoWindowLongClickListener(listener: OnInfoWindowLongClickListener?) {
             controller.onInfoWindowLongClickListener = listener
         }
 
@@ -1977,7 +1977,7 @@ class OpenMapView
          *
          * @param listener The listener to receive drag events, or null to clear the listener
          */
-        fun setOnMarkerDragListener(listener: OnMarkerDragListener?) {
+        public fun setOnMarkerDragListener(listener: OnMarkerDragListener?) {
             onMarkerDragListener = listener
         }
 
@@ -1996,7 +1996,7 @@ class OpenMapView
          *
          * @param listener The listener to receive polyline click events, or null to clear the listener
          */
-        fun setOnPolylineClickListener(listener: OnPolylineClickListener?) {
+        public fun setOnPolylineClickListener(listener: OnPolylineClickListener?) {
             controller.onPolylineClickListener = listener
         }
 
@@ -2015,7 +2015,7 @@ class OpenMapView
          *
          * @param listener The listener to receive polygon click events, or null to clear the listener
          */
-        fun setOnPolygonClickListener(listener: OnPolygonClickListener?) {
+        public fun setOnPolygonClickListener(listener: OnPolygonClickListener?) {
             controller.onPolygonClickListener = listener
         }
 
@@ -2026,7 +2026,7 @@ class OpenMapView
          *
          * @param listener Callback invoked when a circle is clicked, or null to remove
          */
-        fun setOnCircleClickListener(listener: OnCircleClickListener?) {
+        public fun setOnCircleClickListener(listener: OnCircleClickListener?) {
             controller.onCircleClickListener = listener
         }
 
@@ -2037,7 +2037,7 @@ class OpenMapView
          *
          * @param listener Callback invoked when a ground overlay is clicked, or null to remove
          */
-        fun setOnGroundOverlayClickListener(listener: OnGroundOverlayClickListener?) {
+        public fun setOnGroundOverlayClickListener(listener: OnGroundOverlayClickListener?) {
             controller.onGroundOverlayClickListener = listener
         }
 
@@ -2055,7 +2055,7 @@ class OpenMapView
          *
          * @param listener Callback invoked when the map is clicked
          */
-        fun setOnMapClickListener(listener: OnMapClickListener?) {
+        public fun setOnMapClickListener(listener: OnMapClickListener?) {
             onMapClickListener = listener
         }
 
@@ -2073,7 +2073,7 @@ class OpenMapView
          *
          * @param listener Callback invoked when the map is long-clicked
          */
-        fun setOnMapLongClickListener(listener: OnMapLongClickListener?) {
+        public fun setOnMapLongClickListener(listener: OnMapLongClickListener?) {
             onMapLongClickListener = listener
         }
 
@@ -2084,7 +2084,7 @@ class OpenMapView
          *
          * @param listener The listener to receive camera move started events, or null to clear the listener
          */
-        fun setOnCameraMoveStartedListener(listener: OnCameraMoveStartedListener?) {
+        public fun setOnCameraMoveStartedListener(listener: OnCameraMoveStartedListener?) {
             controller.onCameraMoveStartedListener = listener
         }
 
@@ -2095,7 +2095,7 @@ class OpenMapView
          *
          * @param listener The listener to receive camera move events, or null to clear the listener
          */
-        fun setOnCameraMoveListener(listener: OnCameraMoveListener?) {
+        public fun setOnCameraMoveListener(listener: OnCameraMoveListener?) {
             controller.onCameraMoveListener = listener
         }
 
@@ -2106,7 +2106,7 @@ class OpenMapView
          *
          * @param listener The listener to receive camera idle events, or null to clear the listener
          */
-        fun setOnCameraIdleListener(listener: OnCameraIdleListener?) {
+        public fun setOnCameraIdleListener(listener: OnCameraIdleListener?) {
             controller.onCameraIdleListener = listener
         }
 
@@ -2127,7 +2127,7 @@ class OpenMapView
          *
          * @param callback The callback to invoke, or null to remove a pending one
          */
-        fun setOnMapLoadedCallback(callback: OnMapLoadedCallback?) {
+        public fun setOnMapLoadedCallback(callback: OnMapLoadedCallback?) {
             controller.setOnMapLoadedCallback(callback)
         }
 
@@ -2138,7 +2138,7 @@ class OpenMapView
          *
          * @param listener The listener to receive camera move canceled events, or null to clear the listener
          */
-        fun setOnCameraMoveCanceledListener(listener: OnCameraMoveCanceledListener?) {
+        public fun setOnCameraMoveCanceledListener(listener: OnCameraMoveCanceledListener?) {
             controller.onCameraMoveCanceledListener = listener
         }
 
@@ -2148,7 +2148,7 @@ class OpenMapView
          * @param polyline The polyline to add
          * @return The added polyline instance
          */
-        fun addPolyline(polyline: Polyline): Polyline {
+        public fun addPolyline(polyline: Polyline): Polyline {
             val result = controller.addPolyline(polyline)
             // A live handle: its setters redraw this map
             result.mapView = this
@@ -2173,7 +2173,7 @@ class OpenMapView
          * @param polylineOptions Configuration for the polyline
          * @return The created Polyline instance
          */
-        fun addPolyline(polylineOptions: PolylineOptions): Polyline {
+        public fun addPolyline(polylineOptions: PolylineOptions): Polyline {
             val polyline = polylineOptions.build()
             return addPolyline(polyline)
         }
@@ -2184,7 +2184,7 @@ class OpenMapView
          * @param polyline The polyline to remove
          * @return true if the polyline was found and removed, false otherwise
          */
-        fun removePolyline(polyline: Polyline): Boolean {
+        public fun removePolyline(polyline: Polyline): Boolean {
             val result = controller.removePolyline(polyline)
             if (result) {
                 polyline.mapView = null
@@ -2196,7 +2196,7 @@ class OpenMapView
         /**
          * Removes all polylines from the map.
          */
-        fun clearPolylines() {
+        public fun clearPolylines() {
             controller.getPolylines().forEach { it.mapView = null }
             controller.clearPolylines()
             invalidate()
@@ -2207,7 +2207,7 @@ class OpenMapView
          *
          * @return A list copy of all polylines
          */
-        fun getPolylines(): List<Polyline> = controller.getPolylines()
+        public fun getPolylines(): List<Polyline> = controller.getPolylines()
 
         /**
          * Adds a polygon to the map.
@@ -2215,7 +2215,7 @@ class OpenMapView
          * @param polygon The polygon to add
          * @return The added polygon instance
          */
-        fun addPolygon(polygon: Polygon): Polygon {
+        public fun addPolygon(polygon: Polygon): Polygon {
             val result = controller.addPolygon(polygon)
             // A live handle: its setters redraw this map
             result.mapView = this
@@ -2240,7 +2240,7 @@ class OpenMapView
          * @param polygonOptions Configuration for the polygon
          * @return The created Polygon instance
          */
-        fun addPolygon(polygonOptions: PolygonOptions): Polygon {
+        public fun addPolygon(polygonOptions: PolygonOptions): Polygon {
             val polygon = polygonOptions.build()
             return addPolygon(polygon)
         }
@@ -2251,7 +2251,7 @@ class OpenMapView
          * @param polygon The polygon to remove
          * @return true if the polygon was found and removed, false otherwise
          */
-        fun removePolygon(polygon: Polygon): Boolean {
+        public fun removePolygon(polygon: Polygon): Boolean {
             val result = controller.removePolygon(polygon)
             if (result) {
                 polygon.mapView = null
@@ -2263,7 +2263,7 @@ class OpenMapView
         /**
          * Removes all polygons from the map.
          */
-        fun clearPolygons() {
+        public fun clearPolygons() {
             controller.getPolygons().forEach { it.mapView = null }
             controller.clearPolygons()
             invalidate()
@@ -2274,7 +2274,7 @@ class OpenMapView
          *
          * @return A list copy of all polygons
          */
-        fun getPolygons(): List<Polygon> = controller.getPolygons()
+        public fun getPolygons(): List<Polygon> = controller.getPolygons()
 
         /**
          * Adds a circle to the map using CircleOptions builder.
@@ -2292,7 +2292,7 @@ class OpenMapView
          * @param circleOptions Configuration for the circle
          * @return The created Circle instance
          */
-        fun addCircle(circleOptions: CircleOptions): Circle {
+        public fun addCircle(circleOptions: CircleOptions): Circle {
             val circle = circleOptions.build()
             return addCircle(circle)
         }
@@ -2314,7 +2314,7 @@ class OpenMapView
          * @param circle The circle to add
          * @return The added circle instance
          */
-        fun addCircle(circle: Circle): Circle {
+        public fun addCircle(circle: Circle): Circle {
             val result = controller.addCircle(circle)
             // A live handle: its setters redraw this map
             result.mapView = this
@@ -2328,7 +2328,7 @@ class OpenMapView
          * @param circle The circle to remove
          * @return true if the circle was found and removed, false otherwise
          */
-        fun removeCircle(circle: Circle): Boolean {
+        public fun removeCircle(circle: Circle): Boolean {
             val result = controller.removeCircle(circle)
             if (result) {
                 circle.mapView = null
@@ -2340,7 +2340,7 @@ class OpenMapView
         /**
          * Removes all circles from the map.
          */
-        fun clearCircles() {
+        public fun clearCircles() {
             controller.getCircles().forEach { it.mapView = null }
             controller.clearCircles()
             invalidate()
@@ -2351,7 +2351,7 @@ class OpenMapView
          *
          * @return A list copy of all circles
          */
-        fun getCircles(): List<Circle> = controller.getCircles()
+        public fun getCircles(): List<Circle> = controller.getCircles()
 
         /**
          * Adds a ground overlay to the map using GroundOverlayOptions builder pattern.
@@ -2360,7 +2360,7 @@ class OpenMapView
          * @return The created GroundOverlay instance
          * @throws IllegalArgumentException if image or position/bounds is not set
          */
-        fun addGroundOverlay(groundOverlayOptions: GroundOverlayOptions): GroundOverlay {
+        public fun addGroundOverlay(groundOverlayOptions: GroundOverlayOptions): GroundOverlay {
             val overlay = groundOverlayOptions.build()
             return addGroundOverlay(overlay)
         }
@@ -2371,7 +2371,7 @@ class OpenMapView
          * @param groundOverlay The ground overlay to add
          * @return The added GroundOverlay instance
          */
-        fun addGroundOverlay(groundOverlay: GroundOverlay): GroundOverlay {
+        public fun addGroundOverlay(groundOverlay: GroundOverlay): GroundOverlay {
             val result = controller.addGroundOverlay(groundOverlay)
             // A live handle: its setters redraw this map
             result.mapView = this
@@ -2385,7 +2385,7 @@ class OpenMapView
          * @param groundOverlay The ground overlay to remove
          * @return true if the overlay was found and removed, false otherwise
          */
-        fun removeGroundOverlay(groundOverlay: GroundOverlay): Boolean {
+        public fun removeGroundOverlay(groundOverlay: GroundOverlay): Boolean {
             val result = controller.removeGroundOverlay(groundOverlay)
             if (result) {
                 groundOverlay.mapView = null
@@ -2397,7 +2397,7 @@ class OpenMapView
         /**
          * Removes all ground overlays from the map.
          */
-        fun clearGroundOverlays() {
+        public fun clearGroundOverlays() {
             controller.getGroundOverlays().forEach { it.mapView = null }
             controller.clearGroundOverlays()
             invalidate()
@@ -2408,7 +2408,7 @@ class OpenMapView
          *
          * @return A list copy of all ground overlays
          */
-        fun getGroundOverlays(): List<GroundOverlay> = controller.getGroundOverlays()
+        public fun getGroundOverlays(): List<GroundOverlay> = controller.getGroundOverlays()
 
         /**
          * Adds a tile overlay to the map using TileOverlayOptions builder pattern.
@@ -2417,7 +2417,7 @@ class OpenMapView
          * @return The created TileOverlay instance
          * @throws IllegalArgumentException if tileProvider is not set
          */
-        fun addTileOverlay(tileOverlayOptions: TileOverlayOptions): TileOverlay {
+        public fun addTileOverlay(tileOverlayOptions: TileOverlayOptions): TileOverlay {
             val overlay = tileOverlayOptions.build()
             return addTileOverlay(overlay)
         }
@@ -2428,7 +2428,7 @@ class OpenMapView
          * @param tileOverlay The tile overlay to add
          * @return The added TileOverlay instance
          */
-        fun addTileOverlay(tileOverlay: TileOverlay): TileOverlay {
+        public fun addTileOverlay(tileOverlay: TileOverlay): TileOverlay {
             val result = controller.addTileOverlay(tileOverlay)
             // A live handle: its setters redraw this map
             result.mapView = this
@@ -2442,7 +2442,7 @@ class OpenMapView
          * @param tileOverlay The tile overlay to remove
          * @return true if the overlay was found and removed, false otherwise
          */
-        fun removeTileOverlay(tileOverlay: TileOverlay): Boolean {
+        public fun removeTileOverlay(tileOverlay: TileOverlay): Boolean {
             val result = controller.removeTileOverlay(tileOverlay)
             if (result) {
                 tileOverlay.mapView = null
@@ -2457,7 +2457,7 @@ class OpenMapView
          *
          * @param tileOverlay The tile overlay whose tiles to drop
          */
-        fun clearTileOverlayCache(tileOverlay: TileOverlay) {
+        public fun clearTileOverlayCache(tileOverlay: TileOverlay) {
             controller.clearTileOverlayCache(tileOverlay)
             invalidate()
         }
@@ -2465,7 +2465,7 @@ class OpenMapView
         /**
          * Removes all tile overlays from the map.
          */
-        fun clearTileOverlays() {
+        public fun clearTileOverlays() {
             controller.getTileOverlays().forEach { it.mapView = null }
             controller.clearTileOverlays()
             invalidate()
@@ -2476,7 +2476,7 @@ class OpenMapView
          *
          * @return A list copy of all tile overlays
          */
-        fun getTileOverlays(): List<TileOverlay> = controller.getTileOverlays()
+        public fun getTileOverlays(): List<TileOverlay> = controller.getTileOverlays()
 
         /**
          * Removes all markers, polylines, polygons, circles, ground overlays and tile overlays
@@ -2485,7 +2485,7 @@ class OpenMapView
          * This is equivalent to calling clearMarkers(), clearPolylines(), clearPolygons(),
          * clearCircles(), clearGroundOverlays() and clearTileOverlays().
          */
-        fun clear() {
+        public fun clear() {
             clearMarkers()
             clearPolylines()
             clearPolygons()
@@ -2503,7 +2503,7 @@ class OpenMapView
          * @param geoJsonString The GeoJSON string to parse and add
          * @return A GeoJsonResult containing all added markers, polylines, and polygons
          */
-        fun addGeoJson(geoJsonString: String): GeoJsonResult {
+        public fun addGeoJson(geoJsonString: String): GeoJsonResult {
             val result = controller.addGeoJson(geoJsonString)
             // Live handles: their setters redraw this map
             result.markers.forEach { it.mapView = this }
@@ -2518,7 +2518,7 @@ class OpenMapView
          *
          * @param listener Callback invoked when the attribution text is clicked
          */
-        fun setOnAttributionClickListener(listener: () -> Unit) {
+        public fun setOnAttributionClickListener(listener: () -> Unit) {
             attributionOverlay.onAttributionClickListener = listener
         }
 
@@ -2527,14 +2527,14 @@ class OpenMapView
          *
          * @return The URL to the attribution/copyright page
          */
-        fun getAttributionUrl(): String = attributionOverlay.getAttributionUrl()
+        public fun getAttributionUrl(): String = attributionOverlay.getAttributionUrl()
 
         /**
          * Sets custom attribution text to be displayed.
          *
          * @param text The attribution text to display
          */
-        fun setAttributionText(text: String) {
+        public fun setAttributionText(text: String) {
             attributionOverlay.setAttributionText(text)
             invalidate()
         }
@@ -2617,7 +2617,7 @@ class OpenMapView
          * owner is destroyed, so apps usually don't need to call it. Calling it more than
          * once is safe, and the map keeps working if it is drawn again.
          */
-        fun onDestroy() {
+        public fun onDestroy() {
             cancelInfoWindowAutoDismiss()
             stopLocationUpdates()
             controller.onDestroy()

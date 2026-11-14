@@ -11,11 +11,11 @@ package de.afarber.openmapview
  * Interface for receiving info window long click events.
  * Called when the user presses and holds the info window of a marker.
  */
-fun interface OnInfoWindowLongClickListener {
+public fun interface OnInfoWindowLongClickListener {
     /**
      * Called when an info window is long clicked.
      *
      * @param marker The marker whose info window was long clicked
      */
-    fun onInfoWindowLongClick(marker: Marker)
+    public fun onInfoWindowLongClick(marker: Marker)
 }

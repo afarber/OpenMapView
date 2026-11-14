@@ -16,17 +16,17 @@ import android.location.Location
  * providers. Set your own source with [OpenMapView.setLocationSource], e.g. to use the
  * fused location provider of Play Services or to replay a recorded track.
  */
-interface LocationSource {
+public interface LocationSource {
     /**
      * Receives new locations from a [LocationSource].
      */
-    fun interface OnLocationChangedListener {
+    public fun interface OnLocationChangedListener {
         /**
          * Called with each new location of the device.
          *
          * @param location The new location
          */
-        fun onLocationChanged(location: Location)
+        public fun onLocationChanged(location: Location)
     }
 
     /**
@@ -35,11 +35,11 @@ interface LocationSource {
      *
      * @param listener The listener to send locations to
      */
-    fun activate(listener: OnLocationChangedListener)
+    public fun activate(listener: OnLocationChangedListener)
 
     /**
      * Stops sending locations. Called when the my-location layer is disabled or the map is
      * paused or detached.
      */
-    fun deactivate()
+    public fun deactivate()
 }

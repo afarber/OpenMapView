@@ -32,7 +32,7 @@ package de.afarber.openmapview
  * All providers use 256×256 pixel tiles with Web Mercator projection (EPSG:3857).
  * See the "Tile Overlays" section of docs/MAP_TYPES.md for the available services.
  */
-object PredefinedTileProviders {
+public object PredefinedTileProviders {
     /**
      * Creates a provider for OpenSeaMap nautical charts overlay.
      *
@@ -44,7 +44,7 @@ object PredefinedTileProviders {
      * @return TileProvider for OpenSeaMap
      */
     @JvmStatic
-    fun openSeaMap(): TileProvider = object : UrlTileProvider("https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png") {}
+    public fun openSeaMap(): TileProvider = object : UrlTileProvider("https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png") {}
 
     /**
      * Creates a provider for OpenRailwayMap overlay.
@@ -57,7 +57,7 @@ object PredefinedTileProviders {
      * @return TileProvider for OpenRailwayMap
      */
     @JvmStatic
-    fun openRailwayMap(): TileProvider = object : UrlTileProvider("https://a.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png") {}
+    public fun openRailwayMap(): TileProvider = object : UrlTileProvider("https://a.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png") {}
 
     /**
      * Creates a provider for OpenSnowMap winter sports overlay.
@@ -69,7 +69,7 @@ object PredefinedTileProviders {
      * @return TileProvider for OpenSnowMap
      */
     @JvmStatic
-    fun openSnowMap(): TileProvider = object : UrlTileProvider("https://tiles.opensnowmap.org/pistes/{z}/{x}/{y}.png") {}
+    public fun openSnowMap(): TileProvider = object : UrlTileProvider("https://tiles.opensnowmap.org/pistes/{z}/{x}/{y}.png") {}
 
     /**
      * Creates a provider for Waymarked Trails hiking overlay.
@@ -82,7 +82,8 @@ object PredefinedTileProviders {
      * @return TileProvider for hiking trails
      */
     @JvmStatic
-    fun waymarkedTrailsHiking(): TileProvider = object : UrlTileProvider("https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png") {}
+    public fun waymarkedTrailsHiking(): TileProvider =
+        object : UrlTileProvider("https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png") {}
 
     /**
      * Creates a provider for Waymarked Trails cycling overlay.
@@ -95,7 +96,8 @@ object PredefinedTileProviders {
      * @return TileProvider for cycling trails
      */
     @JvmStatic
-    fun waymarkedTrailsCycling(): TileProvider = object : UrlTileProvider("https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png") {}
+    public fun waymarkedTrailsCycling(): TileProvider =
+        object : UrlTileProvider("https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png") {}
 
     /**
      * Creates a provider for Waymarked Trails mountain biking overlay.
@@ -108,7 +110,7 @@ object PredefinedTileProviders {
      * @return TileProvider for MTB trails
      */
     @JvmStatic
-    fun waymarkedTrailsMtb(): TileProvider = object : UrlTileProvider("https://tile.waymarkedtrails.org/mtb/{z}/{x}/{y}.png") {}
+    public fun waymarkedTrailsMtb(): TileProvider = object : UrlTileProvider("https://tile.waymarkedtrails.org/mtb/{z}/{x}/{y}.png") {}
 
     /**
      * Creates a provider for Waymarked Trails skating overlay.
@@ -121,7 +123,8 @@ object PredefinedTileProviders {
      * @return TileProvider for skating trails
      */
     @JvmStatic
-    fun waymarkedTrailsSkating(): TileProvider = object : UrlTileProvider("https://tile.waymarkedtrails.org/skating/{z}/{x}/{y}.png") {}
+    public fun waymarkedTrailsSkating(): TileProvider =
+        object : UrlTileProvider("https://tile.waymarkedtrails.org/skating/{z}/{x}/{y}.png") {}
 
     /**
      * Creates a provider for the Stamen Toner lines overlay.
@@ -135,7 +138,7 @@ object PredefinedTileProviders {
      * @return TileProvider for Stamen Toner lines
      */
     @JvmStatic
-    fun stamenTonerHybrid(): TileProvider = stadia("stamen_toner_lines")
+    public fun stamenTonerHybrid(): TileProvider = stadia("stamen_toner_lines")
 
     /**
      * Creates a provider for the Stamen Terrain lines overlay.
@@ -148,7 +151,7 @@ object PredefinedTileProviders {
      * @return TileProvider for Stamen Terrain lines
      */
     @JvmStatic
-    fun stamenTerrainLines(): TileProvider = stadia("stamen_terrain_lines")
+    public fun stamenTerrainLines(): TileProvider = stadia("stamen_terrain_lines")
 
     /**
      * Creates a custom URL-based tile provider with the specified URL template.
@@ -166,7 +169,7 @@ object PredefinedTileProviders {
      * @return TileProvider for the custom URL
      */
     @JvmStatic
-    fun custom(urlTemplate: String): TileProvider = object : UrlTileProvider(urlTemplate) {}
+    public fun custom(urlTemplate: String): TileProvider = object : UrlTileProvider(urlTemplate) {}
 
     // Stadia Maps tiles with the "stadia" key from ApiKeyManager, looked up per tile
     // so that a key set after creating the provider is still used

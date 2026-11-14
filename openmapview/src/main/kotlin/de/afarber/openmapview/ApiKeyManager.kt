@@ -62,7 +62,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @see TileSource
  * @see MapType
  */
-object ApiKeyManager {
+public object ApiKeyManager {
     private const val META_DATA_PREFIX = "de.afarber.openmapview."
     private const val THUNDERFOREST_KEY_NAME = "THUNDERFOREST_API_KEY"
     private const val TRACESTRACK_KEY_NAME = "TRACESTRACK_API_KEY"
@@ -125,7 +125,7 @@ object ApiKeyManager {
      */
     @Synchronized
     @JvmStatic
-    fun setApiKey(
+    public fun setApiKey(
         provider: String,
         key: String,
     ) {
@@ -142,7 +142,7 @@ object ApiKeyManager {
      */
     @Synchronized
     @JvmStatic
-    fun getApiKey(provider: String): String? {
+    public fun getApiKey(provider: String): String? {
         val normalizedProvider = provider.lowercase()
 
         // Check programmatic keys first
@@ -168,7 +168,7 @@ object ApiKeyManager {
      * @return true if a key is available, false otherwise
      */
     @JvmStatic
-    fun hasApiKey(provider: String): Boolean = !getApiKey(provider).isNullOrEmpty()
+    public fun hasApiKey(provider: String): Boolean = !getApiKey(provider).isNullOrEmpty()
 
     /**
      * Clears all programmatically-set API keys.
@@ -178,7 +178,7 @@ object ApiKeyManager {
      */
     @Synchronized
     @JvmStatic
-    fun clearProgrammaticKeys() {
+    public fun clearProgrammaticKeys() {
         programmaticKeys.clear()
     }
 }

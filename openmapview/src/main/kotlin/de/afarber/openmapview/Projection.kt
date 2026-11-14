@@ -28,7 +28,7 @@ import kotlin.math.sin
  * center, as the map draws it, and a screen location on any copy gives a longitude between
  * -180 and 180.
  */
-class Projection
+public class Projection
     internal constructor(
         private val center: LatLng,
         private val zoom: Float,
@@ -72,7 +72,7 @@ class Projection
          * @param point The screen location in pixels
          * @return The geographic location (LatLng) corresponding to the screen point
          */
-        fun fromScreenLocation(point: Point): LatLng = fromScreenLocation(point.x.toFloat(), point.y.toFloat())
+        public fun fromScreenLocation(point: Point): LatLng = fromScreenLocation(point.x.toFloat(), point.y.toFloat())
 
         /**
          * Returns the geographic location that corresponds to a screen location.
@@ -111,7 +111,7 @@ class Projection
          * @param location The geographic location (LatLng)
          * @return The screen location in pixels, on the copy of the world nearest to the view center
          */
-        fun toScreenLocation(location: LatLng): Point {
+        public fun toScreenLocation(location: LatLng): Point {
             val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
             val (locationPixelX, locationPixelY) = ProjectionUtils.latLngToPixel(location, zoom, tileSize)
 
@@ -140,7 +140,7 @@ class Projection
          *
          * @return A VisibleRegion containing the four corners and bounding box
          */
-        fun getVisibleRegion(): VisibleRegion {
+        public fun getVisibleRegion(): VisibleRegion {
             // Calculate the logical (padded) viewport bounds
             val left = paddingLeft.toFloat()
             val top = paddingTop.toFloat()

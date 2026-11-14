@@ -22,7 +22,7 @@ import android.graphics.ColorMatrixColorFilter
  * mapView.setTileColorFilter(TileColorFilters.invertedDark());
  * ```
  */
-object TileColorFilters {
+public object TileColorFilters {
     private val invertedDark: ColorFilter by lazy {
         // Light colors become dark: white turns black, black turns white
         val matrix =
@@ -70,5 +70,5 @@ object TileColorFilters {
      * @return The same filter on every call
      */
     @JvmStatic
-    fun invertedDark(): ColorFilter = invertedDark
+    public fun invertedDark(): ColorFilter = invertedDark
 }

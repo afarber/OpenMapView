@@ -32,7 +32,7 @@ package de.afarber.openmapview
  * @see TileProvider
  * @see TileOverlay
  */
-data class Tile(
+public data class Tile(
     @JvmField val width: Int,
     @JvmField val height: Int,
     @JvmField val data: ByteArray,
