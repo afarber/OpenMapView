@@ -137,6 +137,7 @@ class WorldWrapTest {
             )
 
         assertSame(overlay, controller.handleGroundOverlayTouch(540f, 960f))
-        assertSame(overlay, controller.handleGroundOverlayTouch(540f + twoDegrees / 2, 960f))
+        // Just inside its east edge, one degree east of the antimeridian
+        assertSame(overlay, controller.handleGroundOverlayTouch(540f + twoDegrees / 2 - 1f, 960f))
     }
 }
