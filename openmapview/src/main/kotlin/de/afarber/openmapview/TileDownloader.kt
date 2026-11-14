@@ -44,7 +44,7 @@ internal class TileDownloader {
                     header("User-Agent", UserAgent.value)
                 }
             if (!response.status.isSuccess()) {
-                Log.w(TAG, "Failed to download tile from $url: HTTP ${response.status.value}")
+                Log.w(TAG, "Failed to download tile from ${url.withoutQuery()}: HTTP ${response.status.value}")
                 null
             } else {
                 response.readRawBytes()
@@ -52,7 +52,8 @@ internal class TileDownloader {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to download tile from $url: ${e.javaClass.simpleName}: ${e.message}", e)
+            // Without the stack trace, which repeats the message with the whole URL
+            Log.e(TAG, "Failed to download tile from ${url.withoutQuery()}: ${e.javaClass.simpleName}: ${e.message.withoutQueryOf(url)}")
             null
         }
 
@@ -60,6 +61,17 @@ internal class TileDownloader {
         client.close()
     }
 }
+
+/**
+ * The URL without its query, for log messages: the query of a tile URL holds the API key.
+ */
+internal fun String.withoutQuery(): String = substringBefore('?')
+
+/**
+ * An error message for the log, with [url] replaced by [withoutQuery]: e.g. timeouts name
+ * the URL of the request.
+ */
+internal fun String?.withoutQueryOf(url: String): String? = this?.replace(url, url.withoutQuery())
 
 /**
  * Decodes tile image bytes with RGB_565 to reduce memory usage

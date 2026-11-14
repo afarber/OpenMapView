@@ -40,6 +40,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withRotation
 import androidx.core.graphics.withSave
 import androidx.core.graphics.withTranslation
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -527,9 +528,9 @@ internal class MapController(
         val position = groundOverlay.position
         val width = groundOverlay.width
         if (bounds != null) {
-            val (westPixelX, _) = ProjectionUtils.latLngToPixel(bounds.southwest, maxZoomPreference, tileSize)
-            val (eastPixelX, _) = ProjectionUtils.latLngToPixel(bounds.northeast, maxZoomPreference, tileSize)
-            return eastPixelX - westPixelX
+            val (westPixelX, _) = ProjectionUtils.latLngToPixelExact(bounds.southwest, maxZoomPreference, tileSize)
+            val (eastPixelX, _) = ProjectionUtils.latLngToPixelExact(bounds.northeast, maxZoomPreference, tileSize)
+            return (eastPixelX - westPixelX).toFloat()
         }
         if (position == null || width == null) return null
         val metersPerPixel =
@@ -1014,6 +1015,10 @@ internal class MapController(
 
     private fun createTileCache(source: TileSource?): TileCache = TileCache(context, source?.name ?: DiskTileCache.DEFAULT_NAMESPACE)
 
+    // The highest zoom level the base map source has tiles for. Zoomed in further, the map
+    // draws the tiles of that level scaled up, instead of asking for tiles that don't exist.
+    private fun maxTileZoom(): Int = tileSource?.maxZoom ?: Int.MAX_VALUE
+
     /**
      * Gets the current tile source.
      *
@@ -1299,13 +1304,13 @@ internal class MapController(
         screenY: Float,
     ): LatLng {
         // Get center pixel coordinates at current zoom
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
 
         // Convert screen coordinates to pixel coordinates, turned back to north up
         // Account for view center offset and pan offset
         val (mapX, mapY) = screenToMapSpace(screenX, screenY)
-        val pixelX = centerPixelX + (mapX - viewWidth / 2 + panOffsetX).toDouble()
-        val pixelY = centerPixelY + (mapY - viewHeight / 2 + panOffsetY).toDouble()
+        val pixelX = centerPixelX + (mapX - viewWidth / 2 + panOffsetX)
+        val pixelY = centerPixelY + (mapY - viewHeight / 2 + panOffsetY)
 
         // Convert pixel coordinates to LatLng
         return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom, tileSize)
@@ -1473,7 +1478,7 @@ internal class MapController(
                         currentMoveReason = null
                         onCameraIdleListener?.onCameraIdle()
                     }
-                } catch (e: kotlinx.coroutines.CancellationException) {
+                } catch (e: CancellationException) {
                     listener?.onCancel()
                     throw e
                 } finally {
@@ -1539,8 +1544,22 @@ internal class MapController(
         val previewZoom = (target.zoom - TARGET_PREVIEW_LEVELS).coerceAtLeast(0f)
         val tiles =
             (
-                ViewportCalculator.getVisibleTiles(viewCenter, previewZoom, viewWidth, viewHeight, tileSize = tileSize) +
-                    ViewportCalculator.getVisibleTiles(viewCenter, target.zoom, viewWidth, viewHeight, tileSize = tileSize)
+                ViewportCalculator.getVisibleTiles(
+                    viewCenter,
+                    previewZoom,
+                    viewWidth,
+                    viewHeight,
+                    tileSize = tileSize,
+                    maxTileZoom = maxTileZoom(),
+                ) +
+                    ViewportCalculator.getVisibleTiles(
+                        viewCenter,
+                        target.zoom,
+                        viewWidth,
+                        viewHeight,
+                        tileSize = tileSize,
+                        maxTileZoom = maxTileZoom(),
+                    )
             ).mapTo(LinkedHashSet()) { it.wrapped() }
         animationTargetTiles = tiles
         wantedTiles = wantedTiles?.plus(animationTargetTiles)
@@ -1595,14 +1614,14 @@ internal class MapController(
         viewHeight: Int,
     ): CameraPosition {
         // Web Mercator coordinates at zoom 0, where the world is tileSize pixels wide
-        val (swX, swY) = ProjectionUtils.latLngToPixel(bounds.southwest, 0f, tileSize)
-        val (neX, neY) = ProjectionUtils.latLngToPixel(bounds.northeast, 0f, tileSize)
-        val width = if (neX >= swX) neX - swX else tileSize.toFloat() - swX + neX
+        val (swX, swY) = ProjectionUtils.latLngToPixelExact(bounds.southwest, 0f, tileSize)
+        val (neX, neY) = ProjectionUtils.latLngToPixelExact(bounds.northeast, 0f, tileSize)
+        val width = if (neX >= swX) neX - swX else tileSize - swX + neX
         val height = swY - neY // Y increases downward
 
-        var centerX = swX + width / 2f
-        if (centerX >= tileSize) centerX -= tileSize.toFloat()
-        val center = ProjectionUtils.pixelToLatLng(centerX.toDouble(), (swY + neY) / 2.0, 0f, tileSize)
+        var centerX = swX + width / 2
+        if (centerX >= tileSize) centerX -= tileSize
+        val center = ProjectionUtils.pixelToLatLng(centerX, (swY + neY) / 2.0, 0f, tileSize)
 
         // Each zoom level doubles the size, so the zoom that fits is log2 of the scale
         val zoom =
@@ -1611,14 +1630,14 @@ internal class MapController(
                     DEFAULT_MIN_ZOOM
                 }
 
-                width <= 0f && height <= 0f -> {
+                width <= 0.0 && height <= 0.0 -> {
                     DEFAULT_MAX_ZOOM
                 }
 
                 else -> {
-                    val scaleX = if (width > 0f) viewWidth / width else Float.MAX_VALUE
-                    val scaleY = if (height > 0f) viewHeight / height else Float.MAX_VALUE
-                    log2(minOf(scaleX, scaleY))
+                    val scaleX = if (width > 0.0) viewWidth / width else Double.MAX_VALUE
+                    val scaleY = if (height > 0.0) viewHeight / height else Double.MAX_VALUE
+                    log2(minOf(scaleX, scaleY)).toFloat()
                 }
             }
         return CameraPosition(center, zoom.coerceIn(minZoomPreference, maxZoomPreference))
@@ -1688,7 +1707,7 @@ internal class MapController(
             is CameraUpdate.ScrollBy -> {
                 // Convert current center to pixel coordinates
                 val (centerPixelX, centerPixelY) =
-                    ProjectionUtils.latLngToPixel(
+                    ProjectionUtils.latLngToPixelExact(
                         currentPosition.target,
                         currentPosition.zoom,
                         tileSize,
@@ -1696,8 +1715,8 @@ internal class MapController(
 
                 // Apply the pixel scroll offset, given in screen directions
                 val (scrollX, scrollY) = screenVectorToMapSpace(cameraUpdate.xPixels, cameraUpdate.yPixels)
-                val newPixelX = (centerPixelX + scrollX).toDouble()
-                val newPixelY = (centerPixelY + scrollY).toDouble()
+                val newPixelX = centerPixelX + scrollX
+                val newPixelY = centerPixelY + scrollY
 
                 // Convert back to LatLng
                 val newTarget = ProjectionUtils.pixelToLatLng(newPixelX, newPixelY, currentPosition.zoom, tileSize)
@@ -1902,6 +1921,10 @@ internal class MapController(
             if (x < left) hitEdges.add(Edge.LEFT)
             if (x > left + width) hitEdges.add(Edge.RIGHT)
             panOffsetX = (x.coerceIn(left, left + width) - targetX).toFloat()
+            // Rounded to a Float, the offset must not put the target a fraction of a pixel
+            // beyond an edge: beyond longitude 180 it would be on the other side of the world
+            if (targetX + panOffsetX > left + width) panOffsetX = Math.nextDown(panOffsetX)
+            if (targetX + panOffsetX < left) panOffsetX = Math.nextUp(panOffsetX)
         }
         if (y < northY) hitEdges.add(Edge.TOP)
         if (y > southY) hitEdges.add(Edge.BOTTOM)
@@ -1919,10 +1942,8 @@ internal class MapController(
         offsetX: Float,
         offsetY: Float,
     ): LatLng {
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
-        val newCenterPixelX = (centerPixelX + offsetX).toDouble()
-        val newCenterPixelY = (centerPixelY + offsetY).toDouble()
-        return ProjectionUtils.pixelToLatLng(newCenterPixelX, newCenterPixelY, zoom, tileSize)
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
+        return ProjectionUtils.pixelToLatLng(centerPixelX + offsetX, centerPixelY + offsetY, zoom, tileSize)
     }
 
     /**
@@ -1977,9 +1998,10 @@ internal class MapController(
                 panOffsetX,
                 panOffsetY,
                 tileSize = tileSize,
+                maxTileZoom = maxTileZoom(),
             )
 
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
 
         // The map layers are laid out in map space and turned by the bearing around the
         // camera target; the info windows and the map's controls stay upright
@@ -1990,9 +2012,17 @@ internal class MapController(
         // Sort tile overlays by z-index
         val sortedTileOverlays = tileOverlays.filter { it.visible }.sortedBy { it.zIndex }
 
+        // Tile overlays are not limited to the zoom levels of the base map source
+        val overlayTiles =
+            if (sortedTileOverlays.isEmpty() || visibleTiles.firstOrNull()?.zoom == ViewportCalculator.tileZoom(zoom)) {
+                visibleTiles
+            } else {
+                ViewportCalculator.getVisibleTiles(center, zoom, coverWidth, coverHeight, panOffsetX, panOffsetY, tileSize = tileSize)
+            }
+
         // Draw tile overlays with negative z-index (below base tiles)
         for (overlay in sortedTileOverlays.filter { it.zIndex < 0 }) {
-            drawTileOverlay(canvas, visibleTiles, centerPixelX, centerPixelY, overlay)
+            drawTileOverlay(canvas, overlayTiles, centerPixelX, centerPixelY, overlay)
         }
 
         // Tiles of repeated copies of the world are loaded as the tiles they show
@@ -2025,7 +2055,7 @@ internal class MapController(
 
         // Draw tile overlays with positive z-index (above base tiles)
         for (overlay in sortedTileOverlays.filter { it.zIndex >= 0 }) {
-            drawTileOverlay(canvas, visibleTiles, centerPixelX, centerPixelY, overlay)
+            drawTileOverlay(canvas, overlayTiles, centerPixelX, centerPixelY, overlay)
         }
 
         // Prefetch adjacent tiles only when viewport changes to avoid excessive downloads
@@ -2112,6 +2142,7 @@ internal class MapController(
                 panOffsetX,
                 panOffsetY,
                 tileSize = tileSize,
+                maxTileZoom = maxTileZoom(),
             )
 
         prefetchedTiles = prefetchTiles.mapTo(HashSet()) { it.wrapped() }
@@ -2147,13 +2178,14 @@ internal class MapController(
      * also across the antimeridian.
      */
     private fun wrappedScreenX(
-        pixelX: Float,
-        centerPixelX: Float,
+        pixelX: Double,
+        centerPixelX: Double,
         nearX: Float = viewWidth / 2f,
     ): Float {
+        // World pixels are too large for a Float: only the distance to the center fits
         val x = pixelX - centerPixelX + viewWidth / 2 - panOffsetX
-        val world = ProjectionUtils.worldSize(zoom, tileSize).toFloat()
-        return x - world * ((x - nearX) / world).roundToInt()
+        val world = ProjectionUtils.worldSize(zoom, tileSize)
+        return (x - world * ((x - nearX) / world).roundToInt()).toFloat()
     }
 
     /**
@@ -2163,17 +2195,17 @@ internal class MapController(
      */
     private fun shapeScreenPoints(
         points: List<LatLng>,
-        centerPixelX: Float,
-        centerPixelY: Float,
+        centerPixelX: Double,
+        centerPixelY: Double,
         nearX: Float = viewWidth / 2f,
     ): FloatArray {
         val out = FloatArray(points.size * 2)
         var previousX = nearX
         for ((i, point) in points.withIndex()) {
-            val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(point, zoom, tileSize)
+            val (pixelX, pixelY) = ProjectionUtils.latLngToPixelExact(point, zoom, tileSize)
             previousX = wrappedScreenX(pixelX, centerPixelX, previousX)
             out[2 * i] = previousX
-            out[2 * i + 1] = pixelY - centerPixelY + viewHeight / 2 - panOffsetY
+            out[2 * i + 1] = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
         }
         return out
     }
@@ -2280,8 +2312,8 @@ internal class MapController(
 
     private fun drawGroundOverlay(
         canvas: Canvas,
-        centerPixelX: Float,
-        centerPixelY: Float,
+        centerPixelX: Double,
+        centerPixelY: Double,
         groundOverlay: GroundOverlay,
     ) {
         val bitmap = loadGroundOverlayBitmap(groundOverlay)
@@ -2324,8 +2356,8 @@ internal class MapController(
     private fun groundOverlayScreenRect(
         groundOverlay: GroundOverlay,
         bitmap: Bitmap,
-        centerPixelX: Float,
-        centerPixelY: Float,
+        centerPixelX: Double,
+        centerPixelY: Double,
     ): RectF? {
         // Read once: the overlay is a live handle, so its properties can change
         val bounds = groundOverlay.bounds
@@ -2336,28 +2368,28 @@ internal class MapController(
 
         if (bounds != null) {
             val (nwPixelX, nwPixelY) =
-                ProjectionUtils.latLngToPixel(
+                ProjectionUtils.latLngToPixelExact(
                     LatLng(bounds.northeast.latitude, bounds.southwest.longitude),
                     zoom,
                     tileSize,
                 )
             val (sePixelX, sePixelY) =
-                ProjectionUtils.latLngToPixel(
+                ProjectionUtils.latLngToPixelExact(
                     LatLng(bounds.southwest.latitude, bounds.northeast.longitude),
                     zoom,
                     tileSize,
                 )
             // Bounds crossing the antimeridian end in the next copy of the world
-            val world = ProjectionUtils.worldSize(zoom, tileSize).toFloat()
-            val widthPixels = if (sePixelX >= nwPixelX) sePixelX - nwPixelX else sePixelX + world - nwPixelX
+            val world = ProjectionUtils.worldSize(zoom, tileSize)
+            val widthPixels = (if (sePixelX >= nwPixelX) sePixelX - nwPixelX else sePixelX + world - nwPixelX).toFloat()
             // The copy whose middle is nearest to the view center
             val left = wrappedScreenX(nwPixelX + widthPixels / 2, centerPixelX) - widthPixels / 2
-            return RectF(left, nwPixelY + offsetY, left + widthPixels, sePixelY + offsetY)
+            return RectF(left, (nwPixelY + offsetY).toFloat(), left + widthPixels, (sePixelY + offsetY).toFloat())
         }
 
         if (position == null || width == null) return null
 
-        val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixel(position, zoom, tileSize)
+        val (posPixelX, posPixelY) = ProjectionUtils.latLngToPixelExact(position, zoom, tileSize)
         val posScreenX = wrappedScreenX(posPixelX, centerPixelX)
         val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(position.latitude, zoom, tileSize)
         val widthPixels = (width / metersPerPixel).toFloat()
@@ -2369,14 +2401,14 @@ internal class MapController(
             }
 
         val left = posScreenX - widthPixels * groundOverlay.anchor.first
-        val top = posPixelY + offsetY - heightPixels * groundOverlay.anchor.second
+        val top = (posPixelY + offsetY).toFloat() - heightPixels * groundOverlay.anchor.second
         return RectF(left, top, left + widthPixels, top + heightPixels)
     }
 
     private fun drawPolygonsByZIndex(
         canvas: Canvas,
-        centerPixelX: Float,
-        centerPixelY: Float,
+        centerPixelX: Double,
+        centerPixelY: Double,
         zIndex: Float,
         sortedPolygons: List<Polygon>,
     ) {
@@ -2426,8 +2458,8 @@ internal class MapController(
 
     private fun drawPolylinesByZIndex(
         canvas: Canvas,
-        centerPixelX: Float,
-        centerPixelY: Float,
+        centerPixelX: Double,
+        centerPixelY: Double,
         zIndex: Float,
         sortedPolylines: List<Polyline>,
     ) {
@@ -2630,8 +2662,8 @@ internal class MapController(
 
     private fun drawCirclesByZIndex(
         canvas: Canvas,
-        centerPixelX: Float,
-        centerPixelY: Float,
+        centerPixelX: Double,
+        centerPixelY: Double,
         zIndex: Float,
         sortedCircles: List<Circle>,
     ) {
@@ -2653,9 +2685,9 @@ internal class MapController(
             strokePaint.strokeCap = circle.strokeCap.toAndroidCap()
             strokePaint.strokeJoin = circle.strokeJoin.toAndroidJoin()
 
-            val (pixelX, pixelY) = ProjectionUtils.latLngToPixel(circle.center, zoom, tileSize)
+            val (pixelX, pixelY) = ProjectionUtils.latLngToPixelExact(circle.center, zoom, tileSize)
             val screenX = wrappedScreenX(pixelX, centerPixelX)
-            val screenY = pixelY - centerPixelY + viewHeight / 2 - panOffsetY
+            val screenY = (pixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
             val radiusInPixels = metersToPixels(circle.radius, circle.center.latitude, zoom)
 
@@ -2687,8 +2719,8 @@ internal class MapController(
 
     private fun drawMarkersByZIndex(
         canvas: Canvas,
-        centerPixelX: Float,
-        centerPixelY: Float,
+        centerPixelX: Double,
+        centerPixelY: Double,
         zIndex: Float,
         sortedMarkers: List<Marker>,
     ) {
@@ -2698,10 +2730,10 @@ internal class MapController(
         for (marker in sortedMarkers) {
             if (marker.zIndex != zIndex || !marker.visible) continue
 
-            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom, tileSize)
+            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixelExact(marker.position, zoom, tileSize)
 
             val screenX = wrappedScreenX(markerPixelX, centerPixelX)
-            val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
+            val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
             val icon = loadBitmap(marker.icon)
 
@@ -2840,10 +2872,10 @@ internal class MapController(
             boxHeight = totalHeight + infoWindowPadding * 2
         }
 
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
-        val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom, tileSize)
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
+        val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixelExact(marker.position, zoom, tileSize)
         val screenX = wrappedScreenX(markerPixelX, centerPixelX)
-        val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
+        val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
         // The window points at the info window anchor of the icon, which turns with the marker
         val icon = loadBitmap(marker.icon)
@@ -2990,8 +3022,8 @@ internal class MapController(
      */
     private fun tileScreenRect(
         tile: TileCoordinate,
-        centerPixelX: Float,
-        centerPixelY: Float,
+        centerPixelX: Double,
+        centerPixelY: Double,
         out: RectF,
     ) {
         val size = tileSize * 2.0.pow((zoom - tile.zoom).toDouble())
@@ -3026,8 +3058,8 @@ internal class MapController(
     private fun drawTileOverlay(
         canvas: Canvas,
         visibleTiles: List<TileCoordinate>,
-        centerPixelX: Float,
-        centerPixelY: Float,
+        centerPixelX: Double,
+        centerPixelY: Double,
         overlay: TileOverlay,
     ) {
         val cache = overlayTileCaches[overlay.id] ?: return
@@ -3083,8 +3115,17 @@ internal class MapController(
                         if (cachedBitmap != null) {
                             cachedBitmap
                         } else {
-                            // The provider may block: this runs on an IO thread
-                            val tileData = overlay.tileProvider.getTile(tile.x, tile.y, tile.zoom)
+                            // The provider may block: this runs on an IO thread. It is code of
+                            // the app: if it throws, the tile failed and is asked for again later.
+                            val tileData =
+                                try {
+                                    overlay.tileProvider.getTile(tile.x, tile.y, tile.zoom)
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    Log.w("OpenMapView", "Tile provider failed for tile (${tile.x}, ${tile.y}, ${tile.zoom})", e)
+                                    null
+                                }
                             if (tileData === TileProvider.NO_TILE) {
                                 noTile = true
                                 null
@@ -3381,17 +3422,17 @@ internal class MapController(
     ): Marker? {
         // Shapes are hit-tested in map space, where north is up
         val (x, y) = screenToMapSpace(screenX, screenY)
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
 
         // Check markers from top to bottom, as they are drawn: by zIndex, then last added first
         for (marker in markers.sortedBy { it.zIndex }.asReversed()) {
             if (!marker.visible) continue
 
-            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom, tileSize)
+            val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixelExact(marker.position, zoom, tileSize)
 
             // On the copy of the world nearest to the touch, as every visible copy is drawn
             val screenX = wrappedScreenX(markerPixelX, centerPixelX, x)
-            val screenY = markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY
+            val screenY = (markerPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
             val icon = loadBitmap(marker.icon)
             val anchorX = icon.width * marker.anchor.first
@@ -3453,7 +3494,7 @@ internal class MapController(
         // Shapes are hit-tested in map space, where north is up
         val (x, y) = screenToMapSpace(screenX, screenY)
         val touchTolerance = 20f
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
 
         // Check polylines from top to bottom, as they are drawn: by zIndex, then last added first
         for (polyline in polylines.sortedBy { it.zIndex }.asReversed()) {
@@ -3499,7 +3540,7 @@ internal class MapController(
     ): Polygon? {
         // Shapes are hit-tested in map space, where north is up
         val (x, y) = screenToMapSpace(screenX, screenY)
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
 
         // Check polygons from top to bottom, as they are drawn: by zIndex, then last added first
         for (polygon in polygons.sortedBy { it.zIndex }.asReversed()) {
@@ -3540,17 +3581,17 @@ internal class MapController(
     ): Circle? {
         // Shapes are hit-tested in map space, where north is up
         val (x, y) = screenToMapSpace(screenX, screenY)
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
 
         // Check circles from top to bottom, as they are drawn: by zIndex, then last added first
         for (circle in circles.sortedBy { it.zIndex }.asReversed()) {
             if (!circle.clickable || !circle.visible) continue
 
             // Convert circle center to screen coordinates
-            val (px, py) = ProjectionUtils.latLngToPixel(circle.center, zoom, tileSize)
+            val (px, py) = ProjectionUtils.latLngToPixelExact(circle.center, zoom, tileSize)
             // On the copy of the world nearest to the touch, as every visible copy is drawn
             val sx = wrappedScreenX(px, centerPixelX, x)
-            val sy = py - centerPixelY + viewHeight / 2 - panOffsetY
+            val sy = (py - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
 
             // Convert radius from meters to pixels
             val radiusInPixels = metersToPixels(circle.radius, circle.center.latitude, zoom)
@@ -3574,7 +3615,7 @@ internal class MapController(
     ): GroundOverlay? {
         // Shapes are hit-tested in map space, where north is up
         val (x, y) = screenToMapSpace(screenX, screenY)
-        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
+        val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
 
         // From top to bottom, as they are drawn: by zIndex, then last added first
         for (groundOverlay in groundOverlays.sortedBy { it.zIndex }.asReversed()) {

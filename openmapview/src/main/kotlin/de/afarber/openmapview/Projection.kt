@@ -96,9 +96,10 @@ public class Projection
             mapX: Float,
             mapY: Float,
         ): LatLng {
-            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
-            val pixelX = (centerPixelX + mapX - viewWidth / 2 + panOffsetX).toDouble()
-            val pixelY = (centerPixelY + mapY - viewHeight / 2 + panOffsetY).toDouble()
+            // World pixels are too large for a Float, so they are added up as doubles
+            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
+            val pixelX = centerPixelX + (mapX - viewWidth / 2 + panOffsetX)
+            val pixelY = centerPixelY + (mapY - viewHeight / 2 + panOffsetY)
             return ProjectionUtils.pixelToLatLng(pixelX, pixelY, zoom, tileSize)
         }
 
@@ -112,13 +113,14 @@ public class Projection
          * @return The screen location in pixels, on the copy of the world nearest to the view center
          */
         public fun toScreenLocation(location: LatLng): Point {
-            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
-            val (locationPixelX, locationPixelY) = ProjectionUtils.latLngToPixel(location, zoom, tileSize)
+            val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixelExact(center, zoom, tileSize)
+            val (locationPixelX, locationPixelY) = ProjectionUtils.latLngToPixelExact(location, zoom, tileSize)
 
+            // The distance to the center is taken as doubles: world pixels are too large for a Float
             val x = locationPixelX - centerPixelX + viewWidth / 2 - panOffsetX
-            val world = ProjectionUtils.worldSize(zoom, tileSize).toFloat()
-            val mapX = x - world * ((x - viewWidth / 2f) / world).roundToInt()
-            val mapY = locationPixelY - centerPixelY + viewHeight / 2 - panOffsetY
+            val world = ProjectionUtils.worldSize(zoom, tileSize)
+            val mapX = (x - world * ((x - viewWidth / 2f) / world).roundToInt()).toFloat()
+            val mapY = (locationPixelY - centerPixelY + viewHeight / 2 - panOffsetY).toFloat()
             val (screenX, screenY) = turned(mapX, mapY, toMapSpace = false)
 
             return Point(screenX.toInt(), screenY.toInt())

@@ -28,9 +28,13 @@ internal object ViewportCalculator {
 
     /**
      * The zoom level of the tiles drawn at a fractional zoom: the nearest whole level, so
-     * the tiles are scaled by a factor between 0.71 and 1.41.
+     * the tiles are scaled by a factor between 0.71 and 1.41. Above [maxTileZoom], the
+     * highest level a tile source has, the tiles of that level are scaled up further.
      */
-    internal fun tileZoom(zoom: Float): Int = zoom.roundToInt().coerceAtLeast(0)
+    internal fun tileZoom(
+        zoom: Float,
+        maxTileZoom: Int = Int.MAX_VALUE,
+    ): Int = zoom.roundToInt().coerceIn(0, maxTileZoom.coerceAtLeast(0))
 
     /**
      * Calculates which tiles are visible at a fractional zoom level.
@@ -44,6 +48,7 @@ internal object ViewportCalculator {
      * @param panOffsetX The horizontal pan offset in screen pixels (default 0)
      * @param panOffsetY The vertical pan offset in screen pixels (default 0)
      * @param tileSize The width of a tile on screen at a whole zoom level, in pixels (default 256)
+     * @param maxTileZoom The highest zoom level of the tiles, e.g. of a tile source (default no limit)
      * @return A list of tile coordinates that should be rendered
      */
     fun getVisibleTiles(
@@ -54,8 +59,9 @@ internal object ViewportCalculator {
         panOffsetX: Float = 0f,
         panOffsetY: Float = 0f,
         tileSize: Double = ProjectionUtils.TILE_SIZE,
+        maxTileZoom: Int = Int.MAX_VALUE,
     ): List<TileCoordinate> {
-        val tileZoom = tileZoom(zoom)
+        val tileZoom = tileZoom(zoom, maxTileZoom)
         // Screen pixels per pixel of the tile zoom level
         val scale = (2.0.pow((zoom - tileZoom).toDouble()) * tileSize / ProjectionUtils.TILE_SIZE).toFloat()
         return getVisibleTiles(

@@ -128,17 +128,17 @@ public abstract class UrlTileProvider(
                 }
             if (response.status == HttpStatusCode.NotFound) {
                 // Sparse overlays commonly answer 404 for areas without data
-                Log.d(TAG, "No tile ($x, $y, $zoom) from $url")
+                Log.d(TAG, "No tile ($x, $y, $zoom) from ${url.withoutQuery()}")
                 return TileProvider.NO_TILE
             }
             if (!response.status.isSuccess()) {
-                Log.w(TAG, "Failed to download tile ($x, $y, $zoom) from $url: HTTP ${response.status.value}")
+                Log.w(TAG, "Failed to download tile ($x, $y, $zoom) from ${url.withoutQuery()}: HTTP ${response.status.value}")
                 return null
             }
             val bytes = response.readRawBytes()
 
             if (bytes.isEmpty()) {
-                Log.w(TAG, "Empty tile data from $url")
+                Log.w(TAG, "Empty tile data from ${url.withoutQuery()}")
                 null
             } else {
                 // Standard OSM tile size
@@ -147,11 +147,8 @@ public abstract class UrlTileProvider(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e(
-                TAG,
-                "Failed to download tile ($x, $y, $zoom): ${e.javaClass.simpleName}: ${e.message}",
-                e,
-            )
+            // Without the stack trace, which repeats the message with the whole URL
+            Log.e(TAG, "Failed to download tile ($x, $y, $zoom): ${e.javaClass.simpleName}: ${e.message.withoutQueryOf(url)}")
             null
         }
     }
