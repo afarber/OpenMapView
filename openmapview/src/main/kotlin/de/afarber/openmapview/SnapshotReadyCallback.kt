@@ -37,7 +37,7 @@ import android.graphics.Bitmap
  *
  * @see OpenMapView.snapshot
  */
-fun interface SnapshotReadyCallback {
+public fun interface SnapshotReadyCallback {
     /**
      * Called when the snapshot is ready.
      *
@@ -48,5 +48,5 @@ fun interface SnapshotReadyCallback {
      *               snapshot could not be taken (e.g., if the view has not been
      *               laid out yet or has zero width/height).
      */
-    fun onSnapshotReady(bitmap: Bitmap?)
+    public fun onSnapshotReady(bitmap: Bitmap?)
 }

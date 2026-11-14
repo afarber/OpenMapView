@@ -15,7 +15,7 @@ import kotlin.time.Duration.Companion.milliseconds
  *
  * Configure which user interactions are enabled on the map.
  */
-class UiSettings {
+public class UiSettings {
     // Redraws the map when a setting that is drawn changes, set by OpenMapView
     internal var onDrawnSettingChanged: (() -> Unit)? = null
 
@@ -23,7 +23,7 @@ class UiSettings {
      * Whether zoom gestures (pinch-to-zoom) are enabled.
      * Default is true.
      */
-    var isZoomGesturesEnabled: Boolean = true
+    public var isZoomGesturesEnabled: Boolean = true
 
     /**
      * Whether scroll gestures (panning) are enabled.
@@ -33,13 +33,13 @@ class UiSettings {
      * such as a ScrollView or a Compose verticalScroll. Disable it (and zoom gestures) to let
      * such drags scroll the parent instead, e.g. for a static map in a list.
      */
-    var isScrollGesturesEnabled: Boolean = true
+    public var isScrollGesturesEnabled: Boolean = true
 
     /**
      * Whether zoom controls (+/- buttons) are enabled.
      * Default is false to avoid UI clutter.
      */
-    var isZoomControlsEnabled: Boolean = false
+    public var isZoomControlsEnabled: Boolean = false
         set(value) {
             if (field == value) return
             field = value
@@ -54,7 +54,7 @@ class UiSettings {
      * Similar to Android's overscroll behavior.
      * Default is true.
      */
-    var isEdgeEffectEnabled: Boolean = true
+    public var isEdgeEffectEnabled: Boolean = true
 
     /**
      * Whether scroll gestures are enabled during rotate or zoom gestures.
@@ -62,25 +62,25 @@ class UiSettings {
      * the map only zooms around the fingers.
      * Default is true.
      */
-    var isScrollGesturesEnabledDuringRotateOrZoom: Boolean = true
+    public var isScrollGesturesEnabledDuringRotateOrZoom: Boolean = true
 
     /**
      * Whether rotate gestures are enabled: turning two fingers turns the map, changing the
      * camera bearing. Default is true.
      */
-    var isRotateGesturesEnabled: Boolean = true
+    public var isRotateGesturesEnabled: Boolean = true
 
     /**
      * Whether tilt gestures are enabled.
      * Currently not implemented, always returns false.
      */
-    val isTiltGesturesEnabled: Boolean = false
+    public val isTiltGesturesEnabled: Boolean = false
 
     /**
      * Whether the compass is shown while the map is turned, i.e. the camera bearing is not 0.
      * It points north, and tapping it turns the map back to north up. Default is true.
      */
-    var isCompassEnabled: Boolean = true
+    public var isCompassEnabled: Boolean = true
         set(value) {
             if (field == value) return
             field = value
@@ -92,7 +92,7 @@ class UiSettings {
      * see [OpenMapView.setMyLocationEnabled]. Tapping it moves the camera to the location.
      * Default is true.
      */
-    var isMyLocationButtonEnabled: Boolean = true
+    public var isMyLocationButtonEnabled: Boolean = true
         set(value) {
             if (field == value) return
             field = value
@@ -104,14 +104,14 @@ class UiSettings {
      * Indoor mapping is not supported by standard OSM tiles.
      * Always returns false.
      */
-    val isIndoorLevelPickerEnabled: Boolean = false
+    public val isIndoorLevelPickerEnabled: Boolean = false
 
     /**
      * Whether the map toolbar is enabled.
      * The map toolbar is not implemented, see [OpenMapView.openInExternalApp].
      * Always returns false.
      */
-    val isMapToolbarEnabled: Boolean = false
+    public val isMapToolbarEnabled: Boolean = false
 
     /**
      * Duration after which info windows automatically dismiss.
@@ -125,7 +125,7 @@ class UiSettings {
      * mapView.uiSettings.infoWindowAutoDismiss = 3.seconds
      * ```
      */
-    var infoWindowAutoDismiss: Duration = Duration.ZERO
+    public var infoWindowAutoDismiss: Duration = Duration.ZERO
         set(value) {
             field = if (value.isPositive()) value else Duration.ZERO
         }
@@ -138,7 +138,7 @@ class UiSettings {
      * mapView.getUiSettings().setInfoWindowAutoDismissMillis(3000);
      * ```
      */
-    var infoWindowAutoDismissMillis: Long
+    public var infoWindowAutoDismissMillis: Long
         get() = infoWindowAutoDismiss.inWholeMilliseconds
         set(value) {
             infoWindowAutoDismiss = value.milliseconds
@@ -152,7 +152,7 @@ class UiSettings {
      *
      * @param enabled true to enable all gestures, false to disable all
      */
-    fun setAllGesturesEnabled(enabled: Boolean) {
+    public fun setAllGesturesEnabled(enabled: Boolean) {
         isZoomGesturesEnabled = enabled
         isScrollGesturesEnabled = enabled
         isScrollGesturesEnabledDuringRotateOrZoom = enabled

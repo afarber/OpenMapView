@@ -26,7 +26,7 @@ import androidx.core.graphics.toColorInt
  * val color3 = "#80FF0000".toComposeColor() // Semi-transparent red
  * ```
  */
-fun String.toComposeColor(): Color? =
+public fun String.toComposeColor(): Color? =
     try {
         val androidColor = this.toColorInt()
         Color(androidColor)

@@ -60,6 +60,8 @@ android {
 }
 
 kotlin {
+    // Public API is always a deliberate choice: it needs an explicit visibility and type
+    explicitApi()
     compilerOptions {
         allWarningsAsErrors = true
     }

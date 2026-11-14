@@ -25,7 +25,7 @@ import kotlin.math.ceil
  * Renders a semi-transparent background with clickable attribution text in the bottom-right corner.
  * Text wider than the view wraps onto more lines, so no part of the attribution is cut off.
  */
-class AttributionOverlay(
+internal class AttributionOverlay(
     context: Context,
 ) {
     private var attributionText = "© OpenStreetMap contributors"

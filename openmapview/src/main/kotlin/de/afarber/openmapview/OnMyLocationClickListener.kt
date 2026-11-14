@@ -12,11 +12,11 @@ import android.location.Location
 /**
  * Called when the my-location dot is tapped.
  */
-fun interface OnMyLocationClickListener {
+public fun interface OnMyLocationClickListener {
     /**
      * Called when the my-location dot is tapped.
      *
      * @param location The location shown by the dot
      */
-    fun onMyLocationClick(location: Location)
+    public fun onMyLocationClick(location: Location)
 }

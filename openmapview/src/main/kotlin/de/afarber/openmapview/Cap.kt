@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.StrokeJoin
  * Java code passes these to e.g. `PolylineOptions.startCap(new RoundCap())`; Kotlin code can
  * also set the Compose [StrokeCap] properties directly.
  */
-abstract class Cap internal constructor() {
+public abstract class Cap internal constructor() {
     override fun equals(other: Any?): Boolean = other != null && other::class == this::class
 
     override fun hashCode(): Int = this::class.hashCode()
@@ -25,27 +25,27 @@ abstract class Cap internal constructor() {
 }
 
 /** A line end cut off flat at the end point. */
-class ButtCap : Cap()
+public class ButtCap : Cap()
 
 /** A line end with a half circle around the end point. */
-class RoundCap : Cap()
+public class RoundCap : Cap()
 
 /** A line end with a half square around the end point. */
-class SquareCap : Cap()
+public class SquareCap : Cap()
 
 /**
  * The shape of the corners of a stroke, as int constants like in the Maps SDK,
  * e.g. `PolylineOptions.jointType(JointType.ROUND)`.
  */
-object JointType {
+public object JointType {
     /** Sharp corners */
-    const val DEFAULT = 0
+    public const val DEFAULT: Int = 0
 
     /** Corners cut off flat */
-    const val BEVEL = 1
+    public const val BEVEL: Int = 1
 
     /** Rounded corners */
-    const val ROUND = 2
+    public const val ROUND: Int = 2
 }
 
 internal fun Cap.toStrokeCap(): StrokeCap =

@@ -86,7 +86,7 @@ import de.afarber.openmapview.Marker as MapMarker
  * @param content The markers and shapes of the map, see [Marker] and [Polyline]
  */
 @Composable
-fun OpenMap(
+public fun OpenMap(
     modifier: Modifier = Modifier,
     cameraPositionState: CameraPositionState = rememberCameraPositionState(),
     properties: MapProperties = MapProperties(),

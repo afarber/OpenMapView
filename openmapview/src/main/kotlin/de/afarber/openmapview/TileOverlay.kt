@@ -59,9 +59,9 @@ import java.util.concurrent.atomic.AtomicLong
  * @see TileProvider
  * @see UrlTileProvider
  */
-class TileOverlay(
+public class TileOverlay(
     /** Provider for tile data */
-    val tileProvider: TileProvider,
+    public val tileProvider: TileProvider,
     transparency: Float = 0f,
     zIndex: Float = 0f,
     visible: Boolean = true,
@@ -77,30 +77,30 @@ class TileOverlay(
     ) = ShapeProperty(initial, check) { mapView?.invalidate() }
 
     /** Overlay transparency (0.0 = opaque, 1.0 = fully transparent) */
-    var transparency: Float by property(transparency) {
+    public var transparency: Float by property(transparency) {
         require(it in 0f..1f) { "Transparency must be between 0.0 and 1.0: $it" }
     }
 
     /** Draw order (higher values drawn on top, base tiles are at 0.0) */
-    var zIndex: Float by property(zIndex)
+    public var zIndex: Float by property(zIndex)
 
     /** Whether the overlay is visible */
-    var visible: Boolean by property(visible)
+    public var visible: Boolean by property(visible)
 
     /** Whether tiles fade in when loaded (currently not implemented) */
-    var fadeIn: Boolean by property(fadeIn)
+    public var fadeIn: Boolean by property(fadeIn)
 
     /** User data associated with this overlay */
-    var tag: Any? by property(tag)
+    public var tag: Any? by property(tag)
 
     /**
      * The unique id of this tile overlay, e.g. "to0", which stays the same for its lifetime.
      * [copy] returns a tile overlay with a new id.
      */
-    val id: String = "to${nextId.getAndIncrement()}"
+    public val id: String = "to${nextId.getAndIncrement()}"
 
     /** Removes the overlay from the map that shows it. */
-    fun remove() {
+    public fun remove() {
         mapView?.removeTileOverlay(this)
     }
 
@@ -108,12 +108,12 @@ class TileOverlay(
      * Drops the downloaded tiles of this overlay, so they are requested again, e.g. after
      * the data behind the [tileProvider] changed.
      */
-    fun clearTileCache() {
+    public fun clearTileCache() {
         mapView?.clearTileOverlayCache(this)
     }
 
     /** Returns a new overlay with the given properties changed, not added to any map. */
-    fun copy(
+    public fun copy(
         tileProvider: TileProvider = this.tileProvider,
         transparency: Float = this.transparency,
         zIndex: Float = this.zIndex,

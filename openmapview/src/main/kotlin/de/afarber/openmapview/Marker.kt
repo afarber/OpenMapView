@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicLong
  * @param zIndex Draw order. Markers with higher zIndex are drawn on top. Default is 0.0
  * @param tag Optional user data associated with the marker
  */
-class Marker(
+public class Marker(
     position: LatLng,
     title: String? = null,
     snippet: String? = null,
@@ -61,53 +61,53 @@ class Marker(
     ) = ShapeProperty(initial, check) { mapView?.invalidate() }
 
     /** The geographic location of the marker, also changed while it is dragged */
-    var position: LatLng by property(position)
+    public var position: LatLng by property(position)
 
     /** Title text shown in the info window */
-    var title: String? by property(title)
+    public var title: String? by property(title)
 
     /** Snippet text shown below the title in the info window */
-    var snippet: String? by property(snippet)
+    public var snippet: String? by property(snippet)
 
     /** Custom icon, or null for the default red marker */
-    var icon: BitmapDescriptor? by property(icon)
+    public var icon: BitmapDescriptor? by property(icon)
 
     /** The point of the icon at [position], as fractions of its width and height */
-    var anchor: Pair<Float, Float> by property(anchor)
+    public var anchor: Pair<Float, Float> by property(anchor)
 
     /** The point of the icon the info window points at, as fractions of its width and height */
-    var infoWindowAnchor: Pair<Float, Float> by property(infoWindowAnchor)
+    public var infoWindowAnchor: Pair<Float, Float> by property(infoWindowAnchor)
 
     /** Clockwise rotation of the icon around the [anchor] in degrees, relative to the screen, or to north if [isFlat] */
-    var rotation: Float by property(rotation)
+    public var rotation: Float by property(rotation)
 
     /** Whether the icon lies flat on the map and turns with it, instead of facing the screen */
-    var isFlat: Boolean by property(isFlat)
+    public var isFlat: Boolean by property(isFlat)
 
     /** Whether the marker is visible */
-    var visible: Boolean by property(visible)
+    public var visible: Boolean by property(visible)
 
     /** Opacity from 0.0 (transparent) to 1.0 (opaque) */
-    var alpha: Float by property(alpha) { require(it in 0.0f..1.0f) { "Alpha must be between 0.0 and 1.0" } }
+    public var alpha: Float by property(alpha) { require(it in 0.0f..1.0f) { "Alpha must be between 0.0 and 1.0" } }
 
     /** Whether the marker can be dragged */
-    var draggable: Boolean by property(draggable)
+    public var draggable: Boolean by property(draggable)
 
     /** Draw order: markers with a higher zIndex are drawn on top */
-    var zIndex: Float by property(zIndex)
+    public var zIndex: Float by property(zIndex)
 
     /** Optional user data */
-    var tag: Any? by property(tag)
+    public var tag: Any? by property(tag)
 
     /**
      * The unique id of this marker, e.g. "m0", which stays the same for its lifetime.
      * Useful as a key to find the marker again, e.g. in a listener. [copy] returns a
      * marker with a new id.
      */
-    val id: String = "m${nextId.getAndIncrement()}"
+    public val id: String = "m${nextId.getAndIncrement()}"
 
     /** Sets the [anchor] from its two fractions, like `setAnchor(float, float)` of the Maps SDK. */
-    fun setAnchor(
+    public fun setAnchor(
         anchorU: Float,
         anchorV: Float,
     ) {
@@ -115,7 +115,7 @@ class Marker(
     }
 
     /** Sets the [infoWindowAnchor] from its two fractions, like `setInfoWindowAnchor(float, float)` of the Maps SDK. */
-    fun setInfoWindowAnchor(
+    public fun setInfoWindowAnchor(
         anchorU: Float,
         anchorV: Float,
     ) {
@@ -123,12 +123,12 @@ class Marker(
     }
 
     /** Removes the marker from the map that shows it, closing its info window. */
-    fun remove() {
+    public fun remove() {
         mapView?.removeMarker(this)
     }
 
     /** Returns a new marker with the given properties changed, not added to any map. */
-    fun copy(
+    public fun copy(
         position: LatLng = this.position,
         title: String? = this.title,
         snippet: String? = this.snippet,
@@ -166,7 +166,7 @@ class Marker(
      *
      * Use [showInfoWindow] and [hideInfoWindow] to change this state.
      */
-    var isInfoWindowShown: Boolean
+    public var isInfoWindowShown: Boolean
         get() = _isInfoWindowShown
         private set(value) {
             _isInfoWindowShown = value
@@ -184,7 +184,7 @@ class Marker(
      * Only one info window can be shown at a time - showing this marker's info window
      * will hide any other currently shown info window.
      */
-    fun showInfoWindow() {
+    public fun showInfoWindow() {
         mapView?.showInfoWindow(this) ?: run { _isInfoWindowShown = true }
     }
 
@@ -193,7 +193,7 @@ class Marker(
      *
      * Also cancels any pending auto-dismiss timer.
      */
-    fun hideInfoWindow() {
+    public fun hideInfoWindow() {
         mapView?.hideInfoWindow(this) ?: run { _isInfoWindowShown = false }
     }
 

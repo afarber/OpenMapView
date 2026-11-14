@@ -44,27 +44,27 @@ import kotlin.coroutines.resumeWithException
  * @param position The initial camera position
  */
 @Stable
-class CameraPositionState(
+public class CameraPositionState(
     position: CameraPosition = DEFAULT_POSITION,
 ) {
     /**
      * The current camera position. Updated while the camera moves; setting it moves the
      * camera of the attached map without animation.
      */
-    var position: CameraPosition by mutableStateOf(position)
+    public var position: CameraPosition by mutableStateOf(position)
 
     /**
      * Whether the camera is moving, by a gesture or an animation. Becomes false when the
      * camera is idle again or its animation was stopped.
      */
-    var isMoving: Boolean by mutableStateOf(false)
+    public var isMoving: Boolean by mutableStateOf(false)
         internal set
 
     /**
      * Why the camera started its last move, or [CameraMoveStartedReason.NO_MOVEMENT_YET]
      * before the first one. Kept after the camera stopped.
      */
-    var cameraMoveStartedReason: CameraMoveStartedReason by mutableStateOf(CameraMoveStartedReason.NO_MOVEMENT_YET)
+    public var cameraMoveStartedReason: CameraMoveStartedReason by mutableStateOf(CameraMoveStartedReason.NO_MOVEMENT_YET)
         internal set
 
     // The map shown by OpenMap, or null when no map is attached
@@ -83,7 +83,7 @@ class CameraPositionState(
      * @throws CancellationException if the animation is interrupted, e.g. by a gesture or
      *   another animation. Cancelling the calling coroutine stops the animation.
      */
-    suspend fun animate(
+    public suspend fun animate(
         update: CameraUpdate,
         durationMs: Int = DEFAULT_ANIMATION_MS,
     ) {
@@ -121,7 +121,7 @@ class CameraPositionState(
      *
      * @param update The camera update to apply
      */
-    fun move(update: CameraUpdate) {
+    public fun move(update: CameraUpdate) {
         pendingUpdate = update
         map?.let { applyPendingUpdate(it) }
     }
@@ -158,14 +158,14 @@ class CameraPositionState(
         }
     }
 
-    companion object {
+    public companion object {
         /** The position used when none is given: the whole world. */
-        val DEFAULT_POSITION = CameraPosition(LatLng(0.0, 0.0), 2f)
+        public val DEFAULT_POSITION: CameraPosition = CameraPosition(LatLng(0.0, 0.0), 2f)
 
         private const val DEFAULT_ANIMATION_MS = 250
 
         /** Saves the position, which is Parcelable, e.g. for [rememberSaveable]. */
-        val Saver: Saver<CameraPositionState, CameraPosition> =
+        public val Saver: Saver<CameraPositionState, CameraPosition> =
             Saver(
                 save = { it.position },
                 restore = { CameraPositionState(it) },
@@ -180,6 +180,6 @@ class CameraPositionState(
  * @param init Sets up the state when it is created, e.g. its initial [CameraPositionState.position]
  */
 @Composable
-fun rememberCameraPositionState(init: CameraPositionState.() -> Unit = {}): CameraPositionState = rememberSaveable(saver = CameraPositionState.Saver) {
+public fun rememberCameraPositionState(init: CameraPositionState.() -> Unit = {}): CameraPositionState = rememberSaveable(saver = CameraPositionState.Saver) {
     CameraPositionState().apply(init)
 }

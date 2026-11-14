@@ -30,14 +30,14 @@ import android.view.View
  * })
  * ```
  */
-interface InfoWindowAdapter {
+public interface InfoWindowAdapter {
     /**
      * Returns the view for the whole info window, drawn without the default frame, or
      * null to call [getInfoContents] instead.
      *
      * @param marker The marker whose info window opens
      */
-    fun getInfoWindow(marker: Marker): View?
+    public fun getInfoWindow(marker: Marker): View?
 
     /**
      * Returns the view drawn inside the default info window frame, or null for the
@@ -45,5 +45,5 @@ interface InfoWindowAdapter {
      *
      * @param marker The marker whose info window opens
      */
-    fun getInfoContents(marker: Marker): View?
+    public fun getInfoContents(marker: Marker): View?
 }

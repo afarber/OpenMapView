@@ -31,14 +31,14 @@ import de.afarber.openmapview.Marker as MapMarker
  * @param position The initial marker position
  */
 @Stable
-class MarkerState(
+public class MarkerState(
     position: LatLng = LatLng(0.0, 0.0),
 ) {
     /** The marker position, updated while the user drags the marker. */
-    var position: LatLng by mutableStateOf(position)
+    public var position: LatLng by mutableStateOf(position)
 
     /** Whether the user is dragging the marker right now. Observable, e.g. to show a status. */
-    var isDragging: Boolean by mutableStateOf(false)
+    public var isDragging: Boolean by mutableStateOf(false)
         internal set
 
     // The marker currently shown for this state and its map, set by the Marker composable
@@ -48,25 +48,25 @@ class MarkerState(
      * Whether the info window of the marker is open. Not observable: read it when needed,
      * e.g. in a click handler.
      */
-    val isInfoWindowShown: Boolean
+    public val isInfoWindowShown: Boolean
         get() = shown?.second?.isInfoWindowShown ?: false
 
     /**
      * Opens the info window of the marker, if it has a title or snippet, and closes any other.
      * Does nothing while the marker is not on a map.
      */
-    fun showInfoWindow() {
+    public fun showInfoWindow() {
         shown?.let { (map, marker) -> map.showInfoWindow(marker) }
     }
 
     /** Closes the info window of the marker. */
-    fun hideInfoWindow() {
+    public fun hideInfoWindow() {
         shown?.let { (map, marker) -> map.hideInfoWindow(marker) }
     }
 
-    companion object {
+    public companion object {
         /** Saves the position, which is Parcelable, e.g. for [rememberSaveable]. */
-        val Saver: Saver<MarkerState, LatLng> =
+        public val Saver: Saver<MarkerState, LatLng> =
             Saver(
                 save = { it.position },
                 restore = { MarkerState(it) },
@@ -82,7 +82,7 @@ class MarkerState(
  *   set [MarkerState.position] instead
  */
 @Composable
-fun rememberMarkerState(position: LatLng = LatLng(0.0, 0.0)): MarkerState = rememberSaveable(saver = MarkerState.Saver) {
+public fun rememberMarkerState(position: LatLng = LatLng(0.0, 0.0)): MarkerState = rememberSaveable(saver = MarkerState.Saver) {
     MarkerState(position)
 }
 
@@ -149,7 +149,7 @@ internal val LocalMapContext = staticCompositionLocalOf<MapContext?> { null }
  * @param onInfoWindowLongClick Called when the info window of the marker is long pressed
  */
 @Composable
-fun Marker(
+public fun Marker(
     state: MarkerState,
     title: String? = null,
     snippet: String? = null,
@@ -195,7 +195,7 @@ fun Marker(
  * @param content The info window, given the marker
  */
 @Composable
-fun MarkerInfoWindow(
+public fun MarkerInfoWindow(
     state: MarkerState,
     title: String? = null,
     snippet: String? = null,
@@ -244,7 +244,7 @@ fun MarkerInfoWindow(
  * @param content The info window contents, given the marker
  */
 @Composable
-fun MarkerInfoWindowContent(
+public fun MarkerInfoWindowContent(
     state: MarkerState,
     title: String? = null,
     snippet: String? = null,

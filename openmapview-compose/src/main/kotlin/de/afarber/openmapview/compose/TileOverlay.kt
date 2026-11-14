@@ -36,7 +36,7 @@ import de.afarber.openmapview.TileOverlay as MapTileOverlay
  * @param tag Any object to associate with the overlay
  */
 @Composable
-fun TileOverlay(
+public fun TileOverlay(
     tileProvider: TileProvider,
     transparency: Float = 0f,
     zIndex: Float = 0f,

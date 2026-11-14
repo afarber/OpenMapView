@@ -28,7 +28,7 @@ import android.text.TextPaint
  * @param providerName Human-readable name of the tile provider (e.g., "Thunderforest", "Tracestrack")
  * @param mapTypeName Human-readable name of the map type (e.g., "Cycle Map", "Transport Map")
  */
-class ApiKeyErrorOverlay(
+internal class ApiKeyErrorOverlay(
     context: Context,
     private val providerName: String,
     private val mapTypeName: String,

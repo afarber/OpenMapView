@@ -18,7 +18,7 @@ package de.afarber.openmapview
  * @property y The tile row (increases southward)
  * @property zoom The zoom level (2-19)
  */
-data class TileCoordinate(
+public data class TileCoordinate(
     val x: Int,
     val y: Int,
     val zoom: Int,

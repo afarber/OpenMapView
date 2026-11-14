@@ -15,11 +15,11 @@ package de.afarber.openmapview
  *
  * Provides callbacks when a camera animation finishes normally or is cancelled.
  */
-interface CancelableCallback {
+public interface CancelableCallback {
     /**
      * Called when the camera animation completes successfully.
      */
-    fun onFinish()
+    public fun onFinish()
 
     /**
      * Called when the camera animation is cancelled before completion.
@@ -27,5 +27,5 @@ interface CancelableCallback {
      * This occurs when [OpenMapView.stopAnimation] is called or when
      * a new camera movement is started.
      */
-    fun onCancel()
+    public fun onCancel()
 }

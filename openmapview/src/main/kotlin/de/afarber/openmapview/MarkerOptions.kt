@@ -21,7 +21,7 @@ package de.afarber.openmapview
  *     .alpha(0.8f)
  * ```
  */
-class MarkerOptions {
+public class MarkerOptions {
     private var position: LatLng? = null
     private var title: String? = null
     private var snippet: String? = null
@@ -40,7 +40,7 @@ class MarkerOptions {
      * Sets the position of the marker.
      * @param position Geographic location of the marker
      */
-    fun position(position: LatLng): MarkerOptions {
+    public fun position(position: LatLng): MarkerOptions {
         this.position = position
         return this
     }
@@ -49,7 +49,7 @@ class MarkerOptions {
      * Sets the title text for the marker's info window.
      * @param title Title text (optional)
      */
-    fun title(title: String?): MarkerOptions {
+    public fun title(title: String?): MarkerOptions {
         this.title = title
         return this
     }
@@ -58,7 +58,7 @@ class MarkerOptions {
      * Sets the snippet text for the marker's info window.
      * @param snippet Snippet text (optional)
      */
-    fun snippet(snippet: String?): MarkerOptions {
+    public fun snippet(snippet: String?): MarkerOptions {
         this.snippet = snippet
         return this
     }
@@ -67,7 +67,7 @@ class MarkerOptions {
      * Sets a custom icon for the marker.
      * @param icon BitmapDescriptor for the icon (null for default red marker)
      */
-    fun icon(icon: BitmapDescriptor?): MarkerOptions {
+    public fun icon(icon: BitmapDescriptor?): MarkerOptions {
         this.icon = icon
         return this
     }
@@ -77,7 +77,7 @@ class MarkerOptions {
      * @param anchorU Horizontal anchor (0.0 = left edge, 0.5 = center, 1.0 = right edge)
      * @param anchorV Vertical anchor (0.0 = top edge, 0.5 = center, 1.0 = bottom edge)
      */
-    fun anchor(
+    public fun anchor(
         anchorU: Float,
         anchorV: Float,
     ): MarkerOptions {
@@ -90,7 +90,7 @@ class MarkerOptions {
      * @param anchorU Horizontal position (0.0 = left edge, 0.5 = center, 1.0 = right edge)
      * @param anchorV Vertical position (0.0 = top edge, 0.5 = center, 1.0 = bottom edge), default 0.0
      */
-    fun infoWindowAnchor(
+    public fun infoWindowAnchor(
         anchorU: Float,
         anchorV: Float,
     ): MarkerOptions {
@@ -102,7 +102,7 @@ class MarkerOptions {
      * Sets the clockwise rotation of the icon around its anchor, e.g. a vehicle's heading.
      * @param rotation Rotation in degrees (default: 0f)
      */
-    fun rotation(rotation: Float): MarkerOptions {
+    public fun rotation(rotation: Float): MarkerOptions {
         this.rotation = rotation
         return this
     }
@@ -112,7 +112,7 @@ class MarkerOptions {
      * bearing, instead of facing the screen.
      * @param flat true for a flat icon (default: false)
      */
-    fun flat(flat: Boolean): MarkerOptions {
+    public fun flat(flat: Boolean): MarkerOptions {
         this.flat = flat
         return this
     }
@@ -121,7 +121,7 @@ class MarkerOptions {
      * Sets whether the marker is visible.
      * @param visible true to show the marker, false to hide it
      */
-    fun visible(visible: Boolean): MarkerOptions {
+    public fun visible(visible: Boolean): MarkerOptions {
         this.visible = visible
         return this
     }
@@ -130,7 +130,7 @@ class MarkerOptions {
      * Sets the opacity of the marker.
      * @param alpha Opacity value between 0.0 (transparent) and 1.0 (opaque)
      */
-    fun alpha(alpha: Float): MarkerOptions {
+    public fun alpha(alpha: Float): MarkerOptions {
         this.alpha = alpha
         return this
     }
@@ -139,7 +139,7 @@ class MarkerOptions {
      * Sets whether the marker can be dragged.
      * @param draggable true to enable dragging, false otherwise
      */
-    fun draggable(draggable: Boolean): MarkerOptions {
+    public fun draggable(draggable: Boolean): MarkerOptions {
         this.draggable = draggable
         return this
     }
@@ -148,7 +148,7 @@ class MarkerOptions {
      * Sets the z-index for draw order.
      * @param zIndex Higher values are drawn on top (default: 0f)
      */
-    fun zIndex(zIndex: Float): MarkerOptions {
+    public fun zIndex(zIndex: Float): MarkerOptions {
         this.zIndex = zIndex
         return this
     }
@@ -157,7 +157,7 @@ class MarkerOptions {
      * Sets optional user data associated with the marker.
      * @param tag Any object to attach to the marker
      */
-    fun tag(tag: Any?): MarkerOptions {
+    public fun tag(tag: Any?): MarkerOptions {
         this.tag = tag
         return this
     }

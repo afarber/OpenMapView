@@ -19,7 +19,7 @@ package de.afarber.openmapview
  * @property farRight The top-right corner of the camera (northeast)
  * @property latLngBounds The smallest bounding box that includes the visible region
  */
-data class VisibleRegion(
+public data class VisibleRegion(
     @JvmField val nearLeft: LatLng,
     @JvmField val nearRight: LatLng,
     @JvmField val farLeft: LatLng,

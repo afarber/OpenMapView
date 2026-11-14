@@ -46,7 +46,7 @@ import de.afarber.openmapview.Circle as MapCircle
  * @param onClick Called when a clickable circle is tapped
  */
 @Composable
-fun Circle(
+public fun Circle(
     center: LatLng,
     radius: Float,
     strokeColor: Color = Color.Black,

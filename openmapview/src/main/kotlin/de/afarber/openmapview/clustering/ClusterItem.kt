@@ -21,16 +21,16 @@ import de.afarber.openmapview.LatLng
  * }
  * ```
  */
-interface ClusterItem {
+public interface ClusterItem {
     /** The position of the item. */
-    fun getPosition(): LatLng
+    public fun getPosition(): LatLng
 
     /** The title of the item's marker, shown in its info window, or null. */
-    fun getTitle(): String?
+    public fun getTitle(): String?
 
     /** The snippet of the item's marker, shown in its info window, or null. */
-    fun getSnippet(): String?
+    public fun getSnippet(): String?
 
     /** The drawing order of the item's marker, or null for the default. */
-    fun getZIndex(): Float? = null
+    public fun getZIndex(): Float? = null
 }

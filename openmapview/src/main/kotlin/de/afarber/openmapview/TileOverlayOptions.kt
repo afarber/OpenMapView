@@ -20,7 +20,7 @@ package de.afarber.openmapview
  *     .visible(true)
  * ```
  */
-class TileOverlayOptions {
+public class TileOverlayOptions {
     private var tileProvider: TileProvider? = null
     private var transparency: Float = 0f
     private var zIndex: Float = 0f
@@ -32,7 +32,7 @@ class TileOverlayOptions {
      * Sets the tile provider for this overlay.
      * @param provider TileProvider implementation that provides tiles
      */
-    fun tileProvider(provider: TileProvider): TileOverlayOptions {
+    public fun tileProvider(provider: TileProvider): TileOverlayOptions {
         this.tileProvider = provider
         return this
     }
@@ -41,7 +41,7 @@ class TileOverlayOptions {
      * Sets the transparency of the overlay.
      * @param transparency Transparency value (0.0 = opaque, 1.0 = fully transparent)
      */
-    fun transparency(transparency: Float): TileOverlayOptions {
+    public fun transparency(transparency: Float): TileOverlayOptions {
         this.transparency = transparency
         return this
     }
@@ -51,7 +51,7 @@ class TileOverlayOptions {
      * Negative values draw below base tiles, positive values draw above.
      * @param zIndex Z-index value (base tiles are at 0.0)
      */
-    fun zIndex(zIndex: Float): TileOverlayOptions {
+    public fun zIndex(zIndex: Float): TileOverlayOptions {
         this.zIndex = zIndex
         return this
     }
@@ -60,7 +60,7 @@ class TileOverlayOptions {
      * Sets whether the overlay is visible.
      * @param visible true to show the overlay, false to hide it
      */
-    fun visible(visible: Boolean): TileOverlayOptions {
+    public fun visible(visible: Boolean): TileOverlayOptions {
         this.visible = visible
         return this
     }
@@ -69,7 +69,7 @@ class TileOverlayOptions {
      * Sets whether tiles fade in when loaded.
      * @param fadeIn true to enable fade-in animation (currently not implemented)
      */
-    fun fadeIn(fadeIn: Boolean): TileOverlayOptions {
+    public fun fadeIn(fadeIn: Boolean): TileOverlayOptions {
         this.fadeIn = fadeIn
         return this
     }
@@ -78,7 +78,7 @@ class TileOverlayOptions {
      * Sets optional user data associated with the overlay.
      * @param tag Any object to attach to the overlay
      */
-    fun tag(tag: Any?): TileOverlayOptions {
+    public fun tag(tag: Any?): TileOverlayOptions {
         this.tag = tag
         return this
     }

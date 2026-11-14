@@ -32,7 +32,7 @@ import kotlinx.coroutines.CoroutineScope
  * @param block Called on the main thread with the map
  */
 @Composable
-fun MapEffect(
+public fun MapEffect(
     vararg keys: Any?,
     block: suspend CoroutineScope.(OpenMapView) -> Unit,
 ) {

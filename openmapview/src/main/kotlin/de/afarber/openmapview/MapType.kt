@@ -74,14 +74,14 @@ package de.afarber.openmapview
  * @see ApiKeyManager
  * @see TileSource
  */
-object MapType {
+public object MapType {
     /**
      * No base map tiles displayed.
      *
      * The map view shows no background tiles. Overlays (markers, polylines, etc.) are still visible.
      * Useful for custom tile sources or offline-only applications.
      */
-    const val NONE: Int = 0
+    public const val NONE: Int = 0
 
     /**
      * Standard OpenStreetMap Mapnik rendering (default).
@@ -94,7 +94,7 @@ object MapType {
      * - **API Key**: Not required
      * - **Use Cases**: General purpose mapping, navigation, POI display
      */
-    const val STANDARD: Int = 1
+    public const val STANDARD: Int = 1
 
     /**
      * CyclOSM - Cycling-focused map from OpenStreetMap France.
@@ -107,7 +107,7 @@ object MapType {
      * - **API Key**: Not required
      * - **Use Cases**: Cycling apps, route planning, bikeshare applications
      */
-    const val CYCLOSM: Int = 2
+    public const val CYCLOSM: Int = 2
 
     /**
      * Cycle Map - Thunderforest cycling map.
@@ -122,7 +122,7 @@ object MapType {
      *
      * @see ApiKeyManager
      */
-    const val CYCLEMAP: Int = 3
+    public const val CYCLEMAP: Int = 3
 
     /**
      * Transport Map - Public transport focused map.
@@ -137,7 +137,7 @@ object MapType {
      *
      * @see ApiKeyManager
      */
-    const val TRANSPORT: Int = 4
+    public const val TRANSPORT: Int = 4
 
     /**
      * Transport Dark Map - Dark mode public transport map.
@@ -153,7 +153,7 @@ object MapType {
      *
      * @see ApiKeyManager
      */
-    const val TRANSPORT_DARK: Int = 5
+    public const val TRANSPORT_DARK: Int = 5
 
     /**
      * Tracestrack Topo - Topographic map with elevation contours.
@@ -168,7 +168,7 @@ object MapType {
      *
      * @see ApiKeyManager
      */
-    const val TRACESTRACK_TOPO: Int = 6
+    public const val TRACESTRACK_TOPO: Int = 6
 
     /**
      * Humanitarian - HOT style for emergency and disaster response.
@@ -182,7 +182,7 @@ object MapType {
      * - **API Key**: Not required
      * - **Use Cases**: Emergency response, disaster management, humanitarian aid
      */
-    const val HUMANITARIAN: Int = 7
+    public const val HUMANITARIAN: Int = 7
 
     /**
      * OPNVKarte - German public transport map.
@@ -195,7 +195,7 @@ object MapType {
      * - **API Key**: Not required
      * - **Use Cases**: German transit apps, ÖPNV journey planning
      */
-    const val OPNVKARTE: Int = 8
+    public const val OPNVKARTE: Int = 8
 
     /**
      * OpenTopoMap - Free topographic map with elevation contours.
@@ -209,7 +209,7 @@ object MapType {
      * - **API Key**: Not required
      * - **Use Cases**: Hiking apps, outdoor navigation, terrain visualization
      */
-    const val OPENTOPOMAP: Int = 9
+    public const val OPENTOPOMAP: Int = 9
 
     /**
      * Carto Light - Minimalist light basemap for data visualization.
@@ -224,7 +224,7 @@ object MapType {
      *
      * @see ApiKeyManager
      */
-    const val CARTO_LIGHT: Int = 10
+    public const val CARTO_LIGHT: Int = 10
 
     /**
      * Carto Dark - Dark theme basemap for night mode.
@@ -238,7 +238,7 @@ object MapType {
      *
      * @see ApiKeyManager
      */
-    const val CARTO_DARK: Int = 11
+    public const val CARTO_DARK: Int = 11
 
     /**
      * Carto Voyager - Modern colorful basemap.
@@ -253,7 +253,7 @@ object MapType {
      *
      * @see ApiKeyManager
      */
-    const val CARTO_VOYAGER: Int = 12
+    public const val CARTO_VOYAGER: Int = 12
 
     /**
      * Stamen Toner - High-contrast black and white map.
@@ -267,7 +267,7 @@ object MapType {
      * - **API Key**: Required (Stadia Maps)
      * - **Use Cases**: Data visualization, marker overlays, minimalist design
      */
-    const val STAMEN_TONER: Int = 13
+    public const val STAMEN_TONER: Int = 13
 
     /**
      * Stamen Watercolor - Artistic watercolor rendering.
@@ -280,5 +280,5 @@ object MapType {
      * - **API Key**: Required (Stadia Maps)
      * - **Use Cases**: Creative apps, travel journals, artistic visualization
      */
-    const val STAMEN_WATERCOLOR: Int = 14
+    public const val STAMEN_WATERCOLOR: Int = 14
 }

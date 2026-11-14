@@ -49,7 +49,7 @@ import de.afarber.openmapview.Marker as MapMarker
  * @param clusterItemContent Draws the item markers, or null for the default marker
  */
 @Composable
-fun <T : ClusterItem> Clustering(
+public fun <T : ClusterItem> Clustering(
     items: Collection<T>,
     onClusterClick: (Cluster<T>) -> Boolean = { false },
     onClusterItemClick: (T) -> Boolean = { false },

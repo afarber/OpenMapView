@@ -34,7 +34,7 @@ import java.util.Locale
  * @see [RFC 5870 - Geo URI](https://datatracker.ietf.org/doc/html/rfc5870)
  */
 @JvmOverloads
-fun openLocationInExternalApp(
+public fun openLocationInExternalApp(
     latLng: LatLng,
     zoom: Float,
     context: Context,

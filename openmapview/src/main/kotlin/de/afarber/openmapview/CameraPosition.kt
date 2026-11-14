@@ -24,7 +24,7 @@ import android.os.Parcelable
  *   e.g. 90 for east up; normalized to 0 (inclusive) to 360 (exclusive)
  * @throws IllegalArgumentException if zoom is outside the valid range or bearing is not finite
  */
-class CameraPosition
+public class CameraPosition
     @JvmOverloads
     constructor(
         target: LatLng,
@@ -39,23 +39,23 @@ class CameraPosition
 
         /** The location that the camera is pointing at. */
         @JvmField
-        val target: LatLng = target
+        public val target: LatLng = target
 
         /** The zoom level, ranging from 2.0 (world view) to 19.0 (street level). */
         @JvmField
-        val zoom: Float = zoom
+        public val zoom: Float = zoom
 
         /** The direction at the top of the screen, in degrees clockwise from north, 0 to 360. */
         @JvmField
-        val bearing: Float = normalizeBearing(bearing)
+        public val bearing: Float = normalizeBearing(bearing)
 
-        operator fun component1(): LatLng = target
+        public operator fun component1(): LatLng = target
 
-        operator fun component2(): Float = zoom
+        public operator fun component2(): Float = zoom
 
-        operator fun component3(): Float = bearing
+        public operator fun component3(): Float = bearing
 
-        fun copy(
+        public fun copy(
             target: LatLng = this.target,
             zoom: Float = this.zoom,
             bearing: Float = this.bearing,
@@ -90,50 +90,50 @@ class CameraPosition
          * Builds a [CameraPosition] step by step, as in the Maps SDK, e.g.
          * `CameraPosition.builder().target(latLng).zoom(15f).bearing(90f).build()`.
          */
-        class Builder() {
+        public class Builder() {
             private var target: LatLng? = null
             private var zoom: Float = MIN_ZOOM
             private var bearing: Float = 0f
 
             /** Starts with the values of [position]. */
-            constructor(position: CameraPosition) : this() {
+            public constructor(position: CameraPosition) : this() {
                 target = position.target
                 zoom = position.zoom
                 bearing = position.bearing
             }
 
             /** Sets the location that the camera is pointing at. */
-            fun target(target: LatLng): Builder = apply { this.target = target }
+            public fun target(target: LatLng): Builder = apply { this.target = target }
 
             /** Sets the zoom level. */
-            fun zoom(zoom: Float): Builder = apply { this.zoom = zoom }
+            public fun zoom(zoom: Float): Builder = apply { this.zoom = zoom }
 
             /** Sets the direction at the top of the screen, in degrees clockwise from north. */
-            fun bearing(bearing: Float): Builder = apply { this.bearing = bearing }
+            public fun bearing(bearing: Float): Builder = apply { this.bearing = bearing }
 
             /**
              * Returns the camera position.
              *
              * @throws IllegalStateException if no target was set
              */
-            fun build(): CameraPosition = CameraPosition(checkNotNull(target) { "Camera target must be set" }, zoom, bearing)
+            public fun build(): CameraPosition = CameraPosition(checkNotNull(target) { "Camera target must be set" }, zoom, bearing)
         }
 
-        companion object {
+        public companion object {
             private const val MIN_ZOOM = 2.0f
             private const val MAX_ZOOM = 19.0f
 
             /** Returns a new [Builder]. */
             @JvmStatic
-            fun builder(): Builder = Builder()
+            public fun builder(): Builder = Builder()
 
             /** Returns a new [Builder] that starts with the values of [position]. */
             @JvmStatic
-            fun builder(position: CameraPosition): Builder = Builder(position)
+            public fun builder(position: CameraPosition): Builder = Builder(position)
 
             /** Returns a camera position at [target] and [zoom], facing north. */
             @JvmStatic
-            fun fromLatLngZoom(
+            public fun fromLatLngZoom(
                 target: LatLng,
                 zoom: Float,
             ): CameraPosition = CameraPosition(target, zoom)
@@ -146,7 +146,7 @@ class CameraPosition
             }
 
             @JvmField
-            val CREATOR: Parcelable.Creator<CameraPosition> =
+            public val CREATOR: Parcelable.Creator<CameraPosition> =
                 object : Parcelable.Creator<CameraPosition> {
                     override fun createFromParcel(parcel: Parcel): CameraPosition =
                         CameraPosition(LatLng(parcel.readDouble(), parcel.readDouble()), parcel.readFloat(), parcel.readFloat())

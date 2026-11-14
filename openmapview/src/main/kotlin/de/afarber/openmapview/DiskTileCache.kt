@@ -36,7 +36,7 @@ import java.nio.ByteBuffer
  * @param context Context used to locate the app's cache directory
  * @param namespace Prefix for the cache keys, e.g. the name of the tile source
  */
-class DiskTileCache internal constructor(
+internal class DiskTileCache internal constructor(
     directory: File,
     namespace: String,
     maxSize: Long,

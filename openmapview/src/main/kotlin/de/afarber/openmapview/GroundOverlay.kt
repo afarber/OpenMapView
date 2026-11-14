@@ -33,14 +33,14 @@ import java.util.concurrent.atomic.AtomicLong
  * @param clickable Whether a tap on the overlay is reported to its click listener
  * @param tag Optional user data
  */
-class GroundOverlay(
+public class GroundOverlay(
     image: BitmapDescriptor,
     position: LatLng? = null,
     width: Float? = null,
     height: Float? = null,
     bounds: LatLngBounds? = null,
     /** The point of the image at [position], from (0, 0) top left to (1, 1) bottom right */
-    val anchor: Pair<Float, Float> = Pair(0.5f, 0.5f),
+    public val anchor: Pair<Float, Float> = Pair(0.5f, 0.5f),
     bearing: Float = 0f,
     transparency: Float = 0f,
     visible: Boolean = true,
@@ -57,49 +57,49 @@ class GroundOverlay(
     ) = ShapeProperty(initial, check) { mapView?.invalidate() }
 
     /** The image to draw */
-    var image: BitmapDescriptor by property(image)
+    public var image: BitmapDescriptor by property(image)
 
     /** The clockwise rotation in degrees around the anchor */
-    var bearing: Float by property(bearing)
+    public var bearing: Float by property(bearing)
 
     /** From 0 (opaque) to 1 (invisible) */
-    var transparency: Float by property(transparency) {
+    public var transparency: Float by property(transparency) {
         require(it in 0f..1f) { "Transparency must be between 0.0 and 1.0" }
     }
 
     /** Whether the overlay is drawn */
-    var visible: Boolean by property(visible)
+    public var visible: Boolean by property(visible)
 
     /** Draw order: overlays with a higher zIndex are drawn on top */
-    var zIndex: Float by property(zIndex)
+    public var zIndex: Float by property(zIndex)
 
     /** Whether a tap on the overlay is reported to its click listener */
-    var clickable: Boolean by property(clickable)
+    public var clickable: Boolean by property(clickable)
 
     /** Optional user data */
-    var tag: Any? by property(tag)
+    public var tag: Any? by property(tag)
 
     /** The location of the [anchor], or null when the overlay is placed by [bounds] */
-    var position: LatLng? = position
+    public var position: LatLng? = position
         private set
 
     /** The width in meters, or null when the overlay is placed by [bounds] */
-    var width: Float? = width
+    public var width: Float? = width
         private set
 
     /** The height in meters, or null to keep the image's aspect ratio */
-    var height: Float? = height
+    public var height: Float? = height
         private set
 
     /** The area the image is stretched over, or null when it is placed by [position] */
-    var bounds: LatLngBounds? = bounds
+    public var bounds: LatLngBounds? = bounds
         private set
 
     /**
      * The unique id of this ground overlay, e.g. "go0", which stays the same for its lifetime.
      * [copy] returns a ground overlay with a new id.
      */
-    val id: String = "go${nextId.getAndIncrement()}"
+    public val id: String = "go${nextId.getAndIncrement()}"
 
     init {
         require(anchor.first in 0f..1f && anchor.second in 0f..1f) {
@@ -112,7 +112,7 @@ class GroundOverlay(
      * Moves the overlay, so its [anchor] is at [position]. An overlay placed by [bounds] keeps
      * the width of those bounds, measured at their center.
      */
-    fun setPosition(position: LatLng) {
+    public fun setPosition(position: LatLng) {
         val bounds = bounds
         if (bounds != null) {
             place(position, widthInMeters(bounds), heightInMeters(bounds), null)
@@ -122,13 +122,13 @@ class GroundOverlay(
     }
 
     /** Sets the width in meters and keeps the image's aspect ratio. */
-    fun setDimensions(width: Float) = setDimensions(width, null)
+    public fun setDimensions(width: Float): Unit = setDimensions(width, null)
 
     /**
      * Sets the size in meters, or keeps the image's aspect ratio for a null [height]. An
      * overlay placed by [bounds] is placed at their center instead.
      */
-    fun setDimensions(
+    public fun setDimensions(
         width: Float,
         height: Float?,
     ) {
@@ -136,17 +136,17 @@ class GroundOverlay(
     }
 
     /** Stretches the image over [bounds], replacing the position and size. */
-    fun setPositionFromBounds(bounds: LatLngBounds) {
+    public fun setPositionFromBounds(bounds: LatLngBounds) {
         place(null, null, null, bounds)
     }
 
     /** Removes the overlay from the map that shows it. */
-    fun remove() {
+    public fun remove() {
         mapView?.removeGroundOverlay(this)
     }
 
     /** Returns a new overlay with the given properties changed, not added to any map. */
-    fun copy(
+    public fun copy(
         image: BitmapDescriptor = this.image,
         position: LatLng? = this.position,
         width: Float? = this.width,

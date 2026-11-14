@@ -17,10 +17,10 @@ import android.graphics.PathEffect
  *
  * A pattern repeats along the stroke, e.g. `pattern(Arrays.asList(new Dash(30f), new Gap(20f)))`.
  */
-abstract class PatternItem internal constructor()
+public abstract class PatternItem internal constructor()
 
 /** A dot as wide as the stroke. */
-class Dot : PatternItem() {
+public class Dot : PatternItem() {
     override fun equals(other: Any?): Boolean = other is Dot
 
     override fun hashCode(): Int = Dot::class.hashCode()
@@ -33,8 +33,8 @@ class Dot : PatternItem() {
  *
  * @property length the length in pixels
  */
-class Dash(
-    @JvmField val length: Float,
+public class Dash(
+    @JvmField public val length: Float,
 ) : PatternItem() {
     override fun equals(other: Any?): Boolean = other is Dash && other.length == length
 
@@ -48,8 +48,8 @@ class Dash(
  *
  * @property length the length in pixels
  */
-class Gap(
-    @JvmField val length: Float,
+public class Gap(
+    @JvmField public val length: Float,
 ) : PatternItem() {
     override fun equals(other: Any?): Boolean = other is Gap && other.length == length
 

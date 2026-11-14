@@ -42,39 +42,39 @@ import kotlin.math.floor
  * @param context Context for the screen density
  * @param map The map to draw the markers on
  */
-class ClusterManager<T : ClusterItem>(
+public class ClusterManager<T : ClusterItem>(
     context: Context,
     private val map: OpenMapView,
 ) : OnCameraIdleListener,
     OnMarkerClickListener {
     /** Called when a cluster marker is tapped. */
-    fun interface OnClusterClickListener<T : ClusterItem> {
+    public fun interface OnClusterClickListener<T : ClusterItem> {
         /**
          * @param cluster The tapped cluster
          * @return true to consume the tap, false to also zoom in to the cluster's items
          */
-        fun onClusterClick(cluster: Cluster<T>): Boolean
+        public fun onClusterClick(cluster: Cluster<T>): Boolean
     }
 
     /** Called when the marker of a single item is tapped. */
-    fun interface OnClusterItemClickListener<T : ClusterItem> {
+    public fun interface OnClusterItemClickListener<T : ClusterItem> {
         /**
          * @param item The tapped item
          * @return true if the tap was handled
          */
-        fun onClusterItemClick(item: T): Boolean
+        public fun onClusterItemClick(item: T): Boolean
     }
 
     /** Provides the icon of a cluster marker, e.g. to draw clusters in your own style. */
-    fun interface ClusterIconProvider<T : ClusterItem> {
+    public fun interface ClusterIconProvider<T : ClusterItem> {
         /** @param cluster The cluster to draw */
-        fun getIcon(cluster: Cluster<T>): BitmapDescriptor
+        public fun getIcon(cluster: Cluster<T>): BitmapDescriptor
     }
 
     /** Provides the icon of an item's marker, or null for the default marker. */
-    fun interface ClusterItemIconProvider<T : ClusterItem> {
+    public fun interface ClusterItemIconProvider<T : ClusterItem> {
         /** @param item The item to draw */
-        fun getIcon(item: T): BitmapDescriptor?
+        public fun getIcon(item: T): BitmapDescriptor?
     }
 
     private val density = context.resources.displayMetrics.density
@@ -91,50 +91,50 @@ class ClusterManager<T : ClusterItem>(
      * The smallest group drawn as a cluster; smaller groups show their items' markers.
      * Default is 4.
      */
-    var minClusterSize: Int = 4
+    public var minClusterSize: Int = 4
 
     /** How close items must be to share a cluster, in dp on the screen. Default is 100. */
-    var maxDistanceDp: Int = 100
+    public var maxDistanceDp: Int = 100
 
     /** Draws the cluster markers, or null for circles with the count. */
-    var clusterIconProvider: ClusterIconProvider<T>? = null
+    public var clusterIconProvider: ClusterIconProvider<T>? = null
 
     /** Draws the item markers, or null for the default marker. */
-    var clusterItemIconProvider: ClusterItemIconProvider<T>? = null
+    public var clusterItemIconProvider: ClusterItemIconProvider<T>? = null
 
     /** Adds an item. Call [cluster] to show it. */
-    fun addItem(item: T): Boolean = items.add(item).also { if (it) clusteredZoom = null }
+    public fun addItem(item: T): Boolean = items.add(item).also { if (it) clusteredZoom = null }
 
     /** Adds items. Call [cluster] to show them. */
-    fun addItems(items: Collection<T>): Boolean = this.items.addAll(items).also { if (it) clusteredZoom = null }
+    public fun addItems(items: Collection<T>): Boolean = this.items.addAll(items).also { if (it) clusteredZoom = null }
 
     /** Removes an item. Call [cluster] to update the map. */
-    fun removeItem(item: T): Boolean = items.remove(item).also { if (it) clusteredZoom = null }
+    public fun removeItem(item: T): Boolean = items.remove(item).also { if (it) clusteredZoom = null }
 
     /** Removes items. Call [cluster] to update the map. */
-    fun removeItems(items: Collection<T>): Boolean = this.items.removeAll(items.toSet()).also { if (it) clusteredZoom = null }
+    public fun removeItems(items: Collection<T>): Boolean = this.items.removeAll(items.toSet()).also { if (it) clusteredZoom = null }
 
     /** Removes all items. Call [cluster] to update the map. */
-    fun clearItems() {
+    public fun clearItems() {
         items.clear()
         clusteredZoom = null
     }
 
     /** Returns the items of the manager. */
-    fun getItems(): Collection<T> = items.toList()
+    public fun getItems(): Collection<T> = items.toList()
 
     /** Sets a listener called when a cluster is tapped. */
-    fun setOnClusterClickListener(listener: OnClusterClickListener<T>?) {
+    public fun setOnClusterClickListener(listener: OnClusterClickListener<T>?) {
         onClusterClickListener = listener
     }
 
     /** Sets a listener called when the marker of a single item is tapped. */
-    fun setOnClusterItemClickListener(listener: OnClusterItemClickListener<T>?) {
+    public fun setOnClusterItemClickListener(listener: OnClusterItemClickListener<T>?) {
         onClusterItemClickListener = listener
     }
 
     /** Computes the clusters for the current zoom level and draws their markers. */
-    fun cluster() {
+    public fun cluster() {
         val zoom = currentZoom()
         // The algorithm measures in pixels of 256 px tiles, which are drawn tileScale times larger
         val clusters = DistanceBasedAlgorithm.cluster(items, zoom, maxDistanceDp * density.toDouble() / map.getTileScale())

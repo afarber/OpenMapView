@@ -17,7 +17,7 @@ import android.graphics.Point
  *
  * This is a sealed hierarchy with internal implementations to prevent external subclassing.
  */
-sealed class CameraUpdate {
+public sealed class CameraUpdate {
     /**
      * Updates the camera target to a new location, preserving current zoom.
      */

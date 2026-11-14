@@ -15,11 +15,11 @@ package de.afarber.openmapview
  *
  * This callback is invoked repeatedly during camera movement (gestures, animations).
  */
-fun interface OnCameraMoveListener {
+public fun interface OnCameraMoveListener {
     /**
      * Called repeatedly while the camera is moving.
      *
      * This is called frequently during animations and gestures.
      */
-    fun onCameraMove()
+    public fun onCameraMove()
 }

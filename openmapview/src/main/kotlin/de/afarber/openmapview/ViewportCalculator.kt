@@ -23,7 +23,7 @@ import kotlin.math.roundToInt
  * copies of the world left and right of the main one. Such a tile is placed by its X, and
  * [TileCoordinate.wrapped] gives the tile to load for it.
  */
-object ViewportCalculator {
+internal object ViewportCalculator {
     private const val TILE_SIZE = 256
 
     /**

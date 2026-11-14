@@ -31,16 +31,16 @@ import kotlin.math.tan
  * marker.rotation = heading.toFloat()
  * ```
  */
-object SphericalUtil {
+public object SphericalUtil {
     /** The mean radius of the Earth in meters, as in android-maps-utils. */
-    const val EARTH_RADIUS = 6371009.0
+    public const val EARTH_RADIUS: Double = 6371009.0
 
     /**
      * Returns the heading from one location to another, in degrees clockwise from north,
      * between -180 and 180: 0 is north, 90 east, -90 west and -180 south.
      */
     @JvmStatic
-    fun computeHeading(
+    public fun computeHeading(
         from: LatLng,
         to: LatLng,
     ): Double {
@@ -60,7 +60,7 @@ object SphericalUtil {
      * degrees clockwise from north, along the great circle.
      */
     @JvmStatic
-    fun computeOffset(
+    public fun computeOffset(
         from: LatLng,
         distance: Double,
         heading: Double,
@@ -79,7 +79,7 @@ object SphericalUtil {
      * [to], the inverse of [computeOffset], or null if there is none.
      */
     @JvmStatic
-    fun computeOffsetOrigin(
+    public fun computeOffsetOrigin(
         to: LatLng,
         distance: Double,
         heading: Double,
@@ -113,7 +113,7 @@ object SphericalUtil {
      * circle: 0 is [from], 1 is [to]. Crossing the 180th meridian goes the short way.
      */
     @JvmStatic
-    fun interpolate(
+    public fun interpolate(
         from: LatLng,
         to: LatLng,
         fraction: Double,
@@ -143,25 +143,25 @@ object SphericalUtil {
 
     /** Returns the great-circle distance between two locations in meters. */
     @JvmStatic
-    fun computeDistanceBetween(
+    public fun computeDistanceBetween(
         from: LatLng,
         to: LatLng,
     ): Double = computeAngleBetween(from, to) * EARTH_RADIUS
 
     /** Returns the length of a path in meters, 0 for fewer than 2 points. */
     @JvmStatic
-    fun computeLength(path: List<LatLng>): Double = path.zipWithNext { from, to -> computeDistanceBetween(from, to) }.sum()
+    public fun computeLength(path: List<LatLng>): Double = path.zipWithNext { from, to -> computeDistanceBetween(from, to) }.sum()
 
     /** Returns the area of a closed path in square meters, 0 for fewer than 3 points. */
     @JvmStatic
-    fun computeArea(path: List<LatLng>): Double = abs(computeSignedArea(path))
+    public fun computeArea(path: List<LatLng>): Double = abs(computeSignedArea(path))
 
     /**
      * Returns the signed area of a closed path in square meters: positive if the points go
      * counter-clockwise, negative if clockwise, 0 for fewer than 3 points.
      */
     @JvmStatic
-    fun computeSignedArea(path: List<LatLng>): Double {
+    public fun computeSignedArea(path: List<LatLng>): Double {
         if (path.size < 3) return 0.0
         // The sum of the areas of the triangles between each edge and the south pole
         var total = 0.0

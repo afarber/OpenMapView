@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
  * @property color The color for this span's segments.
  * @property segments The number of consecutive segments this style applies to. Default is 1.
  */
-data class StyleSpan(
+public data class StyleSpan(
     val color: Color,
     val segments: Int = 1,
 ) {

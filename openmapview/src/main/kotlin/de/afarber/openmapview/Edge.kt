@@ -13,7 +13,7 @@ package de.afarber.openmapview
  * Used with [OpenMapView.triggerEdgeEffect] to specify which edges should display
  * a visual glow effect when the camera reaches its bounds.
  */
-enum class Edge {
+public enum class Edge {
     /** Top edge of the map view (north direction) */
     TOP,
 

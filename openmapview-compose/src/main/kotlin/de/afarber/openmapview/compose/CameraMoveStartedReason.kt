@@ -18,8 +18,8 @@ import de.afarber.openmapview.OnCameraMoveStartedListener
  * @property value The reason as passed to [OnCameraMoveStartedListener], or a negative
  *   value for [UNKNOWN] and [NO_MOVEMENT_YET]
  */
-enum class CameraMoveStartedReason(
-    val value: Int,
+public enum class CameraMoveStartedReason(
+    public val value: Int,
 ) {
     /** A reason the map reported that isn't one of the values below. */
     UNKNOWN(-2),
@@ -37,8 +37,8 @@ enum class CameraMoveStartedReason(
     DEVELOPER_ANIMATION(OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION),
     ;
 
-    companion object {
+    public companion object {
         /** Returns the reason for a `REASON_*` value of [OnCameraMoveStartedListener]. */
-        fun fromInt(value: Int): CameraMoveStartedReason = entries.firstOrNull { it.value == value } ?: UNKNOWN
+        public fun fromInt(value: Int): CameraMoveStartedReason = entries.firstOrNull { it.value == value } ?: UNKNOWN
     }
 }

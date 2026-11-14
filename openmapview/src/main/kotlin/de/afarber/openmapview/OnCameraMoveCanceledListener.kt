@@ -16,11 +16,11 @@ package de.afarber.openmapview
  * This is called when an animation is canceled before completion, such as when
  * a new gesture starts during an animation or [OpenMapView.stopAnimation] is called.
  */
-fun interface OnCameraMoveCanceledListener {
+public fun interface OnCameraMoveCanceledListener {
     /**
      * Called when camera movement is canceled.
      *
      * This occurs when an ongoing animation is interrupted.
      */
-    fun onCameraMoveCanceled()
+    public fun onCameraMoveCanceled()
 }

@@ -43,10 +43,10 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 /** The default width of [ScaleBar], which is also the longest bar it draws. */
-val DefaultScaleBarWidth: Dp = 65.dp
+public val DefaultScaleBarWidth: Dp = 65.dp
 
 /** The default height of [ScaleBar]. */
-val DefaultScaleBarHeight: Dp = 50.dp
+public val DefaultScaleBarHeight: Dp = 50.dp
 
 /**
  * A scale bar for an [OpenMap]: a metric distance
@@ -70,7 +70,7 @@ val DefaultScaleBarHeight: Dp = 50.dp
  * @param shadowColor The outline around the lines, for contrast on any map
  */
 @Composable
-fun ScaleBar(
+public fun ScaleBar(
     cameraPositionState: CameraPositionState,
     modifier: Modifier = Modifier,
     width: Dp = DefaultScaleBarWidth,
@@ -112,7 +112,7 @@ fun ScaleBar(
  * @see ScaleBar for the other parameters
  */
 @Composable
-fun DisappearingScaleBar(
+public fun DisappearingScaleBar(
     cameraPositionState: CameraPositionState,
     modifier: Modifier = Modifier,
     width: Dp = DefaultScaleBarWidth,

@@ -11,11 +11,11 @@ package de.afarber.openmapview
  * Interface for receiving info window click events.
  * Called when the info window of a marker is clicked.
  */
-fun interface OnInfoWindowClickListener {
+public fun interface OnInfoWindowClickListener {
     /**
      * Called when an info window is clicked.
      *
      * @param marker The marker whose info window was clicked
      */
-    fun onInfoWindowClick(marker: Marker)
+    public fun onInfoWindowClick(marker: Marker)
 }

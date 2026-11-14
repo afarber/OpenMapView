@@ -51,7 +51,7 @@ import de.afarber.openmapview.Polygon as MapPolygon
  * @param onClick Called when a clickable polygon is tapped
  */
 @Composable
-fun Polygon(
+public fun Polygon(
     points: List<LatLng>,
     holes: List<List<LatLng>> = emptyList(),
     strokeColor: Color = Color.Black,

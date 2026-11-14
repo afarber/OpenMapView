@@ -11,11 +11,11 @@ package de.afarber.openmapview
  * Interface for receiving info window close events.
  * Called when the info window of a marker is closed, either manually or via auto-dismiss.
  */
-fun interface OnInfoWindowCloseListener {
+public fun interface OnInfoWindowCloseListener {
     /**
      * Called when an info window is closed.
      *
      * @param marker The marker whose info window was closed
      */
-    fun onInfoWindowClose(marker: Marker)
+    public fun onInfoWindowClose(marker: Marker)
 }

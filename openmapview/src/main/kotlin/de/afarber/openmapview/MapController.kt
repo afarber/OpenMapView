@@ -95,7 +95,7 @@ private fun StrokeJoin.toAndroidJoin(): Paint.Join =
  *
  * This class is used internally by [OpenMapView] and is not part of the public API.
  */
-class MapController(
+internal class MapController(
     private val context: Context,
 ) {
     companion object {

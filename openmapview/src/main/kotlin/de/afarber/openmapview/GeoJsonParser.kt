@@ -22,7 +22,7 @@ import org.json.JSONObject
  * - MultiLineString -> Multiple Polylines
  * - MultiPolygon -> Multiple Polygons
  */
-object GeoJsonParser {
+public object GeoJsonParser {
     /**
      * Parse GeoJSON string and return parsed features.
      *
@@ -30,7 +30,7 @@ object GeoJsonParser {
      * @return GeoJsonResult containing markers, polylines, and polygons
      */
     @JvmStatic
-    fun parse(geoJsonString: String): GeoJsonResult {
+    public fun parse(geoJsonString: String): GeoJsonResult {
         val json = JSONObject(geoJsonString)
         return parseGeoJson(json)
     }
@@ -245,7 +245,7 @@ object GeoJsonParser {
 /**
  * Result of parsing GeoJSON data.
  */
-data class GeoJsonResult(
+public data class GeoJsonResult(
     val markers: List<Marker> = emptyList(),
     val polylines: List<Polyline> = emptyList(),
     val polygons: List<Polygon> = emptyList(),
