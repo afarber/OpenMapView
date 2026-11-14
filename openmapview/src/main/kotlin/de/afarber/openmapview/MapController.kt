@@ -1460,12 +1460,19 @@ class MapController(
                     setCenter(targetPosition.target)
                     onTileLoadedCallback?.invoke()
 
+                    // This animation is over: one started by onFinish() must not find it
+                    // still running and cancel it
+                    animationJob = null
+                    animationTargetTiles = emptySet()
                     listener?.onFinish()
 
-                    // Fire camera idle event after animation completes
-                    isCameraMoving = false
-                    currentMoveReason = null
-                    onCameraIdleListener?.onCameraIdle()
+                    // Fire camera idle event after animation completes, unless onFinish()
+                    // started the next one: then the camera keeps moving
+                    if (animationJob == null) {
+                        isCameraMoving = false
+                        currentMoveReason = null
+                        onCameraIdleListener?.onCameraIdle()
+                    }
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     listener?.onCancel()
                     throw e

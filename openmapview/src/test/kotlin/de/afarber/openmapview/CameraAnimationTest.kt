@@ -244,6 +244,39 @@ class CameraAnimationTest {
         assertEquals(100, point.y)
     }
 
+    // E.g. a tour: each animation starts the next one when it has finished
+    @Test
+    fun testAnimationStartedInOnFinish_ContinuesTheMove() {
+        controller.onCameraMoveListener = null
+        controller.onCameraMoveCanceledListener = OnCameraMoveCanceledListener { events.add("canceled") }
+        val second = CountingCallback()
+        val first =
+            object : CancelableCallback {
+                override fun onFinish() {
+                    events.add("finished")
+                    controller.animateCamera(CameraUpdateFactory.zoomTo(16f), 100, second)
+                }
+
+                override fun onCancel() {
+                    events.add("first canceled")
+                }
+            }
+
+        controller.animateCamera(CameraUpdateFactory.zoomTo(15f), 100, first)
+        repeat(100) {
+            if (second.finished == 1) return@repeat
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20))
+            // The camera keeps moving from the first animation into the second
+            if (second.finished == 0) assertTrue(controller.isCameraMoving)
+        }
+
+        assertEquals(1, second.finished)
+        assertEquals(0, second.cancelled)
+        assertEquals(16f, controller.getZoom())
+        // One move: nothing was canceled, and the camera is idle only at the end
+        assertEquals(listOf("started", "finished", "idle"), events)
+    }
+
     private companion object {
         const val ANIMATION_MS = 60_000
     }
