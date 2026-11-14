@@ -163,6 +163,21 @@ class MyLocationTest {
     }
 
     @Test
+    fun testAccuracyCircle_GrowsWithTheTileScale() {
+        val source = FakeLocationSource()
+        mapView.setLocationSource(source)
+        mapView.setMyLocationEnabled(true)
+        // Twice as many screen pixels per meter, so 300 m are about 100 px
+        mapView.setTileScale(2f)
+
+        source.send(center, accuracy = 300f)
+        val bitmap = drawMap()
+
+        assertNotEquals(background, bitmap.getPixel(200, 120))
+        assertEquals(background, bitmap.getPixel(200, 80))
+    }
+
+    @Test
     fun testPlatformSource_UsesLocationManager() {
         shadowOf(activity.application).grantPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
         val locationManager = activity.getSystemService(Context.LOCATION_SERVICE) as LocationManager

@@ -64,4 +64,25 @@ class MapFeaturesTest {
 
         assertTrue(clicks == 1)
     }
+
+    // Markers from GeoJSON belong to the map like any other marker
+    @Test
+    fun testAddGeoJson_MarkersAreLiveHandles() {
+        val geoJson =
+            """
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [7.2491, 51.4661]},
+             "properties": {"name": "Bochum"}}
+            """.trimIndent()
+        val other = mapView.addMarker(Marker(position = LatLng(51.47, 7.25), title = "Other"))
+        other.showInfoWindow()
+
+        val marker = mapView.addGeoJson(geoJson).markers.single()
+        marker.showInfoWindow()
+
+        // Only one info window is open at a time
+        assertTrue(marker.isInfoWindowShown)
+        assertFalse(other.isInfoWindowShown)
+        marker.remove()
+        assertFalse(marker in mapView.getMarkers())
+    }
 }

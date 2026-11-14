@@ -2234,6 +2234,13 @@ class MapController(
         return minX to maxX
     }
 
+    // The points of a polygon outline or hole as they are drawn: with a geodesic polygon,
+    // great circles between them, also from the last point back to the first
+    private fun ringPoints(
+        points: List<LatLng>,
+        geodesic: Boolean,
+    ): List<LatLng> = if (geodesic) GeodesicUtils.expandRingWithGeodesicPoints(points) else points
+
     // Adds the points from shapeScreenPoints() to the path as a closed ring
     private fun addRing(
         path: android.graphics.Path,
@@ -2255,10 +2262,10 @@ class MapController(
      * @param zoom Current zoom level
      * @return Distance in screen pixels
      */
-    private fun metersToPixels(
+    internal fun metersToPixels(
         meters: Float,
         latitude: Double,
-        zoom: Float,
+        zoom: Float = this.zoom,
     ): Float {
         val metersPerPixel = ProjectionUtils.metersPerPixelAtLatitude(latitude, zoom, tileSize)
         return (meters / metersPerPixel).toFloat()
@@ -2378,12 +2385,7 @@ class MapController(
             if (polygon.zIndex != zIndex || !polygon.visible || polygon.points.size < 3) continue
 
             // Expand points with geodesic interpolation if needed
-            val points =
-                if (polygon.geodesic) {
-                    GeodesicUtils.expandWithGeodesicPoints(polygon.points)
-                } else {
-                    polygon.points
-                }
+            val points = ringPoints(polygon.points, polygon.geodesic)
 
             fillPaint.color = polygon.fillColor.toArgb()
             strokePaint.color = polygon.strokeColor.toArgb()
@@ -2399,12 +2401,7 @@ class MapController(
             for (hole in polygon.holes) {
                 if (hole.size < 3) continue
                 // Expand hole points with geodesic interpolation if needed
-                val holePoints =
-                    if (polygon.geodesic) {
-                        GeodesicUtils.expandWithGeodesicPoints(hole)
-                    } else {
-                        hole
-                    }
+                val holePoints = ringPoints(hole, polygon.geodesic)
                 // On the same copy of the world as the outline
                 addRing(path, shapeScreenPoints(holePoints, centerPixelX, centerPixelY, outline[0]))
             }
@@ -3364,7 +3361,8 @@ class MapController(
     /**
      * Finds the topmost marker at the specified screen coordinates.
      *
-     * Checks markers in reverse order (top to bottom) for correct z-ordering.
+     * Checks the visible markers from top to bottom: the highest zIndex first and, with the
+     * same zIndex, the last added first.
      *
      * @param screenX The screen X coordinate
      * @param screenY The screen Y coordinate
@@ -3378,8 +3376,10 @@ class MapController(
         val (x, y) = screenToMapSpace(screenX, screenY)
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
-        // Check markers in reverse order (top to bottom) for correct z-ordering
-        for (marker in markers.reversed()) {
+        // Check markers from top to bottom, as they are drawn: by zIndex, then last added first
+        for (marker in markers.sortedBy { it.zIndex }.asReversed()) {
+            if (!marker.visible) continue
+
             val (markerPixelX, markerPixelY) = ProjectionUtils.latLngToPixel(marker.position, zoom, tileSize)
 
             // On the copy of the world nearest to the touch, as every visible copy is drawn
@@ -3448,12 +3448,13 @@ class MapController(
         val touchTolerance = 20f
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
-        // Check polylines in reverse order (top to bottom) for correct z-ordering
-        for (polyline in polylines.reversed()) {
-            if (!polyline.clickable) continue
+        // Check polylines from top to bottom, as they are drawn: by zIndex, then last added first
+        for (polyline in polylines.sortedBy { it.zIndex }.asReversed()) {
+            if (!polyline.clickable || !polyline.visible) continue
 
             // Convert all points to screen coordinates, as they are drawn
-            val screenPoints = shapeScreenPoints(polyline.points, centerPixelX, centerPixelY)
+            val points = if (polyline.geodesic) GeodesicUtils.expandWithGeodesicPoints(polyline.points) else polyline.points
+            val screenPoints = shapeScreenPoints(points, centerPixelX, centerPixelY)
             val reach = touchTolerance + polyline.strokeWidth / 2
             val (minX, maxX) = xRange(screenPoints)
 
@@ -3493,14 +3494,17 @@ class MapController(
         val (x, y) = screenToMapSpace(screenX, screenY)
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
-        // Check polygons in reverse order (top to bottom) for correct z-ordering
-        for (polygon in polygons.reversed()) {
-            if (!polygon.clickable) continue
+        // Check polygons from top to bottom, as they are drawn: by zIndex, then last added first
+        for (polygon in polygons.sortedBy { it.zIndex }.asReversed()) {
+            if (!polygon.clickable || !polygon.visible) continue
 
             // Convert all points to screen coordinates, as they are drawn
-            val screenPoints = shapeScreenPoints(polygon.points, centerPixelX, centerPixelY)
+            val screenPoints = shapeScreenPoints(ringPoints(polygon.points, polygon.geodesic), centerPixelX, centerPixelY)
 
-            val holeScreenPoints = polygon.holes.map { shapeScreenPoints(it, centerPixelX, centerPixelY, screenPoints[0]) }
+            val holeScreenPoints =
+                polygon.holes.map {
+                    shapeScreenPoints(ringPoints(it, polygon.geodesic), centerPixelX, centerPixelY, screenPoints[0])
+                }
             val (minX, maxX) = xRange(screenPoints)
 
             // Inside the outline but not in a hole, on any copy of the world
@@ -3531,9 +3535,9 @@ class MapController(
         val (x, y) = screenToMapSpace(screenX, screenY)
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
-        // Check circles in reverse order (top to bottom) for correct z-ordering
-        for (circle in circles.reversed()) {
-            if (!circle.clickable) continue
+        // Check circles from top to bottom, as they are drawn: by zIndex, then last added first
+        for (circle in circles.sortedBy { it.zIndex }.asReversed()) {
+            if (!circle.clickable || !circle.visible) continue
 
             // Convert circle center to screen coordinates
             val (px, py) = ProjectionUtils.latLngToPixel(circle.center, zoom, tileSize)
@@ -3565,8 +3569,9 @@ class MapController(
         val (x, y) = screenToMapSpace(screenX, screenY)
         val (centerPixelX, centerPixelY) = ProjectionUtils.latLngToPixel(center, zoom, tileSize)
 
-        for (groundOverlay in groundOverlays.reversed()) {
-            if (!groundOverlay.clickable) continue
+        // From top to bottom, as they are drawn: by zIndex, then last added first
+        for (groundOverlay in groundOverlays.sortedBy { it.zIndex }.asReversed()) {
+            if (!groundOverlay.clickable || !groundOverlay.visible) continue
 
             val bitmap = loadGroundOverlayBitmap(groundOverlay)
             val rect = groundOverlayScreenRect(groundOverlay, bitmap, centerPixelX, centerPixelY) ?: continue
