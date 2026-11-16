@@ -31,7 +31,7 @@ ktor = "3.6.1"
 
 # Testing
 junit = "4.13.2"
-mockk = "1.14.11"
+mockk = "1.14.12"
 robolectric = "4.17"
 kotlinx-coroutines = "1.11.0"
 
