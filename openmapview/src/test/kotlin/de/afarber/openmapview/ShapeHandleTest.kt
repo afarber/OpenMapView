@@ -10,6 +10,7 @@ package de.afarber.openmapview
 import android.app.Activity
 import android.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.createBitmap
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -40,6 +41,7 @@ class ShapeHandleTest {
     fun setUp() {
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
         mapView = OpenMapView(activity)
+        mapView.setMapType(MapType.NONE)
         mapView.layout(0, 0, 400, 400)
     }
 
@@ -55,6 +57,7 @@ class ShapeHandleTest {
         val polygon = mapView.addPolygon(Polygon(listOf(a, b, c)))
         val circle = mapView.addCircle(Circle(a, 100f))
         val marker = mapView.addMarker(Marker(a, title = "A"))
+        val newOutline = listOf(a, b, c, LatLng(51.46, 7.20))
         val changes =
             listOf<() -> Unit>(
                 { marker.position = b },
@@ -65,10 +68,13 @@ class ShapeHandleTest {
                 { marker.visible = false },
                 { polyline.strokeWidth = 20f },
                 { polyline.points = listOf(a, b, c) },
+                { polygon.points = newOutline },
                 { polygon.fillColor = Color.Red },
                 { polygon.holes = listOf(listOf(a, b, c)) },
                 { circle.radius = 200f },
                 { circle.center = b },
+                { circle.setStrokeColor(Color.Blue.toArgb()) },
+                { circle.setFillColor(Color.Red.toArgb()) },
                 { circle.visible = false },
             )
 
@@ -78,7 +84,10 @@ class ShapeHandleTest {
             assertTrue(shadowOf(mapView).wasInvalidated())
         }
         assertEquals(20f, mapView.getPolylines()[0].strokeWidth)
+        assertEquals(newOutline, mapView.getPolygons()[0].points)
         assertEquals(200f, mapView.getCircles()[0].radius)
+        assertEquals(Color.Blue.toArgb(), circle.getStrokeColor())
+        assertEquals(Color.Red.toArgb(), circle.getFillColor())
         assertEquals(b, mapView.getMarkers()[0].position)
         assertEquals(Pair(0.5f, 0.5f), mapView.getMarkers()[0].anchor)
     }

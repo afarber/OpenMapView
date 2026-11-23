@@ -7,115 +7,81 @@
 
 package de.afarber.openmapview
 
-import android.content.Context
+import android.app.Activity
 import android.graphics.Bitmap
-import androidx.test.core.app.ApplicationProvider
+import android.os.Looper
+import androidx.core.graphics.createBitmap
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import kotlin.test.assertNotNull
 
-/**
- * Unit tests for snapshot functionality.
- *
- * These tests verify that the snapshot methods are correctly defined
- * and can be invoked without errors.
- *
- * Note: Full integration testing of snapshot functionality (bitmap creation,
- * view rendering, etc.) should be done with instrumentation tests on a real
- * device or emulator, as Robolectric has limitations with View rendering and
- * the post() mechanism on detached views.
- */
 @RunWith(RobolectricTestRunner::class)
 class SnapshotTest {
-    private lateinit var context: Context
     private lateinit var mapView: OpenMapView
+    private val results = mutableListOf<Bitmap?>()
+    private val mainLooper get() = shadowOf(Looper.getMainLooper())
 
     @Before
-    fun setup() {
-        context = ApplicationProvider.getApplicationContext()
-        mapView = OpenMapView(context)
+    fun setUp() {
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        mapView = OpenMapView(activity)
+        mapView.setMapType(MapType.NONE)
+        activity.setContentView(mapView)
+        mainLooper.idle()
+        mapView.layout(0, 0, 320, 240)
     }
 
     @Test
-    fun testSnapshotMethodExists() {
-        // Verify snapshot method can be called
-        mapView.snapshot { bitmap ->
-            // Callback exists
-        }
+    fun testSnapshot_ReturnsBitmapAtViewSize() {
+        mapView.snapshot { results.add(it) }
+
+        assertTrue(results.isEmpty())
+        mainLooper.idle()
+
+        val bitmap = assertNotNull(results.single())
+        assertEquals(320, bitmap.width)
+        assertEquals(240, bitmap.height)
     }
 
     @Test
-    fun testSnapshotWithBitmapMethodExists() {
-        // Verify snapshot method with bitmap parameter can be called
-        val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
-        mapView.snapshot({ result ->
-            // Callback exists
-        }, bitmap)
+    fun testSnapshot_ReusesMatchingBitmap() {
+        val bitmap = createBitmap(320, 240)
+
+        mapView.snapshot({ results.add(it) }, bitmap)
+        mainLooper.idle()
+
+        assertSame(bitmap, results.single())
     }
 
     @Test
-    fun testSnapshotReadyCallbackInterface() {
-        // Verify SnapshotReadyCallback interface exists and can be instantiated
-        val callback =
-            SnapshotReadyCallback { bitmap ->
-                // Interface works
-            }
-        assertNotNull(callback)
+    fun testSnapshot_ReplacesMismatchedBitmap() {
+        val bitmap = createBitmap(100, 100)
+
+        mapView.snapshot({ results.add(it) }, bitmap)
+        mainLooper.idle()
+
+        val result = assertNotNull(results.single())
+        assertNotSame(bitmap, result)
+        assertEquals(320, result.width)
+        assertEquals(240, result.height)
     }
 
     @Test
-    fun testSnapshotLambdaSyntax() {
-        // Verify lambda syntax works (fun interface)
-        mapView.snapshot { bitmap ->
-            // Lambda syntax works
-        }
-    }
+    fun testSnapshot_OnZeroSizeViewReturnsNull() {
+        mapView.layout(0, 0, 0, 0)
 
-    @Test
-    fun testSnapshotTraditionalSyntax() {
-        // Verify traditional object syntax works
-        mapView.snapshot(
-            object : SnapshotReadyCallback {
-                override fun onSnapshotReady(bitmap: Bitmap?) {
-                    // Traditional syntax works
-                }
-            },
-        )
-    }
+        mapView.snapshot { results.add(it) }
+        mapView.snapshot({ results.add(it) }, createBitmap(100, 100))
+        mainLooper.idle()
 
-    @Test
-    fun testSnapshotWithBitmapLambdaSyntax() {
-        // Verify lambda syntax works with bitmap parameter
-        val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
-        mapView.snapshot({ result ->
-            // Lambda works
-        }, bitmap)
-    }
-
-    @Test
-    fun testBitmapParameterTypes() {
-        // Verify various bitmap configurations work
-        val bitmaps =
-            listOf(
-                Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888),
-                Bitmap.createBitmap(200, 200, Bitmap.Config.RGB_565),
-                Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
-            )
-
-        for (bitmap in bitmaps) {
-            mapView.snapshot({ result ->
-                // Each bitmap type works
-            }, bitmap)
-        }
-    }
-
-    @Test
-    fun testMultipleSnapshotCallsDontCrash() {
-        // Verify multiple calls don't crash
-        mapView.snapshot { bitmap1 -> }
-        mapView.snapshot { bitmap2 -> }
-        mapView.snapshot { bitmap3 -> }
+        assertEquals(listOf<Bitmap?>(null, null), results)
     }
 }
