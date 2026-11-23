@@ -23,6 +23,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowChoreographer
 import java.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Checks the default behavior of a marker click: the listener runs first and can consume the
@@ -143,6 +144,41 @@ class MarkerClickTest {
         assertFalse(marker.isInfoWindowShown)
         assertTrue(other.isInfoWindowShown)
         assertEquals(listOf<String?>("Bochum"), closed)
+    }
+
+    @Test
+    fun testInfoWindowAutoDismiss_ClosesAtDeadlineAndReportsMarkerOnce() {
+        val closed = mutableListOf<Marker>()
+        mapView.setOnInfoWindowCloseListener { closed.add(it) }
+        mapView.getUiSettings().infoWindowAutoDismiss = 500.milliseconds
+        val mainLooper = shadowOf(Looper.getMainLooper())
+
+        marker.showInfoWindow()
+        mainLooper.idleFor(Duration.ofMillis(499))
+
+        assertTrue(marker.isInfoWindowShown)
+        assertTrue(closed.isEmpty())
+
+        mainLooper.idleFor(Duration.ofMillis(1))
+
+        assertFalse(marker.isInfoWindowShown)
+        assertEquals(listOf(marker), closed)
+
+        mainLooper.idleFor(Duration.ofSeconds(1))
+        assertEquals(listOf(marker), closed)
+    }
+
+    @Test
+    fun testInfoWindowAutoDismiss_ZeroTimeoutKeepsWindowOpen() {
+        val closed = mutableListOf<Marker>()
+        mapView.setOnInfoWindowCloseListener { closed.add(it) }
+        mapView.getUiSettings().infoWindowAutoDismiss = kotlin.time.Duration.ZERO
+
+        marker.showInfoWindow()
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(1))
+
+        assertTrue(marker.isInfoWindowShown)
+        assertTrue(closed.isEmpty())
     }
 
     @Test
