@@ -1,6 +1,6 @@
 [versions]
 # Plugins
-agp = "9.5.1"
+agp = "9.5.2"
 kotlin = "2.4.21"
 spotless = "8.11.0"
 dokka = "2.3.0"
@@ -32,7 +32,7 @@ ktor = "3.6.1"
 # Testing
 junit = "4.13.2"
 mockk = "1.14.12"
-robolectric = "4.17"
+robolectric = "4.18.1"
 kotlinx-coroutines = "1.11.0"
 
 # Code Quality
